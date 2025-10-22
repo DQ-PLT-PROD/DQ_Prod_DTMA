@@ -112,7 +112,7 @@ export function DocumentUpload({ onClose, onUpload, categories }: { onClose: () 
                 description: formData.description,
                 expiryDate: formData.expiryDate || null,
                 tags: formData.tags
-                    .split(',')
+                    .split()
                     .map((tag) => tag.trim())
                     .filter((tag) => tag),
                 isConfidential: formData.isConfidential,

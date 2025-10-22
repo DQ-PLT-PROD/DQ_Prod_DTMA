@@ -197,7 +197,9 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     if (itemId) {
       try {
         refetch?.();
-      } catch {}
+      } catch (err) {
+        console.error("Failed to refetch marketplace item:", err);
+      }
     }
   };
   if (loading) {

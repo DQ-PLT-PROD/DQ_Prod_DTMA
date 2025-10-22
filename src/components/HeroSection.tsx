@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Send, ChevronDown, ArrowRight, Building } from 'lucide-react';
+import { Send, ChevronDown, ArrowRight, Layers } from 'lucide-react';
 import { AnimatedText, FadeInUpOnScroll, StaggeredFadeIn } from './AnimationUtils';
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from './Header/context/AuthContext';
+import { BRAND_BACKDROP_BLUR, BRAND_GRADIENT, BRAND_PRIMARY } from '../constants/branding';
 
 interface HeroSectionProps {
   'data-id'?: string;
@@ -25,15 +26,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     login();
   };
 
-  const scrollToPartner = () => {
+  const scrollToCategories = () => {
+    const targetHash = "#d6-categories";
     if (location.pathname !== "/") {
-      navigate({ pathname: "/", hash: "#partner" });
+      navigate({ pathname: "/", hash: targetHash });
       return;
     }
-    if (window.location.hash !== "#partner") {
-      window.location.hash = "#partner";
+    if (window.location.hash !== targetHash) {
+      window.location.hash = targetHash;
     }
-    const el = document.getElementById("cta-partner") || document.getElementById("contact");
+    const el = document.getElementById("d6-categories");
     if (el && typeof el.scrollIntoView === "function") {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -147,10 +149,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   }, [isSearchFocused]);
 
   const suggestionPills = [
-    'How do I get funding for my business?',
-    'What services help with business expansion?',
-    'How to connect with business mentors?',
-    'Steps to register a company in Abu Dhabi'
+    "What skills do leaders need in the AI working era?",
+    "How do I apply the 6XD Framework?",
+    "Which DTMA courses help me redesign workflows?",
+    "How can I earn the Digital Qatalyst badge?"
   ];
 
   // Handle suggestion pill clicks
@@ -210,20 +212,27 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
   return (
     <div
-      className="relative w-full bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 overflow-hidden"
+      className="relative w-full overflow-hidden"
       style={{
-        backgroundImage: "linear-gradient(rgba(17, 24, 39, 0.7), rgba(17, 24, 39, 0.7)), url('/heroImage.png')",
+        backgroundImage: `${BRAND_GRADIENT}, url('/heroImage.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        height: '100vh'
+        backgroundBlendMode: 'overlay',
+        height: '100vh',
+        backdropFilter: BRAND_BACKDROP_BLUR,
+        WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
       }}
       data-id={dataId}
     >
       {/* Animated gradient overlay */}
       <div
-        className="absolute inset-0 bg-gradient-to-r from-blue-500/40 to-purple-600/40 mix-blend-multiply"
+        className="absolute inset-0"
         style={{
-          animation: 'pulse-gradient 8s ease-in-out infinite alternate'
+          background: BRAND_GRADIENT,
+          opacity: 0.5,
+          backdropFilter: BRAND_BACKDROP_BLUR,
+          WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
+          animation: 'pulse-gradient 8s ease-in-out infinite alternate',
         }}
       ></div>
 
@@ -231,14 +240,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         <div className="text-center max-w-4xl mx-auto mb-8">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight overflow-hidden">
             <AnimatedText
-              text="Your Gateway to Enterprise Growth in Abu Dhabi"
+              text="Your Gateway to AI-Era Leadership and Skills"
               gap="1rem"
             />
           </h1>
           <FadeInUpOnScroll delay={0.8}>
             <p className="text-xl text-white/90 mb-8">
-              Start and scale your business with access to funding, services,
-              and partners.
+              Learn how to lead, adapt, and excel in the AI working era through
+              practical, bite-sized courses built on Digital Qatalyst's 6XD
+              Framework - turning transformation theory into real, future-ready
+              skills.
             </p>
           </FadeInUpOnScroll>
         </div>
@@ -252,7 +263,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 <div className="flex-grow relative">
                   <input
                     type="text"
-                    placeholder="Ask how to grow your business in Abu Dhabi..."
+                    placeholder="Ask how to grow your career in the AI working era..."
                     className={`w-full py-3 px-4 outline-none text-gray-700 rounded-lg bg-gray-50 transition-all duration-300 ${isSearchFocused ? 'bg-white' : ''}`}
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
@@ -269,10 +280,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 <button
                   onClick={handleSubmitPrompt}
                   disabled={isProcessing || !prompt.trim()}
-                  className={`ml-2 p-3 rounded-lg flex items-center justify-center transition-all ${isProcessing || !prompt.trim()
+                  className={`ml-2 p-3 rounded-lg flex items-center justify-center transition-all ${
+                    isProcessing || !prompt.trim()
                       ? 'bg-gray-200 cursor-not-allowed text-gray-400'
-                      : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white'
-                    }`}
+                      : 'text-white hover:opacity-90'
+                  }`}
+                  style={
+                    isProcessing || !prompt.trim()
+                      ? undefined
+                      : { backgroundColor: BRAND_PRIMARY }
+                  }
                 >
                   <Send
                     size={20}
@@ -310,9 +327,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         <StaggeredFadeIn staggerDelay={0.2} className="flex flex-col sm:flex-row gap-4 mt-2">
           <button
             onClick={handleSignIn}
-            className="px-8 py-3 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white font-bold rounded-lg shadow-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl text-center flex items-center justify-center overflow-hidden group"
+            className="px-8 py-3 text-white font-bold rounded-lg shadow-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:opacity-90 text-center flex items-center justify-center overflow-hidden group"
+            style={{ backgroundColor: BRAND_PRIMARY }}
           >
-            <span className="relative z-10">Start Your Growth Journey</span>
+            <span className="relative z-10">Start Your Learning Journey</span>
             <ArrowRight size={18} className="ml-2 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
             {/* Ripple effect on hover */}
             <span className="absolute inset-0 overflow-hidden rounded-lg">
@@ -320,11 +338,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             </span>
           </button>
           <button
-            onClick={scrollToPartner}
-            className="px-8 py-3 bg-white text-blue-700 hover:bg-blue-50 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+            onClick={scrollToCategories}
+            className="px-8 py-3 bg-white font-bold text-[#1839AD] rounded-lg shadow-lg flex items-center justify-center gap-2 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:bg-gray-100"
           >
-            Become a Partner
-            <Building size={18} />
+            <span>Browse the D6 Categories</span>
+            <Layers size={18} className="text-current" />
           </button>
         </StaggeredFadeIn>
       </div>

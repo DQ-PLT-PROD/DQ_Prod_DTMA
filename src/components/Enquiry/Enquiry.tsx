@@ -480,7 +480,7 @@ export const Enquiry: React.FC<EnquiryProps> = ({ id }) => {
           <AlertPopup>
             <AlertHeader>{alertHeader}</AlertHeader>
             <AlertText>{alertMessage}</AlertText>
-            <AlertClose onClick={() => setShowAlert(null)}>Ã—</AlertClose>
+            <AlertClose onClick={() => setShowAlert(null)}>Ã-</AlertClose>
           </AlertPopup>
         )}
         <ContentWrapper>

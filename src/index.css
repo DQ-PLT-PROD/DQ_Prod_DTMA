@@ -4,6 +4,11 @@
 @import "tailwindcss/utilities";
 /* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL */
 
+:root {
+  --brand-gradient: linear-gradient(90deg, #868B9E 0%, #7E8398 8.12%, #737A96 14.47%, #677195 19.42%, #5E6996 23.32%, #596594 26.54%, #566293 29.42%, #556293 32.34%, #525F91 35.66%, #4C5A8E 39.72%, #495995 44.89%, #3C4E8F 51.54%, #33478E 60.01%, #2D4492 70.67%, #1A3592 83.88%, #092893 100%);
+  --brand-primary: #1839AD;
+}
+
 .no-scroll {
   overflow: hidden;
 }
@@ -27,3 +32,16 @@
 .tiptap :where(a)       { @apply text-blue-600 underline; }
 .tiptap :where(strong)  { @apply font-semibold; }
 .tiptap :where(hr)      { @apply my-6 border-slate-200; }
+
+.bg-gradient-to-r,
+.bg-gradient-to-l,
+.bg-gradient-to-b,
+.bg-gradient-to-t,
+.bg-gradient-to-br,
+.bg-gradient-to-bl,
+.bg-gradient-to-tr,
+.bg-gradient-to-tl {
+  background-image: var(--brand-gradient) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}

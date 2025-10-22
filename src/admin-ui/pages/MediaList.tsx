@@ -19,12 +19,12 @@ const MediaList: React.FC = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
-    const nextFilters = { ...filters }
-    nextFilters.status = params.get('status') || ''
-    nextFilters.type = params.get('type') || ''
-    nextFilters.language = params.get('language') || ''
-    nextFilters.visibility = params.get('visibility') || ''
-    setFilters(nextFilters)
+    setFilters({
+      status: params.get('status') || '',
+      type: params.get('type') || '',
+      language: params.get('language') || '',
+      visibility: params.get('visibility') || '',
+    })
     const searchFilter = params.get('search')
     if (searchFilter) setSearchQuery(searchFilter)
   }, [location.search])

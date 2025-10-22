@@ -151,7 +151,7 @@ export default async function handler(req: AnyRequest, res: AnyResponse): Promis
         const url = await uploadBufferToBlob(buffer, blobName, f.mimetype || 'application/octet-stream');
         urls.push(url);
         // cleanup temp file
-        await fs.unlink(pathKey).catch(() => {});
+        await fs.unlink(pathKey).catch(() => undefined);
       }
 
       res.status?.(201);

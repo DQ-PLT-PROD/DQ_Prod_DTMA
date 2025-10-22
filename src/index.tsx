@@ -46,7 +46,9 @@ if (container) {
           window.location.replace("/dashboard/onboarding");
           return;
         }
-      } catch {}
+      } catch (error) {
+        void error;
+      }
       root.render(
         <ApolloProvider client={client}>
           <MsalProvider instance={msalInstance}>

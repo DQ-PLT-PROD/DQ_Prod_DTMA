@@ -219,7 +219,7 @@ const ProviderTab: React.FC<ProviderTabProps> = ({
           <div className="md:ml-auto flex flex-col md:items-end">
             <div className="text-sm text-gray-500">Established</div>
             <div className="font-medium text-blue-600">
-              {mockData.established} {mockData.location.split(',')[1]?.trim() || 'UAE'}
+              {mockData.established} {mockData.location.split()[1]?.trim() || 'UAE'}
             </div>
           </div>
         </div>

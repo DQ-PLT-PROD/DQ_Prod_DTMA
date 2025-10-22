@@ -30,7 +30,7 @@ export function Footer({
     return <footer data-id={dataId} className="bg-gray-50 border-t border-gray-100 w-full h-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
           <div className="flex items-center space-x-3 text-xs text-gray-500">
-            <span>© 2025 Enterprise Journey</span>
+            <span>(c) 2025 DTMA</span>
             <span className="hidden sm:inline">v2.1.0</span>
           </div>
           <a href="/dashboard/support" className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
@@ -47,16 +47,17 @@ export function Footer({
           {/* Logo */}
           <div className="mb-6">
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-              ENTERPRISE
-              <br />
-              JOURNEY
+              DTMA
             </h2>
+            <p className="text-blue-100 text-sm mt-1">
+              Powered by Digital Qatalyst
+            </p>
           </div>
           {/* Newsletter - Mobile Full Width */}
           <div className="mb-8">
             <p className="text-blue-100 text-sm mb-4 leading-relaxed">
-              Stay updated with the latest business insights, opportunities, and
-              services from Enterprise Journey.
+              Stay updated with the latest insights, courses, and tools for the
+              AI working era from DTMA.
             </p>
             <div className="space-y-3">
               <input type="email" placeholder="Enter your email" className="w-full px-4 py-3 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400" aria-label="Email address for newsletter" />
@@ -71,7 +72,7 @@ export function Footer({
               <ul className="space-y-3">
                 <li>
                   <a href="#" className="text-blue-100 hover:text-white transition-colors text-sm block">
-                    About Enterprise Journey
+                    About DTMA
                   </a>
                 </li>
                 <li>
@@ -81,7 +82,7 @@ export function Footer({
                 </li>
                 <li>
                   <a href="/discover-abudhabi" className="text-blue-100 hover:text-white transition-colors text-sm block">
-                    Discover Abu Dhabi
+                    Explore the AI Working Era
                   </a>
                 </li>
                 <li>
@@ -146,7 +147,7 @@ export function Footer({
           {/* Copyright - Mobile */}
           <div className="border-t border-blue-500 pt-6 text-center">
             <p className="text-blue-100 text-xs">
-              © 2025 Enterprise Journey. All rights reserved.
+              (c) 2025 DTMA. All rights reserved.
             </p>
             <p className="text-blue-100 text-xs mt-1">v2.1.0</p>
           </div>
@@ -158,16 +159,15 @@ export function Footer({
             {/* Logo and Newsletter Section */}
             <div>
               <div className="mb-6">
-                <h2 className="text-2xl font-bold tracking-tight">
-                  ENTERPRISE
-                  <br />
-                  JOURNEY
-                </h2>
+                <h2 className="text-2xl font-bold tracking-tight">DTMA</h2>
+                <p className="text-blue-100 text-sm mt-1">
+                  Powered by Digital Qatalyst
+                </p>
               </div>
               <div className="mb-6">
                 <p className="text-blue-100 text-sm mb-4 leading-relaxed">
-                  Stay updated with the latest business insights, opportunities,
-                  and services from Enterprise Journey.
+                  Stay updated with the latest insights, courses, and tools for
+                  the AI working era from DTMA.
                 </p>
                 <div className="bg-white rounded-md flex items-center justify-between px-4 py-3">
                   <span className="text-gray-600 text-sm">
@@ -185,7 +185,7 @@ export function Footer({
               <ul className="space-y-4">
                 <li>
                   <a href="#" className="text-blue-100 hover:text-white transition-colors text-sm">
-                    About Enterprise Journey
+                    About DTMA
                   </a>
                 </li>
                 <li>
@@ -195,7 +195,7 @@ export function Footer({
                 </li>
                 <li>
                   <a href="/discover-abudhabi" className="text-blue-100 hover:text-white transition-colors text-sm">
-                    Discover Abu Dhabi
+                    Explore the AI Working Era
                   </a>
                 </li>
                 <li>
@@ -264,7 +264,7 @@ export function Footer({
           {/* Copyright - Desktop */}
           <div className="border-t border-blue-500 pt-6 flex items-center justify-between">
             <p className="text-blue-100 text-sm">
-              © 2025 Enterprise Journey. All rights reserved.
+              (c) 2025 DTMA. All rights reserved.
             </p>
             <p className="text-blue-100 text-sm">v2.1.0</p>
           </div>

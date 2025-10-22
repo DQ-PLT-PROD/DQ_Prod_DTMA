@@ -220,7 +220,9 @@ export function useProductDetails({
         try {
           const obj = JSON.parse(c);
           if (obj && Array.isArray(obj.weeks)) return obj;
-        } catch {}
+        } catch {
+          continue;
+        }
       }
       return undefined;
     };

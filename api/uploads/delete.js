@@ -1,3 +1,4 @@
+/* eslint-env node */
 import { deleteBlob } from '../../src/server/azure/blobSign.js'
 
 function parseBody(req) {
