@@ -38,6 +38,6 @@ jobs:
             vercel --prod --token=$VERCEL_TOKEN --yes --confirm
           else
             echo "🧪 Deploying PREVIEW build for branch: $BRANCH_NAME ..."
-            DEPLOY_URL=$(vercel --token=$VERCEL_TOKEN --yes --confirm --prebuilt)
+            DEPLOY_URL=$(vercel --token=$VERCEL_TOKEN --yes --confirm)
             echo "✅ Preview deployed at: $DEPLOY_URL"
           fi
