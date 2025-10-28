@@ -27,6 +27,11 @@ jobs:
       - name: ⚙️ Install Vercel CLI
         run: npm install -g vercel
 
+      - name: 🔧 Set Git identity (for Vercel)
+        run: |
+          git config --global user.email "dq.demo.a@DigitalQatalyst.com"
+          git config --global user.name "DigitalQatalyst"
+
       - name: 🌐 Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -35,9 +40,9 @@ jobs:
           echo "🔍 Branch detected: $BRANCH_NAME"
           if [ "$BRANCH_NAME" = "main" ]; then
             echo "🚀 Deploying PRODUCTION build to Vercel..."
-            vercel --prod --token=$VERCEL_TOKEN --yes --confirm
+            vercel --prod --token=$VERCEL_TOKEN --yes
           else
             echo "🧪 Deploying PREVIEW build for branch: $BRANCH_NAME ..."
-            DEPLOY_URL=$(vercel --token=$VERCEL_TOKEN --yes --confirm)
+            DEPLOY_URL=$(vercel --token=$VERCEL_TOKEN --yes)
             echo "✅ Preview deployed at: $DEPLOY_URL"
           fi
