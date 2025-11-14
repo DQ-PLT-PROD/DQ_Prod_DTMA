@@ -6,11 +6,12 @@ import { NotificationCenter } from "./notifications/NotificationCenter";
 import { mockNotifications } from "./utils/mockNotifications";
 import { useAuth } from "./context/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import {
-  BRAND_BACKDROP_BLUR,
-  BRAND_GRADIENT,
-  BRAND_PRIMARY,
-} from "../../constants/branding";
+import { UserIcon, ArrowRight } from "lucide-react";
+import { ExploreDropdown } from "./components/ExploreDropdown";
+import { BRAND_BACKDROP_BLUR } from "../../constants/branding";
+
+const HEADER_GRADIENT =
+  "linear-gradient(90deg, #0a32a0 0%, #2a4090 40%, #4e5a8b 70%, #8b90a3 100%)";
 
 interface HeaderProps {
   toggleSidebar?: () => void;
@@ -112,91 +113,62 @@ export function Header({
   return (
     <>
       <header
-        className={`flex items-center w-full transition-all duration-300 ${
+        className={`w-full transition-all duration-300 ${
           isSticky
-            ? "fixed top-0 left-0 right-0 z-40 shadow-lg"
-            : "relative"
+            ? "fixed top-0 left-0 right-0 z-50 shadow-lg"
+            : "relative z-50"
         }`}
         data-id={dataId}
         style={{
-          background: BRAND_GRADIENT,
+          background: HEADER_GRADIENT,
           backdropFilter: BRAND_BACKDROP_BLUR,
           WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
         }}
       >
-        {/* Logo Section */}
-        <Link
-          to="/"
-          className={`text-white py-2 px-4 flex items-center transition-all duration-300 ${
-            isSticky ? "h-16" : "h-20"
-          }`}
-          style={{ background: BRAND_GRADIENT }}
-        >
-          <img
-            src="/dtma_logo.png"
-            alt="DTMA Logo"
-            className={`transition-all duration-300 object-contain w-auto ${
-              isSticky ? "h-12" : "h-16"
-            }`}
-          />
-        </Link>
-        {/* Main Navigation */}
         <div
-          className={`flex-1 flex justify-between items-center text-white px-4 transition-all duration-300 ${
-            isSticky ? "h-16" : "h-20"
+          className={`flex w-full items-center text-white transition-all duration-300 ${
+            isSticky ? "px-5 py-2.5" : "px-8 py-4"
           }`}
         >
-          {/* Left Navigation - Desktop and Tablet */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link
-              to={"/growth-areas-marketplace"}
-              className={`hover:text-gray-200 transition-colors duration-200 cursor-pointer ${
-                isSticky ? "text-sm" : ""
-              }`}
-            >
-              Explore the AI Working Era
-            </Link>
-          </div>
-          {/* Right Side - Conditional based on auth state and screen size */}
-          <div className="flex items-center ml-auto relative">
+          {/* Logo */}
+          <Link to="/" className="flex items-center transition-all duration-300">
+            <img
+              src="/DTMA%20LOGO%20WHITE.svg"
+              alt="DTMA Logo"
+              className="object-contain w-[130px] h-[36px]"
+            />
+          </Link>
+
+          {/* Primary navigation */}
+          <nav className="hidden md:flex items-center gap-8 ml-8">
+            <ExploreDropdown />
+          </nav>
+
+          {/* Right side actions */}
+          <div className="flex items-center gap-4 ml-auto relative">
             {user ? (
               <ProfileDropdown
                 onViewNotifications={toggleNotificationsMenu}
                 unreadNotifications={unreadCount}
               />
             ) : (
-              <>
-                {/* Desktop CTAs (>=1024px) */}
-                <div className="hidden lg:flex items-center space-x-3">
-                  <button
-                    className={`px-4 py-2 text-white border border-white/30 rounded-md hover:bg-white/10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/20 ${
-                      isSticky ? "text-sm px-3 py-1.5" : ""
-                    }`}
-                    onClick={scrollToFinalCTA}
-                  >
-                    Join the Academy
-                  </button>
-                  <button
-                    className={`px-4 py-2 text-white rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/20 font-medium hover:opacity-90 ${
-                      isSticky ? "text-sm px-3 py-1.5" : ""
-                    }`}
-                    style={{ backgroundColor: BRAND_PRIMARY }}
-                    onClick={handleBrowseCourses}
-                  >
-                    Browse Courses
-                  </button>
-                  <button
-                    className={`px-4 py-2 text-white border border-white/50 rounded-md hover:bg-white hover:text-teal-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/20 ${
-                      isSticky ? "text-sm px-3 py-1.5" : ""
-                    }`}
-                    onClick={handleSignIn}
-                  >
-                    Sign In
-                  </button>
-                </div>
-              </>
+              <div className="hidden lg:flex items-center gap-2 text-sm font-medium">
+                <button
+                  className="flex items-center gap-2 rounded-full px-5 py-2.5 h-11 bg-white text-[#1839AD] font-medium hover:bg-white/90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/40"
+                  onClick={handleSignIn}
+                >
+                  <UserIcon size={18} className="text-[#1839AD]" />
+                  <span>Sign In</span>
+                </button>
+                <button
+                  className="flex items-center gap-2 rounded-full px-5 py-2.5 h-11 text-white font-medium bg-[#1839AD] hover:opacity-90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/40"
+                  onClick={scrollToFinalCTA}
+                >
+                  <span>Get Started</span>
+                  <ArrowRight size={16} className="text-white" />
+                </button>
+              </div>
             )}
-            {/* Mobile and Tablet Drawer - Show for screens <1024px */}
             <MobileDrawer
               onSignIn={handleSignIn}
               isSignedIn={!!user}

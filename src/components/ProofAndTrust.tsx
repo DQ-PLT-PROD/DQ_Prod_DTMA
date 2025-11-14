@@ -36,34 +36,66 @@ const inlineLinks = [
   { label: "Discover the D6 Dimensions", href: "#d6-categories" },
 ];
 
+const whyHighlights = [
+  {
+    title: "Framework-first Learning",
+    description:
+      "Every DTMA course is grounded in the 6XD Framework so teams move from theory into applied outcomes.",
+  },
+  {
+    title: "Built by Practitioners",
+    description:
+      "Digital Qatalyst’s transformation architects translate field playbooks into practical, guided lessons.",
+  },
+  {
+    title: "Designed for Momentum",
+    description:
+      "Bite-sized sprints, templates, and reflections help leaders orchestrate change while work keeps moving.",
+  },
+];
+
 const ProofAndTrust: React.FC = () => {
   return (
     <section className="bg-gray-50 py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        <div>
-          <FadeInUpOnScroll className="max-w-3xl space-y-6">
-            <p className="text-sm font-semibold uppercase tracking-wider text-[#1839AD]">
-              Why DTMA
-            </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-              Why DTMA Is the Academy for the AI Working Era
-            </h2>
-            <p className="text-lg text-gray-700">
-              DTMA turns Digital Qatalyst's 6XD Framework - six dimensions of digital
-              mastery - into practical, guided learning experiences for professionals
-              and leaders.
-            </p>
-            <p className="text-base text-gray-600">
-              Informed by Digital Perspectives and DQ's field playbooks, DTMA bridges
-              the gap between learning and doing. Every lesson is anchored to one of
-              the D6 dimensions, so what you learn maps directly to how you work, lead,
-              and make decisions in AI-shaped organisations.
-            </p>
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 items-center">
+          <FadeInUpOnScroll className="w-full">
+            <div className="relative rounded-3xl overflow-hidden shadow-xl">
+              <img
+                src="/background%20image.png"
+                alt="Leaders collaborating on digital transformation"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#030C2B]/50 to-transparent"></div>
+            </div>
           </FadeInUpOnScroll>
 
+          <FadeInUpOnScroll className="space-y-6">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wider text-[#1839AD]">
+                Why DTMA?
+              </p>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                Built for modern leaders, rooted in real transformation
+              </h2>
+            </div>
+            <div className="space-y-4">
+              {whyHighlights.map((item) => (
+                <div key={item.title}>
+                  <p className="text-base font-semibold text-gray-900">
+                    {item.title}
+                  </p>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </FadeInUpOnScroll>
+        </div>
+
+        <div>
           <StaggeredFadeIn
             staggerDelay={0.1}
-            className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
           >
             {stats.map((stat) => (
               <div

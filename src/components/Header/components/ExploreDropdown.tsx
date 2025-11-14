@@ -4,98 +4,66 @@ import { ChevronDownIcon } from "lucide-react";
 import {
   BuildingIcon,
   CreditCardIcon,
-  NewspaperIcon,
   UsersIcon,
   GraduationCapIcon,
   TrendingUpIcon,
-  CalendarIcon,
-  SparklesIcon,
   LucideProps,
 } from "lucide-react";
 
-interface Marketplace {
+interface CourseCategory {
   id: string;
   name: string;
   description: string;
   icon: React.ComponentType<LucideProps>;
   href: string;
-  target?: string;
-  rel?: string;
 }
 
-const marketplaces: Marketplace[] = [
+const courseCategories: CourseCategory[] = [
   {
-    id: "non-financial",
-    name: "Business Services",
-    description:
-      "Business registration, legal advisory, tax, compliance, and SME support services",
+    id: "d1",
+    name: "D1 - Digital Economy 4.0 (E4.0)",
+    description: "Why should organisations change?",
     icon: BuildingIcon,
-    href: "/marketplace/non-financial",
+    href: "/marketplace/courses?category=d1",
   },
   {
-    id: "finance",
-    name: "Financial Services",
-    description:
-      "Funding options, grants, and financial services to help SMEs manage and grow",
-    icon: CreditCardIcon,
-    href: "/marketplace/financial",
-  },
-  {
-    id: "media",
-    name: "Knowledge Hub",
-    description:
-      "News, articles, and updates on Abu Dhabi's business landscape with industry insights",
-    icon: NewspaperIcon,
-    href: '/marketplace/knowledge-hub',
-  },
-  {
-    id: "community",
-    name: "Business Communities",
-    description:
-      "Industry communities for networking, collaboration, and sharing best practices",
+    id: "d2",
+    name: "D2 - Digital Cognitive Organisation (DCO)",
+    description: "Where are organisations headed?",
     icon: UsersIcon,
-    href: "https://ujs.qxk.mybluehost.me/website_e550b4e3/",
-    target: "_blank",
-    rel: "noopener noreferrer",
+    href: "/marketplace/courses?category=d2",
   },
   {
-    id: "course",
-    name: "Learning & Development",
-    description:
-      "Training and educational modules to build entrepreneurship skills and enhance businesses",
-    icon: GraduationCapIcon,
-    href: "/marketplace/courses",
+    id: "d3",
+    name: "D3 - Digital Business Platform (DBP)",
+    description: "What legacy value or orchestration engine?",
+    icon: CreditCardIcon,
+    href: "/marketplace/courses?category=d3",
   },
   {
-    id: "investment",
-    name: "Investment Marketplace",
-    description:
-      "Access to venture capital, crowdfunding, and grants for SME growth",
+    id: "d4",
+    name: "D4 - Digital Transformation 2.0 (DT2.0)",
+    description: "How to design and deploy the target.",
     icon: TrendingUpIcon,
-    // href: "/marketplace/investment",
-    href: "/coming-soon",
+    href: "/marketplace/courses?category=d4",
   },
   {
-    id: "calendar", 
-    name: "Calendar Marketplace",
-    description:
-      "Event management, matchmaking, and notifications for upcoming business events",
-    icon: CalendarIcon,
-    // href: "/marketplace/calendar",
-    href: "/coming-soon",
+    id: "d5",
+    name: "D5 - Digital Worker & Digital Workspace",
+    description: "Who are the orchestrators?",
+    icon: GraduationCapIcon,
+    href: "/marketplace/courses?category=d5",
   },
   {
-    id: "opportunity",
-    name: "Opportunity Marketplace",
-    description:
-      "Business opportunities, partnerships, and growth prospects for SMEs",
-    icon: SparklesIcon,
-    // href: "/marketplace/opportunities",
-    href: "/coming-soon",
+    id: "d6",
+    name: "D6 - Digital Accelerators (Tools)",
+    description: "When will we get there?",
+    icon: TrendingUpIcon,
+    href: "/marketplace/courses?category=d6",
   },
 ];
 
-// TODO: Add more marketplaces
+// TODO: Add more categories or fetch dynamically
 interface ExploreDropdownProps {
   isCompact?: boolean;
 }
@@ -143,11 +111,11 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
         break;
       case "ArrowDown":
         event.preventDefault();
-        setFocusedIndex((prev) => (prev + 1) % marketplaces.length);
+        setFocusedIndex((prev) => (prev + 1) % courseCategories.length);
         break;
       case "ArrowUp":
         event.preventDefault();
-        setFocusedIndex((prev) => (prev <= 0 ? marketplaces.length - 1 : prev - 1));
+        setFocusedIndex((prev) => (prev <= 0 ? courseCategories.length - 1 : prev - 1));
         break;
       case "Enter":
       case " ":
@@ -185,9 +153,9 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
         onKeyDown={handleKeyDown}
         aria-expanded={isOpen}
         aria-haspopup="true"
-        aria-label="Explore marketplaces menu"
+        aria-label="Explore courses menu"
       >
-        <span>Explore</span>
+        <span>Explore Courses</span>
         <ChevronDownIcon
           size={16}
           className={`ml-1 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
@@ -196,58 +164,60 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
 
       {isOpen && (
         <div
-          className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-2"
+          className="absolute top-full left-0 mt-2 w-[24rem] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 py-4 px-3"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="explore-menu"
         >
           <div className="px-4 py-2 border-b border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-800">Explore Marketplaces</h3>
+            <h3 className="text-sm font-semibold text-gray-900">
+              D6 Course Categories
+            </h3>
             <p className="text-xs text-gray-500 mt-1">
-              Discover opportunities across Abu Dhabi&apos;s business ecosystem
+              The Digital Qatalyst 6XD curriculum tracks
             </p>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
-            {marketplaces.map((marketplace, index) => {
-              const Icon = marketplace.icon;
-              const external = isExternal(marketplace.href);
+            {courseCategories.map((category, index) => {
+              const Icon = category.icon;
+              const external = isExternal(category.href);
 
               return (
                 <a
-                  key={marketplace.id}
+                  key={category.id}
                   ref={(el) => (itemRefs.current[index] = el)}
-                  href={marketplace.href}
-                  // Respect explicit per-item settings, otherwise set sensible defaults
-                  target={marketplace.target ?? (external ? "_blank" : undefined)}
-                  rel={marketplace.rel ?? (external ? "noopener noreferrer" : undefined)}
+                  href={category.href}
+                  target={external ? "_blank" : undefined}
+                  rel={external ? "noopener noreferrer" : undefined}
                   className={`flex items-start px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors duration-150 ${
                     focusedIndex === index ? "bg-gray-50" : ""
                   }`}
                   role="menuitem"
                   tabIndex={-1}
                   onClick={(e) => {
-                    // Internal routes: prevent default and route via react-router
                     if (!external) {
                       e.preventDefault();
-                      handleInternalNav(marketplace.href);
+                      handleInternalNav(category.href);
                     }
-                    // External routes: let the browser handle it (respects target/rel)
                   }}
                   onMouseEnter={() => setFocusedIndex(index)}
                   onFocus={() => setFocusedIndex(index)}
                 >
                   <div className="flex-shrink-0 mt-0.5">
-                    <Icon size={20} className="text-teal-600" />
+                    <Icon size={20} className="text-[#1839AD]" />
                   </div>
                   <div className="ml-3 flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {marketplace.name}
+                    <p className="text-sm font-medium text-gray-900">
+                      {category.name}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                      {marketplace.description}
-                    </p>
+                    {category.description && (
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        {category.description}
+                      </p>
+                    )}
                   </div>
+                  <span className="text-base text-gray-300">❯</span>
                 </a>
               );
             })}
