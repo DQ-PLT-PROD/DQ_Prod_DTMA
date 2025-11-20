@@ -43,7 +43,7 @@ const EnterpriseStages: React.FC = () => {
                 className="absolute hidden md:block border-[6px] border-white rounded-full pointer-events-none z-10"
                 style={{ width: "250px", height: "250px", left: "4px", bottom: "-202px" }}
               ></div>
-              <div className="relative space-y-4 z-20">
+              <div className="relative space-y-4 z-20 ml-4">
                 <h2 className="text-3xl md:text-4xl font-bold">How You Learn</h2>
                 <p className="text-base md:text-lg text-white/90 max-w-lg">
                   DTMA takes learners from fundamentals to applied mastery
@@ -61,23 +61,23 @@ const EnterpriseStages: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white p-8 sm:p-10 space-y-10 pt-24 mt-7">
+          <div className="bg-white p-8 sm:p-10 space-y-10 pt-24 mt-7 relative z-10">
             <StaggeredFadeIn staggerDelay={0.1}>
               <div className="flex flex-col gap-10">
-                <div className="flex flex-col gap-8 md:gap-0 md:flex-row justify-between relative">
+                <div className="flex flex-col gap-8 md:gap-0 md:flex-row justify-between relative z-20">
                   <div className="hidden md:block absolute top-8 left-12 right-12 border-t border-dashed border-gray-200"></div>
                   {steps.map((step, index) => (
                     <div
                       key={step.title}
-                      className="relative flex flex-col items-center text-center gap-4 md:flex-1"
+                      className="relative flex flex-col items-center text-center gap-4 md:flex-1 z-30"
                     >
-                      <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-[#1839AD] text-white text-lg font-semibold shadow-lg">
+                      <div className="relative z-30 flex h-16 w-16 items-center justify-center rounded-full bg-[#1839AD] text-white text-lg font-semibold shadow-lg">
                         {String(index + 1).padStart(2, "0")}
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className="text-lg font-semibold text-gray-900 relative z-30">
                         {step.title}
                       </h3>
-                      <p className="text-sm text-gray-600 max-w-xs">
+                      <p className="text-sm text-gray-600 max-w-[200px] relative z-30">
                         {step.description}
                       </p>
                     </div>
