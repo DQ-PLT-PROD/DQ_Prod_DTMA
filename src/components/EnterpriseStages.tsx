@@ -30,7 +30,7 @@ const steps = [
 
 const EnterpriseStages: React.FC = () => {
   return (
-    <section className="bg-white py-20">
+    <section className="bg-white py-32">
       <div className="w-full space-y-12">
         <FadeInUpOnScroll className="overflow-visible w-full min-h-[650px]">
           <div className="relative z-10 bg-[#1839AD] text-white grid lg:grid-cols-[3fr,2fr]">
