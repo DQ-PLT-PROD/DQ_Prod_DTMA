@@ -11,21 +11,17 @@ const CallToAction: React.FC = () => {
   return (
     <section
       id="final-cta"
-      className="relative overflow-hidden py-16 text-white"
+      className="relative overflow-hidden py-16"
       style={{
-        background: BRAND_GRADIENT,
-        backdropFilter: BRAND_BACKDROP_BLUR,
-        WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
+        backgroundColor: "rgba(46, 70, 158, 0.03)",
       }}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.2),_transparent_60%)]" />
-
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 text-[#030C2B]">
         <FadeInUpOnScroll className="space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold">
             Ready to Grow in the AI Working Era?
           </h2>
-          <p className="text-lg text-white/80">
+          <p className="text-lg text-[#030C2B]/80">
             Join DTMA to learn practical, future-ready skills and prove them
             with a Digital Qatalyst Recognition Badge.
           </p>
@@ -40,18 +36,6 @@ const CallToAction: React.FC = () => {
             >
               Start Your Learning Journey
               <ArrowRight size={16} className="ml-2" />
-            </a>
-            <a
-              href="#"
-              className="inline-flex items-center justify-center rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Earn Your Badge
-            </a>
-            <a
-              href="#"
-              className="inline-flex items-center justify-center rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Upskill Your Team
             </a>
           </div>
         </FadeInUpOnScroll>

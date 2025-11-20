@@ -45,3 +45,23 @@
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
+
+.typing-word {
+  display: inline-flex;
+  color: #1839AD;
+  white-space: nowrap;
+  border-right: 2px solid #1839AD;
+  padding-right: 0.125rem;
+  min-height: 1em;
+  animation: typing-caret 0.8s steps(1, end) infinite;
+}
+
+@keyframes typing-caret {
+  from,
+  to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: #1839AD;
+  }
+}

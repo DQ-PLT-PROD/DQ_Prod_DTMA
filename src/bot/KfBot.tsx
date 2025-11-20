@@ -57,7 +57,7 @@
 //         `);
 
 //         const sharedConfig = {
-//           verify: { projectID: "6849bea9894655c0d600d259" },
+//           verify: { projectID: "691ec3124944b1d0c2f33a4f" },
 //           url: "https://general-runtime.voiceflow.com",
 //           versionID: "production",
 //           assistant: {
@@ -178,18 +178,22 @@ const KfBot = () => {
           btoa(`
           .vfrc-launcher {
             background-color: #ffffff !important;
-            color: #ffffff !important;
+            color: #1839AD !important;
             width: 60px !important;
             height: 60px !important;
             border-radius: 50% !important;
+            border: 1px solid #1839AD !important;
           }
           .vfrc-launcher:hover {
-            background-color: #ffffff !important;
+            background-color: #f4f6ff !important;
+          }
+          .vfrc-chat-input__send {
+            margin-right: 12px !important;
           }
         `);
 
         const sharedConfig = {
-          verify: { projectID: "6849bea9894655c0d600d259" },
+          verify: { projectID: "691ec3124944b1d0c2f33a4f" },
           url: "https://general-runtime.voiceflow.com",
           versionID: "production",
           assistant: {
@@ -275,3 +279,5 @@ const KfBot = () => {
 };
 
 export default KfBot;
+
+

@@ -6,7 +6,6 @@ import ProofAndTrust from './ProofAndTrust';
 import D6CategoriesSection from './D6CategoriesSection';
 import EnterpriseStages from './EnterpriseStages';
 import Home from './Home';
-import KnowledgeHub from './KnowledgeHub';
 import CallToAction from './CallToAction';
 import KhalifaFundAttribution from './KhalifaFundAttribution';
 import { BRAND_GRADIENT, BRAND_BACKDROP_BLUR, BRAND_PRIMARY } from '../constants/branding';
@@ -64,7 +63,6 @@ const HomePage: React.FC = () => {
         <D6CategoriesSection />
         <EnterpriseStages />
         <Home />
-        <KnowledgeHub />
         <CallToAction />
       </main>
       <Footer isLoggedIn={false} />

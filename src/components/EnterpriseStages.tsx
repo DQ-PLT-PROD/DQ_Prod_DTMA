@@ -19,7 +19,7 @@ const steps = [
   {
     title: "Apply",
     description:
-      "Bring a small project or use case from your team; reflect with prompts.",
+      "Bring a small project or use case from your team.",
   },
   {
     title: "Recognition",
@@ -30,49 +30,66 @@ const steps = [
 
 const EnterpriseStages: React.FC = () => {
   return (
-    <section className="bg-white py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <FadeInUpOnScroll className="text-center max-w-3xl mx-auto space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-            How You Learn - From Orientation to Recognition
-          </h2>
-          <p className="text-lg text-gray-600">
-            DTMA guides every learner from foundational understanding to applied
-            mastery. Follow a clear learning arc designed to prove capability in
-            the AI working era.
-          </p>
-        </FadeInUpOnScroll>
-
-        <StaggeredFadeIn
-          staggerDelay={0.1}
-          className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-5"
-        >
-          {steps.map((step, index) => (
-            <div
-              key={step.title}
-              className="relative rounded-3xl border border-gray-200 bg-gray-50 p-6 text-center shadow-sm"
-            >
-              <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                {index + 1}
-              </span>
-              <h3 className="mt-4 text-lg font-semibold text-gray-900">
-                {step.title}
-              </h3>
-              <p className="mt-3 text-sm text-gray-600">{step.description}</p>
+    <section className="bg-white py-20">
+      <div className="w-full space-y-12">
+        <FadeInUpOnScroll className="overflow-hidden w-full min-h-[650px]">
+          <div className="bg-[#1839AD] text-white grid lg:grid-cols-[3fr,2fr]">
+            <div className="relative pl-28 pr-10 sm:pr-16 sm:pl-[11rem] py-10 flex flex-col justify-center space-y-4 overflow-hidden">
+              <div className="absolute -left-10 -top-40 w-60 h-60 border-[6px] border-white rounded-full"></div>
+              <div className="absolute -left-80 bottom-10 w-72 h-72 border-[6px] border-white rounded-full"></div>
+              <div className="relative space-y-4">
+                <h2 className="text-3xl md:text-4xl font-bold">How You Learn</h2>
+                <p className="text-base md:text-lg text-white/90 max-w-md">
+                  DTMA guides every learner from foundational understanding to
+                  applied mastery. Follow a clear learning arc designed to prove
+                  capability in the AI era through confident, guided actions.
+                </p>
+              </div>
             </div>
-          ))}
-        </StaggeredFadeIn>
+            <div className="h-full order-2">
+              <img
+                src="/Leader 2.jpg"
+                alt="Learners collaborating"
+                className="h-full w-full object-cover"
+              />
+            </div>
+          </div>
 
-        <div className="mt-10 flex flex-wrap justify-center gap-4 text-sm font-semibold text-blue-600">
-          <a href="#" className="flex items-center gap-2 hover:underline">
-            See How It Works
-            <ArrowRight size={16} />
-          </a>
-          <a href="#" className="flex items-center gap-2 hover:underline">
-            Enroll a Team
-            <ArrowRight size={16} />
-          </a>
-        </div>
+          <div className="bg-white p-8 sm:p-10 border-t border-gray-100 space-y-10 pt-20">
+            <StaggeredFadeIn staggerDelay={0.1}>
+              <div className="flex flex-col gap-10">
+                <div className="flex flex-col gap-8 md:gap-0 md:flex-row justify-between relative">
+                  <div className="hidden md:block absolute top-8 left-12 right-12 border-t border-dashed border-gray-200"></div>
+                  {steps.map((step, index) => (
+                    <div
+                      key={step.title}
+                      className="relative flex flex-col items-center text-center gap-4 md:flex-1"
+                    >
+                      <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-[#1839AD] text-white text-lg font-semibold shadow-lg">
+                        {String(index + 1).padStart(2, "0")}
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {step.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 max-w-xs">
+                        {step.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </StaggeredFadeIn>
+            <div className="flex justify-center">
+              <button
+                className="px-10 py-4 text-white font-semibold text-lg rounded-full shadow-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex items-center justify-center gap-2"
+                style={{ backgroundColor: "#1839AD" }}
+              >
+                Start Your Learning Journey
+                <ArrowRight size={18} />
+              </button>
+            </div>
+          </div>
+        </FadeInUpOnScroll>
       </div>
     </section>
   );
