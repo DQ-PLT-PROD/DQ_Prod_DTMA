@@ -1,8 +1,13 @@
 import * as React from 'react';
 import { ReactNode } from 'react';
 import { DollarSign, Calendar, Clock, Users, MapPin, CheckCircle, BarChart, Award, FileText, Info, BookOpen, ClipboardList, Building, FileType, Bookmark, TrendingUp } from 'lucide-react';
-import { mockCourses, providers } from './mockData';
+import { providers } from './mockData';
 import { mockFinancialServices, mockNonFinancialServices, mockKnowledgeHubItems, mockKnowledgeHubFilterOptions } from './mockMarketplaceData';
+import { categories } from '../data/dtma/categories';
+import { getCourses, toMarketplaceItem } from '../lib/api/dtmaCourses';
+
+// Canonical marketplace configuration used by MarketplaceRouter/MarketplacePage.
+// Legacy duplicate: src/utils/marketplaceConfiguration.tsx (kept for reference only).
 // Define a Tab type for consistency across marketplace pages
 export interface MarketplaceTab {
   id: string;
@@ -135,46 +140,38 @@ export const mockNonFinancialServicesData = {
 };
 // Mock data for courses
 export const mockCoursesData = {
-  items: mockCourses,
+  items: getCourses().map(toMarketplaceItem),
   filterOptions: {
-    categories: [{
-      id: 'entrepreneurship',
-      name: 'Entrepreneurship'
+    categories: categories.map((category) => ({
+      id: category.slug,
+      name: category.name
+    })),
+    audienceLevels: [{
+      id: 'Digital Leaders',
+      name: 'Digital Leaders'
     }, {
-      id: 'finance',
-      name: 'Finance'
-    }, {
-      id: 'marketing',
-      name: 'Marketing'
-    }, {
-      id: 'technology',
-      name: 'Technology'
-    }, {
-      id: 'operations',
-      name: 'Operations'
+      id: 'Digital Workers',
+      name: 'Digital Workers'
     }],
     deliveryModes: [{
-      id: 'online',
+      id: 'Online',
       name: 'Online'
     }, {
-      id: 'inperson',
+      id: 'In-person',
       name: 'In-person'
     }, {
-      id: 'hybrid',
+      id: 'Hybrid',
       name: 'Hybrid'
     }],
-    businessStages: [{
-      id: 'conception',
-      name: 'Conception'
+    levelTags: [{
+      id: 'Beginner',
+      name: 'Beginner'
     }, {
-      id: 'growth',
-      name: 'Growth'
+      id: 'Intermediate',
+      name: 'Intermediate'
     }, {
-      id: 'maturity',
-      name: 'Maturity'
-    }, {
-      id: 'restructuring',
-      name: 'Restructuring'
+      id: 'Advanced',
+      name: 'Advanced'
     }]
   },
   providers: providers
@@ -242,64 +239,46 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     summarySticky: true,
     filterCategories: [{
       id: 'category',
-      title: 'Course Category',
+      title: 'Category',
+      options: categories.map((category) => ({
+        id: category.slug,
+        name: category.name
+      }))
+    }, {
+      id: 'audienceLevel',
+      title: 'Audience',
       options: [{
-        id: 'entrepreneurship',
-        name: 'Entrepreneurship'
+        id: 'Digital Leaders',
+        name: 'Digital Leaders'
       }, {
-        id: 'finance',
-        name: 'Finance'
+        id: 'Digital Workers',
+        name: 'Digital Workers'
+      }]
+    }, {
+      id: 'levelTag',
+      title: 'Level',
+      options: [{
+        id: 'Beginner',
+        name: 'Beginner'
       }, {
-        id: 'marketing',
-        name: 'Marketing'
+        id: 'Intermediate',
+        name: 'Intermediate'
       }, {
-        id: 'technology',
-        name: 'Technology'
-      }, {
-        id: 'operations',
-        name: 'Operations'
+        id: 'Advanced',
+        name: 'Advanced'
       }]
     }, {
       id: 'deliveryMode',
       title: 'Delivery Mode',
       options: [{
-        id: 'online',
+        id: 'Online',
         name: 'Online'
       }, {
-        id: 'inperson',
+        id: 'In-person',
         name: 'In-person'
       }, {
-        id: 'hybrid',
+        id: 'Hybrid',
         name: 'Hybrid'
-      }]
-    }, {
-      id: 'duration',
-      title: 'Duration',
-      options: [{
-        id: 'short',
-        name: 'Short (<1 week)'
-      }, {
-        id: 'medium',
-        name: 'Medium (1-4 weeks)'
-      }, {
-        id: 'long',
-        name: 'Long (1+ month)'
-      }]
-    }, {
-      id: 'businessStage',
-      title: 'Business Stage',
-      options: [{
-        id: 'conception',
-        name: 'Conception'
-      }, {
-        id: 'growth',
-        name: 'Growth'
-      }, {
-        id: 'maturity',
-        name: 'Maturity'
-      }, {
-        id: 'restructuring',
-        name: 'Restructuring'
       }]
     }],
     // Data mapping functions
@@ -320,29 +299,47 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     mapFilterResponse: data => {
       return [{
         id: 'category',
-        title: 'Course Category',
-        options: data.categories || []
+        title: 'Category',
+        options: data.categories || categories.map((category) => ({
+          id: category.slug,
+          name: category.name
+        }))
+      }, {
+        id: 'audienceLevel',
+        title: 'Audience',
+        options: data.audienceLevels || [{
+          id: 'Digital Leaders',
+          name: 'Digital Leaders'
+        }, {
+          id: 'Digital Workers',
+          name: 'Digital Workers'
+        }]
+      }, {
+        id: 'levelTag',
+        title: 'Level',
+        options: data.levelTags || [{
+          id: 'Beginner',
+          name: 'Beginner'
+        }, {
+          id: 'Intermediate',
+          name: 'Intermediate'
+        }, {
+          id: 'Advanced',
+          name: 'Advanced'
+        }]
       }, {
         id: 'deliveryMode',
         title: 'Delivery Mode',
-        options: data.deliveryModes || []
-      }, {
-        id: 'duration',
-        title: 'Duration',
-        options: [{
-          id: 'short',
-          name: 'Short (<1 week)'
+        options: data.deliveryModes || [{
+          id: 'Online',
+          name: 'Online'
         }, {
-          id: 'medium',
-          name: 'Medium (1-4 weeks)'
+          id: 'In-person',
+          name: 'In-person'
         }, {
-          id: 'long',
-          name: 'Long (1+ month)'
+          id: 'Hybrid',
+          name: 'Hybrid'
         }]
-      }, {
-        id: 'businessStage',
-        title: 'Business Stage',
-        options: data.businessStages || []
       }];
     },
     // Mock data for fallback and schema reference

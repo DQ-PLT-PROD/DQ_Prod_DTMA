@@ -19,10 +19,11 @@ import {
 } from "../../utils/comparisonStorage";
 import { useQuery } from "@apollo/client/react";
 import { useLocation } from "react-router-dom";
-import { GET_PRODUCTS, GET_FACETS, GET_ALL_COURSES } from "../../services/marketplaceQueries.ts";
+import { GET_PRODUCTS, GET_FACETS } from "../../services/marketplaceQueries.ts";
 import { fetchMarketplaceFilters } from "../../services/marketplace";
 import { getFallbackKnowledgeHubItems } from "../../utils/fallbackData";
 import { isSupabaseConfigured, getSupabase } from "../../admin-ui/utils/supabaseClient";
+import { getCourses as getDtmaCourses, getCategories as getDtmaCategories, toMarketplaceItem } from "../../lib/api/dtmaCourses";
 
 
 // Mapping of Media Types to their relevant Format options (uses filter labels)
@@ -130,29 +131,6 @@ interface GetProductsData {
   };
 }
 
-// Types for GET_ALL_COURSES query
-interface Course {
-  id: string;
-  name: string;
-  description: string;
-  partner: string;
-  rating: number;
-  reviewCount: number;
-  cost: number;
-  duration: string;
-  logoUrl: string;
-  businessStage: string;
-  pricingModel: string;
-  serviceCategory: string;
-}
-
-interface GetCoursesData {
-  courses: {
-    items: Course[];
-    totalItems: number;
-  };
-}
-
 export interface MarketplacePageProps {
   marketplaceType: "courses" | "financial" | "non-financial" | "knowledge-hub";
   title: string;
@@ -173,7 +151,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   const [items, setItems] = useState<any[]>([]);
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = useState<Record<string, string | string[]>>({});
   
   // Filter sidebar visibility - should be visible on desktop, hidden on mobile by default
   const [showFilters, setShowFilters] = useState(false);
@@ -206,12 +184,8 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     skip: skipGraph || marketplaceType === "courses",
   });
   
-  const { data: courseData, error: courseError } = useQuery<GetCoursesData>(GET_ALL_COURSES, {
-    skip: marketplaceType !== "courses",
-  });
-  
   const { data: facetData, error: facetError } = useQuery<GetFacetsData>(GET_FACETS, {
-    skip: skipGraph,
+    skip: skipGraph || marketplaceType === "courses",
   });
 
   // Load filter configurations based on marketplace type
@@ -224,7 +198,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           setFilterConfig(filterOptions);
 
           // Initialize empty filters based on the configuration
-          const initialFilters: Record<string, string> = {};
+          const initialFilters: Record<string, string | string[]> = {};
           filterOptions.forEach((fc) => {
             initialFilters[fc.id] = '';
           });
@@ -232,6 +206,32 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           return;
         }
         
+        if (marketplaceType === 'courses') {
+          // Use canonical config for filter shape, but refresh categories from DTMA data
+          const filterOptions: FilterConfig[] = config.filterCategories
+            .filter((fc) => fc.id !== 'deliveryMode')
+            .map((fc) =>
+              fc.id === 'category'
+                ? {
+                    ...fc,
+                    options: getDtmaCategories().map((category) => ({
+                      id: category.slug,
+                      name: category.name,
+                    })),
+                  }
+                : fc
+            );
+          setFilterConfig(filterOptions);
+          const initialFilters: Record<string, string | string[]> = {};
+          filterOptions.forEach((fc) => {
+            initialFilters[fc.id] = [];
+          });
+          // Include topic for tag-driven filtering even though it is not shown as a sidebar category
+          initialFilters['topic'] = [];
+          setFilters(initialFilters);
+          return;
+        }
+
         if (facetData) {
           // Choose facet codes based on marketplace type
           let facetCodes: string[] = [];
@@ -255,24 +255,26 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 name: value.name,
               })),
             }));
-          console.log('filterOptions:', filterOptions);
           setFilterConfig(filterOptions);
 
           // Initialize empty filters based on the configuration
-          const initialFilters: Record<string, string> = {};
+          const initialFilters: Record<string, string | string[]> = {};
           filterOptions.forEach((config) => {
-            initialFilters[config.id] = '';
+            initialFilters[config.id] = marketplaceType === 'courses' ? [] : '';
           });
           setFilters(initialFilters);
         }
       } catch (err) {
         console.error("Error fetching filter options:", err);
         // Use fallback filter config from marketplace config
-        setFilterConfig(config.filterCategories);
+        const fallbackFilters = marketplaceType === 'courses'
+          ? config.filterCategories.filter((fc) => fc.id !== 'deliveryMode')
+          : config.filterCategories;
+        setFilterConfig(fallbackFilters);
         // Initialize empty filters based on the configuration
-        const initialFilters: Record<string, string> = {};
-        config.filterCategories.forEach((config) => {
-          initialFilters[config.id] = "";
+        const initialFilters: Record<string, string | string[]> = {};
+        fallbackFilters.forEach((config) => {
+          initialFilters[config.id] = marketplaceType === 'courses' ? [] : "";
         });
         setFilters(initialFilters);
       }
@@ -452,75 +454,62 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           return;
         }
 
-        // Handle Courses
-        if (marketplaceType === "courses" && courseData) {
-          const mappedItems = courseData.courses.items.map((course) => {
-            const rawCost = (course as any)?.cost;
-            const parsedCost =
-              typeof rawCost === "number" ? rawCost : parseFloat(String(rawCost ?? ""));
-            const normalizedCost = !isNaN(parsedCost) && parsedCost >= 1 ? parsedCost : 3200;
-            
-            const facetValues = [
-              { code: "service-category", name: course.serviceCategory },
-              { code: "business-stage", name: course.businessStage },
-              { code: "provided-by", name: course.partner },
-              { code: "pricing-model", name: course.pricingModel },
-            ].filter((fv) => fv.name);
-            
+        // Handle Courses via DTMA data layer
+        if (marketplaceType === "courses") {
+          const courseList = getDtmaCourses();
+          const mappedItems = courseList.map((course) => {
+            const mapped = toMarketplaceItem(course);
             return {
-              id: course.id,
-              title: course.name,
-              slug: `courses/${course.id}`,
-              description: course.description || "No description available",
-              facetValues,
-              provider: {
-                name: course.partner || "Unknown Partner",
-                logoUrl: course.logoUrl || "/default_logo.png",
-                description: "No provider description available",
-              },
-              formUrl: null,
-              Cost: normalizedCost,
-              price: normalizedCost,
-              BusinessStage: course.businessStage,
-              rating: course.rating,
-              reviewCount: course.reviewCount,
-              duration: course.duration,
-              pricingModel: course.pricingModel,
-              serviceCategory: course.serviceCategory,
+              ...mapped,
+              duration: mapped.duration,
             };
           });
 
-          // Apply filters + search
-          const filtered = mappedItems.filter((item: any) => {
-            const matchesAllFacets = Object.keys(filters).every((facetCode) => {
-              const selectedValue = filters[facetCode];
-              if (!selectedValue) return true;
-              return (
-                item.facetValues.some(
-                  (facetValue: any) => facetValue.code === facetCode && facetValue.name === selectedValue
-                ) ||
-                (facetCode === "pricing-model" &&
-                  selectedValue === "one-time-fee" &&
-                  item.Cost &&
-                  item.Cost > 0) ||
-                (facetCode === "business-stage" &&
-                  item.BusinessStage &&
-                  selectedValue === item.BusinessStage)
-              );
-            });
+          const lowerSearch = searchQuery.trim().toLowerCase();
+          const selectedCategories = toArrayFilter(filters.category);
+          const selectedAudiences = toArrayFilter(filters.audienceLevel);
+          const selectedLevels = toArrayFilter(filters.levelTag);
+          const selectedTopics = toArrayFilter(filters.topic);
 
+          const filteredCourses = mappedItems.filter((item) => {
+            const categoryMatch =
+              selectedCategories.length === 0 ||
+              selectedCategories.includes(item.categorySlug || item.category);
+            const audienceMatch =
+              selectedAudiences.length === 0 ||
+              selectedAudiences.includes(item.audienceLevel);
+            const levelMatch =
+              selectedLevels.length === 0 ||
+              selectedLevels.includes(item.levelTag);
+            const topicMatch =
+              selectedTopics.length === 0 ||
+              (Array.isArray(item.topicTags) &&
+                item.topicTags.some((tag: string) =>
+                  selectedTopics.includes(tag)
+                ));
             const matchesSearch =
-              searchQuery.trim() === "" ||
-              item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              item.facetValues.some((facetValue: any) =>
-                facetValue.name.toLowerCase().includes(searchQuery.toLowerCase())
-              );
+              lowerSearch === "" ||
+              item.title.toLowerCase().includes(lowerSearch) ||
+              (item.description || "")
+                .toLowerCase()
+                .includes(lowerSearch) ||
+              (item.category || "").toLowerCase().includes(lowerSearch) ||
+              (Array.isArray(item.topicTags) &&
+                item.topicTags.some((t: string) =>
+                  t.toLowerCase().includes(lowerSearch)
+                ));
 
-            return matchesAllFacets && matchesSearch;
+            return (
+              categoryMatch &&
+              audienceMatch &&
+              levelMatch &&
+              topicMatch &&
+              matchesSearch
+            );
           });
 
           setItems(mappedItems);
-          setFilteredItems(filtered);
+          setFilteredItems(filteredCourses);
           setLoading(false);
           return;
         }
@@ -554,15 +543,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
 
             const rawFormUrl = product.customFields?.formUrl;
             const finalFormUrl = rawFormUrl || "https://www.tamm.abudhabi/en/login";
-
-            if (product.id === "133" || !rawFormUrl) {
-              console.log(
-                `Product "${product.name}" (ID: ${product.id}): Raw formUrl =`,
-                rawFormUrl,
-                "| Final =",
-                finalFormUrl
-              );
-            }
 
             return {
               id: product.id,
@@ -621,9 +601,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             return 0;
           });
 
-          console.log("filters:", filters);
-          console.log("filteredItems:", prioritized);
-
           setItems(mappedItems);
           setFilteredItems(prioritized);
           setLoading(false);
@@ -638,7 +615,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     };
 
     loadItems();
-  }, [productData, courseData, filters, searchQuery, marketplaceType, activeFilters, filterConfig]);
+  }, [productData, filters, searchQuery, marketplaceType, activeFilters, filterConfig, toArrayFilter]);
 
   // Immediately hydrate compare from navigation state when arriving from details page
   useEffect(() => {
@@ -694,10 +671,30 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     setStoredCompareIds(marketplaceType, ids);
   }, [compareItems, marketplaceType, hasHydratedCompare]);
 
+  const toArrayFilter = useCallback((val: string | string[] | undefined) => {
+    if (Array.isArray(val)) return val;
+    if (!val) return [];
+    return [val];
+  }, []);
+
   // Handle filter changes
   const handleFilterChange = useCallback((filterType: string, value: string) => {
+    if (marketplaceType === 'courses') {
+      setFilters((prev) => {
+        const current = toArrayFilter(prev[filterType]);
+        const exists = current.includes(value);
+        return {
+          ...prev,
+          [filterType]: exists
+            ? current.filter((v) => v !== value)
+            : [...current, value],
+        };
+      });
+      return;
+    }
+
     setFilters(prev => {
-      const newFilters = {
+      const newFilters: Record<string, string | string[]> = {
         ...prev,
         [filterType]: value === prev[filterType] ? '' : value
       };
@@ -714,10 +711,11 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           'Podcasts': ['Recorded Media']
         };
 
-        const newMediaType = newFilters[filterType];
+        const newMediaType = typeof newFilters[filterType] === 'string' ? newFilters[filterType] : '';
+        const prevFormat = typeof prev.format === 'string' ? prev.format : '';
         if (newMediaType && mediaTypeFormatMapping[newMediaType]) {
           const allowedFormats = mediaTypeFormatMapping[newMediaType];
-          if (!allowedFormats.includes(prev.format)) {
+          if (!allowedFormats.includes(prevFormat)) {
             newFilters.format = '';
           }
         } else if (!newMediaType) {
@@ -727,18 +725,45 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
 
       return newFilters;
     });
-  }, []);
+  }, [marketplaceType, toArrayFilter]);
+
+  // Apply filters directly from clickable tags on cards/quick views
+  const handleTagFilter = useCallback((filterType: 'category' | 'audienceLevel' | 'levelTag' | 'deliveryMode' | 'topic', value: string) => {
+    if (marketplaceType === 'courses') {
+      setFilters((prev) => {
+        const current = toArrayFilter(prev[filterType]);
+        const exists = current.includes(value);
+        return {
+          ...prev,
+          [filterType]: exists
+            ? current.filter((v) => v !== value)
+            : [...current, value],
+        };
+      });
+      setShowFilters(false);
+      return;
+    }
+    setFilters(prev => {
+      const next = { ...prev };
+      next[filterType] = prev[filterType] === value ? '' : value;
+      return next;
+    });
+    setShowFilters(false);
+  }, [marketplaceType, toArrayFilter]);
 
   // Reset all filters
   const resetFilters = useCallback(() => {
-    const emptyFilters: Record<string, string> = {};
+    const emptyFilters: Record<string, string | string[]> = {};
     filterConfig.forEach((config) => {
-      emptyFilters[config.id] = "";
+      emptyFilters[config.id] = marketplaceType === 'courses' ? [] : "";
     });
+    if (marketplaceType === 'courses') {
+      emptyFilters['topic'] = [];
+    }
     setFilters(emptyFilters);
     setSearchQuery("");
     setActiveFilters([]);
-  }, [filterConfig]);
+  }, [filterConfig, marketplaceType]);
 
   // Toggle sidebar visibility (only on mobile)
   const toggleFilters = useCallback(() => {
@@ -884,6 +909,52 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     }));
   }, []);
 
+  const hasAppliedFilters = useMemo(() => {
+    return Object.values(filters).some((val) =>
+      Array.isArray(val) ? val.length > 0 : val !== ""
+    );
+  }, [filters]);
+
+  // Build clearable chips for active filters/search (courses)
+  const activeChips = useMemo(() => {
+    if (marketplaceType !== 'courses') return [];
+    const chips: Array<{ key: string; value?: string; label: string }> = [];
+    Object.entries(filters).forEach(([key, val]) => {
+      const selectedValues = Array.isArray(val) ? val : val ? [val] : [];
+      selectedValues.forEach((selected) => {
+        const config = filterConfig.find((c) => c.id === key);
+        const optionLabel =
+          config?.options.find((opt) => opt.id === selected)?.name ||
+          selected;
+        chips.push({ key, value: selected, label: optionLabel });
+      });
+    });
+    if (searchQuery.trim()) {
+      chips.push({ key: 'search', label: `Search: "${searchQuery}"` });
+    }
+    return chips;
+  }, [filters, filterConfig, searchQuery, marketplaceType]);
+
+  const clearChip = useCallback(
+    (key: string, value?: string) => {
+      if (key === 'search') {
+        setSearchQuery("");
+        return;
+      }
+      setFilters((prev) => {
+        const next = { ...prev };
+        const currentVal = next[key];
+        if (Array.isArray(currentVal)) {
+          next[key] = value ? currentVal.filter((v) => v !== value) : [];
+        } else {
+          next[key] = "";
+        }
+        return next;
+      });
+    },
+    []
+  );
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} sidebarOpen={sidebarOpen} />
@@ -923,6 +994,26 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
           </div>
         </div>
+        {activeChips.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            {activeChips.map((chip) => (
+              <button
+                key={`${chip.key}-${chip.label}`}
+                onClick={() => clearChip(chip.key, chip.value)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-white border border-blue-100 text-sm text-blue-700 rounded-full shadow-sm hover:bg-blue-50 transition-colors"
+              >
+                <span>{chip.label}</span>
+                <XIcon size={14} />
+              </button>
+            ))}
+            <button
+              onClick={resetFilters}
+              className="text-xs font-medium text-blue-600 hover:text-blue-800"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
         
         {/* Comparison bar */}
         {compareItems.length > 0 && (
@@ -979,7 +1070,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 <FilterIcon size={18} />
                 {showFilters ? "Hide Filters" : "Show Filters"}
               </button>
-              {(Object.values(filters).some((f) => f !== "") ||
+              {(hasAppliedFilters ||
                 activeFilters.length > 0) && (
                 <button
                   onClick={resetFilters}
@@ -1062,6 +1153,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                       onFilterChange={handleFilterChange}
                       onResetFilters={resetFilters}
                       isResponsive={true}
+                      singleOpen={marketplaceType === 'courses'}
                     />
                   )}
                 </div>
@@ -1074,7 +1166,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             <div className="bg-white rounded-lg shadow sticky top-24 max-h-[calc(100vh-7rem)] flex flex-col">
               <div className="flex justify-between items-center p-4 border-b border-gray-200 flex-shrink-0">
                 <h2 className="text-lg font-semibold">Filters</h2>
-                {(Object.values(filters).some((f) => f !== "") ||
+                {(hasAppliedFilters ||
                   activeFilters.length > 0) && (
                   <button
                     onClick={resetFilters}
@@ -1143,6 +1235,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                     onFilterChange={handleFilterChange} 
                     onResetFilters={resetFilters} 
                     isResponsive={false} 
+                    singleOpen={marketplaceType === 'courses'}
                   />
                 )}
               </div>
@@ -1157,19 +1250,28 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                   <CourseCardSkeleton key={idx} />
                 ))}
               </div>
-            ) : error || (!skipGraph && (facetError || productError)) || courseError ? (
+            ) : error || (!skipGraph && (facetError || productError)) ? (
               <ErrorDisplay
                 message={
                   error ||
                   (!skipGraph && (facetError?.message || productError?.message)) ||
-                  courseError?.message ||
                   `Failed to load ${marketplaceType}`
                 }
                 onRetry={retryFetch}
               />
             ) : filteredItems.length === 0 ? (
-              <div className="text-center text-gray-600 py-8">
-                No service available
+              <div className="text-center text-gray-600 py-10 bg-white rounded-lg border border-gray-200">
+                <p className="mb-3">
+                  {marketplaceType === "courses"
+                    ? "No courses match these filters."
+                    : "No items match these filters."}
+                </p>
+                <button
+                  onClick={resetFilters}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
+                >
+                  Reset filters
+                </button>
               </div>
             ) : (
               <MarketplaceGrid
@@ -1179,6 +1281,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 onToggleBookmark={toggleBookmark}
                 onAddToComparison={handleAddToComparison}
                 promoCards={promoCards}
+                onTagClick={handleTagFilter}
               />
             )}
           </div>
