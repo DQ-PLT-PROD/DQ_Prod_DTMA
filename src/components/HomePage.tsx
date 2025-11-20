@@ -61,9 +61,9 @@ const HomePage: React.FC = () => {
         <HeroSection />
         <ProofAndTrust />
         <D6CategoriesSection />
-        <CallToAction />
         <EnterpriseStages />
         <Home />
+        <CallToAction />
       </main>
       <Footer isLoggedIn={false} />
       {/* <KhalifaFundAttribution /> */}
