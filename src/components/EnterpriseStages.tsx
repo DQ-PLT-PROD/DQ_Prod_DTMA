@@ -32,17 +32,23 @@ const EnterpriseStages: React.FC = () => {
   return (
     <section className="bg-white py-20">
       <div className="w-full space-y-12">
-        <FadeInUpOnScroll className="overflow-hidden w-full min-h-[650px]">
-          <div className="bg-[#1839AD] text-white grid lg:grid-cols-[3fr,2fr]">
-            <div className="relative pl-28 pr-10 sm:pr-16 sm:pl-[11rem] py-10 flex flex-col justify-center space-y-4 overflow-hidden">
-              <div className="absolute -left-10 -top-40 w-60 h-60 border-[6px] border-white rounded-full"></div>
-              <div className="absolute -left-80 bottom-10 w-72 h-72 border-[6px] border-white rounded-full"></div>
-              <div className="relative space-y-4">
+        <FadeInUpOnScroll className="overflow-visible w-full min-h-[650px]">
+          <div className="relative z-10 bg-[#1839AD] text-white grid lg:grid-cols-[3fr,2fr]">
+            <div className="relative pl-[9.5rem] pr-10 sm:pr-16 sm:pl-[13rem] py-6 md:py-8 flex flex-col justify-center space-y-4 overflow-visible">
+              <div
+                className="absolute border-[6px] border-white rounded-full pointer-events-none"
+                style={{ width: "18rem", height: "18rem", left: "-9rem", top: "-12rem" }}
+              ></div>
+              <div
+                className="absolute hidden md:block border-[6px] border-white rounded-full pointer-events-none z-10"
+                style={{ width: "250px", height: "250px", left: "4px", bottom: "-202px" }}
+              ></div>
+              <div className="relative space-y-4 z-20">
                 <h2 className="text-3xl md:text-4xl font-bold">How You Learn</h2>
-                <p className="text-base md:text-lg text-white/90 max-w-md">
-                  DTMA guides every learner from foundational understanding to
-                  applied mastery. Follow a clear learning arc designed to prove
-                  capability in the AI era through confident, guided actions.
+                <p className="text-base md:text-lg text-white/90 max-w-lg">
+                  DTMA takes learners from fundamentals to applied mastery
+                  through a clear learning path that builds proven, confident
+                  capability in the AI era.
                 </p>
               </div>
             </div>
@@ -55,7 +61,7 @@ const EnterpriseStages: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white p-8 sm:p-10 border-t border-gray-100 space-y-10 pt-20">
+          <div className="bg-white p-8 sm:p-10 space-y-10 pt-24 mt-7">
             <StaggeredFadeIn staggerDelay={0.1}>
               <div className="flex flex-col gap-10">
                 <div className="flex flex-col gap-8 md:gap-0 md:flex-row justify-between relative">
@@ -96,3 +102,14 @@ const EnterpriseStages: React.FC = () => {
 };
 
 export default EnterpriseStages;
+              <div
+                className="absolute hidden md:block border-[6px] border-white rounded-full pointer-events-none"
+                style={{
+                  width: "16rem",
+                  height: "16rem",
+                  left: "47%",
+                  bottom: "-160px",
+                  transform: "translateX(-50%)",
+                  zIndex: 5,
+                }}
+              ></div>
