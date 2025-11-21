@@ -1,4 +1,4 @@
-import { mockCourses } from './mockData'
+import { getCourses, toMarketplaceItem } from '../lib/api/dtmaCourses'
 import {
   mockFinancialServices,
   mockNonFinancialServices,
@@ -11,7 +11,7 @@ import {
 export const getFallbackItems = (marketplaceType: string): any[] => {
   switch (marketplaceType) {
     case 'courses':
-      return mockCourses
+      return getCourses().map(toMarketplaceItem)
     case 'financial':
       return mockFinancialServices
     case 'non-financial':

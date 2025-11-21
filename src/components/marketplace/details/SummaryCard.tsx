@@ -33,11 +33,11 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
     <div
       ref={isFloating ? null : summaryCardRef}
       className={`
-        bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden
-        ${!isFloating ? "" : ""}
+        bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden
+        ${!isFloating ? "" : "shadow-lg"}
       `}
     >
-      <div className="bg-gray-50 p-4 border-b border-gray-200">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <h3 className="font-medium text-lg text-gray-900">
             {config.itemName} Details

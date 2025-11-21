@@ -90,7 +90,7 @@ export const providers = [
       "Google for Startups connects startups with the right people, products, and best practices to help them grow.",
   },
 ];
-// Mock Courses
+// Mock Courses (legacy dataset — not used by /marketplace/courses)
 export const mockCourses: CourseType[] = [
   {
     id: "1",

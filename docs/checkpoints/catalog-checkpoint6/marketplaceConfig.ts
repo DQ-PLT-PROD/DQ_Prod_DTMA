@@ -1,13 +1,13 @@
-import React, { Component, ReactNode } from 'react';
-import { DollarSign, Calendar, Clock, Users, MapPin, CheckCircle, BarChart, Award, FileText, Info, BookOpen, Briefcase, ClipboardList, ScrollText, Building } from 'lucide-react';
-import { mockCourses, providers } from './mockData';
-import { mockFinancialServices, mockNonFinancialServices } from './mockMarketplaceData';
+import * as React from 'react';
+import { ReactNode } from 'react';
+import { DollarSign, Calendar, Clock, Users, MapPin, CheckCircle, BarChart, Award, FileText, Info, BookOpen, ClipboardList, Building, FileType, Bookmark, TrendingUp } from 'lucide-react';
+import { providers } from './mockData';
+import { mockFinancialServices, mockNonFinancialServices, mockKnowledgeHubItems, mockKnowledgeHubFilterOptions } from './mockMarketplaceData';
+import { categories } from '../data/dtma/categories';
+import { getCourses, toMarketplaceItem } from '../lib/api/dtmaCourses';
 
-/**
- * LEGACY: duplicate marketplace config (unused by router).
- * Canonical marketplace configuration lives in src/utils/marketplaceConfig.ts.
- * Kept for reference while migrating/offboarding old course marketplace UI.
- */
+// Canonical marketplace configuration used by MarketplaceRouter/MarketplacePage.
+// Legacy duplicate: src/utils/marketplaceConfiguration.tsx (kept for reference only).
 // Define a Tab type for consistency across marketplace pages
 export interface MarketplaceTab {
   id: string;
@@ -140,48 +140,46 @@ export const mockNonFinancialServicesData = {
 };
 // Mock data for courses
 export const mockCoursesData = {
-  items: mockCourses,
+  items: getCourses().map(toMarketplaceItem),
   filterOptions: {
-    categories: [{
-      id: 'entrepreneurship',
-      name: 'Entrepreneurship'
+    categories: categories.map((category) => ({
+      id: category.slug,
+      name: category.name
+    })),
+    audienceLevels: [{
+      id: 'Digital Leaders',
+      name: 'Digital Leaders'
     }, {
-      id: 'finance',
-      name: 'Finance'
-    }, {
-      id: 'marketing',
-      name: 'Marketing'
-    }, {
-      id: 'technology',
-      name: 'Technology'
-    }, {
-      id: 'operations',
-      name: 'Operations'
+      id: 'Digital Workers',
+      name: 'Digital Workers'
     }],
     deliveryModes: [{
-      id: 'online',
+      id: 'Online',
       name: 'Online'
     }, {
-      id: 'inperson',
+      id: 'In-person',
       name: 'In-person'
     }, {
-      id: 'hybrid',
+      id: 'Hybrid',
       name: 'Hybrid'
     }],
-    businessStages: [{
-      id: 'conception',
-      name: 'Conception'
+    levelTags: [{
+      id: 'Beginner',
+      name: 'Beginner'
     }, {
-      id: 'growth',
-      name: 'Growth'
+      id: 'Intermediate',
+      name: 'Intermediate'
     }, {
-      id: 'maturity',
-      name: 'Maturity'
-    }, {
-      id: 'restructuring',
-      name: 'Restructuring'
+      id: 'Advanced',
+      name: 'Advanced'
     }]
   },
+  providers: providers
+};
+// Mock data for Knowledge Hub
+export const mockKnowledgeHubData = {
+  items: mockKnowledgeHubItems,
+  filterOptions: mockKnowledgeHubFilterOptions,
   providers: providers
 };
 // Define marketplace configurations
@@ -198,39 +196,19 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     attributes: [{
       key: 'duration',
       label: 'Duration',
-      icon: <Clock size={18} className="mr-2" />
+      icon: React.createElement(Clock, { size: 18, className: "mr-2" })
     }, {
       key: 'startDate',
       label: 'Starts',
-      icon: <Calendar size={18} className="mr-2" />,
-      formatter: (val: any) => {
-        if (!val) return '';
-        try {
-          const d = new Date(val);
-          if (isNaN(d.getTime())) return String(val);
-          return d.toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          });
-        } catch {
-          return String(val);
-        }
-      }
+      icon: React.createElement(Calendar, { size: 18, className: "mr-2" })
     }, {
       key: 'price',
       label: 'Cost',
-      icon: <DollarSign size={18} className="mr-2" />,
-      formatter: (val: any) => {
-        if (val === undefined || val === null || val === '') return '';
-        const num = typeof val === 'number' ? val : parseFloat(String(val));
-        if (!isNaN(num)) return `AED ${Math.round(num).toLocaleString()}`;
-        return String(val);
-      }
+      icon: React.createElement(DollarSign, { size: 18, className: "mr-2" })
     }, {
       key: 'location',
       label: 'Location',
-      icon: <MapPin size={18} className="mr-2" />
+      icon: React.createElement(MapPin, { size: 18, className: "mr-2" })
     }],
     detailSections: ['description', 'learningOutcomes', 'schedule', 'provider', 'related'],
     tabs: [{
@@ -261,64 +239,46 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     summarySticky: true,
     filterCategories: [{
       id: 'category',
-      title: 'Course Category',
+      title: 'Category',
+      options: categories.map((category) => ({
+        id: category.slug,
+        name: category.name
+      }))
+    }, {
+      id: 'audienceLevel',
+      title: 'Role',
       options: [{
-        id: 'entrepreneurship',
-        name: 'Entrepreneurship'
+        id: 'Digital Leaders',
+        name: 'Digital Leaders'
       }, {
-        id: 'finance',
-        name: 'Finance'
+        id: 'Digital Workers',
+        name: 'Digital Workers'
+      }]
+    }, {
+      id: 'levelTag',
+      title: 'Level',
+      options: [{
+        id: 'Beginner',
+        name: 'Beginner'
       }, {
-        id: 'marketing',
-        name: 'Marketing'
+        id: 'Intermediate',
+        name: 'Intermediate'
       }, {
-        id: 'technology',
-        name: 'Technology'
-      }, {
-        id: 'operations',
-        name: 'Operations'
+        id: 'Advanced',
+        name: 'Advanced'
       }]
     }, {
       id: 'deliveryMode',
       title: 'Delivery Mode',
       options: [{
-        id: 'online',
+        id: 'Online',
         name: 'Online'
       }, {
-        id: 'inperson',
+        id: 'In-person',
         name: 'In-person'
       }, {
-        id: 'hybrid',
+        id: 'Hybrid',
         name: 'Hybrid'
-      }]
-    }, {
-      id: 'duration',
-      title: 'Duration',
-      options: [{
-        id: 'short',
-        name: 'Short (<1 week)'
-      }, {
-        id: 'medium',
-        name: 'Medium (1-4 weeks)'
-      }, {
-        id: 'long',
-        name: 'Long (1+ month)'
-      }]
-    }, {
-      id: 'businessStage',
-      title: 'Business Stage',
-      options: [{
-        id: 'conception',
-        name: 'Conception'
-      }, {
-        id: 'growth',
-        name: 'Growth'
-      }, {
-        id: 'maturity',
-        name: 'Maturity'
-      }, {
-        id: 'restructuring',
-        name: 'Restructuring'
       }]
     }],
     // Data mapping functions
@@ -339,29 +299,47 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     mapFilterResponse: data => {
       return [{
         id: 'category',
-        title: 'Course Category',
-        options: data.categories || []
+        title: 'Category',
+        options: data.categories || categories.map((category) => ({
+          id: category.slug,
+          name: category.name
+        }))
+      }, {
+        id: 'audienceLevel',
+        title: 'Role',
+        options: data.audienceLevels || [{
+          id: 'Digital Leaders',
+          name: 'Digital Leaders'
+        }, {
+          id: 'Digital Workers',
+          name: 'Digital Workers'
+        }]
+      }, {
+        id: 'levelTag',
+        title: 'Level',
+        options: data.levelTags || [{
+          id: 'Beginner',
+          name: 'Beginner'
+        }, {
+          id: 'Intermediate',
+          name: 'Intermediate'
+        }, {
+          id: 'Advanced',
+          name: 'Advanced'
+        }]
       }, {
         id: 'deliveryMode',
         title: 'Delivery Mode',
-        options: data.deliveryModes || []
-      }, {
-        id: 'duration',
-        title: 'Duration',
-        options: [{
-          id: 'short',
-          name: 'Short (<1 week)'
+        options: data.deliveryModes || [{
+          id: 'Online',
+          name: 'Online'
         }, {
-          id: 'medium',
-          name: 'Medium (1-4 weeks)'
+          id: 'In-person',
+          name: 'In-person'
         }, {
-          id: 'long',
-          name: 'Long (1+ month)'
+          id: 'Hybrid',
+          name: 'Hybrid'
         }]
-      }, {
-        id: 'businessStage',
-        title: 'Business Stage',
-        options: data.businessStages || []
       }];
     },
     // Mock data for fallback and schema reference
@@ -379,19 +357,19 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     attributes: [{
       key: 'amount',
       label: 'Amount',
-      icon: <DollarSign size={18} className="mr-2" />
+      icon: React.createElement(DollarSign, { size: 18, className: "mr-2" })
     }, {
-      key: 'processingTime',
-      label: 'Processing Time',
-      icon: <Calendar size={18} className="mr-2" />
+      key: 'duration',
+      label: 'Repayment Term',
+      icon: React.createElement(Calendar, { size: 18, className: "mr-2" })
     }, {
       key: 'eligibility',
       label: 'Eligibility',
-      icon: <CheckCircle size={18} className="mr-2" />
+      icon: React.createElement(CheckCircle, { size: 18, className: "mr-2" })
     }, {
       key: 'interestRate',
       label: 'Interest Rate',
-      icon: <BarChart size={18} className="mr-2" />
+      icon: React.createElement(BarChart, { size: 18, className: "mr-2" })
     }],
     detailSections: ['description', 'eligibility', 'terms', 'provider', 'related'],
     tabs: [{
@@ -497,19 +475,19 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     attributes: [{
       key: 'serviceType',
       label: 'Service Type',
-      icon: <Award size={18} className="mr-2" />
+      icon: React.createElement(Award, { size: 18, className: "mr-2" })
     }, {
       key: 'deliveryMode',
       label: 'Service Mode',
-      icon: <Users size={18} className="mr-2" />
+      icon: React.createElement(Users, { size: 18, className: "mr-2" })
     }, {
       key: 'duration',
       label: 'Duration',
-      icon: <Clock size={18} className="mr-2" />
+      icon: React.createElement(Clock, { size: 18, className: "mr-2" })
     }, {
       key: 'price',
       label: 'Cost',
-      icon: <DollarSign size={18} className="mr-2" />
+      icon: React.createElement(DollarSign, { size: 18, className: "mr-2" })
     }],
     detailSections: ['description', 'deliveryDetails', 'provider', 'related'],
     tabs: [{
@@ -622,6 +600,202 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     },
     // Mock data for fallback and schema reference
     mockData: mockNonFinancialServicesData
+  },
+  'knowledge-hub': {
+    id: 'knowledge-hub',
+    title: 'Knowledge Hub Marketplace',
+    description: 'Discover valuable resources, news, events, and tools to support your business journey in Abu Dhabi',
+    route: '/marketplace/knowledge-hub',
+    primaryCTA: 'Access Now',
+    secondaryCTA: 'View Details',
+    itemName: 'Resource',
+    itemNamePlural: 'Resources',
+    attributes: [{
+      key: 'mediaType',
+      label: 'Type',
+      icon: React.createElement(FileType, { size: 18, className: "mr-2" })
+    }, {
+      key: 'domain',
+      label: 'Domain',
+      icon: React.createElement(Bookmark, { size: 18, className: "mr-2" })
+    }, {
+      key: 'businessStage',
+      label: 'Business Stage',
+      icon: React.createElement(TrendingUp, { size: 18, className: "mr-2" })
+    }, {
+      key: 'date',
+      label: 'Published',
+      icon: React.createElement(Calendar, { size: 18, className: "mr-2" })
+    }],
+    detailSections: ['description', 'content', 'provider', 'related'],
+    tabs: [{
+      id: 'about',
+      label: 'About This Resource',
+      icon: Info,
+      iconBgColor: 'bg-blue-50',
+      iconColor: 'text-blue-600'
+    }, {
+      id: 'content',
+      label: 'Content',
+      icon: FileText,
+      iconBgColor: 'bg-green-50',
+      iconColor: 'text-green-600'
+    }, {
+      id: 'provider',
+      label: 'About Provider',
+      icon: Building,
+      iconBgColor: 'bg-blue-50',
+      iconColor: 'text-blue-600'
+    }],
+    summarySticky: true,
+    filterCategories: [{
+      id: 'mediaType',
+      title: 'Media Type',
+      options: [{
+        id: 'news',
+        name: 'News'
+      }, {
+        id: 'article',
+        name: 'Article'
+      }, {
+        id: 'reports',
+        name: 'Reports'
+      }, {
+        id: 'toolkits',
+        name: 'Toolkits & Templates'
+      }, {
+        id: 'guides',
+        name: 'Guides'
+      }, {
+        id: 'events',
+        name: 'Events'
+      }, {
+        id: 'videos',
+        name: 'Videos'
+      }, {
+        id: 'podcasts',
+        name: 'Podcasts'
+      }]
+    }, {
+      id: 'businessStage',
+      title: 'Business Stage',
+      options: [{
+        id: 'idea',
+        name: 'Idea Stage'
+      }, {
+        id: 'startup',
+        name: 'Startup'
+      }, {
+        id: 'growth',
+        name: 'Growth'
+      }, {
+        id: 'scaleup',
+        name: 'Scale-up'
+      }, {
+        id: 'established',
+        name: 'Established'
+      }]
+    }, {
+      id: 'category',
+      title: 'Category',
+      options: [{
+        id: 'finance',
+        name: 'Finance & Funding'
+      }, {
+        id: 'marketing',
+        name: 'Marketing & Sales'
+      }, {
+        id: 'technology',
+        name: 'Technology & Innovation'
+      }, {
+        id: 'operations',
+        name: 'Operations & Productivity'
+      }, {
+        id: 'legal',
+        name: 'Legal & Compliance'
+      }, {
+        id: 'strategy',
+        name: 'Strategy & Growth'
+      }]
+    }, {
+      id: 'format',
+      title: 'Format',
+      options: [{
+        id: 'quickreads',
+        name: 'Quick Reads'
+      }, {
+        id: 'indepth',
+        name: 'In-Depth Reports'
+      }, {
+        id: 'interactive',
+        name: 'Interactive Tools'
+      }, {
+        id: 'templates',
+        name: 'Downloadable Templates'
+      }, {
+        id: 'recorded',
+        name: 'Recorded Media'
+      }, {
+        id: 'live',
+        name: 'Live Events'
+      }]
+    }, {
+      id: 'popularity',
+      title: 'Popularity',
+      options: [{
+        id: 'latest',
+        name: 'Latest'
+      }, {
+        id: 'trending',
+        name: 'Trending'
+      }, {
+        id: 'downloaded',
+        name: 'Most Downloaded'
+      }, {
+        id: 'editors',
+        name: "Editor's Pick"
+      }]
+    }],
+    // Data mapping functions
+    mapListResponse: data => {
+      return data.map((item: any) => ({
+        ...item,
+        // Transform any fields if needed
+        tags: item.tags || [item.mediaType, item.domain].filter(Boolean)
+      }));
+    },
+    mapDetailResponse: data => {
+      return {
+        ...data,
+        // Transform any fields if needed
+        highlights: data.highlights || []
+      };
+    },
+    mapFilterResponse: data => {
+      return [{
+        id: 'mediaType',
+        title: 'Media Type',
+        options: data.mediaTypes || []
+      }, {
+        id: 'businessStage',
+        title: 'Business Stage',
+        options: data.businessStages || []
+      }, {
+        id: 'domain',
+        title: 'Domain',
+        options: data.domains || []
+      }, {
+        id: 'format',
+        title: 'Format',
+        options: data.formats || []
+      }, {
+        id: 'popularity',
+        title: 'Popularity',
+        options: data.popularity || []
+      }];
+    },
+    // Mock data for fallback and schema reference
+    mockData: mockKnowledgeHubData
   }
 };
 // Helper to get config by marketplace type

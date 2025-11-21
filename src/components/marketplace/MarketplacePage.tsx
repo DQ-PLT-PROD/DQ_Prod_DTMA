@@ -131,6 +131,12 @@ interface GetProductsData {
   };
 }
 
+function toArrayFilter(val: string | string[] | undefined): string[] {
+  if (Array.isArray(val)) return val;
+  if (!val) return [];
+  return [val];
+}
+
 export interface MarketplacePageProps {
   marketplaceType: "courses" | "financial" | "non-financial" | "knowledge-hub";
   title: string;
@@ -152,6 +158,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<Record<string, string | string[]>>({});
+  const [hasAppliedQueryFilters, setHasAppliedQueryFilters] = useState(false);
   
   // Filter sidebar visibility - should be visible on desktop, hidden on mobile by default
   const [showFilters, setShowFilters] = useState(false);
@@ -292,6 +299,46 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
       setCollapsedCategories(initialCollapsed);
     }
   }, [filterConfig]);
+
+  useEffect(() => {
+    setHasAppliedQueryFilters(false);
+  }, [marketplaceType, location.search]);
+
+  useEffect(() => {
+    if (marketplaceType !== "courses") return;
+    if (hasAppliedQueryFilters) return;
+    if (filterConfig.length === 0) return;
+
+    const params = new URLSearchParams(location.search || "");
+    const parseCsv = (val?: string | null) =>
+      val ? val.split(",").map((v) => v.trim()).filter(Boolean) : [];
+
+    const categoryParam = params.get("category");
+    const audienceParam = params.get("audience") || params.get("audienceLevel");
+    const levelParam = params.get("level") || params.get("levelTag");
+    const topicParam = params.get("topic");
+
+    if (!categoryParam && !audienceParam && !levelParam && !topicParam) {
+      setHasAppliedQueryFilters(true);
+      return;
+    }
+
+    setFilters((prev) => {
+      const next = { ...prev };
+      const apply = (key: string, raw: string | null) => {
+        const vals = parseCsv(raw);
+        if (vals.length) {
+          next[key] = vals;
+        }
+      };
+      apply("category", categoryParam);
+      apply("audienceLevel", audienceParam);
+      apply("levelTag", levelParam);
+      apply("topic", topicParam);
+      return next;
+    });
+    setHasAppliedQueryFilters(true);
+  }, [marketplaceType, filterConfig, location.search, hasAppliedQueryFilters]);
 
   // Fetch items based on marketplace type, filters, and search query
   useEffect(() => {
@@ -670,12 +717,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     const ids = compareItems.map((i) => i.id);
     setStoredCompareIds(marketplaceType, ids);
   }, [compareItems, marketplaceType, hasHydratedCompare]);
-
-  const toArrayFilter = useCallback((val: string | string[] | undefined) => {
-    if (Array.isArray(val)) return val;
-    if (!val) return [];
-    return [val];
-  }, []);
 
   // Handle filter changes
   const handleFilterChange = useCallback((filterType: string, value: string) => {
@@ -1282,6 +1323,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 onAddToComparison={handleAddToComparison}
                 promoCards={promoCards}
                 onTagClick={handleTagFilter}
+                // Quick view interactions are handled inside MarketplaceGrid/MarketplaceCard; MarketplacePage just passes data through
               />
             )}
           </div>

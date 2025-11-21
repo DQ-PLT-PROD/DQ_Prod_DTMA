@@ -5,16 +5,7 @@
  * It abstracts all API calls related to courses, ensuring consistent
  * error handling and data transformation.
  */
-import { graphqlClient } from "./graphql/client";
-import {
-  GET_COURSES,
-  GET_COURSE_DETAILS,
-  GET_RELATED_COURSES,
-  GET_CATEGORIES,
-  GET_DELIVERY_MODES,
-  GET_BUSINESS_STAGES,
-  GET_PROVIDERS,
-} from "./graphql/queries";
+import { getCourses as getDtmaCourses, getCourseBySlug, getRelatedCourses, toMarketplaceItem, getCategories as getDtmaCategories } from "../lib/api/dtmaCourses";
 import { CourseType, ProviderType, FilterOptions } from "../types/course";
 /**
  * Fetches courses based on filter criteria and search query
@@ -32,21 +23,29 @@ export const fetchCourses = async (
   },
   searchQuery?: string
 ): Promise<CourseType[]> => {
-  try {
-    const variables = {
-      category: filters.category || undefined,
-      deliveryMode: filters.deliveryMode || undefined,
-      businessStage: filters.businessStage || undefined,
-      provider: filters.provider || undefined,
-      search: searchQuery || undefined,
-    };
-    const data = await graphqlClient.request(GET_COURSES, variables);
-    console.log(data);
-    return data.courses;
-  } catch (error) {
-    console.error("Error fetching courses:", error);
-    throw new Error("Failed to load courses. Please try again later.");
-  }
+  const mapped = getDtmaCourses({
+    search: searchQuery,
+    categorySlug: filters.category || undefined,
+    deliveryMode: filters.deliveryMode || undefined,
+  }).map((course) => ({
+    id: course.slug,
+    title: course.title,
+    description: course.shortDescription,
+    category: course.categoryId,
+    deliveryMode: course.deliveryMode,
+    duration: course.estimatedDurationMinutes ? `${course.estimatedDurationMinutes} mins` : "",
+    durationType: course.levelTag,
+    businessStage: course.audienceLevel,
+    provider: course.provider as ProviderType,
+    learningOutcomes: course.learningOutcomes || [],
+    startDate: course.startDate || "",
+    price: "Free",
+    tags: course.topicTags,
+    lessonCount: course.lessonCount,
+    levelTag: course.levelTag,
+    audienceLevel: course.audienceLevel,
+  }));
+  return mapped as any;
 };
 /**
  * Fetches details for a specific course
@@ -57,18 +56,25 @@ export const fetchCourses = async (
 export const fetchCourseDetails = async (
   courseId: string
 ): Promise<CourseType> => {
-  try {
-    const { course } = await graphqlClient.request(GET_COURSE_DETAILS, {
-      id: courseId,
-    });
-    if (!course) {
-      throw new Error("Course not found");
-    }
-    return course;
-  } catch (error) {
-    console.error("Error fetching course details:", error);
-    throw new Error("Failed to load course details. Please try again later.");
+  const course = getCourseBySlug(courseId);
+  if (!course) {
+    throw new Error("Course not found");
   }
+  return {
+    id: course.slug,
+    title: course.title,
+    description: course.shortDescription,
+    category: course.categoryId,
+    deliveryMode: course.deliveryMode,
+    duration: course.estimatedDurationMinutes ? `${course.estimatedDurationMinutes} mins` : "",
+    durationType: course.levelTag,
+    businessStage: course.audienceLevel,
+    provider: course.provider as ProviderType,
+    learningOutcomes: course.learningOutcomes || [],
+    startDate: course.startDate || "",
+    price: "Free",
+    tags: course.topicTags,
+  } as any;
 };
 /**
  * Fetches courses related to a specific course
@@ -80,23 +86,25 @@ export const fetchCourseDetails = async (
  */
 export const fetchRelatedCourses = async (
   courseId: string,
-  category: string,
-  provider: string
+  _category: string,
+  _provider: string
 ): Promise<CourseType[]> => {
-  try {
-    const { relatedCourses } = await graphqlClient.request(
-      GET_RELATED_COURSES,
-      {
-        id: courseId,
-        category,
-        provider,
-      }
-    );
-    return relatedCourses || [];
-  } catch (error) {
-    console.error("Error fetching related courses:", error);
-    throw new Error("Failed to load related courses. Please try again later.");
-  }
+  const related = getRelatedCourses(courseId).map((course) => ({
+    id: course.slug,
+    title: course.title,
+    description: course.shortDescription,
+    category: course.categoryId,
+    deliveryMode: course.deliveryMode,
+    duration: course.estimatedDurationMinutes ? `${course.estimatedDurationMinutes} mins` : "",
+    durationType: course.levelTag,
+    businessStage: course.audienceLevel,
+    provider: course.provider as ProviderType,
+    learningOutcomes: course.learningOutcomes || [],
+    startDate: course.startDate || "",
+    price: "Free",
+    tags: course.topicTags,
+  }));
+  return related as any;
 };
 /**
  * Fetches all filter options for the course marketplace
@@ -104,23 +112,19 @@ export const fetchRelatedCourses = async (
  * @returns Promise resolving to an object containing all filter options
  */
 export const fetchFilterOptions = async (): Promise<FilterOptions> => {
-  try {
-    // Fetch categories
-    const categoriesData = await graphqlClient.request(GET_CATEGORIES);
-    // Fetch delivery modes
-    const deliveryModesData = await graphqlClient.request(GET_DELIVERY_MODES);
-    // Fetch business stages
-    const businessStagesData = await graphqlClient.request(GET_BUSINESS_STAGES);
-    // Fetch providers
-    const providersData = await graphqlClient.request(GET_PROVIDERS);
-    return {
-      categories: categoriesData.categories,
-      deliveryModes: deliveryModesData.deliveryModes,
-      businessStages: businessStagesData.businessStages,
-      providers: providersData.providers,
-    };
-  } catch (error) {
-    console.error("Error fetching filter options:", error);
-    throw new Error("Failed to load filter options. Please try again later.");
-  }
+  const categories = getDtmaCategories().map((c) => ({
+    id: c.slug,
+    name: c.name,
+  }));
+  const deliveryModes = [
+    { id: "Online", name: "Online" },
+    { id: "Hybrid", name: "Hybrid" },
+    { id: "In-person", name: "In-person" },
+  ];
+  return {
+    categories,
+    deliveryModes,
+    businessStages: [],
+    providers: [],
+  };
 };

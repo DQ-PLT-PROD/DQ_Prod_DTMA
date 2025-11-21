@@ -6,7 +6,11 @@ import React, {
   Component,
 } from "react";
 /**
- * Course Marketplace Component
+ * LEGACY: Standalone course catalog UI (not routed).
+ *
+ * The active course marketplace is served by MarketplacePage with
+ * `marketplaceType="courses"` under `/marketplace/courses`. Keep this
+ * component for reference only; do not build new features here.
  *
  * This component serves as the main page for browsing and filtering courses.
  * It includes search functionality, filtering options, and a grid display of courses.

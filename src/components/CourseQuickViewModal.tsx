@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { CourseType } from '../utils/mockData';
-import { XIcon, Clock, Calendar, DollarSign, MapPin, BookmarkIcon, ScaleIcon, CheckCircleIcon, HomeIcon, ChevronRightIcon } from 'lucide-react';
+import { CourseType } from '../types/course';
+import { XIcon, BookmarkIcon, ScaleIcon, CheckCircleIcon, HomeIcon, ChevronRightIcon } from 'lucide-react';
+import { Tag } from './ui/Tag';
+import { CourseMeta } from './ui/CourseMeta';
 interface CourseQuickViewModalProps {
   course: CourseType;
   onClose: () => void;
@@ -38,8 +40,10 @@ export const CourseQuickViewModal: React.FC<CourseQuickViewModalProps> = ({
       document.body.style.overflow = 'auto';
     };
   }, [onClose]);
-  // Extract key highlights from learning outcomes (first 3)
-  const keyHighlights = course.learningOutcomes.slice(0, 3);
+  const keyHighlights = (course.learningOutcomes || []).slice(0, 3);
+  const displayTags = course.tags && course.tags.length
+    ? course.tags
+    : [course.category, course.deliveryMode, course.levelTag, course.audienceLevel].filter(Boolean);
   return <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div ref={modalRef} className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
@@ -86,48 +90,30 @@ export const CourseQuickViewModal: React.FC<CourseQuickViewModalProps> = ({
               </li>
             </ol>
           </nav>
-          <div className="flex items-center mb-4">
-            <img src={course.provider.logoUrl} alt={`${course.provider.name} logo`} className="h-12 w-12 object-contain mr-4" />
-            <div>
-              <span className="text-sm text-gray-500">Provided by</span>
-              <h3 className="text-lg font-medium text-gray-900">
-                {course.provider.name}
-              </h3>
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <img src={course.provider.logoUrl} alt={`${course.provider.name} logo`} className="h-12 w-12 object-contain rounded-md border border-gray-100" />
+              <div>
+                <span className="text-sm text-gray-500">Provided by</span>
+                <h3 className="text-lg font-medium text-gray-900">
+                  {course.provider.name}
+                </h3>
+              </div>
             </div>
+            <CourseMeta duration={course.duration} lessonCount={course.lessonCount} />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-3">
             {course.title}
           </h1>
           <div className="flex flex-wrap gap-2 mb-4">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100">
-              {course.category}
-            </span>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700 border border-green-100">
-              {course.deliveryMode}
-            </span>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-50 text-purple-700 border border-purple-100">
-              {course.businessStage}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-            <div className="flex items-center text-gray-700">
-              <Clock className="mr-2" size={18} />
-              <span>
-                {course.duration} ({course.durationType})
-              </span>
-            </div>
-            <div className="flex items-center text-gray-700">
-              <Calendar className="mr-2" size={18} />
-              <span>Starts {course.startDate}</span>
-            </div>
-            {course.price && <div className="flex items-center text-gray-700">
-                <DollarSign className="mr-2" size={18} />
-                <span>{course.price}</span>
-              </div>}
-            {course.location && <div className="flex items-center text-gray-700">
-                <MapPin className="mr-2" size={18} />
-                <span>{course.location}</span>
-              </div>}
+            {course.category ? <Tag variant="category">{course.category}</Tag> : null}
+            {course.levelTag ? <Tag variant="level">{course.levelTag}</Tag> : null}
+            {course.audienceLevel ? <Tag variant="audience">{course.audienceLevel}</Tag> : null}
+            {displayTags.map((tag, index) => (
+              <Tag key={`${tag}-${index}`} variant="topic">
+                {tag}
+              </Tag>
+            ))}
           </div>
           <div className="mb-5">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">

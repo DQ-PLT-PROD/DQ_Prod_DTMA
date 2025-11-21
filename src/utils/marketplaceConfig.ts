@@ -246,7 +246,7 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
       }))
     }, {
       id: 'audienceLevel',
-      title: 'Audience',
+      title: 'Role',
       options: [{
         id: 'Digital Leaders',
         name: 'Digital Leaders'
@@ -306,7 +306,7 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
         }))
       }, {
         id: 'audienceLevel',
-        title: 'Audience',
+        title: 'Role',
         options: data.audienceLevels || [{
           id: 'Digital Leaders',
           name: 'Digital Leaders'

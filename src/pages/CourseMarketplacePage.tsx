@@ -1,18 +1,10 @@
 import React, { Component } from 'react';
 /**
- * Course Marketplace Page
+ * LEGACY: Unused legacy course catalog page.
  *
- * This is the main entry point for the Course Marketplace feature.
- * It renders the CourseMarketplace component with any necessary wrappers or providers.
- *
- * Route: /courses
- *
- * Features:
- * - Browsing and searching courses
- * - Filtering by various criteria
- * - Course bookmarking
- * - Course comparison
- * - Course enrollment
+ * Router currently serves the canonical course marketplace at
+ * `/marketplace/courses` via MarketplacePage + marketplaceConfig.
+ * Keep this file only for reference; do not wire new routes here.
  */
 
 import CourseMarketplace from '../components/CourseMarketplace';

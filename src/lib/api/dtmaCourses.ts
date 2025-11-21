@@ -121,9 +121,36 @@ export const getRelatedCourses = (
     .slice(0, limit);
 };
 
+export const getIntroLessonForCourse = (
+  courseIdOrSlug: string
+): Lesson | undefined => {
+  const course = getCourseBySlug(courseIdOrSlug);
+  if (!course) return undefined;
+  const courseLessons = getLessonsByCourse(course.id);
+  const fromCourseField = course.introLessonId
+    ? courseLessons.find((lesson) => lesson.id === course.introLessonId)
+    : undefined;
+  const fromType = courseLessons.find((lesson) => lesson.type === "intro");
+  return fromCourseField || fromType || courseLessons[0];
+};
+
+export const getIntroVideoForCourse = (
+  courseIdOrSlug: string
+): { videoUrl?: string; posterUrl?: string } => {
+  const course = getCourseBySlug(courseIdOrSlug);
+  if (!course) return { videoUrl: undefined, posterUrl: undefined };
+  const introLesson = getIntroLessonForCourse(courseIdOrSlug);
+  const videoUrl = course.introVideoUrl || introLesson?.videoUrl;
+  const posterUrl =
+    course.introVideoPosterUrl || course.heroImageUrl || course.provider?.logoUrl;
+  return { videoUrl, posterUrl };
+};
+
 export const toMarketplaceItem = (course: Course) => {
   const category = categoryMap[course.categoryId];
   const durationLabel = formatDuration(course.estimatedDurationMinutes);
+  const introLesson = getIntroLessonForCourse(course.id);
+  const introVideo = getIntroVideoForCourse(course.id);
   return {
     id: course.slug,
     slug: course.slug,
@@ -150,6 +177,9 @@ export const toMarketplaceItem = (course: Course) => {
       description: course.provider.description || "",
     },
     heroImageUrl: course.heroImageUrl,
+    introLessonId: course.introLessonId || introLesson?.id,
+    introVideoUrl: introVideo.videoUrl,
+    introVideoPosterUrl: introVideo.posterUrl,
     rating: course.rating ?? 4.6,
     reviewCount: course.reviewCount ?? 24,
     formUrl: course.enrollmentUrl,

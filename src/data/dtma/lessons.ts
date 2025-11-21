@@ -8,6 +8,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 12,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Looks at common reasons digital transformation efforts slow down or fail.",
   },
   {
@@ -44,6 +45,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 15,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Clarifies what it means to be AI-driven beyond using a few AI tools.",
   },
   {
@@ -80,6 +82,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 12,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Introduces Digital Business Platforms and how they differ from traditional IT stacks.",
   },
   {
@@ -116,6 +119,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 10,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Introduces the Digital Cognitive Organization and what sets it apart from traditional organizations.",
   },
   {
@@ -152,6 +156,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 12,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Recaps Economy 4.0 and introduces Digital Cognitive Organizations as its native operating model.",
   },
   {
@@ -188,6 +193,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 12,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Unpacks common myths and pitfalls that undermine innovation cultures.",
   },
   {
@@ -224,6 +230,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 12,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Explains why DBPs are the backbone of Digital Cognitive Organizations.",
   },
   {
@@ -260,6 +267,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 12,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Defines Perfect Life Transactions and explains why they sit at the center of Economy 4.0.",
   },
   {
@@ -296,6 +304,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 12,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Recaps PLTs and explains how they show up inside internal and external organizational journeys.",
   },
   {
@@ -332,6 +341,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 10,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Defines Workforce 4.0 and highlights how work, roles, and skills are changing.",
   },
   {
@@ -368,6 +378,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 10,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Explains why traditional metrics often fail in digital, platform-driven contexts.",
   },
   {
@@ -404,6 +415,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 15,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Reframes data from a by-product of operations to a strategic asset.",
   },
   {
@@ -422,6 +434,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 15,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Frames AI as a core strategic capability rather than a set of isolated projects.",
   },
   {
@@ -458,6 +471,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 15,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Introduces digital trust and why it is fragile in a highly connected, data-rich environment.",
   },
   {
@@ -494,6 +508,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 10,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Introduces the shift from earlier industrial eras to Economy 4.0 and why this new context matters.",
   },
   {
@@ -530,6 +545,7 @@ export const lessons: Lesson[] = [
     type: "intro",
     orderIndex: 1,
     estimatedDurationMinutes: 15,
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     content: "Frames AI as a strategic capability and cleans up common misconceptions and hype.",
   },
   {

@@ -31,6 +31,9 @@ export interface Course {
   estimatedDurationMinutes: number;
   lessonCount: number;
   heroImageUrl?: string;
+  introLessonId?: string;
+  introVideoUrl?: string;
+  introVideoPosterUrl?: string;
   isFeatured?: boolean;
   status?: "draft" | "published";
   provider: CourseProvider;

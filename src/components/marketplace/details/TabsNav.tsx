@@ -33,7 +33,7 @@ const TabsNav: React.FC<TabsNavProps> = ({
   scrollRight,
 }) => {
   return (
-    <div className="border-b border-gray-200 w-full bg-white">
+    <div className="border-b border-gray-200 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:backdrop-blur-md shadow-sm">
       <div className="container mx-auto px-4 md:px-6 max-w-7xl">
         <div ref={containerRef} className="flex items-center w-full relative">
           {showNavigation && (
@@ -54,10 +54,10 @@ const TabsNav: React.FC<TabsNavProps> = ({
               <button
                 key={tab.id}
                 onClick={() => onChange(tab.id)}
-                className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 border-b-2 ${
+                className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 rounded-lg ${
                   activeTab === tab.id
-                    ? "text-blue-600 border-blue-600"
-                    : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
+                    ? "text-blue-700 bg-blue-50 border border-blue-100 shadow-sm"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                 }`}
                 aria-selected={activeTab === tab.id}
                 aria-controls={`tabpanel-${tab.id}`}
