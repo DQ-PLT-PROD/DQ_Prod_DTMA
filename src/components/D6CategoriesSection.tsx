@@ -44,7 +44,7 @@ const categories = [
 
 const D6CategoriesSection: React.FC = () => {
   return (
-    <section id="d6-categories" className="bg-white py-16">
+    <section id="d6-categories" className="bg-white pt-16 pb-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeInUpOnScroll className="text-center max-w-3xl mx-auto space-y-4">
           <h2
@@ -65,7 +65,7 @@ const D6CategoriesSection: React.FC = () => {
           {categories.map((category) => (
             <div
               key={category.title}
-              className="flex flex-col rounded-3xl overflow-hidden bg-white shadow-lg transition-transform duration-200 hover:-translate-y-1 h-full"
+              className="flex flex-col rounded-3xl overflow-hidden bg-white shadow-lg transition-transform duration-200 hover:-translate-y-1 h-full relative z-20"
             >
               <div className="relative h-36 bg-gray-100">
                 {category.image && (

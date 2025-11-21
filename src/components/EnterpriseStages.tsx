@@ -37,7 +37,7 @@ const EnterpriseStages: React.FC = () => {
             <div className="relative pl-[9.5rem] pr-10 sm:pr-16 sm:pl-[13rem] py-6 md:py-8 flex flex-col justify-center space-y-4 overflow-visible">
               <div
                 className="absolute border-[6px] border-white rounded-full pointer-events-none"
-                style={{ width: "18rem", height: "18rem", left: "-9rem", top: "-12rem" }}
+                style={{ width: "18rem", height: "18rem", left: "-9rem", top: "-6rem" }}
               ></div>
               <div
                 className="absolute hidden md:block border-[6px] border-white rounded-full pointer-events-none z-10"
