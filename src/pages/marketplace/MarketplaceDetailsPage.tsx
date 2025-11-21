@@ -17,11 +17,15 @@ import EligibilityTermsTab from "../../components/marketplace/details/tabs/Eligi
 import ApplicationProcessTab from "../../components/marketplace/details/tabs/ApplicationProcessTab";
 import SummaryCard from "../../components/marketplace/details/SummaryCard";
 import TabsNav from "../../components/marketplace/details/TabsNav";
-import { getMarketplaceConfig } from "../../utils/marketplaceConfiguration";
+import { getMarketplaceConfig } from "../../utils/marketplaceConfig";
 import { addCompareId } from "../../utils/comparisonStorage";
 import { ErrorDisplay } from "../../components/SkeletonLoader";
 import { Link } from "react-router-dom";
 import { useProductDetails } from "../../hooks/useProductDetails";
+import { Tag } from "../../components/ui/Tag";
+import { CourseMeta } from "../../components/ui/CourseMeta";
+import { MarketplaceCard } from "../../components/marketplace/MarketplaceCard";
+import { MarketplaceQuickViewModal } from "../../components/marketplace/MarketplaceQuickViewModal";
 interface MarketplaceDetailsPageProps {
   marketplaceType: "courses" | "financial" | "non-financial" | "knowledge-hub";
   bookmarkedItems?: string[];
@@ -54,6 +58,14 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const summaryCardRef = useRef<HTMLDivElement>(null);
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(false);
+  const [relatedQuickView, setRelatedQuickView] = useState<{
+    item: any;
+    anchor: { x: number; y: number };
+  } | null>(null);
+  const hideQuickViewTimer = useRef<NodeJS.Timeout | null>(null);
+  const [isPointerFine, setIsPointerFine] = useState<boolean>(true);
   // Centralized data fetching & mapping
   const { item, relatedItems, loading, error, refetch } = useProductDetails({
     itemId,
@@ -149,6 +161,42 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
         behavior: "smooth",
       });
     }
+  };
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(pointer: fine)");
+    const update = () => setIsPointerFine(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  const handleHeroPlay = () => {
+    const video = heroVideoRef.current;
+    if (video) {
+      video.muted = false;
+      video
+        .play()
+        .then(() => setIsHeroVideoPlaying(true))
+        .catch(() => {});
+    }
+  };
+  const clearHideTimer = () => {
+    if (hideQuickViewTimer.current) {
+      clearTimeout(hideQuickViewTimer.current);
+      hideQuickViewTimer.current = null;
+    }
+  };
+  const scheduleHideQuickView = () => {
+    clearHideTimer();
+    hideQuickViewTimer.current = setTimeout(() => {
+      setRelatedQuickView(null);
+    }, 180);
+  };
+  const openQuickView = (item: any, anchor: { x: number; y: number }) => {
+    clearHideTimer();
+    const clampedLeft = Math.max(12, Math.min(anchor.x, window.innerWidth - 420));
+    const top = Math.max(20, anchor.y);
+    setRelatedQuickView({ item, anchor: { x: clampedLeft, y: top } });
   };
   const [activeTab, setActiveTab] = useState<string>(
     config.tabs[0]?.id || "about"
@@ -308,6 +356,15 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       marketplaceType === "courses" ? item.deliveryMode : item.serviceType,
       item.businessStage,
     ].filter(Boolean);
+  const topicTags = Array.isArray((item as any).topicTags)
+    ? (item as any).topicTags.slice(0, 3)
+    : [];
+  const introVideoUrl = (item as any)?.introVideoUrl;
+  const introVideoPoster =
+    (item as any)?.introVideoPosterUrl ||
+    (item as any)?.heroImageUrl ||
+    item?.provider?.logoUrl ||
+    "/mzn_logo.png";
   // Extract details for the sidebar
   const detailItems = config.attributes
     .map((attr) => {
@@ -443,89 +500,110 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
                 </li>
               </ol>
             </nav>
-            <div className="flex flex-col items-start max-w-3xl py-8">
-              {/* Provider */}
-              <div className="flex items-center mb-3">
-                <img
-                  src={provider?.logoUrl || "/mzn_logo.png"}
-                  alt={`${provider?.name || 'Provider'} logo`}
-                  className="h-10 w-10 object-contain mr-3 rounded-md bg-white border border-gray-200 p-1"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "/mzn_logo.png";
-                  }}
-                />
-                <span className="text-gray-600 font-medium">
-                  {provider?.name || 'Provider'}
-                </span>
-              </div>
-              {/* Title */}
-              <h1 className="text-3xl font-bold text-gray-900 mb-2 leading-tight">
-                {itemTitle}
-              </h1>
-              {/* Tags row - Separated from ratings */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                {displayTags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                      index === 0
-                        ? "bg-blue-50 text-blue-700 border border-blue-100"
-                        : index === 1
-                        ? "bg-green-50 text-green-700 border border-green-100"
-                        : "bg-purple-50 text-purple-700 border border-purple-100"
-                    }`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              {/* Ratings and bookmark row - Now in a single row with proper alignment */}
-              <div className="flex items-center justify-between w-full mb-4">
-                <div className="flex items-center">
-                  {marketplaceType === "courses" && (
-                    <div className="flex items-center">
-                      <div className="flex items-center">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <StarIcon
-                            key={star}
-                            size={16}
-                            className={`${
-                              parseFloat(rating) >= star
-                                ? "text-yellow-400 fill-yellow-400"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="ml-2 text-sm font-medium text-gray-700">
-                        {rating}
-                      </span>
-                      <span className="mx-1.5 text-gray-500">·</span>
-                      <span className="text-sm text-gray-500">
-                        {reviewCount} reviews
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {/* <button
-                  onClick={handleToggleBookmark}
-                  className={`p-1.5 rounded-full ${
-                    isBookmarked
-                      ? "bg-yellow-100 text-yellow-600"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  } ml-2`}
-                  aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
-                  title={isBookmarked ? "Remove bookmark" : "Add bookmark"}
-                >
-                  <BookmarkIcon
-                    size={18}
-                    className={isBookmarked ? "fill-yellow-600" : ""}
+            <div className={`grid gap-6 py-8 ${introVideoUrl ? "lg:grid-cols-3" : ""}`}>
+              <div className={introVideoUrl ? "lg:col-span-2 flex flex-col items-start" : "flex flex-col items-start max-w-3xl"}>
+                {/* Provider */}
+                <div className="flex items-center mb-3">
+                  <img
+                    src={provider?.logoUrl || "/mzn_logo.png"}
+                    alt={`${provider?.name || 'Provider'} logo`}
+                    className="h-10 w-10 object-contain mr-3 rounded-md bg-white border border-gray-200 p-1"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/mzn_logo.png";
+                    }}
                   />
-                </button> */}
+                  <span className="text-gray-600 font-medium">
+                    {provider?.name || 'Provider'}
+                  </span>
+                </div>
+                {/* Title */}
+                <h1 className="text-3xl font-bold text-gray-900 mb-2 leading-tight">
+                  {itemTitle}
+                </h1>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {item.category ? (
+                    <Tag variant="category">{item.category}</Tag>
+                  ) : null}
+                  {(item as any).levelTag ? (
+                    <Tag variant="level">{(item as any).levelTag}</Tag>
+                  ) : null}
+                  {(item as any).audienceLevel ? (
+                    <Tag variant="audience">{(item as any).audienceLevel}</Tag>
+                  ) : null}
+                  {displayTags.length === 0 && topicTags.length === 0
+                    ? null
+                    : topicTags.map((tag, index) => (
+                        <Tag key={`${tag}-${index}`} variant="topic">
+                          {tag}
+                        </Tag>
+                      ))}
+                </div>
+                {/* Ratings and bookmark row - Now in a single row with proper alignment */}
+                <div className="flex items-center justify-between w-full mb-4">
+                  <div className="flex items-center">
+                    {marketplaceType === "courses" && (
+                      <div className="flex items-center">
+                        <div className="flex items-center">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <StarIcon
+                              key={star}
+                              size={16}
+                              className={`${
+                                parseFloat(rating) >= star
+                                  ? "text-yellow-400 fill-yellow-400"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="ml-2 text-sm font-medium text-gray-700">
+                          {rating}
+                        </span>
+                        <span className="mx-1.5 text-gray-500">·</span>
+                        <span className="text-sm text-gray-500">
+                          {reviewCount} reviews
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* Description */}
+                <p className="text-gray-700 mb-4 max-w-2xl">{itemDescription}</p>
+                <div className="flex flex-wrap gap-3 items-center mb-2">
+                  <CourseMeta duration={item.duration} lessonCount={item.lessonCount} />
+                  {item.deliveryMode ? (
+                    <Tag variant="meta">{item.deliveryMode}</Tag>
+                  ) : null}
+                </div>
               </div>
-              {/* Description */}
-              <p className="text-gray-700 mb-6 max-w-2xl">{itemDescription}</p>
+              {introVideoUrl ? (
+                <div className="w-full">
+                  <div className="relative rounded-2xl overflow-hidden shadow-lg bg-black">
+                    <video
+                      ref={heroVideoRef}
+                      src={introVideoUrl}
+                      poster={introVideoPoster}
+                      className="w-full h-64 lg:h-72 object-cover"
+                      controls={isHeroVideoPlaying}
+                      muted={!isHeroVideoPlaying}
+                      playsInline
+                      onPlay={() => setIsHeroVideoPlaying(true)}
+                    />
+                    {!isHeroVideoPlaying && (
+                      <button
+                        onClick={handleHeroPlay}
+                        className="absolute inset-0 flex items-center justify-center bg-black/35 text-white"
+                        aria-label="Play intro video"
+                      >
+                        <span className="h-14 w-14 rounded-full bg-white/85 text-gray-900 flex items-center justify-center shadow-lg">
+                          ▶
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -631,53 +709,48 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
               </a>
             </div>
             {relatedItems.length > 0 ? (
-              <div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {relatedItems.map((relatedItem) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {relatedItems.map((relatedItem) => {
+                  return (
                     <div
                       key={relatedItem.id}
-                      className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() =>
-                        navigate(
-                          `/marketplace/${marketplaceType}/${relatedItem.id}`
-                        )
-                      }
+                      onMouseEnter={(e) => {
+                        if (!isPointerFine) return;
+                        const rect =
+                          (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+                        openQuickView(relatedItem, {
+                          x: rect.right + 12,
+                          y: rect.top + window.scrollY,
+                        });
+                      }}
+                      onMouseLeave={isPointerFine ? scheduleHideQuickView : undefined}
+                      onClick={(e) => {
+                        if (isPointerFine) return;
+                        e.stopPropagation();
+                        const rect =
+                          (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+                        openQuickView(relatedItem, {
+                          x: rect.right + 12,
+                          y: rect.top + window.scrollY,
+                        });
+                      }}
                     >
-                      <div className="flex items-center mb-3">
-                        <img
-                          src={relatedItem.provider?.logoUrl || "/mzn_logo.png"}
-                          alt={relatedItem.provider.name}
-                          className="h-8 w-8 object-contain mr-2 rounded bg-gray-50 p-1"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "/mzn_logo.png";
-                          }}
-                        />
-                        <span className="text-sm text-gray-600">
-                          {relatedItem.provider.name}
-                        </span>
-                      </div>
-                      <h3 className="font-semibold text-gray-900 mb-2">
-                        {relatedItem.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-                        {relatedItem.description}
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        {(relatedItem.tags || [])
-                          .slice(0, 2)
-                          .map((tag, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                      </div>
+                      <MarketplaceCard
+                        item={relatedItem as any}
+                        marketplaceType={marketplaceType}
+                        isBookmarked={false}
+                        onToggleBookmark={() => {}}
+                        onAddToComparison={() => {}}
+                        onQuickView={() =>
+                          openQuickView(relatedItem, {
+                            x: window.innerWidth / 2 - 180,
+                            y: window.scrollY + 160,
+                          })
+                        }
+                      />
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-8 bg-white rounded-lg shadow-sm border border-gray-200">
@@ -687,6 +760,33 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
               </div>
             )}
           </div>
+          {relatedQuickView && !isPointerFine && (
+            <div
+              className="fixed inset-0 z-40 bg-black/10"
+              onClick={() => setRelatedQuickView(null)}
+            />
+          )}
+          {relatedQuickView && (
+            <MarketplaceQuickViewModal
+              item={relatedQuickView.item}
+              anchor={relatedQuickView.anchor}
+              marketplaceType={marketplaceType}
+              onClose={() => setRelatedQuickView(null)}
+              onViewDetails={() => {
+                navigate(`/marketplace/${marketplaceType}/${relatedQuickView.item.id}`);
+                setRelatedQuickView(null);
+              }}
+              isBookmarked={false}
+              onToggleBookmark={() => {}}
+              onAddToComparison={() => {}}
+              onPrimaryAction={() => {
+                navigate(`/marketplace/${marketplaceType}/${relatedQuickView.item.id}`);
+                setRelatedQuickView(null);
+              }}
+              onHover={() => clearHideTimer()}
+              onLeave={scheduleHideQuickView}
+            />
+          )}
         </section>
         {/* Sticky mobile CTA */}
         {showStickyBottomCTA && (
