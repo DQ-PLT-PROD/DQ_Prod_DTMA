@@ -152,6 +152,13 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   const { user, isLoading } = useAuth();
   const location = useLocation() as any;
   const config = getMarketplaceConfig(marketplaceType);
+  const heroTitle =
+    marketplaceType === "courses" ? "DTMA Courses" : config.title;
+  const heroDescription =
+    marketplaceType === "courses"
+      ? "Browse practical, bite-sized courses for Digital Leaders and Digital Workers, mapped to the 6XD Dimensions of Digital and the Economy 4.0 playbook."
+      : config.description;
+  const allowPromoCards = config.showPromoCards !== false;
   
   // State for items and filtering
   const [items, setItems] = useState<any[]>([]);
@@ -1025,10 +1032,10 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
         
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-3xl font-bold text-gray-800">
-            {config.title}
+            {heroTitle}
           </h1>
         </div>
-        <p className="text-gray-600 mb-6">{config.description}</p>
+        <p className="text-gray-600 mb-6">{heroDescription}</p>
         
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="w-full">
@@ -1321,7 +1328,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 bookmarkedItems={bookmarkedItems}
                 onToggleBookmark={toggleBookmark}
                 onAddToComparison={handleAddToComparison}
-                promoCards={promoCards}
+                promoCards={allowPromoCards ? promoCards : []}
                 onTagClick={handleTagFilter}
                 // Quick view interactions are handled inside MarketplaceGrid/MarketplaceCard; MarketplacePage just passes data through
               />

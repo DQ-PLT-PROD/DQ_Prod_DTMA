@@ -49,6 +49,7 @@ export interface MarketplaceConfig {
   secondaryCTA: string;
   itemName: string;
   itemNamePlural: string;
+  showPromoCards?: boolean;
   attributes: AttributeConfig[];
   detailSections: string[];
   tabs: TabConfig[];
@@ -193,6 +194,7 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     secondaryCTA: 'View Details',
     itemName: 'Course',
     itemNamePlural: 'Courses',
+    showPromoCards: false,
     attributes: [{
       key: 'duration',
       label: 'Duration',

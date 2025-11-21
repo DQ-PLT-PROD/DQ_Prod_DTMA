@@ -74,6 +74,10 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     marketplaceType,
     shouldTakeAction,
   });
+  const { videoUrl: introVideoUrl, poster: introVideoPoster } = useMemo(
+    () => getCourseMedia(item),
+    [item]
+  );
   const seeAllHref = useMemo(() => {
     if (marketplaceType !== "courses") return config.route;
     const params = new URLSearchParams();
@@ -407,10 +411,6 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     marketplaceType === "courses"
       ? item.keyHighlights || item.learningOutcomes || []
       : item.details || item.keyHighlights || [];
-  const { videoUrl: introVideoUrl, poster: introVideoPoster } = useMemo(
-    () => getCourseMedia(item),
-    [item]
-  );
   // Render tab content with consistent styling
   const renderTabContent = (tabId: string) => {
     const tab = config.tabs.find((t) => t.id === tabId);
