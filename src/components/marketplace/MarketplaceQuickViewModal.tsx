@@ -4,6 +4,7 @@ import { Tag } from '../ui/Tag';
 import { CourseMeta } from '../ui/CourseMeta';
 import { XIcon, BookmarkIcon, ScaleIcon, Volume2, VolumeX } from 'lucide-react';
 import { getMarketplaceConfig } from '../../utils/marketplaceConfig';
+import { getCourseMedia } from '../../utils/courseMedia';
 
 export type QuickViewAnchorRect = {
   top: number;
@@ -47,20 +48,12 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const config = getMarketplaceConfig(marketplaceType);
   const [isMuted, setIsMuted] = useState(true);
-
-  const poster =
-    item.introVideoPosterUrl ||
-    item.heroImageUrl ||
-    item.heroImage ||
-    item.imageUrl ||
-    item.thumbnailUrl ||
-    item.provider?.logoUrl ||
-    '/mzn_logo.png';
+  const { videoUrl, poster } = getCourseMedia(item);
 
   useEffect(() => {
     const video = videoRef.current;
     setIsMuted(true);
-    if (video && item.introVideoUrl) {
+    if (video && videoUrl) {
       video.muted = true;
       video.currentTime = 0;
       const playPromise = video.play();
@@ -73,7 +66,7 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
         video.pause();
       }
     };
-  }, [item.introVideoUrl, item.id]);
+  }, [videoUrl, item.id]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -93,29 +86,71 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
   }, [onClose]);
 
   const anchoredPosition = useMemo(() => {
-    if (!anchorRect) return null;
-    if (typeof window === 'undefined') return null;
-    const width = 420;
+    if (!anchorRect || typeof window === 'undefined') return null;
     const margin = 12;
-    const prefersRight =
-      anchorRect.left + anchorRect.width + width + margin <= window.innerWidth;
-    const proposedLeft = prefersRight
-      ? anchorRect.left + anchorRect.width + margin
-      : anchorRect.left - width - margin;
-    const left = clamp(proposedLeft, margin, window.innerWidth - width - margin);
-    const top = clamp(anchorRect.top, margin, window.innerHeight - margin - 320);
-    return {
-      top,
-      left,
-      width,
-      transformOrigin: prefersRight ? 'left top' : 'right top',
-    };
+    const maxWidth = Math.max(margin * 2, window.innerWidth - margin * 2);
+    const targetWidth = clamp(
+      anchorRect.width * 1.1,
+      Math.max(anchorRect.width, 320),
+      Math.min(520, maxWidth)
+    );
+    const left = clamp(
+      anchorRect.left - (targetWidth - anchorRect.width) / 2,
+      margin,
+      window.innerWidth - targetWidth - margin
+    );
+    const estimatedHeight = anchorRect.height * 1.15 + 220;
+    const top = clamp(
+      anchorRect.top,
+      margin,
+      Math.max(margin, window.innerHeight - estimatedHeight)
+    );
+    return { top, left, width: targetWidth };
   }, [anchorRect]);
 
   const fallbackPosition = useMemo(() => {
     if (anchorRect || !anchor) return null;
-    return { top: anchor.y, left: anchor.x };
+    if (typeof window === 'undefined') {
+      return { top: anchor.y, left: anchor.x, width: 420 };
+    }
+    const width = 420;
+    const left = clamp(anchor.x - width / 2, 12, window.innerWidth - width - 12);
+    const top = clamp(anchor.y - 200, 12, window.innerHeight - 360);
+    return { top, left, width };
   }, [anchorRect, anchor]);
+
+  const [isVisible, setIsVisible] = useState(false);
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+  const isPointerCoarse =
+    typeof window !== 'undefined' &&
+    !!window.matchMedia &&
+    window.matchMedia('(pointer: coarse)').matches;
+
+  const containerStyle =
+    anchoredPosition || fallbackPosition
+      ? {
+          top: (anchoredPosition || fallbackPosition)!.top,
+          left: (anchoredPosition || fallbackPosition)!.left,
+          width: (anchoredPosition || fallbackPosition)!.width,
+          transformOrigin: 'center top',
+        }
+      : undefined;
+
+  const positionedStyle = useMemo(() => {
+    if (containerStyle) return containerStyle;
+    if (typeof window === 'undefined') return undefined;
+    const width = 420;
+    const left = clamp((window.innerWidth - width) / 2, 12, window.innerWidth - width - 12);
+    const top = clamp(120, 12, window.innerHeight - 360);
+    return { top, left, width, transformOrigin: 'center top' as const };
+  }, [containerStyle]);
+
+  const popClasses = isVisible
+    ? 'opacity-100 scale-100 translate-y-0'
+    : 'opacity-0 scale-[0.98] -translate-y-1';
 
   if (typeof document === 'undefined') {
     return null;
@@ -143,28 +178,29 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
   };
 
   const cardContent = (
-    <div className="w-[360px] md:w-[420px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
-      <div className="relative bg-black">
-        {item.introVideoUrl ? (
+    <div className="w-full bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden ring-1 ring-black/5">
+      <div className="relative w-full aspect-[16/9] bg-slate-900">
+        {videoUrl ? (
           <video
+            key={item?.id || videoUrl}
             ref={videoRef}
-            src={item.introVideoUrl}
+            src={videoUrl}
             poster={poster}
             autoPlay
             muted={isMuted}
             loop
             playsInline
-            className="w-full h-48 object-cover"
+            className="w-full h-full object-cover"
             controls={false}
           />
         ) : (
           <img
             src={poster}
             alt={item.title}
-            className="w-full h-48 object-cover"
+            className="w-full h-full object-cover"
           />
         )}
-        {item.introVideoUrl ? (
+        {videoUrl ? (
           <button
             onClick={toggleMute}
             className="absolute top-2 left-2 rounded-full bg-white/80 text-gray-800 hover:bg-white p-2 shadow-sm"
@@ -175,34 +211,34 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
         ) : null}
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 rounded-full bg-white/80 text-gray-700 hover:bg-white p-1"
+          className="absolute top-2 right-2 rounded-full bg-white/85 text-gray-700 hover:bg-white p-1.5 shadow-sm"
           aria-label="Close quick view"
         >
           <XIcon size={18} />
         </button>
       </div>
 
-      <div className="p-4 space-y-3">
-        <div className="flex items-start justify-between gap-2">
+      <div className="p-4 md:p-5 space-y-3">
+        <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             {item.category ? (
               <div className="text-[11px] uppercase tracking-wide font-semibold text-blue-700 mb-1">
                 {item.category}
               </div>
             ) : null}
-            <h3 className="text-lg font-semibold text-gray-900 leading-snug line-clamp-2">
+            <h3 className="text-xl font-semibold text-gray-900 leading-snug">
               {item.title}
             </h3>
             {item.provider?.name ? (
-              <p className="text-xs font-medium text-gray-500 mt-0.5">
+              <p className="text-xs font-medium text-gray-500 mt-1">
                 {item.provider.name}
               </p>
             ) : null}
-            <p className="text-sm text-gray-600 line-clamp-2 mt-1.5">
+            <p className="text-sm text-gray-700 leading-relaxed mt-2">
               {item.description}
             </p>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={onToggleBookmark}
               className={`p-2 rounded-full ${
@@ -234,17 +270,21 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
           </div>
         )}
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <CourseMeta duration={item.duration} lessonCount={item.lessonCount} />
-          <span className="text-sm text-gray-600">{config.itemName} preview</span>
+          {item.levelTag ? (
+            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-amber-50 text-amber-700 whitespace-nowrap">
+              {item.levelTag}
+            </span>
+          ) : null}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 pt-1">
           <button
             onClick={onViewDetails}
             className="flex-1 px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
           >
-            View course
+            View course details
           </button>
           <button
             onClick={() => {
@@ -264,33 +304,22 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
   );
 
   return createPortal(
-    <div
-      className={
-        anchoredPosition
-          ? 'fixed inset-0 z-[60] pointer-events-none'
-          : 'fixed inset-0 z-[60] flex items-center justify-center p-4'
-      }
-    >
-      {!anchoredPosition ? (
-        <div
-          className="absolute inset-0 bg-black/40"
-          onClick={onClose}
-        />
-      ) : null}
+    <div className="fixed inset-0 z-[70]" aria-modal="true" role="dialog">
       <div
-        className={anchoredPosition || fallbackPosition ? 'pointer-events-auto fixed' : 'pointer-events-auto relative'}
-        style={
-          anchoredPosition
-            ? {
-                top: anchoredPosition.top,
-                left: anchoredPosition.left,
-                width: anchoredPosition.width,
-                transformOrigin: anchoredPosition.transformOrigin,
-              }
-            : fallbackPosition || undefined
-        }
+        className={`absolute inset-0 ${anchorRect ? 'bg-black/0 md:bg-black/0' : 'bg-black/30'} ${isPointerCoarse ? 'bg-black/10' : ''}`}
+        onClick={onClose}
+      />
+      <div
+        className={`absolute pointer-events-auto transition-all duration-200 ease-out ${popClasses}`}
+        style={positionedStyle}
         onMouseEnter={onHover}
-        onMouseLeave={onLeave}
+        onMouseLeave={() => {
+          if (onLeave) {
+            onLeave();
+          } else {
+            onClose();
+          }
+        }}
       >
         {cardContent}
       </div>

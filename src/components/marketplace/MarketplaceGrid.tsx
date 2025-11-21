@@ -233,13 +233,6 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
           return null;
         })}
       </div>
-      {/* Quick View Modal */}
-      {quickViewItem && !isPointerFine && (
-        <div
-          className="fixed inset-0 z-40 bg-black/10"
-          onClick={() => setQuickViewItem(null)}
-        />
-      )}
       {quickViewItem && (
         <MarketplaceQuickViewModal
           item={quickViewItem.item}

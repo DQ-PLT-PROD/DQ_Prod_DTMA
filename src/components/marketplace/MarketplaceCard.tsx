@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMarketplaceConfig } from '../../utils/marketplaceConfig';
+import { getCoursePoster } from '../../utils/courseMedia';
 import { CourseTile } from '../CourseTile';
 import { QuickViewAnchorRect } from './MarketplaceQuickViewModal';
 
@@ -49,11 +50,14 @@ export const MarketplaceCard: React.FC<MarketplaceItemProps> = ({
   const config = getMarketplaceConfig(marketplaceType);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [isQuickViewOpen, setIsQuickViewOpen] = useState<boolean>(isQuickViewActive);
-  const [lastAnchorRect, setLastAnchorRect] = useState<QuickViewAnchorRect | null>(null);
+  const [isExpanded, setIsExpanded] = useState<boolean>(isQuickViewActive);
+  const [anchorRect, setAnchorRect] = useState<QuickViewAnchorRect | null>(null);
 
   useEffect(() => {
-    setIsQuickViewOpen(Boolean(isQuickViewActive));
+    setIsExpanded(Boolean(isQuickViewActive));
+    if (isQuickViewActive) {
+      resolveAnchorRect();
+    }
   }, [isQuickViewActive]);
 
   useEffect(() => {
@@ -66,15 +70,15 @@ export const MarketplaceCard: React.FC<MarketplaceItemProps> = ({
 
   const resolveAnchorRect = (): QuickViewAnchorRect | null => {
     const rect = cardRef.current?.getBoundingClientRect();
-    if (!rect) return lastAnchorRect;
-    const anchorRect = {
+    if (!rect) return anchorRect;
+    const nextRect = {
       top: rect.top,
       left: rect.left,
       width: rect.width,
       height: rect.height,
     };
-    setLastAnchorRect(anchorRect);
-    return anchorRect;
+    setAnchorRect(nextRect);
+    return nextRect;
   };
 
   const triggerQuickView = () => {
@@ -82,7 +86,7 @@ export const MarketplaceCard: React.FC<MarketplaceItemProps> = ({
     const anchorRect = resolveAnchorRect();
     if (!anchorRect) return;
     onQuickViewOpen(anchorRect);
-    setIsQuickViewOpen(true);
+    setIsExpanded(true);
   };
 
   const handleMouseEnter = () => {
@@ -90,7 +94,7 @@ export const MarketplaceCard: React.FC<MarketplaceItemProps> = ({
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
     }
-    if (isQuickViewOpen && onQuickViewHover) {
+    if (isExpanded && onQuickViewHover) {
       onQuickViewHover();
     }
     if (!onQuickViewOpen) return;
@@ -103,7 +107,7 @@ export const MarketplaceCard: React.FC<MarketplaceItemProps> = ({
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
     }
-    if (isQuickViewOpen && onQuickViewClose) {
+    if (isExpanded && onQuickViewClose) {
       onQuickViewClose();
     }
   };
@@ -113,6 +117,14 @@ export const MarketplaceCard: React.FC<MarketplaceItemProps> = ({
     if (hoverTimerRef.current) {
       clearTimeout(hoverTimerRef.current);
       hoverTimerRef.current = null;
+    }
+    if (!isPointerFine) {
+      if (!isExpanded) {
+        triggerQuickView();
+        return;
+      }
+      handleViewDetails(e);
+      return;
     }
     triggerQuickView();
   };
@@ -151,22 +163,9 @@ export const MarketplaceCard: React.FC<MarketplaceItemProps> = ({
   }, [item.topicTags]);
 
   const thumbnailUrl = useMemo(() => {
-    return (
-      item.introVideoPosterUrl ||
-      item.heroImageUrl ||
-      item.heroImage ||
-      item.imageUrl ||
-      item.thumbnailUrl ||
-      item.provider?.logoUrl ||
-      "/mzn_logo.png"
-    );
+    return getCoursePoster(item);
   }, [
-    item.introVideoPosterUrl,
-    item.heroImageUrl,
-    item.heroImage,
-    item.imageUrl,
-    item.thumbnailUrl,
-    item.provider?.logoUrl,
+    item,
   ]);
 
   return (

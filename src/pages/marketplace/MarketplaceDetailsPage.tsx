@@ -18,6 +18,7 @@ import ApplicationProcessTab from "../../components/marketplace/details/tabs/App
 import SummaryCard from "../../components/marketplace/details/SummaryCard";
 import TabsNav from "../../components/marketplace/details/TabsNav";
 import { getMarketplaceConfig } from "../../utils/marketplaceConfig";
+import { getCourseMedia } from "../../utils/courseMedia";
 import { addCompareId } from "../../utils/comparisonStorage";
 import { ErrorDisplay } from "../../components/SkeletonLoader";
 import { Link } from "react-router-dom";
@@ -390,15 +391,6 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   const topicTags = Array.isArray((item as any).topicTags)
     ? (item as any).topicTags.slice(0, 3)
     : [];
-  const introVideoUrl = (item as any)?.introVideoUrl;
-  const introVideoPoster =
-    (item as any)?.introVideoPosterUrl ||
-    (item as any)?.heroImageUrl ||
-    (item as any)?.heroImage ||
-    (item as any)?.imageUrl ||
-    (item as any)?.thumbnailUrl ||
-    item?.provider?.logoUrl ||
-    "/mzn_logo.png";
   // Extract details for the sidebar
   const detailItems = config.attributes
     .map((attr) => {
@@ -415,6 +407,10 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     marketplaceType === "courses"
       ? item.keyHighlights || item.learningOutcomes || []
       : item.details || item.keyHighlights || [];
+  const { videoUrl: introVideoUrl, poster: introVideoPoster } = useMemo(
+    () => getCourseMedia(item),
+    [item]
+  );
   // Render tab content with consistent styling
   const renderTabContent = (tabId: string) => {
     const tab = config.tabs.find((t) => t.id === tabId);
@@ -770,12 +766,6 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
               </div>
             )}
           </div>
-          {relatedQuickView && !isPointerFine && (
-            <div
-              className="fixed inset-0 z-40 bg-black/10"
-              onClick={() => setRelatedQuickView(null)}
-            />
-          )}
           {relatedQuickView && (
             <MarketplaceQuickViewModal
               item={relatedQuickView.item}
