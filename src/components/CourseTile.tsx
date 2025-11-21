@@ -1,6 +1,6 @@
-import React, { useMemo } from "react";
-import { StarIcon, ScaleIcon } from "lucide-react";
-import { Tag, TagVariant } from "./ui/Tag";
+import React from "react";
+import { StarIcon, ScaleIcon, Clock, BookOpen } from "lucide-react";
+import { Tag } from "./ui/Tag";
 import { CourseMeta } from "./ui/CourseMeta";
 
 export interface CourseTileProps {
@@ -47,35 +47,13 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   secondaryCtaLabel = "View Details",
   onPrimaryClick = () => {},
   onSecondaryClick = () => {},
-  showActions = true,
+  showActions = variant === "course" ? false : showActions,
   variant = "course",
   onAddToComparison,
   onCardClick,
   onToggleBookmark,
   isBookmarked,
 }) => {
-  const levelDisplay = useMemo(() => {
-    if (audienceLevel && levelTag) {
-      return `${audienceLevel}, ${levelTag}`;
-    }
-    return audienceLevel || levelTag || "";
-  }, [audienceLevel, levelTag]);
-
-  const primaryTopic = useMemo(() => {
-    if (!Array.isArray(topicTags)) return "";
-    const firstNonEmpty = topicTags.find((tag) => tag && tag.trim().length > 0);
-    return firstNonEmpty || "";
-  }, [topicTags]);
-
-  const tags = useMemo<{ label: string; variant: TagVariant }[]>(() => {
-    const collected: { label: string; variant: TagVariant }[] = [];
-    if (category) collected.push({ label: category, variant: "category" });
-    if (levelDisplay)
-      collected.push({ label: levelDisplay, variant: "level" });
-    if (primaryTopic) collected.push({ label: primaryTopic, variant: "topic" });
-    return collected.slice(0, 3);
-  }, [category, levelDisplay, primaryTopic]);
-
   const heroSrc = thumbnailUrl || providerLogoUrl || "/mzn_logo.png";
   const displayRating = rating ?? 4.6;
   const displayReviews = reviewCount ?? 24;
@@ -209,10 +187,11 @@ export const CourseTile: React.FC<CourseTileProps> = ({
 
   return (
     <div
-      className="group relative flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-[2px] transition-all duration-200"
+      className="group relative flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-[2px] transition-all duration-200"
+      // Marketplace cards wire their quick view trigger into this click handler
       onClick={onCardClick}
     >
-      <div className="relative h-40 w-full bg-gray-100 overflow-hidden">
+      <div className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden">
         <img
           src={heroSrc}
           alt={`${title || providerName} thumbnail`}
@@ -224,64 +203,43 @@ export const CourseTile: React.FC<CourseTileProps> = ({
         />
       </div>
 
-      <div className="p-5 flex flex-col gap-3 flex-1">
-        {tags.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5">
-            {tags.map(({ label, variant }, index) => (
-              <Tag
-                key={`${variant}-${index}-${label}`}
-                variant={variant}
-                className="text-[11px] px-2 py-0.5 leading-tight"
-              >
-                {label}
-              </Tag>
-            ))}
+      <div className="p-5 pt-4 flex flex-col flex-1">
+        {category ? (
+          <div className="text-[11px] uppercase tracking-wide font-semibold text-blue-700 mb-2">
+            {category}
           </div>
         ) : null}
 
-        <h3 className="font-semibold text-gray-900 leading-snug line-clamp-2">
+        <h3 className="text-lg font-semibold text-slate-900 leading-snug line-clamp-2 mb-1.5">
           {title}
         </h3>
 
-        <p className="text-sm text-gray-700 leading-relaxed line-clamp-3 flex-1">
+        <p className="text-sm text-slate-600 leading-relaxed line-clamp-2 mb-4">
           {description}
         </p>
 
-        <div className="flex items-center justify-between gap-3">
-          <CourseMeta duration={duration} lessonCount={lessonCount} />
-          <div className="flex items-center gap-2">
-            {onToggleBookmark ? (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleBookmark();
-                }}
-                className={`p-2 rounded-full ${
-                  isBookmarked
-                    ? "bg-yellow-100 text-yellow-600"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                }`}
-                aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
-              >
-                <StarIcon
-                  size={16}
-                  className={isBookmarked ? "fill-yellow-500" : ""}
-                />
-              </button>
+        <div className="mt-auto pt-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 text-xs text-slate-500">
+            {duration ? (
+              <span className="inline-flex items-center gap-1">
+                <Clock size={14} className="text-slate-400" />
+                <span>{duration}</span>
+              </span>
             ) : null}
-            {onAddToComparison ? (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddToComparison();
-                }}
-                className="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
-                aria-label="Add to comparison"
-              >
-                <ScaleIcon size={16} />
-              </button>
+            {lessonCount ? (
+              <span className="inline-flex items-center gap-1">
+                <BookOpen size={14} className="text-slate-400" />
+                <span>
+                  {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
+                </span>
+              </span>
             ) : null}
           </div>
+          {levelTag ? (
+            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-amber-50 text-amber-700">
+              {levelTag}
+            </span>
+          ) : null}
         </div>
       </div>
 

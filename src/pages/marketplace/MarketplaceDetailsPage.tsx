@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   BookmarkIcon,
@@ -25,7 +25,7 @@ import { useProductDetails } from "../../hooks/useProductDetails";
 import { Tag } from "../../components/ui/Tag";
 import { CourseMeta } from "../../components/ui/CourseMeta";
 import { MarketplaceCard } from "../../components/marketplace/MarketplaceCard";
-import { MarketplaceQuickViewModal } from "../../components/marketplace/MarketplaceQuickViewModal";
+import { MarketplaceQuickViewModal, QuickViewAnchorRect } from "../../components/marketplace/MarketplaceQuickViewModal";
 interface MarketplaceDetailsPageProps {
   marketplaceType: "courses" | "financial" | "non-financial" | "knowledge-hub";
   bookmarkedItems?: string[];
@@ -62,7 +62,8 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(false);
   const [relatedQuickView, setRelatedQuickView] = useState<{
     item: any;
-    anchor: { x: number; y: number };
+    anchorRect?: QuickViewAnchorRect | null;
+    anchor?: { x: number; y: number };
   } | null>(null);
   const hideQuickViewTimer = useRef<NodeJS.Timeout | null>(null);
   const [isPointerFine, setIsPointerFine] = useState<boolean>(true);
@@ -72,6 +73,16 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     marketplaceType,
     shouldTakeAction,
   });
+  const seeAllHref = useMemo(() => {
+    if (marketplaceType !== "courses") return config.route;
+    const params = new URLSearchParams();
+    const courseItem: any = item || {};
+    if (courseItem?.categorySlug) params.set("category", courseItem.categorySlug);
+    if (courseItem?.audienceLevel) params.set("audience", courseItem.audienceLevel);
+    if (courseItem?.levelTag) params.set("level", courseItem.levelTag);
+    const qs = params.toString();
+    return qs ? `${config.route}?${qs}` : config.route;
+  }, [item, config.route, marketplaceType]);
 
   // Sync bookmark state when item or bookmarks change
   useEffect(() => {
@@ -188,15 +199,35 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   };
   const scheduleHideQuickView = () => {
     clearHideTimer();
+    if (!relatedQuickView) return;
     hideQuickViewTimer.current = setTimeout(() => {
       setRelatedQuickView(null);
     }, 180);
   };
-  const openQuickView = (item: any, anchor: { x: number; y: number }) => {
+
+  const normalizeAnchorRect = (
+    anchor?: QuickViewAnchorRect | DOMRect | null
+  ): QuickViewAnchorRect | undefined => {
+    if (!anchor) return undefined;
+    return {
+      top: anchor.top,
+      left: anchor.left,
+      width: anchor.width,
+      height: anchor.height,
+    };
+  };
+
+  const openQuickView = (item: any, anchor?: QuickViewAnchorRect | DOMRect | { x: number; y: number } | null) => {
     clearHideTimer();
-    const clampedLeft = Math.max(12, Math.min(anchor.x, window.innerWidth - 420));
-    const top = Math.max(20, anchor.y);
-    setRelatedQuickView({ item, anchor: { x: clampedLeft, y: top } });
+    const anchorRect =
+      anchor && "width" in (anchor as QuickViewAnchorRect | DOMRect)
+        ? normalizeAnchorRect(anchor as QuickViewAnchorRect | DOMRect)
+        : undefined;
+    const anchorPoint =
+      anchor && "x" in (anchor as { x: number; y: number })
+        ? { x: (anchor as { x: number; y: number }).x, y: (anchor as { x: number; y: number }).y }
+        : undefined;
+    setRelatedQuickView({ item, anchorRect, anchor: anchorPoint });
   };
   const [activeTab, setActiveTab] = useState<string>(
     config.tabs[0]?.id || "about"
@@ -363,6 +394,9 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   const introVideoPoster =
     (item as any)?.introVideoPosterUrl ||
     (item as any)?.heroImageUrl ||
+    (item as any)?.heroImage ||
+    (item as any)?.imageUrl ||
+    (item as any)?.thumbnailUrl ||
     item?.provider?.logoUrl ||
     "/mzn_logo.png";
   // Extract details for the sidebar
@@ -700,55 +734,31 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
               <h2 className="text-2xl font-bold text-gray-900">
                 Related {config.itemNamePlural}
               </h2>
-              <a
-                href={config.route}
+              <Link
+                to={seeAllHref}
                 className="text-blue-600 font-medium hover:text-blue-800 flex items-center"
               >
                 See All {config.itemNamePlural}
                 <ChevronRightIcon size={16} className="ml-1" />
-              </a>
+              </Link>
             </div>
             {relatedItems.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {relatedItems.map((relatedItem) => {
                   return (
-                    <div
+                    <MarketplaceCard
+                      item={relatedItem as any}
                       key={relatedItem.id}
-                      onMouseEnter={(e) => {
-                        if (!isPointerFine) return;
-                        const rect =
-                          (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-                        openQuickView(relatedItem, {
-                          x: rect.right + 12,
-                          y: rect.top + window.scrollY,
-                        });
-                      }}
-                      onMouseLeave={isPointerFine ? scheduleHideQuickView : undefined}
-                      onClick={(e) => {
-                        if (isPointerFine) return;
-                        e.stopPropagation();
-                        const rect =
-                          (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-                        openQuickView(relatedItem, {
-                          x: rect.right + 12,
-                          y: rect.top + window.scrollY,
-                        });
-                      }}
-                    >
-                      <MarketplaceCard
-                        item={relatedItem as any}
-                        marketplaceType={marketplaceType}
-                        isBookmarked={false}
-                        onToggleBookmark={() => {}}
-                        onAddToComparison={() => {}}
-                        onQuickView={() =>
-                          openQuickView(relatedItem, {
-                            x: window.innerWidth / 2 - 180,
-                            y: window.scrollY + 160,
-                          })
-                        }
-                      />
-                    </div>
+                      marketplaceType={marketplaceType}
+                      isBookmarked={false}
+                      onToggleBookmark={() => {}}
+                      onAddToComparison={() => {}}
+                      onQuickViewOpen={(rect) => openQuickView(relatedItem, rect)}
+                      onQuickViewClose={scheduleHideQuickView}
+                      onQuickViewHover={clearHideTimer}
+                      isQuickViewActive={relatedQuickView?.item.id === relatedItem.id}
+                      isPointerFine={isPointerFine}
+                    />
                   );
                 })}
               </div>
@@ -769,6 +779,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
           {relatedQuickView && (
             <MarketplaceQuickViewModal
               item={relatedQuickView.item}
+              anchorRect={relatedQuickView.anchorRect}
               anchor={relatedQuickView.anchor}
               marketplaceType={marketplaceType}
               onClose={() => setRelatedQuickView(null)}
