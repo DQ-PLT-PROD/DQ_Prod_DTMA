@@ -30,11 +30,11 @@ const steps = [
 
 const EnterpriseStages: React.FC = () => {
   return (
-    <section className="bg-white py-32">
+    <section className="bg-white pt-32 pb-16">
       <div className="w-full space-y-12">
         <FadeInUpOnScroll className="overflow-visible w-full min-h-[650px]">
-          <div className="relative z-10 bg-[#1839AD] text-white grid lg:grid-cols-[3fr,2fr]">
-            <div className="relative pl-[9.5rem] pr-10 sm:pr-16 sm:pl-[13rem] py-6 md:py-8 flex flex-col justify-center space-y-4 overflow-visible">
+          <div className="relative z-10 bg-[#1839AD] text-white grid lg:grid-cols-[3fr,2fr] overflow-hidden">
+            <div className="relative z-10 h-full pl-[9.5rem] pr-10 sm:pr-16 sm:pl-[13rem] py-6 md:py-8 flex flex-col justify-center space-y-4 overflow-visible">
               <div
                 className="absolute border-[1.5px] border-white rounded-full pointer-events-none"
                 style={{ width: "18rem", height: "18rem", left: "-9rem", top: "-6rem" }}
@@ -42,6 +42,10 @@ const EnterpriseStages: React.FC = () => {
               <div
                 className="absolute hidden md:block border-[1.5px] border-white rounded-full pointer-events-none z-10"
                 style={{ width: "250px", height: "250px", left: "4px", bottom: "-202px" }}
+              ></div>
+              <div
+                className="absolute bg-black/30 pointer-events-none z-10"
+                style={{ top: "-12rem", bottom: "-12rem", left: "-12rem", right: 0 }}
               ></div>
               <div className="relative space-y-4 z-20 ml-4">
                 <h2 className="text-3xl md:text-4xl font-bold">How You Learn</h2>
@@ -52,7 +56,7 @@ const EnterpriseStages: React.FC = () => {
                 </p>
               </div>
             </div>
-            <div className="h-full order-2">
+            <div className="relative z-10 h-full order-2">
               <img
                 src="/Leader 2.jpg"
                 alt="Learners collaborating"
@@ -71,7 +75,10 @@ const EnterpriseStages: React.FC = () => {
                       key={step.title}
                       className="relative flex flex-col items-center text-center gap-4 md:flex-1 z-30"
                     >
-                      <div className="relative z-30 flex h-16 w-16 items-center justify-center rounded-full bg-[#1839AD] text-white text-lg font-semibold shadow-lg">
+                      <div
+                        className="relative z-30 flex h-16 w-16 items-center justify-center rounded-full text-white text-lg font-semibold shadow-lg"
+                        style={{ backgroundColor: "#1C2F7A" }}
+                      >
                         {String(index + 1).padStart(2, "0")}
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 relative z-30">
