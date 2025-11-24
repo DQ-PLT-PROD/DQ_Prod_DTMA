@@ -32,17 +32,15 @@ export const CourseCard: React.FC<CourseCardProps> = ({
     <CourseTile
       title={course.title}
       description={course.description}
-      providerName={course.provider.name}
-      providerLogoUrl={course.provider.logoUrl}
       category={course.category}
       levelTag={course.levelTag}
       audienceLevel={course.audienceLevel}
       topicTags={displayTags}
-    duration={course.duration}
-    lessonCount={course.lessonCount}
-    primaryCtaLabel="Enroll Now"
-    secondaryCtaLabel="View Details"
-    onPrimaryClick={(e) => {
+      duration={course.duration}
+      lessonCount={course.lessonCount}
+      primaryCtaLabel="Enroll Now"
+      secondaryCtaLabel="View Details"
+      onPrimaryClick={(e) => {
         e.stopPropagation();
         navigate(`/courses/${course.id}?enroll=true`);
       }}

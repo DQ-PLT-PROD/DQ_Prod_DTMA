@@ -1,5 +1,5 @@
 import React from "react";
-import { StarIcon, ScaleIcon, Clock, BookOpen } from "lucide-react";
+import { StarIcon, ScaleIcon } from "lucide-react";
 import { Tag } from "./ui/Tag";
 import { CourseMeta } from "./ui/CourseMeta";
 
@@ -9,6 +9,7 @@ export interface CourseTileProps {
   providerName: string;
   providerLogoUrl: string;
   thumbnailUrl?: string;
+  videoUrl?: string; // Added videoUrl prop
   category?: string;
   levelTag?: string;
   audienceLevel?: string;
@@ -24,9 +25,10 @@ export interface CourseTileProps {
   showActions?: boolean;
   variant?: "course" | "classic";
   onAddToComparison?: () => void;
-  onCardClick?: () => void;
+  onCardClick?: (e: React.MouseEvent) => void;
   onToggleBookmark?: () => void;
   isBookmarked?: boolean;
+  isHovered?: boolean;
 }
 
 export const CourseTile: React.FC<CourseTileProps> = ({
@@ -35,106 +37,91 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   providerName,
   providerLogoUrl,
   thumbnailUrl,
+  videoUrl,
   category,
   levelTag,
   audienceLevel,
-  topicTags = [],
   duration,
   lessonCount,
   rating,
   reviewCount,
-  primaryCtaLabel = "Enroll Now",
-  secondaryCtaLabel = "View Details",
-  onPrimaryClick = () => {},
-  onSecondaryClick = () => {},
-  showActions = variant === "course" ? false : showActions,
   variant = "course",
   onAddToComparison,
   onCardClick,
   onToggleBookmark,
   isBookmarked,
+  isHovered = false,
 }) => {
   const heroSrc = thumbnailUrl || providerLogoUrl || "/mzn_logo.png";
   const displayRating = rating ?? 4.6;
   const displayReviews = reviewCount ?? 24;
+  const videoRef = React.useRef<HTMLVideoElement>(null);
 
+  React.useEffect(() => {
+    if (isHovered && videoRef.current && videoUrl) {
+      videoRef.current.currentTime = 0;
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Auto-play was prevented
+        });
+      }
+    } else if (!isHovered && videoRef.current) {
+      videoRef.current.pause();
+    }
+  }, [isHovered, videoUrl]);
+
+  // Classic Card (Financial/Non-Financial Services)
   if (variant === "classic") {
     return (
       <div
-        className="group relative flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-[2px] transition-all duration-200"
+        className="group relative flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 h-full"
         onClick={onCardClick}
       >
-        <div className="p-5 flex flex-col gap-4">
-          <div className="flex items-start gap-3">
-            <div className="h-12 w-12 rounded-lg border border-gray-100 bg-gradient-to-b from-slate-50 to-white overflow-hidden flex items-center justify-center shadow-inner">
-              <img
-                src={providerLogoUrl}
-                alt={`${providerName} logo`}
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <div className="flex-1 space-y-2">
-              <div className="flex flex-wrap gap-2">
+        <div className="p-5 flex flex-col gap-4 flex-1">
+          <div className="flex flex-col gap-3">
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2 mb-1">
                 {category ? <Tag variant="category">{category}</Tag> : null}
                 {levelTag ? <Tag variant="level">{levelTag}</Tag> : null}
-                {audienceLevel ? (
-                  <Tag variant="audience">{audienceLevel}</Tag>
-                ) : null}
               </div>
-              <h3 className="font-semibold text-gray-900 leading-snug line-clamp-2">
+              <h3 className="font-semibold text-gray-900 leading-snug line-clamp-2 text-base">
                 {title}
               </h3>
-              <div className="flex items-center gap-2 text-xs text-gray-600">
-                <span className="font-medium text-gray-700">{providerName}</span>
-                <span className="text-gray-300">•</span>
-                <div className="flex items-center gap-1">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <StarIcon
-                        key={star}
-                        className={`h-3.5 w-3.5 ${
-                          displayRating >= star
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="font-medium">{displayRating.toFixed(1)}</span>
-                  <span className="text-gray-400">({displayReviews})</span>
-                </div>
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                {rating && (
+                  <>
+                    <span className="text-gray-300">•</span>
+                    <div className="flex items-center gap-1">
+                      <StarIcon size={12} className="fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium">{displayRating.toFixed(1)}</span>
+                      <span className="text-gray-400">({displayReviews})</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
-          <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
+          <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
             {description}
           </p>
 
-          {topicTags.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {topicTags.slice(0, 4).map((tag, index) => (
-                <Tag key={`${tag}-${index}`} variant="topic">
-                  {tag}
-                </Tag>
-              ))}
+          <div className="mt-auto pt-2 flex items-center justify-between">
+            <div className="flex gap-2">
+              {/* Placeholder for extra meta if needed */}
             </div>
-          )}
-
-          <div className="flex items-center justify-between">
-            <CourseMeta duration={duration} lessonCount={lessonCount} />
             <div className="flex items-center gap-2">
-              {onToggleBookmark ? (
+              {onToggleBookmark && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleBookmark();
                   }}
-                  className={`p-2 rounded-full ${
-                    isBookmarked
-                      ? "bg-yellow-100 text-yellow-600"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  }`}
+                  className={`p-2 rounded-full transition-colors ${isBookmarked
+                    ? "bg-yellow-50 text-yellow-600"
+                    : "bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    }`}
                   aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
                 >
                   <StarIcon
@@ -142,129 +129,139 @@ export const CourseTile: React.FC<CourseTileProps> = ({
                     className={isBookmarked ? "fill-yellow-500" : ""}
                   />
                 </button>
-              ) : null}
-              {onAddToComparison ? (
+              )}
+              {onAddToComparison && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onAddToComparison();
                   }}
-                  className="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  className="p-2 rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
                   aria-label="Add to comparison"
                 >
                   <ScaleIcon size={16} />
                 </button>
-              ) : null}
+              )}
             </div>
           </div>
         </div>
-
-        {showActions ? (
-          <div className="border-t border-gray-100 bg-gray-50 p-4 flex gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onSecondaryClick(e);
-              }}
-              className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors whitespace-nowrap flex-1"
-            >
-              {secondaryCtaLabel}
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onPrimaryClick(e);
-              }}
-              className="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg transition-colors whitespace-nowrap flex-1"
-            >
-              {primaryCtaLabel}
-            </button>
-          </div>
-        ) : null}
       </div>
     );
   }
 
+  // Course Card (Modern / Airbnb-like)
   return (
     <div
-      className="group relative flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-[2px] transition-all duration-200"
-      // Marketplace cards wire their quick view trigger into this click handler
+      className={`
+        group relative flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer
+        ${isHovered ? 'shadow-xl' : ''}
+      `}
       onClick={onCardClick}
     >
-      <div className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden">
+      {/* Thumbnail Section */}
+      <div className={`relative w-full bg-gray-100 overflow-hidden transition-all duration-300 ${isHovered ? 'aspect-video' : 'aspect-video'}`}>
         <img
           src={heroSrc}
-          alt={`${title || providerName} thumbnail`}
-          className="h-full w-full object-cover"
+          alt={`${title} thumbnail`}
+          className={`h-full w-full object-cover transition-opacity duration-300 ${isHovered && videoUrl ? 'opacity-0' : 'opacity-100'}`}
+          style={{ contain: 'layout' }}
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = providerLogoUrl || "/mzn_logo.png";
           }}
         />
+
+        {/* Video Player on Hover */}
+        {videoUrl && (
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+            muted
+            loop
+            playsInline
+          />
+        )}
+
+        {/* Overlay Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2 items-start z-10">
+          {audienceLevel && (
+            <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-purple-700 text-[10px] font-bold uppercase tracking-wider rounded-md shadow-sm border border-purple-100">
+              {audienceLevel}
+            </span>
+          )}
+        </div>
+
+        {/* Bookmark / Compare Overlay Actions (Visible on Hover) */}
+        <div className={`absolute top-3 right-3 flex flex-col gap-2 transition-opacity duration-200 z-10 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+          {onToggleBookmark && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleBookmark();
+              }}
+              className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white text-gray-500 hover:text-yellow-500 transition-colors"
+            >
+              <StarIcon size={16} className={isBookmarked ? "fill-yellow-500 text-yellow-500" : ""} />
+            </button>
+          )}
+          {onAddToComparison && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToComparison();
+              }}
+              className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <ScaleIcon size={16} />
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="p-5 pt-4 flex flex-col flex-1">
-        {category ? (
-          <div className="text-[11px] uppercase tracking-wide font-semibold text-blue-700 mb-2">
-            {category}
-          </div>
-        ) : null}
+      {/* Content Section */}
+      <div className="p-5 flex flex-col flex-1">
+        <div className="flex items-center justify-between mb-2">
+          {category && (
+            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
+              {category}
+            </span>
+          )}
+          {levelTag && (
+            <span className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+              {levelTag}
+            </span>
+          )}
+        </div>
 
-        <h3 className="text-lg font-semibold text-slate-900 leading-snug line-clamp-2 mb-1.5">
+        <h3 className="text-lg font-bold text-gray-900 leading-tight line-clamp-2 mb-2 group-hover:text-blue-700 transition-colors">
           {title}
         </h3>
 
-        <p className="text-sm text-slate-600 leading-relaxed line-clamp-2 mb-4">
+        <p className={`text-sm text-gray-600 leading-relaxed mb-4 ${isHovered ? '' : 'line-clamp-2'}`}>
           {description}
         </p>
 
-        <div className="mt-auto pt-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 text-xs text-slate-500">
-            {duration ? (
-              <span className="inline-flex items-center gap-1">
-                <Clock size={14} className="text-slate-400" />
-                <span>{duration}</span>
-              </span>
-            ) : null}
-            {lessonCount ? (
-              <span className="inline-flex items-center gap-1">
-                <BookOpen size={14} className="text-slate-400" />
-                <span>
-                  {lessonCount} lesson{lessonCount === 1 ? "" : "s"}
-                </span>
-              </span>
-            ) : null}
+        {/* Expanded Details on Hover */}
+        {isHovered && (
+          <div className="mb-4 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-wrap gap-2 mb-3">
+              {/* Show extra tags if available */}
+            </div>
           </div>
-          {levelTag ? (
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-amber-50 text-amber-700">
-              {levelTag}
-            </span>
-          ) : null}
+        )}
+
+        <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
+          <CourseMeta duration={duration} lessonCount={lessonCount} />
+          {/* Provider Logo (Small) */}
+          <img
+            src={providerLogoUrl}
+            alt={providerName}
+            className="h-6 w-6 object-contain opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-200"
+            title={providerName}
+          />
         </div>
       </div>
-
-      {showActions ? (
-        <div className="border-t border-gray-100 bg-gray-50 p-4 flex gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSecondaryClick(e);
-            }}
-            className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors whitespace-nowrap flex-1"
-          >
-            {secondaryCtaLabel}
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onPrimaryClick(e);
-            }}
-            className="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg transition-colors whitespace-nowrap flex-1"
-          >
-            {primaryCtaLabel}
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 };

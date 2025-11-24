@@ -155,10 +155,10 @@ const MOCK_DATA_POOL = {
 // Deterministic random selection based on provider name
 const getProviderData = (providerName: string, marketplaceType: "courses" | "financial" | "non-financial") => {
   const pool = MOCK_DATA_POOL[marketplaceType];
-  
+
   // Use provider name to generate a consistent "random" index
   const hash = providerName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  
+
   const nameIndex = hash % pool.names.length;
   const taglineIndex = hash % pool.taglines.length;
   const descIndex = hash % pool.descriptions.length;
@@ -168,7 +168,7 @@ const getProviderData = (providerName: string, marketplaceType: "courses" | "fin
   const contactIndex = hash % pool.contacts.length;
   const websiteIndex = hash % pool.websites.length;
   const servicesIndex = hash % pool.services.length;
-  
+
   return {
     name: pool.names[nameIndex],
     tagline: pool.taglines[taglineIndex],
@@ -191,13 +191,16 @@ const ProviderTab: React.FC<ProviderTabProps> = ({
     () => getProviderData(provider.name, marketplaceType),
     [provider.name, marketplaceType]
   );
-  
+
+  const isCourse = marketplaceType === 'courses';
+  const providerLabel = isCourse ? 'instructor' : 'provider';
+
   // Use actual provider name if available, otherwise use mock name
   const displayName = provider.name && provider.name.trim() !== "" ? provider.name : mockData.name;
   return (
     <div className="space-y-6">
       <p className="text-gray-600 text-lg mb-6">
-        Learn more about the provider and their expertise in this field.
+        Learn more about the {providerLabel} and their expertise in this field.
       </p>
       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
         <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
@@ -238,7 +241,7 @@ const ProviderTab: React.FC<ProviderTabProps> = ({
               'bg-amber-50 text-amber-700',
             ];
             const color = colors[index % colors.length];
-            
+
             return (
               <span
                 key={index}
@@ -249,7 +252,7 @@ const ProviderTab: React.FC<ProviderTabProps> = ({
             );
           })}
         </div>
-        <a 
+        <a
           href={mockData.website}
           target="_blank"
           rel="noopener noreferrer"

@@ -190,7 +190,7 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     title: 'Course Marketplace',
     description: 'Discover and enroll in courses tailored for SMEs to help grow your business',
     route: '/marketplace/courses',
-    primaryCTA: 'Enroll Now',
+    primaryCTA: 'Start Learning',
     secondaryCTA: 'View Details',
     itemName: 'Course',
     itemNamePlural: 'Courses',
@@ -215,13 +215,13 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     detailSections: ['description', 'learningOutcomes', 'schedule', 'provider', 'related'],
     tabs: [{
       id: 'about',
-      label: 'About This Service',
+      label: 'Overview',
       icon: Info,
       iconBgColor: 'bg-blue-50',
       iconColor: 'text-blue-600'
     }, {
       id: 'schedule',
-      label: 'Schedule',
+      label: 'Course Outline',
       icon: Calendar,
       iconBgColor: 'bg-green-50',
       iconColor: 'text-green-600'
@@ -233,7 +233,7 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
       iconColor: 'text-purple-600'
     }, {
       id: 'provider',
-      label: 'About Provider',
+      label: 'About Instructor',
       icon: Building,
       iconBgColor: 'bg-blue-50',
       iconColor: 'text-blue-600'

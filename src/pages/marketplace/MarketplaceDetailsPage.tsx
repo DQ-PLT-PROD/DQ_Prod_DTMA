@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import {
   BookmarkIcon,
   StarIcon,
   ChevronRightIcon,
   HomeIcon,
+  Share2Icon,
 } from "lucide-react";
 import { Header } from "../../components/Header";
 import { Footer } from "../../components/Footer";
@@ -21,23 +22,25 @@ import { getMarketplaceConfig } from "../../utils/marketplaceConfig";
 import { getCourseMedia } from "../../utils/courseMedia";
 import { addCompareId } from "../../utils/comparisonStorage";
 import { ErrorDisplay } from "../../components/SkeletonLoader";
-import { Link } from "react-router-dom";
 import { useProductDetails } from "../../hooks/useProductDetails";
-import { Tag } from "../../components/ui/Tag";
 import { CourseMeta } from "../../components/ui/CourseMeta";
+import { AudienceFitIndicator } from "../../components/marketplace/details/AudienceFitIndicator";
+import { DimensionBadge } from "../../components/marketplace/details/DimensionBadge";
 import { MarketplaceCard } from "../../components/marketplace/MarketplaceCard";
-import { MarketplaceQuickViewModal, QuickViewAnchorRect } from "../../components/marketplace/MarketplaceQuickViewModal";
+import { BRAND_GRADIENT } from "../../constants/branding";
+
 interface MarketplaceDetailsPageProps {
   marketplaceType: "courses" | "financial" | "non-financial" | "knowledge-hub";
   bookmarkedItems?: string[];
   onToggleBookmark?: (itemId: string) => void;
   onAddToComparison?: (item: any) => void;
 }
+
 const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   marketplaceType,
   bookmarkedItems = [],
-  onToggleBookmark = (_: string) => {},
-  onAddToComparison = (_: any) => {},
+  onToggleBookmark = (_: string) => { },
+  onAddToComparison = (_: any) => { },
 }) => {
   const { itemId } = useParams<{
     itemId: string;
@@ -53,7 +56,6 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [isFloatingCardVisible, setIsFloatingCardVisible] = useState(true);
   const [showStickyBottomCTA, setShowStickyBottomCTA] = useState(false);
-  const [headerHeight, setHeaderHeight] = useState(80);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -61,23 +63,20 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   const summaryCardRef = useRef<HTMLDivElement>(null);
   const heroVideoRef = useRef<HTMLVideoElement>(null);
   const [isHeroVideoPlaying, setIsHeroVideoPlaying] = useState(false);
-  const [relatedQuickView, setRelatedQuickView] = useState<{
-    item: any;
-    anchorRect?: QuickViewAnchorRect | null;
-    anchor?: { x: number; y: number };
-  } | null>(null);
-  const hideQuickViewTimer = useRef<NodeJS.Timeout | null>(null);
   const [isPointerFine, setIsPointerFine] = useState<boolean>(true);
+
   // Centralized data fetching & mapping
   const { item, relatedItems, loading, error, refetch } = useProductDetails({
     itemId,
     marketplaceType,
     shouldTakeAction,
   });
+
   const { videoUrl: introVideoUrl, poster: introVideoPoster } = useMemo(
     () => getCourseMedia(item),
     [item]
   );
+
   const seeAllHref = useMemo(() => {
     if (marketplaceType !== "courses") return config.route;
     const params = new URLSearchParams();
@@ -95,6 +94,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       setIsBookmarked(bookmarkedItems.includes(item.id));
     }
   }, [item?.id, bookmarkedItems]);
+
   // Check if tabs overflow and need navigation controls
   const checkOverflow = () => {
     if (tabsRef.current && containerRef.current) {
@@ -103,6 +103,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       setShowNavigation(scrollWidth > clientWidth);
     }
   };
+
   useEffect(() => {
     checkOverflow();
     const resizeObserver = new ResizeObserver(checkOverflow);
@@ -111,18 +112,19 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     }
     return () => resizeObserver.disconnect();
   }, [config.tabs]);
+
   // Update floating card visibility based on scroll position
   useEffect(() => {
     const handleScroll = () => {
       // Get header height dynamically
       const header = document.querySelector("header");
-      const headerHeight = header ? header.offsetHeight : 80;
-      setHeaderHeight(headerHeight);
+      const currentHeaderHeight = header ? header.offsetHeight : 80;
+
       if (heroRef.current && mainContentRef.current) {
         const heroRect = heroRef.current.getBoundingClientRect();
         const heroBottom = heroRect.bottom;
         // Show floating card when hero section is scrolled past the header
-        setIsVisible(heroBottom <= headerHeight + 16); // Add small margin
+        setIsVisible(heroBottom <= currentHeaderHeight + 16); // Add small margin
         // For mobile, we'll handle this differently with the sticky bottom CTA
         if (window.innerWidth < 1024) {
           const summaryCardBottom =
@@ -142,6 +144,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       window.removeEventListener("resize", handleScroll);
     };
   }, []);
+
   useEffect(() => {
     const handleScroll = () => {
       if (summaryCardRef.current && window.innerWidth < 1024) {
@@ -162,6 +165,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       window.removeEventListener("resize", handleScroll);
     };
   }, []);
+
   const scrollLeft = () => {
     if (tabsRef.current) {
       tabsRef.current.scrollBy({
@@ -170,6 +174,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       });
     }
   };
+
   const scrollRight = () => {
     if (tabsRef.current) {
       tabsRef.current.scrollBy({
@@ -178,6 +183,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       });
     }
   };
+
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
     const mq = window.matchMedia("(pointer: fine)");
@@ -186,6 +192,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
+
   const handleHeroPlay = () => {
     const video = heroVideoRef.current;
     if (video) {
@@ -193,62 +200,28 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       video
         .play()
         .then(() => setIsHeroVideoPlaying(true))
-        .catch(() => {});
+        .catch(() => { });
     }
   };
-  const clearHideTimer = () => {
-    if (hideQuickViewTimer.current) {
-      clearTimeout(hideQuickViewTimer.current);
-      hideQuickViewTimer.current = null;
-    }
-  };
-  const scheduleHideQuickView = () => {
-    clearHideTimer();
-    if (!relatedQuickView) return;
-    hideQuickViewTimer.current = setTimeout(() => {
-      setRelatedQuickView(null);
-    }, 180);
-  };
 
-  const normalizeAnchorRect = (
-    anchor?: QuickViewAnchorRect | DOMRect | null
-  ): QuickViewAnchorRect | undefined => {
-    if (!anchor) return undefined;
-    return {
-      top: anchor.top,
-      left: anchor.left,
-      width: anchor.width,
-      height: anchor.height,
-    };
-  };
-
-  const openQuickView = (item: any, anchor?: QuickViewAnchorRect | DOMRect | { x: number; y: number } | null) => {
-    clearHideTimer();
-    const anchorRect =
-      anchor && "width" in (anchor as QuickViewAnchorRect | DOMRect)
-        ? normalizeAnchorRect(anchor as QuickViewAnchorRect | DOMRect)
-        : undefined;
-    const anchorPoint =
-      anchor && "x" in (anchor as { x: number; y: number })
-        ? { x: (anchor as { x: number; y: number }).x, y: (anchor as { x: number; y: number }).y }
-        : undefined;
-    setRelatedQuickView({ item, anchorRect, anchor: anchorPoint });
-  };
   const [activeTab, setActiveTab] = useState<string>(
     config.tabs[0]?.id || "about"
   );
+
   const rating = (item as any)?.rating
     ? String((item as any).rating)
     : (4 + Math.random()).toFixed(1);
   const reviewCount = (item as any)?.reviewCount
     ? Number((item as any).reviewCount)
     : Math.floor(Math.random() * 50) + 10;
+
   const handleToggleBookmark = () => {
     if (item) {
       onToggleBookmark(item.id);
       setIsBookmarked(!isBookmarked);
     }
   };
+
   const handleAddToComparison = () => {
     if (item) {
       // Persist selection locally so it is available on marketplace pages
@@ -261,6 +234,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       navigate(configForType.route, { state: { addToCompare: item } });
     }
   };
+
   const handlePrimaryAction = () => {
     let url: string | undefined = (item as any)?.formUrl?.trim();
     if (!url) {
@@ -277,13 +251,15 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     }
     navigate(url);
   };
+
   const retryFetch = () => {
     if (itemId) {
       try {
         refetch?.();
-      } catch {}
+      } catch { }
     }
   };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -301,6 +277,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       </div>
     );
   }
+
   if (error) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -349,6 +326,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       </div>
     );
   }
+
   if (!item) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -377,24 +355,14 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       </div>
     );
   }
+
   // Extract display properties based on marketplace type
   const itemTitle = item.title;
   const itemDescription = item.description;
   const serviceApplication = item.serviceApplication;
   const provider = item.provider;
   const primaryAction = config.primaryCTA;
-  const secondaryAction = config.secondaryCTA;
-  // Extract tags based on marketplace type
-  const displayTags =
-    item.tags ||
-    [
-      item.category,
-      marketplaceType === "courses" ? item.deliveryMode : item.serviceType,
-      item.businessStage,
-    ].filter(Boolean);
-  const topicTags = Array.isArray((item as any).topicTags)
-    ? (item as any).topicTags.slice(0, 3)
-    : [];
+
   // Extract details for the sidebar
   const detailItems = config.attributes
     .map((attr) => {
@@ -406,27 +374,36 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       };
     })
     .filter((detail) => detail.value !== "N/A");
+
   // Extract highlights/features based on marketplace type
   const highlights =
     marketplaceType === "courses"
       ? item.keyHighlights || item.learningOutcomes || []
       : item.details || item.keyHighlights || [];
+
   // Render tab content with consistent styling
   const renderTabContent = (tabId: string) => {
     const tab = config.tabs.find((t) => t.id === tabId);
     if (!tab) return null;
+
     // Return specific tab content based on tab ID
     switch (tabId) {
       case "about":
         return (
-          <AboutTab
-            itemDescription={itemDescription}
-            marketplaceType={marketplaceType}
-            item={item}
-            serviceApplication={serviceApplication}
-            config={config}
-            highlights={highlights}
-          />
+          <div className="space-y-8">
+            <AboutTab
+              itemDescription={itemDescription}
+              marketplaceType={marketplaceType}
+              item={item}
+              serviceApplication={serviceApplication}
+              config={config}
+              highlights={highlights}
+            />
+            {/* Audience Fit Indicator - DTMA Specific */}
+            {(item as any).audienceLevel && (
+              <AudienceFitIndicator audienceLevel={(item as any).audienceLevel} />
+            )}
+          </div>
         );
 
       case "schedule":
@@ -456,7 +433,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
         return (
           <ProviderTab
             provider={provider}
-            marketplaceType={marketplaceType}
+            marketplaceType={marketplaceType as any}
             item={item}
           />
         );
@@ -483,38 +460,57 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
         );
     }
   };
+
   // SummaryCard is now an external presentational component
   return (
     <div className="bg-white min-h-screen flex flex-col">
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-md focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       <Header
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         sidebarOpen={sidebarOpen}
+        transparent={true}
       />
-      <main className="flex-grow">
+      <main id="main-content" className="flex-grow">
         {/* Hero Banner - consistent header layout */}
         <div
           ref={heroRef}
-          className="w-full bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200"
+          className="w-full text-white relative overflow-hidden"
+          style={{
+            minHeight: '500px',
+            background: BRAND_GRADIENT
+          }}
         >
-          <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+          {/* Background Pattern Overlay */}
+          <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
+
+          {/* Gradient Overlay for smooth transition */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-50 to-transparent z-10"></div>
+
+          <div className="container mx-auto px-4 md:px-6 max-w-7xl relative z-20 h-full flex flex-col justify-center pt-24">
             {/* Breadcrumbs */}
-            <nav className="flex pt-4" aria-label="Breadcrumb">
-              <ol className="inline-flex items-center space-x-1 md:space-x-2">
+            <nav className="flex pt-8 pb-4" aria-label="Breadcrumb">
+              <ol className="inline-flex items-center space-x-1 md:space-x-2 text-sm">
                 <li className="inline-flex items-center">
                   <Link
                     to="/"
-                    className="text-gray-600 hover:text-gray-900 inline-flex items-center"
+                    className="text-white/70 hover:text-white inline-flex items-center transition-colors"
                   >
-                    <HomeIcon size={16} className="mr-1" />
+                    <HomeIcon size={14} className="mr-1.5" />
                     <span>Home</span>
                   </Link>
                 </li>
                 <li>
                   <div className="flex items-center">
-                    <ChevronRightIcon size={16} className="text-gray-400" />
+                    <ChevronRightIcon size={14} className="text-white/40" />
                     <Link
-                      to={config.route}
-                      className="ml-1 text-gray-600 hover:text-gray-900 md:ml-2"
+                      to={config.route as string}
+                      className="ml-1 text-white/70 hover:text-white md:ml-2 transition-colors"
                     >
                       {config.itemNamePlural}
                     </Link>
@@ -522,99 +518,101 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
                 </li>
                 <li aria-current="page">
                   <div className="flex items-center">
-                    <ChevronRightIcon size={16} className="text-gray-400" />
-                    <span className="ml-1 text-gray-500 md:ml-2">
+                    <ChevronRightIcon size={14} className="text-white/40" />
+                    <span className="ml-1 text-white font-medium md:ml-2 line-clamp-1 max-w-[200px] sm:max-w-none">
                       {itemTitle}
                     </span>
                   </div>
                 </li>
               </ol>
             </nav>
-            <div className={`grid gap-6 py-8 ${introVideoUrl ? "lg:grid-cols-3" : ""}`}>
-              <div className={introVideoUrl ? "lg:col-span-2 flex flex-col items-start" : "flex flex-col items-start max-w-3xl"}>
-                {/* Provider */}
-                <div className="flex items-center mb-3">
-                  <img
-                    src={provider?.logoUrl || "/mzn_logo.png"}
-                    alt={`${provider?.name || 'Provider'} logo`}
-                    className="h-10 w-10 object-contain mr-3 rounded-md bg-white border border-gray-200 p-1"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/mzn_logo.png";
-                    }}
-                  />
-                  <span className="text-gray-600 font-medium">
-                    {provider?.name || 'Provider'}
-                  </span>
+
+            <div className={`grid gap-12 py-8 lg:py-16 ${introVideoUrl ? "lg:grid-cols-12" : ""}`}>
+              <div className={introVideoUrl ? "lg:col-span-7 flex flex-col items-start justify-center" : "flex flex-col items-start max-w-4xl justify-center"}>
+                {/* Badges Row */}
+                <div className="flex flex-wrap gap-3 mb-6">
+                  {(item as any).category && (
+                    <DimensionBadge dimension={(item as any).category} />
+                  )}
+                  {(item as any).audienceLevel && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs font-bold uppercase tracking-wider text-white">
+                      For {(item as any).audienceLevel}
+                    </span>
+                  )}
                 </div>
+
                 {/* Title */}
-                <h1 className="text-3xl font-bold text-gray-900 mb-2 leading-tight">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight tracking-tight">
                   {itemTitle}
                 </h1>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {item.category ? (
-                    <Tag variant="category">{item.category}</Tag>
-                  ) : null}
-                  {(item as any).levelTag ? (
-                    <Tag variant="level">{(item as any).levelTag}</Tag>
-                  ) : null}
-                  {(item as any).audienceLevel ? (
-                    <Tag variant="audience">{(item as any).audienceLevel}</Tag>
-                  ) : null}
-                  {displayTags.length === 0 && topicTags.length === 0
-                    ? null
-                    : topicTags.map((tag, index) => (
-                        <Tag key={`${tag}-${index}`} variant="topic">
-                          {tag}
-                        </Tag>
-                      ))}
-                </div>
-                {/* Ratings and bookmark row - Now in a single row with proper alignment */}
-                <div className="flex items-center justify-between w-full mb-4">
-                  <div className="flex items-center">
-                    {marketplaceType === "courses" && (
-                      <div className="flex items-center">
-                        <div className="flex items-center">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <StarIcon
-                              key={star}
-                              size={16}
-                              className={`${
-                                parseFloat(rating) >= star
-                                  ? "text-yellow-400 fill-yellow-400"
-                                  : "text-gray-300"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <span className="ml-2 text-sm font-medium text-gray-700">
-                          {rating}
-                        </span>
-                        <span className="mx-1.5 text-gray-500">·</span>
-                        <span className="text-sm text-gray-500">
-                          {reviewCount} reviews
-                        </span>
-                      </div>
-                    )}
+
+                {/* Meta Row */}
+                <div className="flex flex-wrap items-center gap-6 text-white/90 text-sm mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-white p-1 flex items-center justify-center">
+                      <img
+                        src={provider?.logoUrl || "/mzn_logo.png"}
+                        alt={`${provider?.name || 'Provider'} logo`}
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                    <span className="font-bold text-lg">{provider?.name || 'Provider'}</span>
                   </div>
+
+                  {marketplaceType === "courses" && (
+                    <>
+                      <span className="text-white/30 text-xl">•</span>
+                      <div className="flex items-center gap-1.5">
+                        <StarIcon size={18} className="text-yellow-400 fill-yellow-400" />
+                        <span className="font-bold text-lg">{rating}</span>
+                        <span className="text-white/70">({reviewCount} reviews)</span>
+                      </div>
+                      <span className="text-white/30 text-xl">•</span>
+                      <CourseMeta
+                        duration={item.duration}
+                        lessonCount={item.lessonCount}
+                        className="text-white/90 font-medium text-base"
+                      />
+                    </>
+                  )}
                 </div>
+
                 {/* Description */}
-                <p className="text-gray-700 mb-4 max-w-2xl">{itemDescription}</p>
-                <div className="flex flex-wrap gap-3 items-center mb-2">
-                  <CourseMeta duration={item.duration} lessonCount={item.lessonCount} />
-                  {item.deliveryMode ? (
-                    <Tag variant="meta">{item.deliveryMode}</Tag>
-                  ) : null}
+                <p className="text-white/90 text-xl leading-relaxed mb-10 max-w-3xl font-light">
+                  {itemDescription}
+                </p>
+
+                {/* Action Buttons (Mobile Only - Desktop has sticky card) */}
+                <div className="flex gap-3 lg:hidden w-full sm:w-auto">
+                  <button
+                    onClick={handlePrimaryAction}
+                    className="flex-1 sm:flex-none px-8 py-4 bg-white text-blue-700 font-bold text-lg rounded-xl shadow-xl hover:bg-blue-50 transition-all transform hover:-translate-y-1"
+                  >
+                    {primaryAction}
+                  </button>
+                  <button
+                    onClick={handleToggleBookmark}
+                    className="p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
+                  >
+                    <BookmarkIcon size={24} className={isBookmarked ? "fill-white" : ""} />
+                  </button>
+                  <button
+                    className="p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
+                  >
+                    <Share2Icon size={24} />
+                  </button>
                 </div>
               </div>
-              {introVideoUrl ? (
-                <div className="w-full">
-                  <div className="relative rounded-2xl overflow-hidden shadow-lg bg-black">
+
+              {/* Video Column */}
+              {introVideoUrl && (
+                <div className="lg:col-span-5 w-full flex items-center">
+                  <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 bg-black aspect-video transform rotate-1 hover:rotate-0 transition-transform duration-500">
                     <video
                       ref={heroVideoRef}
                       src={introVideoUrl}
                       poster={introVideoPoster}
-                      className="w-full h-64 lg:h-72 object-cover"
+                      className="w-full h-full object-cover"
                       controls={isHeroVideoPlaying}
                       muted={!isHeroVideoPlaying}
                       playsInline
@@ -623,17 +621,19 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
                     {!isHeroVideoPlaying && (
                       <button
                         onClick={handleHeroPlay}
-                        className="absolute inset-0 flex items-center justify-center bg-black/35 text-white"
+                        className="absolute inset-0 flex items-center justify-center bg-black/40 group hover:bg-black/30 transition-colors"
                         aria-label="Play intro video"
                       >
-                        <span className="h-14 w-14 rounded-full bg-white/85 text-gray-900 flex items-center justify-center shadow-lg">
-                          ▶
-                        </span>
+                        <div className="h-20 w-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <div className="h-14 w-14 rounded-full bg-white text-blue-600 flex items-center justify-center shadow-lg pl-1">
+                            <span className="text-2xl">▶</span>
+                          </div>
+                        </div>
                       </button>
                     )}
                   </div>
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
         </div>
@@ -649,6 +649,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
           containerRef={containerRef}
           scrollLeft={scrollLeft}
           scrollRight={scrollRight}
+          onCheckOverflow={checkOverflow}
         />
         {/* Main content area with 12-column grid layout */}
         <div
@@ -690,8 +691,8 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
               )}
             </div>
             {/* Summary card column (~4 columns) - visible only on desktop */}
-            <div className="hidden lg:block lg:col-span-4">
-              <div className="sticky top-[96px]">
+            <div className="hidden lg:block lg:col-span-4 relative">
+              <div className="sticky top-[110px] z-30">
                 {isFloatingCardVisible && (
                   <SummaryCard
                     isFloating={isVisible}
@@ -708,6 +709,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
             </div>
           </div>
         </div>
+
         {/* Floating card - visible when scrolled past hero section (mobile/tablet only) */}
         {isVisible && isFloatingCardVisible && (
           <div className="lg:hidden">
@@ -723,6 +725,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
             />
           </div>
         )}
+
         {/* Related Items */}
         <section className="bg-gray-50 py-10 border-t border-gray-200">
           <div className="container mx-auto px-4 md:px-6 max-w-7xl">
@@ -738,57 +741,25 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
                 <ChevronRightIcon size={16} className="ml-1" />
               </Link>
             </div>
-            {relatedItems.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {relatedItems.map((relatedItem) => {
-                  return (
-                    <MarketplaceCard
-                      item={relatedItem as any}
-                      key={relatedItem.id}
-                      marketplaceType={marketplaceType}
-                      isBookmarked={false}
-                      onToggleBookmark={() => {}}
-                      onAddToComparison={() => {}}
-                      onQuickViewOpen={(rect) => openQuickView(relatedItem, rect)}
-                      onQuickViewClose={scheduleHideQuickView}
-                      onQuickViewHover={clearHideTimer}
-                      isQuickViewActive={relatedQuickView?.item.id === relatedItem.id}
-                      isPointerFine={isPointerFine}
-                    />
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8 bg-white rounded-lg shadow-sm border border-gray-200">
-                <p className="text-gray-500">
-                  No related {config.itemNamePlural.toLowerCase()} found
-                </p>
-              </div>
-            )}
+
+            {/* Related Items Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedItems.map((relatedItem) => (
+                <div key={relatedItem.id} className="h-full">
+                  <MarketplaceCard
+                    item={relatedItem}
+                    marketplaceType={marketplaceType}
+                    isBookmarked={bookmarkedItems.includes(relatedItem.id)}
+                    onToggleBookmark={() => onToggleBookmark(relatedItem.id)}
+                    onAddToComparison={() => onAddToComparison(relatedItem)}
+                    isPointerFine={isPointerFine}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-          {relatedQuickView && (
-            <MarketplaceQuickViewModal
-              item={relatedQuickView.item}
-              anchorRect={relatedQuickView.anchorRect}
-              anchor={relatedQuickView.anchor}
-              marketplaceType={marketplaceType}
-              onClose={() => setRelatedQuickView(null)}
-              onViewDetails={() => {
-                navigate(`/marketplace/${marketplaceType}/${relatedQuickView.item.id}`);
-                setRelatedQuickView(null);
-              }}
-              isBookmarked={false}
-              onToggleBookmark={() => {}}
-              onAddToComparison={() => {}}
-              onPrimaryAction={() => {
-                navigate(`/marketplace/${marketplaceType}/${relatedQuickView.item.id}`);
-                setRelatedQuickView(null);
-              }}
-              onHover={() => clearHideTimer()}
-              onLeave={scheduleHideQuickView}
-            />
-          )}
         </section>
+
         {/* Sticky mobile CTA */}
         {showStickyBottomCTA && (
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 lg:hidden z-30 transform transition-transform duration-300 ease-in-out">
@@ -798,8 +769,8 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
                   {marketplaceType === "courses"
                     ? item.price || "Free"
                     : marketplaceType === "financial"
-                    ? item.amount || "Apply Now"
-                    : "Request Now"}
+                      ? item.amount || "Apply Now"
+                      : "Request Now"}
                 </div>
                 <div className="text-sm text-gray-600">
                   {item.duration || item.serviceType || ""}
@@ -819,4 +790,5 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     </div>
   );
 };
+
 export default MarketplaceDetailsPage;

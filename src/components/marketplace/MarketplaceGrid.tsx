@@ -33,7 +33,7 @@ interface MarketplaceGridProps {
   onAddToComparison: (item: MarketplaceItem) => void;
   promoCards?: PromoCardData[];
   onTagClick?: (
-    type: "category" | "audienceLevel" | "levelTag" | "deliveryMode" | "topic",
+    type: string,
     value: string
   ) => void;
 }
@@ -164,20 +164,22 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
   );
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-end mb-8">
         {/* Responsive header - concise on mobile */}
-        <h2 className="text-xl font-semibold text-gray-800 hidden sm:block">
-          Showing {totalItems} {itemLabel}
-        </h2>
-        <div className="text-sm text-gray-500 hidden sm:block">
-          Refine by 6XD dimension, role, level, or tags
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 hidden sm:block mb-1" aria-live="polite">
+            Showing {totalItems} {itemLabel}
+          </h2>
+          <div className="text-sm text-gray-500 hidden sm:block">
+            Refine by 6XD dimension, role, level, or tags
+          </div>
         </div>
         {/* Mobile-friendly header */}
-        <h2 className="text-lg font-medium text-gray-800 sm:hidden">
+        <h2 className="text-lg font-medium text-gray-800 sm:hidden" aria-live="polite">
           {totalItems} {itemLabel}
         </h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         {itemsWithPromos.map((entry, idx) => {
           if (entry.type === "item") {
             const item = entry.data as MarketplaceItem;

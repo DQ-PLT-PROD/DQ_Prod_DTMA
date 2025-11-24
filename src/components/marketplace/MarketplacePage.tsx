@@ -8,6 +8,7 @@ import { FilterIcon, XIcon, HomeIcon, ChevronRightIcon, ChevronDownIcon, Chevron
 import { ErrorDisplay, CourseCardSkeleton } from "../SkeletonLoader";
 import { getMarketplaceConfig } from "../../utils/marketplaceConfig";
 import { MarketplaceComparison } from "./MarketplaceComparison";
+import { CourseComparison } from "../CourseComparison";
 import { Header, useAuth } from "../Header";
 import { Footer } from "../Footer";
 import {
@@ -159,45 +160,45 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
       ? "Browse practical, bite-sized courses for Digital Leaders and Digital Workers, mapped to the 6XD Dimensions of Digital and the Economy 4.0 playbook."
       : config.description;
   const allowPromoCards = config.showPromoCards !== false;
-  
+
   // State for items and filtering
   const [items, setItems] = useState<any[]>([]);
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<Record<string, string | string[]>>({});
   const [hasAppliedQueryFilters, setHasAppliedQueryFilters] = useState(false);
-  
+
   // Filter sidebar visibility - should be visible on desktop, hidden on mobile by default
   const [showFilters, setShowFilters] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bookmarkedItems, setBookmarkedItems] = useState<string[]>([]);
-  
+
   // Avoid clobbering localStorage with empty state before hydration
   const [hasHydratedCompare, setHasHydratedCompare] = useState(false);
   const [compareItems, setCompareItems] = useState<ComparisonItem[]>([]);
   const [showComparison, setShowComparison] = useState(false);
-  
+
   // State for filter options
   const [filterConfig, setFilterConfig] = useState<FilterConfig[]>([]);
-  
+
   // Knowledge Hub specific filters
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  
+
   // Collapsible filter categories state
   const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
-  
+
   // Loading and error states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Apollo queries for products, facets, and courses
   // Skip GraphQL entirely for Knowledge Hub — it uses Supabase + local data
   const skipGraph = marketplaceType === 'knowledge-hub';
-  
+
   const { data: productData, error: productError } = useQuery<GetProductsData>(GET_PRODUCTS, {
     skip: skipGraph || marketplaceType === "courses",
   });
-  
+
   const { data: facetData, error: facetError } = useQuery<GetFacetsData>(GET_FACETS, {
     skip: skipGraph || marketplaceType === "courses",
   });
@@ -219,7 +220,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           setFilters(initialFilters);
           return;
         }
-        
+
         if (marketplaceType === 'courses') {
           // Use canonical config for filter shape, but refresh categories from DTMA data
           const filterOptions: FilterConfig[] = config.filterCategories
@@ -227,12 +228,12 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             .map((fc) =>
               fc.id === 'category'
                 ? {
-                    ...fc,
-                    options: getDtmaCategories().map((category) => ({
-                      id: category.slug,
-                      name: category.name,
-                    })),
-                  }
+                  ...fc,
+                  options: getDtmaCategories().map((category) => ({
+                    id: category.slug,
+                    name: category.name,
+                  })),
+                }
                 : fc
             );
           setFilterConfig(filterOptions);
@@ -1029,14 +1030,14 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             </li>
           </ol>
         </nav>
-        
+
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-3xl font-bold text-gray-800">
             {heroTitle}
           </h1>
         </div>
         <p className="text-gray-600 mb-6">{heroDescription}</p>
-        
+
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="w-full">
             <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
@@ -1062,7 +1063,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             </button>
           </div>
         )}
-        
+
         {/* Comparison bar */}
         {compareItems.length > 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -1104,7 +1105,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
             </div>
           </div>
         )}
-        
+
         <div className="flex flex-col xl:flex-row gap-6">
           {/* Mobile filter toggle */}
           <div className="xl:hidden sticky top-16 z-20 bg-gray-50 py-2 shadow-sm">
@@ -1120,29 +1121,27 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
               </button>
               {(hasAppliedFilters ||
                 activeFilters.length > 0) && (
-                <button
-                  onClick={resetFilters}
-                  className="ml-2 text-blue-600 text-sm font-medium whitespace-nowrap px-3 py-2"
-                >
-                  Reset
-                </button>
-              )}
+                  <button
+                    onClick={resetFilters}
+                    className="ml-2 text-blue-600 text-sm font-medium whitespace-nowrap px-3 py-2"
+                  >
+                    Reset
+                  </button>
+                )}
             </div>
           </div>
-          
+
           {/* Filter sidebar - mobile/tablet */}
           <div
-            className={`fixed inset-0 bg-gray-800 bg-opacity-75 z-30 transition-opacity duration-300 xl:hidden ${
-              showFilters ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
+            className={`fixed inset-0 bg-gray-800 bg-opacity-75 z-30 transition-opacity duration-300 xl:hidden ${showFilters ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
             onClick={toggleFilters}
             aria-hidden={!showFilters}
           >
             <div
               id="filter-sidebar"
-              className={`fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
-                showFilters ? "translate-x-0" : "-translate-x-full"
-              }`}
+              className={`fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${showFilters ? "translate-x-0" : "-translate-x-full"
+                }`}
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
@@ -1208,7 +1207,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
               </div>
             </div>
           </div>
-          
+
           {/* Filter sidebar - desktop - always visible */}
           <div className="hidden xl:block xl:w-1/4">
             <div className="bg-white rounded-lg shadow sticky top-24 max-h-[calc(100vh-7rem)] flex flex-col">
@@ -1216,13 +1215,13 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 <h2 className="text-lg font-semibold">Filters</h2>
                 {(hasAppliedFilters ||
                   activeFilters.length > 0) && (
-                  <button
-                    onClick={resetFilters}
-                    className="text-blue-600 text-sm font-medium"
-                  >
-                    Reset All
-                  </button>
-                )}
+                    <button
+                      onClick={resetFilters}
+                      className="text-blue-600 text-sm font-medium"
+                    >
+                      Reset All
+                    </button>
+                  )}
               </div>
               <div className="p-4 overflow-y-auto scrollbar-hide">
                 {marketplaceType === 'knowledge-hub' ? (
@@ -1232,9 +1231,9 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                       const hasActiveFilters = category.options.some(opt => activeFilters.includes(opt.name));
                       return (
                         <div key={category.id} className="border-b border-gray-100 pb-2">
-                          <button 
-                            onClick={() => toggleCategoryCollapse(category.id)} 
-                            className="w-full flex items-center justify-between py-2 hover:bg-gray-50 rounded transition-colors" 
+                          <button
+                            onClick={() => toggleCategoryCollapse(category.id)}
+                            className="w-full flex items-center justify-between py-2 hover:bg-gray-50 rounded transition-colors"
                             aria-expanded={!isCollapsed}
                           >
                             <h3 className="font-medium text-gray-900 flex items-center gap-2">
@@ -1255,15 +1254,15 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                             <div className="space-y-2 mt-2 ml-1">
                               {category.options.map(option => (
                                 <div key={option.id} className="flex items-center">
-                                  <input 
-                                    type="checkbox" 
-                                    id={`desktop-${category.id}-${option.id}`} 
-                                    checked={activeFilters.includes(option.name)} 
-                                    onChange={() => handleKnowledgeHubFilterChange(option.name)} 
-                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+                                  <input
+                                    type="checkbox"
+                                    id={`desktop-${category.id}-${option.id}`}
+                                    checked={activeFilters.includes(option.name)}
+                                    onChange={() => handleKnowledgeHubFilterChange(option.name)}
+                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                   />
-                                  <label 
-                                    htmlFor={`desktop-${category.id}-${option.id}`} 
+                                  <label
+                                    htmlFor={`desktop-${category.id}-${option.id}`}
                                     className="ml-2 text-sm text-gray-700 cursor-pointer"
                                   >
                                     {option.name}
@@ -1277,19 +1276,19 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                     })}
                   </div>
                 ) : (
-                  <FilterSidebar 
-                    filters={filters} 
-                    filterConfig={filterConfig} 
-                    onFilterChange={handleFilterChange} 
-                    onResetFilters={resetFilters} 
-                    isResponsive={false} 
+                  <FilterSidebar
+                    filters={filters}
+                    filterConfig={filterConfig}
+                    onFilterChange={handleFilterChange}
+                    onResetFilters={resetFilters}
+                    isResponsive={false}
                     singleOpen={marketplaceType === 'courses'}
                   />
                 )}
               </div>
             </div>
           </div>
-          
+
           {/* Main content */}
           <div className="xl:w-3/4">
             {loading ? (
@@ -1330,20 +1329,28 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 onAddToComparison={handleAddToComparison}
                 promoCards={allowPromoCards ? promoCards : []}
                 onTagClick={handleTagFilter}
-                // Quick view interactions are handled inside MarketplaceGrid/MarketplaceCard; MarketplacePage just passes data through
+              // Quick view interactions are handled inside MarketplaceGrid/MarketplaceCard; MarketplacePage just passes data through
               />
             )}
           </div>
         </div>
-        
+
         {/* Comparison modal */}
         {showComparison && (
-          <MarketplaceComparison
-            items={compareItems}
-            onClose={() => setShowComparison(false)}
-            onRemoveItem={handleRemoveFromComparison}
-            marketplaceType={marketplaceType}
-          />
+          marketplaceType === "courses" ? (
+            <CourseComparison
+              courses={compareItems as any}
+              onClose={() => setShowComparison(false)}
+              onRemoveCourse={handleRemoveFromComparison}
+            />
+          ) : (
+            <MarketplaceComparison
+              items={compareItems}
+              onClose={() => setShowComparison(false)}
+              onRemoveItem={handleRemoveFromComparison}
+              marketplaceType={marketplaceType}
+            />
+          )
         )}
       </div>
       <Footer isLoggedIn={false} />

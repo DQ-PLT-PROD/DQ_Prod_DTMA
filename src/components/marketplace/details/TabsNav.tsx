@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
 export interface TabDef {
@@ -18,6 +18,7 @@ export interface TabsNavProps {
   containerRef: React.RefObject<HTMLDivElement>;
   scrollLeft: () => void;
   scrollRight: () => void;
+  onCheckOverflow?: () => void;
 }
 
 const TabsNav: React.FC<TabsNavProps> = ({
@@ -31,7 +32,21 @@ const TabsNav: React.FC<TabsNavProps> = ({
   containerRef,
   scrollLeft,
   scrollRight,
+  onCheckOverflow,
 }) => {
+  // Check overflow on mount and window resize
+  useEffect(() => {
+    if (onCheckOverflow) {
+      onCheckOverflow();
+
+      const handleResize = () => {
+        onCheckOverflow();
+      };
+
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, [onCheckOverflow]);
   return (
     <div className="border-b border-gray-200 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:backdrop-blur-md shadow-sm">
       <div className="container mx-auto px-4 md:px-6 max-w-7xl">
@@ -54,11 +69,10 @@ const TabsNav: React.FC<TabsNavProps> = ({
               <button
                 key={tab.id}
                 onClick={() => onChange(tab.id)}
-                className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 rounded-lg ${
-                  activeTab === tab.id
+                className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 rounded-lg ${activeTab === tab.id
                     ? "text-blue-700 bg-blue-50 border border-blue-100 shadow-sm"
                     : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                }`}
+                  }`}
                 aria-selected={activeTab === tab.id}
                 aria-controls={`tabpanel-${tab.id}`}
                 role="tab"
@@ -97,11 +111,10 @@ const TabsNav: React.FC<TabsNavProps> = ({
                         {tabs.map((tab) => (
                           <button
                             key={tab.id}
-                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                              activeTab === tab.id
+                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${activeTab === tab.id
                                 ? "bg-blue-50 text-blue-600"
                                 : "text-gray-700 hover:bg-gray-100"
-                            }`}
+                              }`}
                             onClick={() => {
                               onChange(tab.id);
                               setShowTabsMenu(false);

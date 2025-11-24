@@ -17,12 +17,14 @@ interface HeaderProps {
   toggleSidebar?: () => void;
   sidebarOpen?: boolean;
   "data-id"?: string;
+  transparent?: boolean;
 }
 
 export function Header({
   toggleSidebar,
   sidebarOpen,
   "data-id": dataId,
+  transparent = false,
 }: HeaderProps) {
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
   const [showNotificationCenter, setShowNotificationCenter] = useState(false);
@@ -110,18 +112,22 @@ export function Header({
     }
   };
 
+  const isTransparent = transparent && !isSticky;
+
   return (
     <>
       <header
         className={`w-full transition-all duration-300 ${isSticky
-            ? "fixed top-0 left-0 right-0 z-50 shadow-lg"
+          ? "fixed top-0 left-0 right-0 z-50 shadow-lg"
+          : isTransparent
+            ? "absolute top-0 left-0 right-0 z-50"
             : "relative z-50"
           }`}
         data-id={dataId}
         style={{
-          background: HEADER_GRADIENT,
-          backdropFilter: BRAND_BACKDROP_BLUR,
-          WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
+          background: isTransparent ? "transparent" : HEADER_GRADIENT,
+          backdropFilter: isTransparent ? "none" : BRAND_BACKDROP_BLUR,
+          WebkitBackdropFilter: isTransparent ? "none" : BRAND_BACKDROP_BLUR,
         }}
       >
         <div
