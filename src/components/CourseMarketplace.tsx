@@ -285,15 +285,41 @@ export const CourseMarketplace: React.FC = () => {
     () => businessStages.map((b) => b.name),
     [businessStages]
   );
+
+  const appliedFilters = useMemo(() => {
+    const items: { key: string; label: string }[] = [];
+    if (searchQuery) items.push({ key: "search", label: searchQuery });
+    if (filters.category) items.push({ key: "category", label: filters.category });
+    if (filters.deliveryMode) items.push({ key: "deliveryMode", label: filters.deliveryMode });
+    if (filters.duration) items.push({ key: "duration", label: filters.duration });
+    if (filters.businessStage) items.push({ key: "businessStage", label: filters.businessStage });
+    if (filters.provider) items.push({ key: "provider", label: filters.provider });
+    return items;
+  }, [filters, searchQuery]);
+
+  const clearSingleFilter = useCallback(
+    (key: string) => {
+      if (key === "search") {
+        setSearchQuery("");
+        return;
+      }
+      setFilters((prev) => ({
+        ...prev,
+        //@ts-ignore
+        [key]: "",
+      }));
+    },
+    []
+  );
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Breadcrumbs */}
-      <nav className="flex mb-4" aria-label="Breadcrumb">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <nav className="flex mb-4 text-sm text-gray-600" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2">
           <li className="inline-flex items-center">
             <a
               href="/"
-              className="text-gray-600 hover:text-gray-900 inline-flex items-center"
+              className="hover:text-gray-900 inline-flex items-center"
             >
               <HomeIcon size={16} className="mr-1" />
               <span>Home</span>
@@ -307,15 +333,40 @@ export const CourseMarketplace: React.FC = () => {
           </li>
         </ol>
       </nav>
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">
-        Course Marketplace
-      </h1>
-      <p className="text-gray-600 mb-6">
-        Discover and enroll in courses tailored for SMEs to help grow your
-        business
+      <h1 className="text-3xl font-bold text-gray-900 mb-1">DTMA Courses</h1>
+      <p className="text-gray-600 mb-5">
+        Browse practical, bite-sized courses for Digital Leaders and Digital Workers, mapped to the 6XD Dimensions of Digital and the Economy 4.0 playbook.
       </p>
-      <div className="mb-6">
+      <div className="mb-3">
         <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      </div>
+      <div className="flex flex-wrap items-center gap-2 mb-6">
+        {appliedFilters.map((item) => (
+          <span
+            key={item.key}
+            className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-100 px-3 py-1 text-sm text-gray-700"
+          >
+            {item.label}
+            <button
+              onClick={() => clearSingleFilter(item.key)}
+              className="text-gray-500 hover:text-gray-700"
+              aria-label={`Clear ${item.label}`}
+            >
+              <XIcon size={14} />
+            </button>
+          </span>
+        ))}
+        {appliedFilters.length === 0 && (
+          <span className="text-sm text-gray-500">No filters applied</span>
+        )}
+        {appliedFilters.length > 0 && (
+          <button
+            onClick={resetFilters}
+            className="text-sm font-semibold text-blue-600 hover:text-blue-800 ml-auto"
+          >
+            Clear all
+          </button>
+        )}
       </div>
       {/* Comparison bar */}
       {compareCourses.length > 0 && (
@@ -427,13 +478,13 @@ export const CourseMarketplace: React.FC = () => {
         </div>
         {/* Filter sidebar - desktop with sticky positioning */}
         <div className="hidden xl:block xl:w-1/4">
-          <div className="bg-white rounded-lg shadow p-4 sticky top-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 sticky top-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Filters</h2>
+              <h2 className="text-lg font-semibold text-gray-800">Filters</h2>
               {Object.values(filters).some((f) => f !== "") && (
                 <button
                   onClick={resetFilters}
-                  className="text-blue-600 text-sm font-medium"
+                  className="text-blue-600 text-sm font-semibold"
                 >
                   Reset All
                 </button>
@@ -453,6 +504,16 @@ export const CourseMarketplace: React.FC = () => {
         </div>
         {/* Main content */}
         <div className="xl:w-3/4">
+          <div className="flex items-baseline justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Showing {filteredCourses.length} Courses
+              </h2>
+              <p className="text-sm text-gray-500">
+                Refine by 6XD dimension, role, level, or tags
+              </p>
+            </div>
+          </div>
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {[...Array(6)].map((_, idx) => (
