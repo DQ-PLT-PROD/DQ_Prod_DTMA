@@ -9,7 +9,7 @@ import { ErrorDisplay, CourseCardSkeleton } from "../SkeletonLoader";
 import { getMarketplaceConfig } from "../../utils/marketplaceConfig";
 import { MarketplaceComparison } from "./MarketplaceComparison";
 import { CourseComparison } from "../CourseComparison";
-import { Header, useAuth } from "../Header";
+import { Header } from "../Header";
 import { Footer } from "../Footer";
 import {
   getStoredCompareIds,
@@ -21,10 +21,11 @@ import {
 import { useQuery } from "@apollo/client/react";
 import { useLocation } from "react-router-dom";
 import { GET_PRODUCTS, GET_FACETS } from "../../services/marketplaceQueries.ts";
-import { fetchMarketplaceFilters } from "../../services/marketplace";
+
 import { getFallbackKnowledgeHubItems } from "../../utils/fallbackData";
 import { isSupabaseConfigured, getSupabase } from "../../admin-ui/utils/supabaseClient";
-import { getCourses as getDtmaCourses, getCategories as getDtmaCategories, toMarketplaceItem } from "../../lib/api/dtmaCourses";
+import { getCategories as getDtmaCategories } from "../../lib/api/dtmaCourses";
+import { fetchCourses } from "../../services/courseService";
 
 
 // Mapping of Media Types to their relevant Format options (uses filter labels)
@@ -150,7 +151,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   promoCards = [],
 }) => {
   const navigate = useNavigate();
-  const { user, isLoading } = useAuth();
+
   const location = useLocation() as any;
   const config = getMarketplaceConfig(marketplaceType);
   const heroTitle =
@@ -275,7 +276,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           // Initialize empty filters based on the configuration
           const initialFilters: Record<string, string | string[]> = {};
           filterOptions.forEach((config) => {
-            initialFilters[config.id] = marketplaceType === 'courses' ? [] : '';
+            initialFilters[config.id] = '';
           });
           setFilters(initialFilters);
         }
@@ -509,24 +510,51 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           return;
         }
 
-        // Handle Courses via DTMA data layer
+        // Handle Courses via Supabase (with fallback)
         if (marketplaceType === "courses") {
-          const courseList = getDtmaCourses();
-          const mappedItems = courseList.map((course) => {
-            const mapped = toMarketplaceItem(course);
-            return {
-              ...mapped,
-              duration: mapped.duration,
-            };
-          });
-
-          const lowerSearch = searchQuery.trim().toLowerCase();
           const selectedCategories = toArrayFilter(filters.category);
           const selectedAudiences = toArrayFilter(filters.audienceLevel);
           const selectedLevels = toArrayFilter(filters.levelTag);
           const selectedTopics = toArrayFilter(filters.topic);
+          const selectedDeliveryModes = toArrayFilter(filters.deliveryMode);
 
-          const filteredCourses = mappedItems.filter((item) => {
+          // Prepare filters for service
+          const serviceFilters: any = {
+            search: searchQuery.trim(),
+          };
+
+          // Only apply if specific filters are selected
+          if (selectedCategories.length === 1) serviceFilters.categorySlug = selectedCategories[0];
+          if (selectedAudiences.length === 1) serviceFilters.audienceLevel = selectedAudiences[0];
+          if (selectedLevels.length === 1) serviceFilters.levelTag = selectedLevels[0];
+          if (selectedTopics.length === 1) serviceFilters.topic = selectedTopics[0];
+          if (selectedDeliveryModes.length === 1) serviceFilters.deliveryMode = selectedDeliveryModes[0];
+
+          // Fetch from service
+          // const courses = await fetchCourses(serviceFilters);
+
+          // Client-side filtering for multi-selects (since basic Supabase query above handles single values)
+          // If we wanted full server-side multi-select, we'd need more complex query logic in the service.
+          // For now, we let the service handle basic filtering and refine here if needed, 
+          // OR we rely on the service to return everything if we can't filter perfectly there.
+          // Given the service implementation currently handles single values for equality, 
+          // let's do client-side filtering for the complex cases to ensure accuracy 
+          // while we transition.
+
+          // Actually, let's just use the service for the heavy lifting if possible, 
+          // but since the service implementation I wrote handles single values, 
+          // let's fetch all if multiple filters are applied and filter locally, 
+          // or just filter locally for now to be safe and consistent with previous behavior 
+          // until the backend query is robust enough for complex AND/OR logic.
+
+          // REVISION: The service I wrote handles single values. 
+          // To minimize regression, let's fetch *all* (or filtered by search) and filter locally 
+          // like the original code did, but sourced from the service.
+          // This ensures "ready" state without breaking complex filter combos.
+
+          const allCourses = await fetchCourses({ search: searchQuery.trim() });
+
+          const filteredCourses = allCourses.filter((item) => {
             const categoryMatch =
               selectedCategories.length === 0 ||
               selectedCategories.includes(item.categorySlug || item.category);
@@ -542,6 +570,12 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 item.topicTags.some((tag: string) =>
                   selectedTopics.includes(tag)
                 ));
+            const deliveryMatch =
+              selectedDeliveryModes.length === 0 ||
+              selectedDeliveryModes.includes(item.deliveryMode);
+
+            // Search is already handled by service but good to double check if we fetched all
+            const lowerSearch = searchQuery.trim().toLowerCase();
             const matchesSearch =
               lowerSearch === "" ||
               item.title.toLowerCase().includes(lowerSearch) ||
@@ -559,11 +593,12 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
               audienceMatch &&
               levelMatch &&
               topicMatch &&
+              deliveryMatch &&
               matchesSearch
             );
           });
 
-          setItems(mappedItems);
+          setItems(allCourses);
           setFilteredItems(filteredCourses);
           setLoading(false);
           return;
@@ -777,7 +812,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   }, [marketplaceType, toArrayFilter]);
 
   // Apply filters directly from clickable tags on cards/quick views
-  const handleTagFilter = useCallback((filterType: 'category' | 'audienceLevel' | 'levelTag' | 'deliveryMode' | 'topic', value: string) => {
+  const handleTagFilter = useCallback((filterType: string, value: string) => {
     if (marketplaceType === 'courses') {
       setFilters((prev) => {
         const current = toArrayFilter(prev[filterType]);
@@ -911,9 +946,9 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
 
       if (isMediaTypeFilter) {
         const formatFilter = filterConfig.find(c => c.id === 'format');
-        const currentFormatFilters = newFilters.filter(f =>
-          formatFilter?.options.some(opt => opt.name === f)
-        );
+        // const currentFormatFilters = newFilters.filter(f =>
+        //   formatFilter?.options.some(opt => opt.name === f)
+        // );
 
         // Find the new selected media type
         const newMediaTypes = newFilters.filter(f =>
@@ -946,9 +981,9 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   }, [filterConfig]);
 
   // Clear Knowledge Hub filters
-  const clearKnowledgeHubFilters = useCallback(() => {
-    setActiveFilters([]);
-  }, []);
+  // const clearKnowledgeHubFilters = useCallback(() => {
+  //   setActiveFilters([]);
+  // }, []);
 
   // Toggle collapse state for a filter category
   const toggleCategoryCollapse = useCallback((categoryId: string) => {

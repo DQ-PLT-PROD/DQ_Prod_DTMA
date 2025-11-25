@@ -5,7 +5,8 @@ import {
   getFallbackItemDetails,
   getFallbackItems,
 } from "../utils/fallbackData";
-import { getCourseBySlug, getLessonsByCourse, getRelatedCourses, toMarketplaceItem, formatDuration, getIntroVideoForCourse } from "../lib/api/dtmaCourses";
+import { getLessonsByCourse, getRelatedCourses, toMarketplaceItem, formatDuration, getIntroVideoForCourse } from "../lib/api/dtmaCourses";
+import { fetchFullCourse } from "../services/courseService";
 import { categories } from "../data/dtma/categories";
 import { Course } from "../types/dtma-lms";
 
@@ -91,7 +92,7 @@ export function useProductDetails({
       return url; // fallback: hope it's valid as-is
     };
     const logoFromCustomFields = cf.logoUrl;
-    
+
     const resolvedLogo =
       toAbsolute(logoFromCustomFields) ||
       toAbsolute(logoFromCFArray) ||
@@ -122,50 +123,50 @@ export function useProductDetails({
       details: Array.isArray(cf.KeyHighlights)
         ? cf.KeyHighlights
         : typeof cf.KeyHighlights === "string" && cf.KeyHighlights.trim() !== ""
-        ? [cf.KeyHighlights]
-        : Array.isArray(cf.Steps)
-        ? cf.Steps
-        : typeof cf.Steps === "string" && cf.Steps.trim() !== ""
-        ? [cf.Steps]
-        : typeof cf.TermsOfService === "string" && cf.TermsOfService.trim() !== ""
-        ? [cf.TermsOfService]
-        : [],
+          ? [cf.KeyHighlights]
+          : Array.isArray(cf.Steps)
+            ? cf.Steps
+            : typeof cf.Steps === "string" && cf.Steps.trim() !== ""
+              ? [cf.Steps]
+              : typeof cf.TermsOfService === "string" && cf.TermsOfService.trim() !== ""
+                ? [cf.TermsOfService]
+                : [],
       // Expose learning outcomes specifically for course views
       learningOutcomes: Array.isArray(cf.KeyHighlights)
         ? cf.KeyHighlights
         : typeof cf.KeyHighlights === "string" && cf.KeyHighlights.trim() !== ""
-        ? [cf.KeyHighlights]
-        : [],
+          ? [cf.KeyHighlights]
+          : [],
       requiredDocuments: Array.isArray(cf.RequiredDocuments)
         ? cf.RequiredDocuments
-            .map((d: any) => {
-              if (typeof d === "string") return normalizeDocumentName(d);
-              const raw = d?.name || d?.source || "";
-              return normalizeDocumentName(raw);
-            })
-            .filter((s: string) => !!s)
+          .map((d: any) => {
+            if (typeof d === "string") return normalizeDocumentName(d);
+            const raw = d?.name || d?.source || "";
+            return normalizeDocumentName(raw);
+          })
+          .filter((s: string) => !!s)
         : [],
       // Normalize application process steps from CustomFields.Steps
       applicationProcess: Array.isArray(cf.Steps)
         ? cf.Steps
-            .map((s: any) => {
-              if (typeof s === "string") {
-                return { title: s, description: "" };
-              }
-              if (s && typeof s === "object") {
-                const title =
-                  typeof s.title === "string" && s.title.trim() !== ""
-                    ? s.title.trim()
-                    : typeof s.name === "string" && s.name.trim() !== ""
+          .map((s: any) => {
+            if (typeof s === "string") {
+              return { title: s, description: "" };
+            }
+            if (s && typeof s === "object") {
+              const title =
+                typeof s.title === "string" && s.title.trim() !== ""
+                  ? s.title.trim()
+                  : typeof s.name === "string" && s.name.trim() !== ""
                     ? s.name.trim()
                     : "";
-                const description =
-                  typeof s.description === "string" ? s.description : "";
-                return { title, description };
-              }
-              return { title: "", description: "" };
-            })
-            .filter((x: any) => x.title !== "")
+              const description =
+                typeof s.description === "string" ? s.description : "";
+              return { title, description };
+            }
+            return { title: "", description: "" };
+          })
+          .filter((x: any) => x.title !== "")
         : undefined,
       // Prefer new fields for terms when available
       keyTerms:
@@ -178,8 +179,8 @@ export function useProductDetails({
       additionalTerms: Array.isArray(cf.AdditionalTermsOfService)
         ? cf.AdditionalTermsOfService
         : cf.AdditionalTermsOfService
-        ? [cf.AdditionalTermsOfService]
-        : undefined,
+          ? [cf.AdditionalTermsOfService]
+          : undefined,
       tags: [cf.Industry, cf.CustomerType, cf.BusinessStage].filter(Boolean),
       provider: {
         // Prefer explicit Partner field from customFields, otherwise fallback to Khalifa Fund
@@ -245,12 +246,12 @@ export function useProductDetails({
     } as any;
   };
 
-  const loadCourse = useCallback(() => {
+  const loadCourse = useCallback(async () => {
     if (!itemId) return;
     setCourseLoading(true);
     setCourseError(null);
     try {
-      const course = getCourseBySlug(itemId);
+      const course = await fetchFullCourse(itemId);
       if (!course) {
         const fallback = getFallbackItemDetails("courses", itemId);
         if (fallback) {
@@ -264,6 +265,9 @@ export function useProductDetails({
         return;
       }
 
+      // For now, we still fetch lessons locally because we haven't migrated lessons to Supabase yet.
+      // If the course comes from Supabase, we might not find local lessons if the ID doesn't match a local one.
+      // But assuming ID/Slug parity for now or that we are in fallback mode.
       const courseLessons = getLessonsByCourse(course.id);
       const mapped = mapCourseToItem(course, courseLessons);
       if (mapped) {
@@ -317,7 +321,7 @@ export function useProductDetails({
     if (fallbackForItem) {
       for (const key of Object.keys(fallbackForItem)) {
         if (key === 'provider') continue;
-        
+
         const val = merged[key];
         const shouldUseFallback =
           val === undefined ||
@@ -339,15 +343,15 @@ export function useProductDetails({
     const rs = product?.customFields?.RelatedServices;
     const relatedFromGql = Array.isArray(rs)
       ? rs.map((x: any) => ({
-          id: x.id,
-          title: x.name,
-          description: x.description || "",
-          provider: {
-            name: merged.provider?.name,
-            logoUrl: merged.provider?.logoUrl || "/mzn_logo.png",
-          },
-          tags: [],
-        }))
+        id: x.id,
+        title: x.name,
+        description: x.description || "",
+        provider: {
+          name: merged.provider?.name,
+          logoUrl: merged.provider?.logoUrl || "/mzn_logo.png",
+        },
+        tags: [],
+      }))
       : [];
     limitedRelated = relatedFromGql.slice(0, 3);
 
