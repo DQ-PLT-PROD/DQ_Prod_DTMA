@@ -46,6 +46,8 @@ const FeaturedCoursesSection: React.FC = () => {
   const navigate = useNavigate();
 
   const visibleCourses = courses.slice(startIndex, startIndex + 3);
+  const maxStartIndex = Math.max(0, courses.length - 3);
+  const totalSlides = maxStartIndex + 1;
 
   const handlePrev = () => {
     setStartIndex((prev) => (prev === 0 ? Math.max(courses.length - 3, 0) : prev - 1));
@@ -148,6 +150,21 @@ const FeaturedCoursesSection: React.FC = () => {
             >
               <ArrowRight size={18} />
             </button>
+          </div>
+          <div className="flex justify-center items-center gap-3 mt-6">
+            {Array.from({ length: totalSlides }).map((_, idx) => {
+              const isActive = idx === Math.min(startIndex, maxStartIndex);
+              return (
+                <button
+                  key={idx}
+                  onClick={() => setStartIndex(Math.min(idx, maxStartIndex))}
+                  aria-label={`Go to slide ${idx + 1}`}
+                  className={`h-2 w-2 rounded-full transition ${
+                    isActive ? "bg-[#2E469E]" : "bg-gray-300"
+                  }`}
+                ></button>
+              );
+            })}
           </div>
         </StaggeredFadeIn>
       </div>
