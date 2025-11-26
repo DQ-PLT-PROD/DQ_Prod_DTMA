@@ -2,42 +2,92 @@ import React, { useState } from "react";
 import { ArrowRight, ArrowLeft, Layers } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { FadeInUpOnScroll, StaggeredFadeIn } from "./AnimationUtils";
+import { CourseTile } from "./CourseTile";
 
 const courses = [
   {
-    id: "ai-working-era",
-    title: "Leading in the AI Working Era",
-    tag: "DT2.0 - Leadership",
+    id: "economy-4-0",
+    title: "Understanding Economy 4.0",
+    tag: "Economy 4.0",
+    category: "ECONOMY 4.0",
+    levelTag: "Beginner",
+    audienceLevel: "DIGITAL LEADERS",
+    duration: "55 mins",
+    lessonCount: 4,
+    thumbnailUrl: "/Economy%204.0%20thumnail.png",
     description:
-      "Build a strategic lens for AI-enabled transformation and align teams around measurable outcomes.",
+      "Get a clear, practical introduction to Economy 4.0 and why it matters.",
+    isHeroTile: true,
   },
   {
     id: "digital-workflows",
-    title: "Designing Digital Workflows",
-    tag: "DW.DWS - Productivity",
+    title: "Connecting Economy 4.0 and Digital Cognitive Organizations",
+    tag: "Economy 4.0",
+    category: "ECONOMY 4.0",
+    levelTag: "Intermediate",
+    audienceLevel: "DIGITAL LEADERS",
+    duration: "1h",
+    lessonCount: 4,
+    thumbnailUrl: "/Economy%204.0%20thumnail.png",
     description:
-      "Redesign the flow of work with intelligent automation, data insights, and human-centred practices.",
+      "Link Economy 4.0 trends to the design of Digital Cognitive Organizations.",
+    isHeroTile: true,
   },
   {
     id: "platform-thinking-101",
-    title: "Platform Thinking 101",
-    tag: "DBPs - Strategy",
+    title: "Designing Perfect Life Transactions in Economy 4.0",
+    tag: "Economy 4.0",
+    category: "ECONOMY 4.0",
+    levelTag: "Intermediate",
+    audienceLevel: "DIGITAL LEADERS",
+    duration: "1h 5m",
+    lessonCount: 4,
+    thumbnailUrl: "/Economy%204.0%20thumnail.png",
     description:
-      "Shift from products to platforms, explore operating models, value exchanges, and ecosystem design.",
-  },
-  {
-    id: "economy-4-0-fundamentals",
-    title: "Economy 4.0 Fundamentals",
-    tag: "E4.0 - Context",
-    description:
-      "Understand the macro shifts defining the AI economy and how they reshape competitiveness.",
+      "Learn to design Perfect Life Transactions that create value for customers and citizens.",
+    isHeroTile: true,
   },
   {
     id: "digital-accelerators-toolkit",
-    title: "Digital Accelerators Toolkit",
-    tag: "Accelerators - Tools",
+    title: "Using AI for Advantage in Economy 4.0",
+    tag: "Economy 4.0",
+    category: "ECONOMY 4.0",
+    levelTag: "Advanced",
+    audienceLevel: "DIGITAL LEADERS",
+    duration: "52 mins",
+    lessonCount: 4,
+    thumbnailUrl: "/Economy%204.0%20thumnail.png",
     description:
-      "Get hands-on with Digital Qatalyst accelerators to execute transformation efficiently.",
+      "Go beyond AI hype and focus on competitive advantage.",
+    isHeroTile: true,
+  },
+  {
+    id: "protecting-trust-security",
+    title: "Protecting Trust and Security in Economy 4.0",
+    tag: "Economy 4.0",
+    category: "ECONOMY 4.0",
+    levelTag: "Advanced",
+    audienceLevel: "DIGITAL LEADERS",
+    duration: "1h 8m",
+    lessonCount: 4,
+    thumbnailUrl: "/Economy%204.0%20thumnail.png",
+    description:
+      "Balance cybersecurity and innovation in a hyper-connected economy.",
+    isHeroTile: true,
+  },
+  {
+    id: "strategic-ai-advantage",
+    title: "Applying Strategic AI for Competitive Advantage",
+    tag: "Economy 4.0",
+    category: "ECONOMY 4.0",
+    levelTag: "Advanced",
+    audienceLevel: "DIGITAL LEADERS",
+    duration: "57 mins",
+    lessonCount: 4,
+    thumbnailUrl: "/Economy%204.0%20thumnail.png",
+    description:
+      "Treat AI as a strategic capability, not a one-off project.",
+    isHeroTile: true,
   },
 ];
 
@@ -92,7 +142,22 @@ const FeaturedCoursesSection: React.FC = () => {
                         chip.toLowerCase() !== "productivity" &&
                         chip.toLowerCase() !== "strategy"
                     ) ?? [];
-                return (
+                return course.isHeroTile ? (
+                  <CourseTile
+                    key={course.id}
+                    title={course.title}
+                    description={course.description}
+                    category={course.category}
+                    levelTag={course.levelTag}
+                    audienceLevel={course.audienceLevel}
+                    duration={course.duration}
+                    lessonCount={course.lessonCount}
+                    thumbnailUrl={course.thumbnailUrl}
+                    providerName="DTMA"
+                    providerLogoUrl="/dtma_logo.png"
+                    onCardClick={() => handleViewDetails(course.id)}
+                  />
+                ) : (
                   <div
                     key={course.title}
                     className="flex h-full flex-col rounded-3xl border border-gray-200 bg-white p-8 shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg"

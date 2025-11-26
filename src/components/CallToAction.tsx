@@ -16,14 +16,20 @@ const CallToAction: React.FC = () => {
         backgroundColor: "rgba(46, 70, 158, 0.03)",
       }}
     >
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 text-[#030C2B]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+      >
+        <div className="absolute -top-10 -left-24 h-40 w-40 rounded-full border-4 border-white/60" />
+        <div className="absolute -top-16 -right-24 h-48 w-48 rounded-full border-4 border-white/60" />
+      </div>
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 text-[#030C2B] flex flex-col items-center">
         <FadeInUpOnScroll className="space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold">
             Ready to Grow in the AI Working Era?
           </h2>
           <p className="text-lg text-[#030C2B]/80">
-            Join DTMA to learn practical, future-ready skills and prove them
-            with a Digital Qatalyst Recognition Badge.
+            Join DTMA to learn practical, future-ready skills.
           </p>
         </FadeInUpOnScroll>
 
@@ -34,7 +40,7 @@ const CallToAction: React.FC = () => {
               className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl hover:opacity-90"
               style={{ backgroundColor: BRAND_PRIMARY }}
             >
-              Start Your Learning Journey
+              Get Started
               <ArrowRight size={16} className="ml-2" />
             </a>
           </div>

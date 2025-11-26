@@ -10,8 +10,9 @@ const FOOTER_GRADIENT =
   "linear-gradient(90deg, #0a32a0 0%, #2a4090 40%, #4e5a8b 70%, #8b90a3 100%)";
 
 const ABOUT_TEXT = [
-  "DTMA (Digital Transformation and Management Academy) equips professionals and organizations with essential digital skills through AI-driven, bite-sized learning paths. Using the 6XD framework, we offer practical, personalized courses for digital workers and leaders across six key digital economy perspectives.",
-  "Our courses help both individuals and executives stay ahead in a fast-changing landscape by focusing on real-world application, innovation, and adaptability to future-proof careers and drive business transformation.",
+  "DTMA (Digital Transformation and Management Academy) equips professionals and organizations with essential digital skills through AI-driven, bite-sized learning paths.",
+  "Using the 6XD framework, we offer practical, personalized courses for digital workers and leaders across six key digital economy perspectives.",
+  "Our courses help individuals and executives stay ahead by focusing on real-world application, innovation, and adaptability to future-proof careers and drive business transformation.",
 ];
 
 const QUICK_LINKS = [
@@ -44,11 +45,13 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
       className="text-white w-full"
       style={{ background: FOOTER_GRADIENT }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-left items-start">
-          <div className="space-y-4 text-blue-100 text-base leading-relaxed">
-            <img src="/DTMA%20LOGO%20WHITE.svg" alt="DTMA" className="h-10 w-auto" />
-            <div className="h-px w-full bg-white/30" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+        <div className="flex items-center justify-start">
+          <img src="/DTMA%20LOGO%20WHITE.svg" alt="DTMA" className="h-10 w-auto" />
+        </div>
+        <div className="h-px w-full bg-white/30" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-left items-start pt-6">
+          <div className="space-y-4 text-blue-100 text-sm leading-relaxed">
             <h3 className="font-semibold text-lg text-white">About Us</h3>
             {ABOUT_TEXT.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
@@ -57,7 +60,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
 
           <div className="space-y-4 self-start">
             <h3 className="font-semibold text-lg text-white">Quick Links</h3>
-            <div className="text-blue-100 text-sm border-t border-white/30">
+            <div className="text-blue-100 text-sm">
               {QUICK_LINKS.map((link) => (
                 <a
                   key={link.label}
@@ -70,8 +73,8 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg text-white">Subscribe</h3>
+          <div className="space-y-4 self-start">
+            <h3 className="font-semibold text-lg text-white">Contact</h3>
             <p className="text-blue-100 text-sm leading-relaxed">
               Stay updated with the latest insights, courses, and tools for the AI working era
               from DTMA.
@@ -100,3 +103,5 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
     </footer>
   );
 }
+
+

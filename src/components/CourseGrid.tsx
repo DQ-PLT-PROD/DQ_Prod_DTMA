@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CourseCard } from './CourseCard';
-import { CourseType } from '../utils/mockData';
+import { CourseType } from '../types/course';
 import { CourseQuickViewModal } from './CourseQuickViewModal';
 import { PromoCard } from './PromoCard';
 import { DollarSign, Briefcase, Users, Calendar } from 'lucide-react';
