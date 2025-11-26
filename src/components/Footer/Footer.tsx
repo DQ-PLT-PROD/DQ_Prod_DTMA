@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
+import { Facebook, Instagram, Twitter } from "lucide-react";
 
 interface FooterProps {
   "data-id"?: string;
@@ -45,12 +46,35 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
       className="text-white w-full"
       style={{ background: FOOTER_GRADIENT }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
-        <div className="flex items-center justify-start">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+        <div className="flex items-center justify-between gap-4">
           <img src="/DTMA%20LOGO%20WHITE.svg" alt="DTMA" className="h-10 w-auto" />
+          <div className="flex items-center gap-4 text-white">
+            <a
+              href="#"
+              aria-label="Facebook"
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+            >
+              <Facebook size={18} />
+            </a>
+            <a
+              href="#"
+              aria-label="Instagram"
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+            >
+              <Instagram size={18} />
+            </a>
+            <a
+              href="#"
+              aria-label="Twitter"
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+            >
+              <Twitter size={18} />
+            </a>
+          </div>
         </div>
         <div className="h-px w-full bg-white/30" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-left items-start pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-left items-start pt-4">
           <div className="space-y-4 text-blue-100 text-sm leading-relaxed">
             <h3 className="font-semibold text-lg text-white">About Us</h3>
             {ABOUT_TEXT.map((paragraph) => (

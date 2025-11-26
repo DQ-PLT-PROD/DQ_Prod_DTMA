@@ -1,6 +1,6 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
-import { FadeInUpOnScroll, StaggeredFadeIn } from "./AnimationUtils";
+import { FadeInUpOnScroll } from "./AnimationUtils";
 import { BRAND_PRIMARY } from "../constants/branding";
 
 const categories = [
@@ -58,10 +58,7 @@ const D6CategoriesSection: React.FC = () => {
           </p>
         </FadeInUpOnScroll>
 
-        <StaggeredFadeIn
-          staggerDelay={0.1}
-          className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-        >
+        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => (
             <div
               key={category.title}
@@ -101,7 +98,7 @@ const D6CategoriesSection: React.FC = () => {
               </div>
             </div>
           ))}
-        </StaggeredFadeIn>
+        </div>
       </div>
     </section>
   );

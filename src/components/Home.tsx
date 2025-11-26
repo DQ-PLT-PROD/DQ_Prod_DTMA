@@ -15,6 +15,7 @@ const courses = [
     duration: "55 mins",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
+    videoUrl: "/videos/C2-INTRO.mp4",
     description:
       "Get a clear, practical introduction to Economy 4.0 and why it matters.",
     isHeroTile: true,
@@ -29,6 +30,7 @@ const courses = [
     duration: "1h",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
+    videoUrl: "/videos/C2-INTRO.mp4",
     description:
       "Link Economy 4.0 trends to the design of Digital Cognitive Organizations.",
     isHeroTile: true,
@@ -43,6 +45,7 @@ const courses = [
     duration: "1h 5m",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
+    videoUrl: "/videos/C2-INTRO.mp4",
     description:
       "Learn to design Perfect Life Transactions that create value for customers and citizens.",
     isHeroTile: true,
@@ -57,6 +60,7 @@ const courses = [
     duration: "52 mins",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
+    videoUrl: "/videos/C2-INTRO.mp4",
     description:
       "Go beyond AI hype and focus on competitive advantage.",
     isHeroTile: true,
@@ -71,6 +75,7 @@ const courses = [
     duration: "1h 8m",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
+    videoUrl: "/videos/C2-INTRO.mp4",
     description:
       "Balance cybersecurity and innovation in a hyper-connected economy.",
     isHeroTile: true,
@@ -85,6 +90,7 @@ const courses = [
     duration: "57 mins",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
+    videoUrl: "/videos/C2-INTRO.mp4",
     description:
       "Treat AI as a strategic capability, not a one-off project.",
     isHeroTile: true,
@@ -93,6 +99,7 @@ const courses = [
 
 const FeaturedCoursesSection: React.FC = () => {
   const [startIndex, setStartIndex] = useState(0);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const visibleCourses = courses.slice(startIndex, startIndex + 3);
@@ -115,16 +122,15 @@ const FeaturedCoursesSection: React.FC = () => {
   };
 
   return (
-    <section className="bg-gray-50 pt-4 pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+    <section className="bg-gray-50 py-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeInUpOnScroll className="text-center max-w-3xl mx-auto space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold text-[#030C2B]">
             Featured Courses
           </h2>
           <p className="text-lg text-gray-600">
             Our flagship courses translate the D6 dimensions into applied
-            learning journeys. Each syllabus includes guided practice, prompts,
-            and tools that move you from insight to action.
+            learning journeys.
           </p>
         </FadeInUpOnScroll>
 
@@ -142,21 +148,32 @@ const FeaturedCoursesSection: React.FC = () => {
                         chip.toLowerCase() !== "productivity" &&
                         chip.toLowerCase() !== "strategy"
                     ) ?? [];
+                const isHovered = hoveredId === course.id;
                 return course.isHeroTile ? (
-                  <CourseTile
+                  <div
                     key={course.id}
-                    title={course.title}
-                    description={course.description}
-                    category={course.category}
-                    levelTag={course.levelTag}
-                    audienceLevel={course.audienceLevel}
-                    duration={course.duration}
-                    lessonCount={course.lessonCount}
-                    thumbnailUrl={course.thumbnailUrl}
-                    providerName="DTMA"
-                    providerLogoUrl="/dtma_logo.png"
-                    onCardClick={() => handleViewDetails(course.id)}
-                  />
+                    onMouseEnter={() => setHoveredId(course.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    className={`transition duration-300 ease-out ${
+                      isHovered ? "scale-105 z-10" : "scale-100"
+                    }`}
+                  >
+                    <CourseTile
+                      title={course.title}
+                      description={course.description}
+                      category={course.category}
+                      levelTag={course.levelTag}
+                      audienceLevel={course.audienceLevel}
+                      duration={course.duration}
+                      lessonCount={course.lessonCount}
+                      thumbnailUrl={course.thumbnailUrl}
+                      videoUrl={course.videoUrl}
+                      providerName="DTMA"
+                      providerLogoUrl="/dtma_logo.png"
+                      onCardClick={() => handleViewDetails(course.id)}
+                      isHovered={isHovered}
+                    />
+                  </div>
                 ) : (
                   <div
                     key={course.title}
@@ -225,7 +242,7 @@ const FeaturedCoursesSection: React.FC = () => {
                   onClick={() => setStartIndex(Math.min(idx, maxStartIndex))}
                   aria-label={`Go to slide ${idx + 1}`}
                   className={`h-2 w-2 rounded-full transition ${
-                    isActive ? "bg-[#2E469E]" : "bg-gray-300"
+                    isActive ? "bg-[#8799d6]" : "bg-gray-300"
                   }`}
                 ></button>
               );

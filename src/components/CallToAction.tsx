@@ -11,10 +11,7 @@ const CallToAction: React.FC = () => {
   return (
     <section
       id="final-cta"
-      className="relative overflow-hidden py-16"
-      style={{
-        backgroundColor: "rgba(46, 70, 158, 0.03)",
-      }}
+      className="relative overflow-hidden py-16 md:py-20 bg-white"
     >
       <div
         aria-hidden="true"
@@ -23,12 +20,12 @@ const CallToAction: React.FC = () => {
         <div className="absolute -top-10 -left-24 h-40 w-40 rounded-full border-4 border-white/60" />
         <div className="absolute -top-16 -right-24 h-48 w-48 rounded-full border-4 border-white/60" />
       </div>
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 text-[#030C2B] flex flex-col items-center">
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4 text-[#030C2B] flex flex-col items-center">
         <FadeInUpOnScroll className="space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold">
+          <h2 className="text-3xl md:text-4xl font-bold leading-tight">
             Ready to Grow in the AI Working Era?
           </h2>
-          <p className="text-lg text-[#030C2B]/80">
+          <p className="text-base md:text-lg text-[#030C2B]/80">
             Join DTMA to learn practical, future-ready skills.
           </p>
         </FadeInUpOnScroll>

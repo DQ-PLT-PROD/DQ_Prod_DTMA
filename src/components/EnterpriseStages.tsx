@@ -92,7 +92,7 @@ const EnterpriseStages: React.FC = () => {
                 </div>
               </div>
             </StaggeredFadeIn>
-            <div className="flex justify-center">
+            <div className="flex justify-center mt-16">
               <button
                 className="px-10 py-4 text-white font-semibold text-lg rounded-full shadow-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex items-center justify-center gap-2"
                 style={{ backgroundColor: "#1839AD" }}
