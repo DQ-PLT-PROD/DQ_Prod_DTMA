@@ -270,7 +270,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       <div className="container mx-auto px-4 h-full py-16 md:py-24 flex flex-col justify-center items-center gap-8 relative z-10 text-center">
         <FadeInUpOnScroll className="space-y-4 w-full flex flex-col items-center">
           <div className="space-y-4 w-full">
-            <h1 className="text-[58px] md:text-[64px] leading-[110%] font-extrabold text-white tracking-tight max-w-4xl mx-auto">
+            <h1 className="text-[58px] md:text-[64px] leading-[110%] font-semibold text-white tracking-tight max-w-4xl mx-auto">
               Your Path to AI Skills, <br className="hidden sm:block" />
               and AI Leadership
             </h1>
