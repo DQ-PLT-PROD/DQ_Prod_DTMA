@@ -241,8 +241,8 @@ const FeaturedCoursesSection: React.FC = () => {
                   key={idx}
                   onClick={() => setStartIndex(Math.min(idx, maxStartIndex))}
                   aria-label={`Go to slide ${idx + 1}`}
-                  className={`h-2 w-2 rounded-full transition ${
-                    isActive ? "bg-[#8799d6]" : "bg-gray-300"
+                  className={`h-2 rounded-full transition-all duration-200 ${
+                    isActive ? "w-8 bg-[#1839AD]/30" : "w-2 bg-gray-300"
                   }`}
                 ></button>
               );

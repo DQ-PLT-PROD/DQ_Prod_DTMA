@@ -205,10 +205,10 @@ const ProofAndTrust: React.FC = () => {
                 <button
                   key={idx}
                   onClick={() => setActiveStoryIndex(idx)}
-                  className={`h-2 w-2 rounded-full transition ${
+                  className={`h-2 rounded-full transition-all duration-200 ${
                     idx === activeStoryIndex
-                      ? "bg-[#2E469E]"
-                      : "bg-gray-300"
+                      ? "w-8 bg-[#1839AD]/40"
+                      : "w-2 bg-gray-300"
                   }`}
                   aria-label={`View story ${idx + 1}`}
                 />
