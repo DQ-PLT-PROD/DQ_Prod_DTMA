@@ -36,14 +36,11 @@ import {
   ChevronRightIcon,
 } from "lucide-react";
 import { RelatedCourses } from "./RelatedCourses";
-import { CourseComparison } from "./CourseComparison";
 import { CourseCardSkeleton, ErrorDisplay } from "./SkeletonLoader";
 import { useNavigate } from "react-router-dom";
 import { fetchCourses, fetchFilterOptions } from "../services/courses";
 import {
   toggleCourseBookmark,
-  addCourseToComparison,
-  removeCourseFromComparison,
 } from "../services/mutations";
 import { CourseType, ProviderType, CourseFilters } from "../types/course";
 /**
@@ -66,8 +63,7 @@ export const CourseMarketplace: React.FC = () => {
   });
   const [showFilters, setShowFilters] = useState(true);
   const [bookmarkedCourses, setBookmarkedCourses] = useState<string[]>([]);
-  const [compareCourses, setCompareCourses] = useState<CourseType[]>([]);
-  const [showComparison, setShowComparison] = useState(false);
+
   // State for filter options
   const [categories, setCategories] = useState<
     {
@@ -195,47 +191,13 @@ export const CourseMarketplace: React.FC = () => {
    *
    * @param course - The course to add to comparison
    */
-  const handleAddToComparison = useCallback(
-    (course: CourseType) => {
-      if (
-        compareCourses.length < 3 &&
-        !compareCourses.some((c) => c.id === course.id)
-      ) {
-        // Optimistic UI update
-        setCompareCourses((prev) => [...prev, course]);
-        // Call the mutation service (async)
-        addCourseToComparison(course.id, "current-user-id").catch((error) => {
-          // Rollback on error
-          console.error("Error adding to comparison:", error);
-          setCompareCourses((prev) => prev.filter((c) => c.id !== course.id));
-          // Could show an error toast here
-        });
-      }
-    },
-    [compareCourses]
-  );
+
   /**
    * Removes a course from the comparison list
    *
    * @param courseId - The ID of the course to remove from comparison
    */
-  const handleRemoveFromComparison = useCallback(
-    (courseId: string) => {
-      // Optimistic UI update
-      const previousCourses = [...compareCourses];
-      setCompareCourses((prev) =>
-        prev.filter((course) => course.id !== courseId)
-      );
-      // Call the mutation service (async)
-      removeCourseFromComparison(courseId, "current-user-id").catch((error) => {
-        // Rollback on error
-        console.error("Error removing from comparison:", error);
-        setCompareCourses(previousCourses);
-        // Could show an error toast here
-      });
-    },
-    [compareCourses]
-  );
+
   /**
    * Filters courses based on a predefined status
    *
@@ -321,47 +283,7 @@ export const CourseMarketplace: React.FC = () => {
       <div className="mb-6">
         <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       </div>
-      {/* Comparison bar */}
-      {compareCourses.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-medium text-blue-800">
-              Course Comparison ({compareCourses.length}/3)
-            </h3>
-            <div>
-              <button
-                onClick={() => setShowComparison(true)}
-                className="text-blue-600 hover:text-blue-800 font-medium mr-4"
-              >
-                Compare Selected
-              </button>
-              <button
-                onClick={() => setCompareCourses([])}
-                className="text-gray-500 hover:text-gray-700 text-sm"
-              >
-                Clear All
-              </button>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {compareCourses.map((course) => (
-              <div
-                key={course.id}
-                className="bg-white rounded-full px-3 py-1 flex items-center gap-2 text-sm border border-gray-200"
-              >
-                <span className="truncate max-w-[150px]">{course.title}</span>
-                <button
-                  onClick={() => handleRemoveFromComparison(course.id)}
-                  className="text-gray-400 hover:text-gray-600"
-                  aria-label={`Remove ${course.title} from comparison`}
-                >
-                  <XIcon size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
       <div className="flex flex-col xl:flex-row gap-6">
         {/* Mobile filter toggle - improved for better visibility and sticky position */}
         <div className="xl:hidden sticky top-0 z-20 bg-gray-50 py-2 shadow-sm">
@@ -387,17 +309,15 @@ export const CourseMarketplace: React.FC = () => {
         </div>
         {/* Filter sidebar - mobile/tablet with improved transition */}
         <div
-          className={`fixed inset-0 bg-gray-800 bg-opacity-75 z-30 transition-opacity duration-300 xl:hidden ${
-            showFilters ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
+          className={`fixed inset-0 bg-gray-800 bg-opacity-75 z-30 transition-opacity duration-300 xl:hidden ${showFilters ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
           onClick={toggleFilters}
           aria-hidden={!showFilters}
         >
           <div
             id="filter-sidebar"
-            className={`fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
-              showFilters ? "translate-x-0" : "-translate-x-full"
-            }`}
+            className={`fixed inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${showFilters ? "translate-x-0" : "-translate-x-full"
+              }`}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -472,19 +392,12 @@ export const CourseMarketplace: React.FC = () => {
               onCourseSelect={(course) => navigate(`/courses/${course.id}`)}
               bookmarkedCourses={bookmarkedCourses}
               onToggleBookmark={toggleBookmark}
-              onAddToComparison={handleAddToComparison}
+
             />
           )}
         </div>
       </div>
-      {/* Course comparison modal */}
-      {showComparison && (
-        <CourseComparison
-          courses={compareCourses}
-          onClose={() => setShowComparison(false)}
-          onRemoveCourse={handleRemoveFromComparison}
-        />
-      )}
+
     </div>
   );
 };

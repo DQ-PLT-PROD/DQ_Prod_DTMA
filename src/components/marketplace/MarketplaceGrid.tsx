@@ -30,7 +30,7 @@ interface MarketplaceGridProps {
   marketplaceType: string;
   bookmarkedItems: string[];
   onToggleBookmark: (itemId: string) => void;
-  onAddToComparison: (item: MarketplaceItem) => void;
+
   promoCards?: PromoCardData[];
   onTagClick?: (
     type: string,
@@ -42,7 +42,7 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
   marketplaceType,
   bookmarkedItems,
   onToggleBookmark,
-  onAddToComparison,
+
   promoCards = [],
   onTagClick,
 }) => {
@@ -191,7 +191,7 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
                   item={item}
                   isBookmarked={bookmarkedItems.includes(item.id)}
                   onToggleBookmark={() => onToggleBookmark(item.id)}
-                  onAddToComparison={() => onAddToComparison(item)}
+
                   onQuickView={() =>
                     openQuickView(item, {
                       x: window.innerWidth / 2 - 180,
@@ -209,7 +209,7 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
                 marketplaceType={marketplaceType}
                 isBookmarked={bookmarkedItems.includes(item.id)}
                 onToggleBookmark={() => onToggleBookmark(item.id)}
-                onAddToComparison={() => onAddToComparison(item)}
+
                 onQuickViewOpen={(rect) => openQuickView(item, rect)}
                 onQuickViewClose={scheduleHideQuickView}
                 onQuickViewHover={clearHideTimer}
@@ -248,10 +248,7 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
           }}
           isBookmarked={bookmarkedItems.includes(quickViewItem.item.id)}
           onToggleBookmark={() => onToggleBookmark(quickViewItem.item.id)}
-          onAddToComparison={() => {
-            onAddToComparison(quickViewItem.item);
-            setQuickViewItem(null);
-          }}
+
           onPrimaryAction={() => {
             handlePrimaryAction(quickViewItem.item);
             setQuickViewItem(null);

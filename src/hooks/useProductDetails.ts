@@ -256,7 +256,7 @@ export function useProductDetails({
         const fallback = getFallbackItemDetails("courses", itemId);
         if (fallback) {
           setItem(fallback);
-          setRelatedItems(getFallbackItems("courses").slice(0, 3));
+          setRelatedItems(getFallbackItems("courses").slice(0, 4));
           setCourseError(null);
         } else {
           setItem(null);
@@ -274,10 +274,10 @@ export function useProductDetails({
         setItem(mapped);
       }
 
-      const related = getRelatedCourses(course.slug)
+      const related = getRelatedCourses(course.slug, 4)
         .map((relatedCourse) => toMarketplaceItem(relatedCourse))
         .filter((relatedCourse) => relatedCourse.id !== course.slug)
-        .slice(0, 3);
+        .slice(0, 4);
       setRelatedItems(related);
 
       if (shouldTakeAction) {
@@ -353,13 +353,13 @@ export function useProductDetails({
         tags: [],
       }))
       : [];
-    limitedRelated = relatedFromGql.slice(0, 3);
+    limitedRelated = relatedFromGql.slice(0, 4);
 
-    const fallbackLimited = getFallbackItems(marketplaceType).slice(0, 3);
+    const fallbackLimited = getFallbackItems(marketplaceType).slice(0, 4);
     const chosen = limitedRelated.length > 0 ? limitedRelated : fallbackLimited;
     const normalized = chosen
       .filter((x: any) => x?.id !== merged.id)
-      .slice(0, 3)
+      .slice(0, 4)
       .map((x: any) => ({
         id: x.id,
         title: x.title || x.name || "Related Service",

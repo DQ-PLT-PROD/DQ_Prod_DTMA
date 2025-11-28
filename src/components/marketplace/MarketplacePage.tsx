@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { FilterSidebar, FilterConfig } from "./FilterSidebar";
 import { MarketplaceGrid } from "./MarketplaceGrid";
@@ -7,25 +7,14 @@ import { SearchBar } from "../SearchBar";
 import { FilterIcon, XIcon, HomeIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { ErrorDisplay, CourseCardSkeleton } from "../SkeletonLoader";
 import { getMarketplaceConfig } from "../../utils/marketplaceConfig";
-import { MarketplaceComparison } from "./MarketplaceComparison";
-import { CourseComparison } from "../CourseComparison";
 import { Header } from "../Header";
 import { Footer } from "../Footer";
-import {
-  getStoredCompareIds,
-  setStoredCompareIds,
-  addCompareId as storageAddCompareId,
-  removeCompareId as storageRemoveCompareId,
-  clearCompare as storageClearCompare,
-} from "../../utils/comparisonStorage";
-import { useQuery } from "@apollo/client/react";
-import { useLocation } from "react-router-dom";
-import { GET_PRODUCTS, GET_FACETS } from "../../services/marketplaceQueries.ts";
-
 import { getFallbackKnowledgeHubItems } from "../../utils/fallbackData";
 import { isSupabaseConfigured, getSupabase } from "../../admin-ui/utils/supabaseClient";
 import { getCategories as getDtmaCategories } from "../../lib/api/dtmaCourses";
 import { fetchCourses } from "../../services/courseService";
+import { useQuery } from "@apollo/client/react";
+import { GET_PRODUCTS, GET_FACETS } from "../../services/marketplaceQueries";
 
 
 // Mapping of Media Types to their relevant Format options (uses filter labels)
@@ -39,12 +28,7 @@ const MEDIA_TYPE_FORMAT_MAPPING: Record<string, string[]> = {
   'Podcasts': ['Recorded Media']
 };
 
-// Type for comparison items
-interface ComparisonItem {
-  id: string;
-  title: string;
-  [key: string]: any;
-}
+
 
 // Types for GET_FACETS query
 interface FacetValue {
@@ -175,9 +159,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   const [bookmarkedItems, setBookmarkedItems] = useState<string[]>([]);
 
   // Avoid clobbering localStorage with empty state before hydration
-  const [hasHydratedCompare, setHasHydratedCompare] = useState(false);
-  const [compareItems, setCompareItems] = useState<ComparisonItem[]>([]);
-  const [showComparison, setShowComparison] = useState(false);
+
 
   // State for filter options
   const [filterConfig, setFilterConfig] = useState<FilterConfig[]>([]);
@@ -707,59 +689,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     loadItems();
   }, [productData, filters, searchQuery, marketplaceType, activeFilters, filterConfig, toArrayFilter]);
 
-  // Immediately hydrate compare from navigation state when arriving from details page
-  useEffect(() => {
-    const pending = location?.state?.addToCompare;
-    if (pending) {
-      // Add if not present and under cap
-      if (
-        !compareItems.some((c) => c.id === pending.id) &&
-        compareItems.length < 3
-      ) {
-        setCompareItems((prev) => [...prev, pending]);
-        storageAddCompareId(marketplaceType, pending.id);
-      }
-      // Clear the navigation state to avoid duplicate adds on back/refresh
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location?.state, location?.pathname, marketplaceType, compareItems]);
 
-  // Hydrate compareItems from localStorage when items are available (merge, don't clear)
-  useEffect(() => {
-    if (!items || items.length === 0) return; // wait until items are loaded
-    // Build a map for quick lookup
-    const byId: Record<string, any> = {};
-    items.forEach((it) => {
-      byId[it.id] = it;
-    });
-    const storedIds = getStoredCompareIds(marketplaceType);
-    if (!storedIds.length) return; // nothing stored; don't alter current state
-
-    // Start with current selections
-    const merged: ComparisonItem[] = [...compareItems];
-    for (const id of storedIds) {
-      if (merged.length >= 3) break;
-      if (!merged.some((c) => c.id === id)) {
-        const found = byId[id];
-        if (found) merged.push(found);
-      }
-    }
-    const currentIds = compareItems.map((i) => i.id).join(",");
-    const nextIds = merged.map((i) => i.id).join(",");
-    if (currentIds !== nextIds) {
-      setCompareItems(merged.slice(0, 3));
-    }
-    setHasHydratedCompare(true);
-  }, [items, marketplaceType, compareItems]);
-
-  // Keep storage in sync with current compareItems
-  useEffect(() => {
-    // Don't sync to storage until we've attempted hydration to avoid wiping existing selections
-    if (!hasHydratedCompare) return;
-    const ids = compareItems.map((i) => i.id);
-    setStoredCompareIds(marketplaceType, ids);
-  }, [compareItems, marketplaceType, hasHydratedCompare]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((filterType: string, value: string) => {
@@ -854,12 +784,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     setShowFilters((prev) => !prev);
   }, []);
 
-  // Clear all comparison selections
-  const handleClearComparison = useCallback(() => {
-    setCompareItems([]);
-    storageClearCompare(marketplaceType);
-    setShowComparison(false);
-  }, [marketplaceType]);
+
 
   // Toggle bookmark for an item
   const toggleBookmark = useCallback((itemId: string) => {
@@ -870,28 +795,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     });
   }, []);
 
-  // Add an item to comparison
-  const handleAddToComparison = useCallback(
-    (item: any) => {
-      if (
-        compareItems.length < 3 &&
-        !compareItems.some((c) => c.id === item.id)
-      ) {
-        setCompareItems((prev) => [...prev, item]);
-        storageAddCompareId(marketplaceType, item.id);
-      }
-    },
-    [compareItems, marketplaceType]
-  );
 
-  // Remove an item from comparison
-  const handleRemoveFromComparison = useCallback(
-    (itemId: string) => {
-      setCompareItems((prev) => prev.filter((item) => item.id !== itemId));
-      storageRemoveCompareId(marketplaceType, itemId);
-    },
-    [marketplaceType]
-  );
 
   // Retry loading items after an error
   const retryFetch = useCallback(() => {
@@ -1099,47 +1003,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           </div>
         )}
 
-        {/* Comparison bar */}
-        {compareItems.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-medium text-blue-800">
-                {config.itemName} Comparison ({compareItems.length}/3)
-              </h3>
-              <div>
-                <button
-                  onClick={() => setShowComparison(true)}
-                  className="text-blue-600 hover:text-blue-800 font-medium mr-4"
-                >
-                  Compare Selected
-                </button>
-                <button
-                  onClick={handleClearComparison}
-                  className="text-gray-500 hover:text-gray-700 text-sm"
-                >
-                  Clear All
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {compareItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-full px-3 py-1 flex items-center gap-2 text-sm border border-gray-200"
-                >
-                  <span className="truncate max-w-[150px]">{item.title}</span>
-                  <button
-                    onClick={() => handleRemoveFromComparison(item.id)}
-                    className="text-gray-400 hover:text-gray-600"
-                    aria-label={`Remove ${item.title} from comparison`}
-                  >
-                    <XIcon size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+
 
         <div className="flex flex-col xl:flex-row gap-6">
           {/* Mobile filter toggle */}
@@ -1361,7 +1225,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 marketplaceType={marketplaceType}
                 bookmarkedItems={bookmarkedItems}
                 onToggleBookmark={toggleBookmark}
-                onAddToComparison={handleAddToComparison}
                 promoCards={allowPromoCards ? promoCards : []}
                 onTagClick={handleTagFilter}
               // Quick view interactions are handled inside MarketplaceGrid/MarketplaceCard; MarketplacePage just passes data through
@@ -1370,23 +1233,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           </div>
         </div>
 
-        {/* Comparison modal */}
-        {showComparison && (
-          marketplaceType === "courses" ? (
-            <CourseComparison
-              courses={compareItems as any}
-              onClose={() => setShowComparison(false)}
-              onRemoveCourse={handleRemoveFromComparison}
-            />
-          ) : (
-            <MarketplaceComparison
-              items={compareItems}
-              onClose={() => setShowComparison(false)}
-              onRemoveItem={handleRemoveFromComparison}
-              marketplaceType={marketplaceType}
-            />
-          )
-        )}
+
       </div>
       <Footer isLoggedIn={false} />
     </div>

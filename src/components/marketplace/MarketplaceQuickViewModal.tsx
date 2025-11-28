@@ -22,7 +22,7 @@ interface MarketplaceQuickViewModalProps {
   onViewDetails: () => void;
   isBookmarked: boolean;
   onToggleBookmark: () => void;
-  onAddToComparison: () => void;
+
   onPrimaryAction?: () => void;
   onHover?: () => void;
   onLeave?: () => void;
@@ -40,7 +40,7 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
   onViewDetails,
   isBookmarked,
   onToggleBookmark,
-  onAddToComparison,
+
   onPrimaryAction,
   onHover,
   onLeave,
@@ -58,7 +58,7 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
       video.currentTime = 0;
       const playPromise = video.play();
       if (playPromise && typeof playPromise.then === 'function') {
-        playPromise.catch(() => {});
+        playPromise.catch(() => { });
       }
     }
     return () => {
@@ -132,11 +132,11 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
   const containerStyle =
     anchoredPosition || fallbackPosition
       ? {
-          top: (anchoredPosition || fallbackPosition)!.top,
-          left: (anchoredPosition || fallbackPosition)!.left,
-          width: (anchoredPosition || fallbackPosition)!.width,
-          transformOrigin: 'center top',
-        }
+        top: (anchoredPosition || fallbackPosition)!.top,
+        left: (anchoredPosition || fallbackPosition)!.left,
+        width: (anchoredPosition || fallbackPosition)!.width,
+        transformOrigin: 'center top',
+      }
       : undefined;
 
   const positionedStyle = useMemo(() => {
@@ -170,7 +170,7 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
         video.muted = next;
         const playPromise = video.play();
         if (playPromise && typeof playPromise.then === 'function') {
-          playPromise.catch(() => {});
+          playPromise.catch(() => { });
         }
       }
       return next;
@@ -241,22 +241,15 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
           <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={onToggleBookmark}
-              className={`p-2 rounded-full ${
-                isBookmarked
+              className={`p-2 rounded-full ${isBookmarked
                   ? 'bg-yellow-100 text-yellow-600'
                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-              }`}
+                }`}
               aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
             >
               <BookmarkIcon size={16} className={isBookmarked ? 'fill-yellow-600' : ''} />
             </button>
-            <button
-              onClick={onAddToComparison}
-              className="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
-              aria-label="Add to comparison"
-            >
-              <ScaleIcon size={16} />
-            </button>
+
           </div>
         </div>
 

@@ -22,7 +22,7 @@ export interface MarketplaceItemProps {
   marketplaceType: string;
   isBookmarked: boolean;
   onToggleBookmark: () => void;
-  onAddToComparison: () => void;
+
   isPointerFine?: boolean;
   onTagClick?: (type: string, value: string) => void;
 }
@@ -33,7 +33,7 @@ export const MarketplaceCard: React.FC<MarketplaceItemProps> = ({
   marketplaceType,
   isBookmarked,
   onToggleBookmark,
-  onAddToComparison,
+
   isPointerFine = true,
 }) => {
   const navigate = useNavigate();
@@ -131,7 +131,7 @@ export const MarketplaceCard: React.FC<MarketplaceItemProps> = ({
           secondaryCtaLabel={config.secondaryCTA}
           onPrimaryClick={handlePrimaryAction}
           onSecondaryClick={handleViewDetails}
-          onAddToComparison={onAddToComparison}
+
           onCardClick={handleViewDetails}
           onToggleBookmark={onToggleBookmark}
           isBookmarked={isBookmarked}
