@@ -16,7 +16,7 @@ import { ReportsPage } from "./reportingObligations/ReportsPage";
 import { AllReceivedReportsPage } from "./reportingObligations/AllReceivedReportsPage";
 import { AllSubmittedReportsPage } from "./reportingObligations/AllSubmittedReportsPage";
 import { AllUpcomingObligationsPage } from "./reportingObligations/AllUpcomingObligationsPage";
-import BusinessProfilePage from "./businessProfile";
+import StudentProfilePage from "./studentProfile";
 import SupportPage from "./support";
 import SettingsPage from "./settings";
 import { ChatInterface } from "../../components/Chat/ChatInterface";
@@ -50,25 +50,25 @@ const DashboardRouter = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const checkOnboarding = async () => {
-      try {
-        const completed = await isOnboardingCompleted();
-        setOnboardingComplete(!!completed);
-        if (!completed) {
-          if (!location.pathname.includes("/dashboard/onboarding")) {
-            navigate("/dashboard/onboarding", { replace: true });
-          }
-        }
-      } catch (error) {
-        console.error("Error checking onboarding status:", error);
-      } finally {
-        // no-op
-      }
-    };
-    checkOnboarding();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   const checkOnboarding = async () => {
+  //     try {
+  //       const completed = await isOnboardingCompleted();
+  //       setOnboardingComplete(!!completed);
+  //       if (!completed) {
+  //         if (!location.pathname.includes("/dashboard/onboarding")) {
+  //           navigate("/dashboard/onboarding", { replace: true });
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking onboarding status:", error);
+  //     } finally {
+  //       // no-op
+  //     }
+  //   };
+  //   checkOnboarding();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   // Keep sidebar hidden on tablet/mobile by default; open on desktop
   useEffect(() => {
@@ -84,14 +84,14 @@ const DashboardRouter = () => {
   }, []);
 
   // If onboarding is complete and user is on onboarding route, send to overview
-  useEffect(() => {
-    if (
-      onboardingComplete &&
-      location.pathname.includes("/dashboard/onboarding")
-    ) {
-      navigate("/dashboard/overview", { replace: true });
-    }
-  }, [onboardingComplete, location.pathname, navigate]);
+  // useEffect(() => {
+  //   if (
+  //     onboardingComplete &&
+  //     location.pathname.includes("/dashboard/onboarding")
+  //   ) {
+  //     navigate("/dashboard/overview", { replace: true });
+  //   }
+  // }, [onboardingComplete, location.pathname, navigate]);
 
   const handleOnboardingComplete = () => {
     setOnboardingComplete(true);
@@ -173,7 +173,7 @@ const DashboardRouter = () => {
           path="reporting-obligations/received"
           element={<AllReceivedReportsPage />}
         />
-        <Route path="profile" element={<BusinessProfilePage setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
+        <Route path="profile" element={<StudentProfilePage />} />
         <Route path="settings" element={<SettingsPage setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
         <Route path="support" element={<SupportPage setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
         <Route path="chat-support" element={<ChatInterface setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
