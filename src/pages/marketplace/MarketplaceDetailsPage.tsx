@@ -5,11 +5,11 @@ import {
   ChevronRightIcon,
   HomeIcon,
   Share2Icon,
-  Pause,
   Volume2,
   VolumeX,
   Maximize,
   Play,
+  ChevronDown,
 } from "lucide-react";
 import { Header } from "../../components/Header";
 import { Footer } from "../../components/Footer";
@@ -28,6 +28,7 @@ import { getCourseMedia } from "../../utils/courseMedia";
 import { ErrorDisplay } from "../../components/SkeletonLoader";
 import { useProductDetails } from "../../hooks/useProductDetails";
 import { CourseMeta } from "../../components/ui/CourseMeta";
+import { Tag } from "../../components/ui/Tag";
 import { AudienceFitIndicator } from "../../components/marketplace/details/AudienceFitIndicator";
 import { MarketplaceCard } from "../../components/marketplace/MarketplaceCard";
 import { BRAND_GRADIENT } from "../../constants/branding";
@@ -63,6 +64,25 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   const heroRef = useRef<HTMLDivElement>(null);
   const relatedRef = useRef<HTMLElement>(null);
   const [isPointerFine, setIsPointerFine] = useState<boolean>(true);
+  const [showDescription, setShowDescription] = useState(true);
+
+  // Auto-hide description after 8 seconds to focus on video
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowDescription(false);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+
+  // Auto-hide scroll indicator
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowScrollIndicator(false);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Centralized data fetching & mapping
   const { item, relatedItems, loading, error, refetch } = useProductDetails({
@@ -434,56 +454,54 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
         {/* Hero Banner - consistent header layout */}
         <div
           ref={heroRef}
-          className="w-full text-white relative overflow-hidden"
+          className="w-full text-white relative overflow-hidden h-screen min-h-[600px]"
           style={{
-            minHeight: '500px',
             background: BRAND_GRADIENT
           }}
+          onMouseEnter={() => setShowScrollIndicator(true)}
+          onMouseLeave={() => setShowScrollIndicator(false)}
         >
           {/* Background Pattern Overlay */}
           <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
 
-          {/* Gradient Overlay for smooth transition */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-50 to-transparent z-10"></div>
-
-          {/* Video Background with Fade - Absolute Positioned */}
+          {/* Video Background - Full Width */}
           {introVideoUrl && (
             <div
-              className="absolute top-0 right-0 h-full w-full lg:w-[65%] z-10 pointer-events-auto"
-              style={{
-                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 40%, black 100%)',
-                maskImage: 'linear-gradient(to right, transparent 0%, black 40%, black 100%)'
-              }}
+              className="absolute inset-0 w-full h-full z-0 pointer-events-auto"
             >
               <HeroVideoPlayer
                 videoUrl={introVideoUrl}
                 posterUrl={introVideoPoster}
-                onStartLearning={handlePrimaryAction}
-
-                isBookmarked={isBookmarked}
               />
+              {/* Gradient Overlays for Readability */}
+              <div className={`absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent pointer-events-none transition-all duration-1000 ease-in-out ${showDescription ? 'opacity-100' : 'opacity-0'}`}></div>
+              <div className={`absolute inset-0 bg-gradient-to-tr from-black/90 via-black/40 to-transparent pointer-events-none transition-all duration-1000 ease-in-out ${showDescription ? 'opacity-0' : 'opacity-100'}`}></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
             </div>
           )}
 
-          <div className="container mx-auto px-4 md:px-6 max-w-7xl relative z-20 h-full flex flex-col justify-center pt-20 pointer-events-none">
-            {/* Breadcrumbs */}
-            <nav className="flex pb-4 pointer-events-auto" aria-label="Breadcrumb">
+          <div className="container mx-auto px-4 relative z-20 h-full flex flex-col pt-20 pointer-events-none">
+            {/* Breadcrumbs - Fixed at top */}
+            <nav
+              className="flex pb-4 pointer-events-auto opacity-60 hover:opacity-100 transition-opacity duration-300 flex-none"
+              aria-label="Breadcrumb"
+            >
               <ol className="inline-flex items-center space-x-1 md:space-x-2 text-sm">
                 <li className="inline-flex items-center">
                   <Link
                     to="/"
-                    className="text-white/80 hover:text-white inline-flex items-center transition-colors"
+                    className="text-white hover:text-blue-200 inline-flex items-center transition-colors shadow-sm"
                   >
-                    <HomeIcon size={14} className="mr-1.5" />
-                    <span>Home</span>
+                    <HomeIcon size={14} className="mr-1.5 drop-shadow-md" />
+                    <span className="drop-shadow-md">Home</span>
                   </Link>
                 </li>
                 <li>
                   <div className="flex items-center">
-                    <ChevronRightIcon size={14} className="text-white/60" />
+                    <ChevronRightIcon size={14} className="text-white/80 drop-shadow-md" />
                     <Link
                       to={config.route as string}
-                      className="ml-1 text-white/80 hover:text-white md:ml-2 transition-colors"
+                      className="ml-1 text-white hover:text-blue-200 md:ml-2 transition-colors drop-shadow-md"
                     >
                       {config.itemNamePlural}
                     </Link>
@@ -491,8 +509,8 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
                 </li>
                 <li aria-current="page">
                   <div className="flex items-center">
-                    <ChevronRightIcon size={14} className="text-white/60" />
-                    <span className="ml-1 text-white font-medium md:ml-2 line-clamp-1 max-w-[200px] sm:max-w-none">
+                    <ChevronRightIcon size={14} className="text-white/80 drop-shadow-md" />
+                    <span className="ml-1 text-white font-medium md:ml-2 line-clamp-1 max-w-[200px] sm:max-w-none drop-shadow-md">
                       {itemTitle}
                     </span>
                   </div>
@@ -500,69 +518,84 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
               </ol>
             </nav>
 
-            <div className="flex flex-col items-start max-w-3xl justify-center pointer-events-auto py-8 lg:py-16">
+            {/* Centered Content */}
+            <div className="flex-1 flex flex-col justify-end items-start max-w-3xl pointer-events-auto pb-8">
               {/* Badges Row */}
               {/* Badges Row */}
               <div className="flex flex-wrap items-center gap-3 mb-6">
                 {(item as any).category && (
-                  <span className="text-[13px] font-bold uppercase tracking-wider text-blue-400">
+                  <Tag variant="category" className="bg-blue-500/10 text-blue-300 border-blue-500/20 backdrop-blur-sm">
                     {(item as any).category}
-                  </span>
+                  </Tag>
                 )}
                 {(item as any).audienceLevel && (
-                  <span className="px-2 py-1 bg-white/10 backdrop-blur-sm text-purple-300 text-[11px] font-bold uppercase tracking-wider rounded-md border border-purple-500/30">
+                  <Tag variant="audience" className="bg-purple-500/10 text-purple-300 border-purple-500/20 backdrop-blur-sm">
                     {(item as any).audienceLevel}
-                  </span>
+                  </Tag>
                 )}
                 {(item as any).levelTag && (
-                  <span className="text-[11px] font-medium text-gray-300 bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
+                  <Tag variant="level" className="bg-white/10 text-gray-200 border-white/10 backdrop-blur-sm">
                     {(item as any).levelTag}
-                  </span>
+                  </Tag>
                 )}
               </div>
 
               {/* Title */}
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight tracking-tight">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white mb-4 leading-tight tracking-tight drop-shadow-lg">
                 {itemTitle}
               </h1>
 
               {/* Meta Row */}
-              <div className="flex flex-wrap items-center gap-6 text-white/90 text-sm mb-8">
+              <div className="flex flex-wrap items-center gap-6 text-white/90 text-sm mb-6">
                 {marketplaceType === "courses" && (
                   <>
                     <CourseMeta
                       duration={item.duration}
                       lessonCount={item.lessonCount}
-                      className="text-white/90 font-medium text-base"
+                      className="text-white/90 font-medium text-sm"
                     />
                   </>
                 )}
               </div>
 
-              {/* Description */}
-              <p className="text-white text-xl leading-relaxed mb-10 max-w-2xl font-light">
-                {itemDescription}
-              </p>
+              {/* Description with Collapse Animation */}
+              <div
+                className={`overflow-hidden transition-all duration-1000 ease-in-out ${showDescription ? 'max-h-[300px] opacity-100 mb-8' : 'max-h-0 opacity-0 mb-4'}`}
+                onMouseEnter={() => setShowDescription(true)}
+              >
+                <p className="text-white text-base leading-relaxed max-w-2xl font-light drop-shadow-md">
+                  {itemDescription}
+                </p>
+              </div>
 
-              {/* Action Buttons (Mobile Only - Desktop has sticky card) */}
-              <div className="flex gap-3 lg:hidden w-full sm:w-auto">
+              {/* Action Buttons */}
+              <div className="flex gap-3 w-full sm:w-auto mt-2">
                 <button
                   onClick={handlePrimaryAction}
-                  className="flex-1 sm:flex-none px-8 py-4 bg-white text-blue-700 font-bold text-lg rounded-xl shadow-xl hover:bg-blue-50 transition-all transform hover:-translate-y-1"
+                  className="flex-1 sm:flex-none px-6 py-3 bg-white text-blue-700 font-bold text-base rounded-xl shadow-xl hover:bg-blue-50 transition-all transform hover:-translate-y-1"
                 >
                   {primaryAction}
                 </button>
                 <button
                   onClick={handleToggleBookmark}
-                  className="p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
+                  className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
                 >
-                  <BookmarkIcon size={24} className={isBookmarked ? "fill-white" : ""} />
+                  <BookmarkIcon size={20} className={isBookmarked ? "fill-white" : ""} />
                 </button>
                 <button
-                  className="p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
+                  className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
                 >
-                  <Share2Icon size={24} />
+                  <Share2Icon size={20} />
                 </button>
+              </div>
+            </div>
+
+            {/* Scroll Indicator */}
+            <div
+              className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-none transition-all duration-500 ${showScrollIndicator ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+            >
+              <div className="animate-bounce">
+                <ChevronDown size={32} className="text-white/70 drop-shadow-md" />
               </div>
             </div>
           </div>
@@ -692,10 +725,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
 const HeroVideoPlayer: React.FC<{
   videoUrl: string;
   posterUrl?: string;
-  onStartLearning: () => void;
-
-  isBookmarked: boolean;
-}> = ({ videoUrl, posterUrl, onStartLearning, isBookmarked }) => {
+}> = ({ videoUrl, posterUrl }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -762,23 +792,30 @@ const HeroVideoPlayer: React.FC<{
 
       {/* Overlay Controls */}
       <div
-        className={`absolute inset-0 bg-black/40 flex flex-col justify-between p-6 transition-opacity duration-300 ${showControls || !isPlaying ? "opacity-100" : "opacity-0"
+        className={`absolute inset-0 flex flex-col justify-between transition-opacity duration-300 pointer-events-none ${showControls || !isPlaying ? "opacity-100" : "opacity-0"
           }`}
       >
-        {/* Top Right Controls */}
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={toggleMute}
-            className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-          >
-            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-          </button>
-          <button
-            onClick={toggleFullscreen}
-            className="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-          >
-            <Maximize size={20} />
-          </button>
+        {/* Bottom Right Controls - Aligned with Container */}
+        <div className="container mx-auto px-4 h-full relative">
+          <div className="absolute bottom-8 right-4 flex gap-2 z-20 pointer-events-auto">
+            <button
+              onClick={toggleMute}
+              className="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors backdrop-blur-sm border border-white/10"
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? (
+                <VolumeX size={20} />
+              ) : (
+                <Volume2 size={20} />
+              )}
+            </button>
+            <button
+              onClick={toggleFullscreen}
+              className="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors backdrop-blur-sm border border-white/10"
+            >
+              <Maximize size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Center Play Button (only when paused) */}
@@ -794,41 +831,6 @@ const HeroVideoPlayer: React.FC<{
             </button>
           </div>
         )}
-
-        {/* Bottom Controls & CTAs */}
-        <div className="flex flex-col gap-4 mt-auto">
-          {/* Progress Bar (Simple) */}
-          {/* <div className="w-full h-1 bg-white/30 rounded-full overflow-hidden">
-            <div className="h-full bg-blue-500 w-1/3"></div>
-          </div> */}
-
-          <div className="flex items-center justify-between gap-4">
-            <button
-              onClick={togglePlay}
-              className="text-white hover:text-blue-400 transition-colors"
-            >
-              {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
-            </button>
-
-            <div className="flex gap-2">
-              <button
-                onClick={(e) => { e.stopPropagation(); onAddToLibrary(); }}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium backdrop-blur-md border transition-colors ${isBookmarked
-                  ? "bg-blue-600 border-blue-600 text-white"
-                  : "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  }`}
-              >
-                {isBookmarked ? "Saved" : "Save"}
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); onStartLearning(); }}
-                className="px-3 py-1.5 rounded-lg bg-white text-blue-900 text-sm font-bold hover:bg-blue-50 transition-colors shadow-lg"
-              >
-                Start Learning
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
