@@ -109,6 +109,10 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
   };
 
   const handlePrimaryAction = (item: MarketplaceItem) => {
+    if (marketplaceType === "courses") {
+      navigate(`/learning?courseId=${encodeURIComponent(item.id)}`);
+      return;
+    }
     const effectiveUrl = item.formUrl || "https://www.tamm.abudhabi/en/login";
     if (effectiveUrl.startsWith("http")) {
       window.open(effectiveUrl, "_blank", "noopener,noreferrer");

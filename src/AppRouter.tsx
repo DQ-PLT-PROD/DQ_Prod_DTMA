@@ -36,6 +36,7 @@ import GrowthAreasPage from "./pages/GrowthAreasPage";
 import BusinessDirectoryMarketplace from "./pages/BusinessDirectoryMarketplace";
 import { ComingSoon } from "./pages/ComingSoon";
 import { Course } from "./types/dtma-lms";
+import LearningScreen from "./pages/LearningScreen";
 
 export function AppRouter() {
   const [bookmarkedCourses, setBookmarkedCourses] = useState<string[]>([]);
@@ -91,6 +92,7 @@ export function AppRouter() {
           <Route path="/business-directory-marketplace" element={<BusinessDirectoryMarketplace />} />
           <Route path="/coming-soon" element={<ComingSoon />} />
           <Route path="/coming-soon/:feature" element={<ComingSoon />} />
+          <Route path="/learning" element={<LearningScreen />} />
           <Route path="/admin-ui/settings" element={<AdminSettings />} />
           {/** Forms routes */}
           <Route

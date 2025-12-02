@@ -236,6 +236,12 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   };
 
   const handlePrimaryAction = () => {
+    // For courses, take learners straight into the DTMA learning experience
+    if (marketplaceType === "courses") {
+      navigate(`/learning?courseId=${encodeURIComponent(item.id)}`);
+      return;
+    }
+
     let url: string | undefined = (item as any)?.formUrl?.trim();
     if (!url) {
       url = "/forms/request-for-membership";

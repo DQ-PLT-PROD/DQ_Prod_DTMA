@@ -20,7 +20,6 @@ import {
   Calendar,
   BookIcon,
   Award,
-  MessageCircle,
   X,
   Clock,
   Compass,
@@ -77,52 +76,7 @@ import {
   AnimatedCounter,
   useInView,
 } from './AnimationUtils'
-// AI Chatbot component
-const AIChatbot = () => {
-  const [isOpen, setIsOpen] = useState(false)
-  return (
-    <>
-      {/* Floating button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 z-50 animate-pulse hover:animate-none"
-        aria-label="Open AI Assistant"
-      >
-        <MessageCircle size={24} />
-      </button>
-      {/* Chat modal */}
-      {isOpen && (
-        <div className="fixed bottom-24 right-6 w-80 sm:w-96 bg-white rounded-lg shadow-xl z-50 overflow-hidden border border-gray-200 animate-fade-in-up">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4 text-white flex justify-between items-center">
-            <h3 className="font-medium">AI Assistant</h3>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-white hover:text-gray-200 transition-colors"
-            >
-              <X size={18} />
-            </button>
-          </div>
-          <div className="p-4 h-80 overflow-y-auto bg-gray-50">
-            <div className="bg-blue-100 p-3 rounded-lg rounded-tl-none inline-block max-w-[85%] animate-fade-in">
-              <p className="text-gray-800">
-                Hi there! How can I help you navigate the Abu Dhabi Enterprise
-                Journey Platform?
-              </p>
-            </div>
-            <div className="mt-4">
-              <input
-                type="text"
-                placeholder="Type your question here..."
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
-                autoFocus
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
+
 // Service Category Card Component
 const ServiceCard = ({ service, onClick, isComingSoon = false }) => {
   const [isHovered, setIsHovered] = useState(false)
@@ -987,8 +941,6 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
       </div>
-      {/* AI Chatbot */}
-      <AIChatbot />
       {/* Add keyframes for animations */}
       <style jsx>{`
         @keyframes fade-in-up {
