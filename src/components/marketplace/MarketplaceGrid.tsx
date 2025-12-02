@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PromoCard } from "../PromoCard";
 import { MarketplaceCard } from "./MarketplaceCard";
 import { KnowledgeHubCard } from "./KnowledgeHubCard";
-import { MarketplaceQuickViewModal } from "./MarketplaceQuickViewModal";
+import { MarketplaceQuickViewModal, QuickViewAnchorRect } from "./MarketplaceQuickViewModal";
 import { getFallbackItems } from "../../utils/fallbackData";
 export interface MarketplaceItem {
   id: string;
@@ -30,30 +30,100 @@ interface MarketplaceGridProps {
   marketplaceType: string;
   bookmarkedItems: string[];
   onToggleBookmark: (itemId: string) => void;
-  onAddToComparison: (item: MarketplaceItem) => void;
+
   promoCards?: PromoCardData[];
+  onTagClick?: (
+    type: string,
+    value: string
+  ) => void;
 }
 export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
   items,
   marketplaceType,
   bookmarkedItems,
   onToggleBookmark,
-  onAddToComparison,
+
   promoCards = [],
+  onTagClick,
 }) => {
-  const [quickViewItem, setQuickViewItem] = useState<MarketplaceItem | null>(
-    null
-  );
+  // Active quick view payload plus the target coordinates captured from the triggering card
+  const [quickViewItem, setQuickViewItem] = useState<{
+    item: MarketplaceItem;
+    anchorRect?: QuickViewAnchorRect | null;
+    anchor?: { x: number; y: number };
+  } | null>(null);
+  const hideQuickViewTimer = useRef<NodeJS.Timeout | null>(null);
+  const [isPointerFine, setIsPointerFine] = useState<boolean>(true);
   const navigate = useNavigate();
-  // Use fallback items only if explicitly enabled via env
-  const ENABLE_MOCKS = (import.meta as any).env?.VITE_ENABLE_MOCKS === 'true';
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(pointer: fine)");
+    const update = () => setIsPointerFine(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  const clearHideTimer = () => {
+    if (hideQuickViewTimer.current) {
+      clearTimeout(hideQuickViewTimer.current);
+      hideQuickViewTimer.current = null;
+    }
+  };
+
+  const scheduleHideQuickView = () => {
+    clearHideTimer();
+    if (!quickViewItem) return;
+    hideQuickViewTimer.current = setTimeout(() => {
+      setQuickViewItem(null);
+    }, 180);
+  };
+
+  const normalizeAnchorRect = (
+    anchor?: QuickViewAnchorRect | DOMRect | null
+  ): QuickViewAnchorRect | undefined => {
+    if (!anchor) return undefined;
+    return {
+      top: anchor.top,
+      left: anchor.left,
+      width: anchor.width,
+      height: anchor.height,
+    };
+  };
+
+  const openQuickView = (
+    item: MarketplaceItem,
+    anchor?: QuickViewAnchorRect | DOMRect | { x: number; y: number } | null
+  ) => {
+    clearHideTimer();
+    const anchorRect =
+      anchor && "width" in (anchor as QuickViewAnchorRect | DOMRect)
+        ? normalizeAnchorRect(anchor as QuickViewAnchorRect | DOMRect)
+        : undefined;
+    const anchorPoint =
+      anchor && "x" in (anchor as { x: number; y: number })
+        ? { x: (anchor as { x: number; y: number }).x, y: (anchor as { x: number; y: number }).y }
+        : undefined;
+    setQuickViewItem({ item, anchorRect, anchor: anchorPoint });
+  };
+
+  const handlePrimaryAction = (item: MarketplaceItem) => {
+    const effectiveUrl = item.formUrl || "https://www.tamm.abudhabi/en/login";
+    if (effectiveUrl.startsWith("http")) {
+      window.open(effectiveUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+    const targetUrl = effectiveUrl.startsWith("/forms/")
+      ? effectiveUrl
+      : `/forms/${effectiveUrl.replace(/^\/+/, "")}`;
+    navigate(targetUrl);
+  };
+  // Use fallback items if no items are provided or if items array is empty
   const displayItems =
-    items && items.length > 0
-      ? items
-      : ENABLE_MOCKS
-      ? getFallbackItems(marketplaceType)
-      : [];
+    items && items.length > 0 ? items : getFallbackItems(marketplaceType);
   const totalItems = displayItems.length;
+  const itemLabel = marketplaceType === "courses" ? "Courses" : "Items";
   if (totalItems === 0) {
     return (
       <div className="bg-white rounded-lg shadow p-8 text-center">
@@ -94,20 +164,22 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
   );
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-end mb-8">
         {/* Responsive header - concise on mobile */}
-        <h2 className="text-xl font-semibold text-gray-800 hidden sm:block">
-          Available Items ({totalItems})
-        </h2>
-        <div className="text-sm text-gray-500 hidden sm:block">
-          Showing {totalItems} of {totalItems} items
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 hidden sm:block mb-1" aria-live="polite">
+            Showing {totalItems} {itemLabel}
+          </h2>
+          <div className="text-sm text-gray-500 hidden sm:block">
+            Refine by 6XD dimension, role, level, or tags
+          </div>
         </div>
         {/* Mobile-friendly header */}
-        <h2 className="text-lg font-medium text-gray-800 sm:hidden">
-          {totalItems} Items Available
+        <h2 className="text-lg font-medium text-gray-800 sm:hidden" aria-live="polite">
+          {totalItems} {itemLabel}
         </h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         {itemsWithPromos.map((entry, idx) => {
           if (entry.type === "item") {
             const item = entry.data as MarketplaceItem;
@@ -119,8 +191,13 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
                   item={item}
                   isBookmarked={bookmarkedItems.includes(item.id)}
                   onToggleBookmark={() => onToggleBookmark(item.id)}
-                  onAddToComparison={() => onAddToComparison(item)}
-                  onQuickView={() => setQuickViewItem(item)}
+
+                  onQuickView={() =>
+                    openQuickView(item, {
+                      x: window.innerWidth / 2 - 180,
+                      y: window.scrollY + 160,
+                    })
+                  }
                 />
               );
             }
@@ -132,8 +209,13 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
                 marketplaceType={marketplaceType}
                 isBookmarked={bookmarkedItems.includes(item.id)}
                 onToggleBookmark={() => onToggleBookmark(item.id)}
-                onAddToComparison={() => onAddToComparison(item)}
-                onQuickView={() => setQuickViewItem(item)}
+
+                onQuickViewOpen={(rect) => openQuickView(item, rect)}
+                onQuickViewClose={scheduleHideQuickView}
+                onQuickViewHover={clearHideTimer}
+                isQuickViewActive={quickViewItem?.item.id === item.id}
+                isPointerFine={isPointerFine}
+                onTagClick={onTagClick}
               />
             );
           } else if (entry.type === "promo") {
@@ -153,22 +235,26 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
           return null;
         })}
       </div>
-      {/* Quick View Modal */}
       {quickViewItem && (
         <MarketplaceQuickViewModal
-          item={quickViewItem}
+          item={quickViewItem.item}
+          anchorRect={quickViewItem.anchorRect}
+          anchor={quickViewItem.anchor}
           marketplaceType={marketplaceType}
           onClose={() => setQuickViewItem(null)}
           onViewDetails={() => {
             setQuickViewItem(null);
-            navigate(`/marketplace/${marketplaceType}/${quickViewItem.id}`);
+            navigate(`/marketplace/${marketplaceType}/${quickViewItem.item.id}`);
           }}
-          isBookmarked={bookmarkedItems.includes(quickViewItem.id)}
-          onToggleBookmark={() => onToggleBookmark(quickViewItem.id)}
-          onAddToComparison={() => {
-            onAddToComparison(quickViewItem);
+          isBookmarked={bookmarkedItems.includes(quickViewItem.item.id)}
+          onToggleBookmark={() => onToggleBookmark(quickViewItem.item.id)}
+
+          onPrimaryAction={() => {
+            handlePrimaryAction(quickViewItem.item);
             setQuickViewItem(null);
           }}
+          onHover={() => clearHideTimer()}
+          onLeave={scheduleHideQuickView}
         />
       )}
     </div>

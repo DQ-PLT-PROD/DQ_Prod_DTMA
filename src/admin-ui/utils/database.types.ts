@@ -110,6 +110,102 @@ export interface Database {
           event_agenda?: Json | null
         }
         Relationships: []
+      },
+      courses: {
+        Row: {
+          id: string
+          slug: string
+          title: string
+          short_description: string | null
+          long_description: string | null
+          category_id: string | null
+          audience_level: string | null
+          topic_tags: string[] | null
+          level_tag: string | null
+          estimated_duration_minutes: number | null
+          lesson_count: number | null
+          hero_image_url: string | null
+          intro_video_url: string | null
+          intro_video_poster_url: string | null
+          is_featured: boolean | null
+          status: string | null
+          provider_name: string | null
+          provider_logo_url: string | null
+          provider_description: string | null
+          rating: number | null
+          review_count: number | null
+          delivery_mode: string | null
+          enrollment_url: string | null
+          learning_outcomes: string[] | null
+          skills_gained: string[] | null
+          upon_completion: string | null
+          start_date: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          slug: string
+          title: string
+          short_description?: string | null
+          long_description?: string | null
+          category_id?: string | null
+          audience_level?: string | null
+          topic_tags?: string[] | null
+          level_tag?: string | null
+          estimated_duration_minutes?: number | null
+          lesson_count?: number | null
+          hero_image_url?: string | null
+          intro_video_url?: string | null
+          intro_video_poster_url?: string | null
+          is_featured?: boolean | null
+          status?: string | null
+          provider_name?: string | null
+          provider_logo_url?: string | null
+          provider_description?: string | null
+          rating?: number | null
+          review_count?: number | null
+          delivery_mode?: string | null
+          enrollment_url?: string | null
+          learning_outcomes?: string[] | null
+          skills_gained?: string[] | null
+          upon_completion?: string | null
+          start_date?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          slug?: string
+          title?: string
+          short_description?: string | null
+          long_description?: string | null
+          category_id?: string | null
+          audience_level?: string | null
+          topic_tags?: string[] | null
+          level_tag?: string | null
+          estimated_duration_minutes?: number | null
+          lesson_count?: number | null
+          hero_image_url?: string | null
+          intro_video_url?: string | null
+          intro_video_poster_url?: string | null
+          is_featured?: boolean | null
+          status?: string | null
+          provider_name?: string | null
+          provider_logo_url?: string | null
+          provider_description?: string | null
+          rating?: number | null
+          review_count?: number | null
+          delivery_mode?: string | null
+          enrollment_url?: string | null
+          learning_outcomes?: string[] | null
+          skills_gained?: string[] | null
+          upon_completion?: string | null
+          start_date?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       ,
       media_assets: {

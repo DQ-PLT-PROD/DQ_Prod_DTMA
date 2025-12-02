@@ -58,7 +58,7 @@ export interface KnowledgeHubItemProps {
   }
   isBookmarked: boolean
   onToggleBookmark: () => void
-  onAddToComparison?: () => void
+
   onQuickView?: () => void
 }
 // Utility function to get the details href for an item
@@ -104,7 +104,7 @@ export const KnowledgeHubCard: React.FC<KnowledgeHubItemProps> = ({
   item,
   isBookmarked,
   onToggleBookmark,
-  onAddToComparison,
+
   onQuickView,
 }) => {
   const navigate = useNavigate()

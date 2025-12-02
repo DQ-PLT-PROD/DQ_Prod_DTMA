@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { CourseType } from "./utils/mockData";
 import { AuthProvider } from "./components/Header";
 import { MarketplaceRouter } from "./pages/marketplace/MarketplaceRouter";
 import { App } from "./App";
@@ -36,10 +35,11 @@ import GrowthAreasMarketplace from "./pages/GrowthAreasMarketplace";
 import GrowthAreasPage from "./pages/GrowthAreasPage";
 import BusinessDirectoryMarketplace from "./pages/BusinessDirectoryMarketplace";
 import { ComingSoon } from "./pages/ComingSoon";
+import { Course } from "./types/dtma-lms";
 
 export function AppRouter() {
   const [bookmarkedCourses, setBookmarkedCourses] = useState<string[]>([]);
-  const [compareCourses, setCompareCourses] = useState<CourseType[]>([]);
+  const [compareCourses, setCompareCourses] = useState<Course[]>([]);
   const toggleBookmark = (courseId: string) => {
     setBookmarkedCourses((prev) => {
       if (prev.includes(courseId)) {
@@ -49,7 +49,7 @@ export function AppRouter() {
       }
     });
   };
-  const handleAddToComparison = (course: CourseType) => {
+  const handleAddToComparison = (course: Course) => {
     if (
       compareCourses.length < 3 &&
       !compareCourses.some((c) => c.id === course.id)

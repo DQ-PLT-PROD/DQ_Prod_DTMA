@@ -1,7 +1,7 @@
 // Remove dependency on graphql-request and implement a simple mock client
 // import { GraphQLClient } from 'graphql-request'
-import { mockCourses } from "../../utils/mockData";
 import { getMarketplaceConfig } from "../../utils/marketplaceConfig";
+import { getCourses, getCourseBySlug, getRelatedCourses, toMarketplaceItem } from "../../lib/api/dtmaCourses";
 
 // Create a simple mock GraphQL client since we don't have access to graphql-request
 const mockGraphQLClient = {
@@ -74,22 +74,15 @@ export const getMockResponse = (
     }
   }
 
-  // Legacy fallback for courses (for backward compatibility)
+  // Legacy fallback for courses now backed by DTMA mock data
   if (queryName.includes("getCourseDetails") && variables.id) {
-    const course = mockCourses.find((c) => c.id === variables.id);
+    const course = getCourseBySlug(variables.id);
     return {
       course,
     };
   }
   if (queryName.includes("getRelatedCourses")) {
-    const filteredCourses = mockCourses
-      .filter(
-        (c) =>
-          c.id !== variables.id &&
-          (c.category === variables.category ||
-            c.provider.name === variables.provider)
-      )
-      .slice(0, 3);
+    const filteredCourses = getRelatedCourses(variables.id).map(toMarketplaceItem);
     return {
       relatedCourses: filteredCourses,
     };
@@ -97,7 +90,7 @@ export const getMockResponse = (
 
   // Default fallback
   return {
-    items: mockCourses,
+    items: getCourses().map(toMarketplaceItem),
   };
 };
 

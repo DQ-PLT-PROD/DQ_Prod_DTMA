@@ -30,6 +30,9 @@ export interface CourseType {
   price?: string;
   location?: string;
   tags?: string[];
+  lessonCount?: number;
+  levelTag?: string;
+  audienceLevel?: string;
 }
 /**
  * Filter options for the course marketplace
