@@ -118,7 +118,6 @@ const LearningScreen: React.FC = () => {
   const [moduleOpen, setModuleOpen] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showMobileActions, setShowMobileActions] = useState(false);
   // Reminder feature (temporarily disabled)
   // const [reminderSet, setReminderSet] = useState(false);
   // const [showReminderModal, setShowReminderModal] = useState(false);
@@ -350,6 +349,8 @@ const LearningScreen: React.FC = () => {
     setTimeout(scrollToPlayer, 50);
   };
 
+  const courseTitle = "Perfecting Life Transactions: A Digital Builder's Blueprint";
+
   useEffect(() => {
     if (showQuiz && videoRef.current) {
       videoRef.current.pause();
@@ -359,167 +360,86 @@ const LearningScreen: React.FC = () => {
   const atFirstLesson = currentLessonIndex === 0;
   const atLastLesson = currentLessonIndex === lessons.length - 1;
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="relative min-h-screen text-gray-900 bg-white">
+      {/* Fullscreen video background */}
+      <div className="fixed inset-0 -z-10">
+        <video
+          ref={videoRef}
+          className="w-full h-full object-cover"
+          src="/videos/C2-INTRO.mp4"
+          poster="/Economy%204.0%20thumnail.png"
+          muted={!isPlaying}
+          controls={false}
+        >
+          <track
+            default
+            kind="subtitles"
+            src="https://www.w3schools.com/tags/movie.vtt"
+            srcLang="en"
+            label="English"
+          />
+        </video>
+        <div className="absolute inset-0 bg-white" />
+      </div>
+
       {/* Header */}
       <header className="sticky top-0 z-20 shadow-sm">
-        <div className="border-b border-black/5" style={{
-          background: "linear-gradient(90deg, #1839AD 0%, #2E469E 20%, #4A5FC7 40%, #8FA4E3 60%, #C5D1F0 80%, #ffffff 100%)"
-        }}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-10 text-[#030C2B]">
+        <div
+          className="border-b border-black/5"
+          style={{
+            background:
+              "linear-gradient(90deg, #1839AD 0%, #2E469E 20%, #4A5FC7 40%, #8FA4E3 60%, #C5D1F0 80%, #ffffff 100%)",
+          }}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4 text-white">
             {/* Left: Logo */}
-            <div className="flex items-center flex-shrink-0">
-              <img
-                src="/DTMA LOGO WHITE.svg"
-                alt="DTMA"
-                className="h-6 w-auto"
-              />
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <img src="/DTMA LOGO WHITE.svg" alt="DTMA" className="h-6 w-auto" />
             </div>
 
-            {/* Course Title in Full Width Container */}
-            <div className="flex-1">
-              <div className="rounded-lg shadow-sm w-full flex items-center overflow-hidden" style={{ background: "linear-gradient(90deg, #1839AD 0%, #2E469E 20%, #4A5FC7 40%, #8FA4E3 60%, #C5D1F0 80%, #ffffff 100%)" }}>
-                <div className="flex items-center pl-20 py-2 flex-1">
-                  <BookOpen size={14} className="text-white mr-2" />
-                  <h1 className="text-base font-normal text-white leading-tight">
-                    Perfecting Life Transactions: A Digital Builder's Blueprint
-                  </h1>
-                </div>
-                
-                {/* Set Study Reminder Button (disabled for now) */}
-                {/*
-                <div className="relative">
-                  <button
-                    onClick={() => setShowReminderModal(true)}
-                    onMouseEnter={() => setShowTooltip(true)}
-                    onMouseLeave={() => setShowTooltip(false)}
-                    className="bg-[#1839AD] hover:bg-[#132b7c] text-white h-full px-6 py-4 flex items-center justify-center transition-colors"
-                  >
-                    <Plus size={16} />
-                  </button>
-                  
-                  {showTooltip && (
-                    <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap shadow-lg" style={{ zIndex: 9999 }}>
-                      Set study reminders
-                      <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                    </div>
-                  )}
-                </div>
-                */}
-              </div>
-            </div>
+            {/* Center spacer */}
+            <div className="flex-1" />
 
-            {/* Right: actions */}
-            <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
-
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <button
-                    onClick={() => setShowProfileMenu((prev) => !prev)}
-                    className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300 transition shadow-sm"
-                  >
-                    <User size={20} />
-                  </button>
-                  {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white text-[#030C2B] rounded-xl shadow-lg border border-gray-100 py-2 text-sm z-30">
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-50">
-                        Account Settings
-                      </button>
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-50">
-                        View Profile
-                      </button>
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-50">
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile menu toggle */}
-            <div className="lg:hidden flex items-center gap-2">
-              <button
-                onClick={() => setShowMobileActions((prev) => !prev)}
-                className="h-10 w-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition"
-              >
-                <Menu size={20} />
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile actions tray */}
-          {showMobileActions && (
-            <div className="lg:hidden px-4 sm:px-6 lg:px-8 pb-3 space-y-3 text-[#030C2B]">
-              <div className="bg-white text-[#030C2B] rounded-2xl p-3 shadow-sm border border-gray-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <p className="text-sm font-semibold">Course Progress</p>
-                  <span className="text-sm font-bold">{boundedProgress}%</span>
-                  <Info size={14} className="text-[#1839AD]" />
-                </div>
-                <div className="h-3 rounded-full bg-[#e5eef5] overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[#1839AD] transition-all duration-300"
-                    style={{ width: `${boundedProgress}%` }}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={boundedProgress}
-                    role="progressbar"
-                    aria-label="Course progress"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
+            {/* Right: profile icon only */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu((prev) => !prev)}
-                  className="h-10 px-3 rounded-full bg-white text-[#1839AD] flex items-center gap-2 shadow-sm"
+                  className="w-10 h-10 rounded-full bg-white text-[#1839AD] flex items-center justify-center hover:bg-blue-50 transition shadow-sm"
                 >
-                  <User size={16} />
-                  <ChevronDown size={14} />
+                  <User size={20} />
                 </button>
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-2 w-44 bg-white text-[#030C2B] rounded-xl shadow-lg border border-gray-100 py-2 text-sm z-30">
+                    <button className="w-full text-left px-4 py-2 hover:bg-gray-50">
+                      Account Settings
+                    </button>
+                    <button className="w-full text-left px-4 py-2 hover:bg-gray-50">
+                      Sign Out
+                    </button>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handlePrev}
-                  disabled={atFirstLesson}
-                  className="flex-1 px-4 py-2 rounded-full border border-transparent bg-transparent text-[#1839AD] font-semibold hover:bg-[#1839AD]/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition"
-                  >
-                    <ArrowLeft size={16} />
-                    Previous
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    disabled={atLastLesson || !isNextLessonUnlocked}
-                    className={`flex-1 px-4 py-2 rounded-full border border-transparent font-semibold flex items-center justify-center gap-2 transition ${
-                      atLastLesson || !isNextLessonUnlocked
-                        ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-50"
-                        : "bg-transparent text-[#1839AD] hover:bg-[#1839AD]/10 cursor-pointer"
-                    }`}
-                    title={!isNextLessonUnlocked && !atLastLesson ? "Watch until 1 minute before the end to unlock next lesson" : ""}
-                  >
-                    Next
-                    <ArrowRight size={16} />
-                  </button>
-              </div>
-              {showProfileMenu && (
-                <div className="bg-white rounded-xl shadow-lg border border-gray-100 py-2 text-sm">
-                  <button className="w-full text-left px-4 py-2 hover:bg-gray-50">
-                    Account Settings
-                  </button>
-                  <button className="w-full text-left px-4 py-2 hover:bg-gray-50">
-                    View Profile
-                  </button>
-                  <button className="w-full text-left px-4 py-2 hover:bg-gray-50">
-                    Sign Out
-                  </button>
-                </div>
-              )}
             </div>
-          )}
+          </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
+      {/* Course title ribbon */}
+      <div className="bg-white text-[#030C2B] border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-2">
+          <BookOpen size={16} strokeWidth={1.5} className="text-[#030C2B]" />
+          <span className="text-[16px] font-normal">{courseTitle}</span>
+        </div>
+      </div>
+
+      <div
+        className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid gap-6 ${
+          showQuiz ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-[320px_1fr]"
+        }`}
+      >
         {/* Sidebar */}
+        {!showQuiz && (
         <aside className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
           <div className="p-4 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2 text-[#030C2B] font-semibold">
@@ -664,7 +584,6 @@ const LearningScreen: React.FC = () => {
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-sm font-semibold">Course Progress</span>
                 <span className="text-sm font-bold">{boundedProgress}%</span>
-                <Info size={14} className="text-[#1839AD]" />
               </div>
               <div className="h-3 rounded-full bg-[#e5eef5] overflow-hidden">
                 <div
@@ -677,26 +596,16 @@ const LearningScreen: React.FC = () => {
                   aria-label="Course progress"
                 />
               </div>
-              <p className="text-[11px] text-gray-700 mt-2">
-                {completedCount} of {lessons.length} lessons covered
-              </p>
+                <p className="text-[11px] text-gray-700 mt-2">
+                  {completedCount} of {lessons.length} lessons covered
+                </p>
+              </div>
             </div>
-          </div>
         </aside>
+        )}
 
         {/* Content */}
         <main className="space-y-4">
-          {/* Lesson Title */}
-          {!showQuiz && (
-            <div className="flex items-center gap-3">
-              <div>
-                <h2 className="text-lg md:text-xl font-medium text-[#030C2B] leading-tight">
-                  {activeLesson.title}
-                </h2>
-              </div>
-            </div>
-          )}
-
           <div
             ref={playerRef}
             className="bg-white rounded-2xl border border-gray-200 shadow-md overflow-hidden"
@@ -822,6 +731,18 @@ const LearningScreen: React.FC = () => {
               </>
             )}
           </div>
+
+          {/* Lesson Title below player */}
+          {!showQuiz && (
+            <div className="flex items-center gap-3">
+              <h2
+                className="text-base md:text-lg font-semibold text-[#030C2B] leading-tight"
+                style={{ fontSize: "18px" }}
+              >
+                {activeLesson.title}
+              </h2>
+            </div>
+          )}
 
           {!showQuiz && (
             <div className="flex flex-wrap items-center gap-3">

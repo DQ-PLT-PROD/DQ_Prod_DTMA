@@ -361,13 +361,14 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
               )}
               
               {passed && (
-                <button
-                  onClick={() => {/* Handle certificate or next steps */}}
-                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center justify-center gap-2"
+                <a
+                  href="/25.01_DQ DTMB_WP_Perfect Life Transactions_v0.0.1 (1).pdf"
+                  download="Perfect Life Transactions.pdf"
+                  className="flex-1 px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center justify-center gap-2 text-center"
                 >
                   <BookOpen size={16} />
                   View Resources
-                </button>
+                </a>
               )}
             </div>
           </div>
@@ -491,14 +492,17 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
 
           {/* Action Buttons */}
           <div className="flex justify-between">
-            <button
-              onClick={handlePreviousQuestion}
-              disabled={currentQuestionIndex === 0}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
-            >
-              <ArrowLeft size={16} />
-              Previous
-            </button>
+            {currentQuestionIndex > 0 ? (
+              <button
+                onClick={handlePreviousQuestion}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center gap-2"
+              >
+                <ArrowLeft size={16} />
+                Previous
+              </button>
+            ) : (
+              <div />
+            )}
 
             <div className="flex gap-3">
               {!showFeedback ? (
