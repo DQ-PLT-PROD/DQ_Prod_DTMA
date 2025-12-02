@@ -7,7 +7,7 @@ interface LearningAuthContextType {
   profile: LearnerProfile | null
   session: Session | null
   loading: boolean
-  signUp: (email: string, password: string, fullName?: string) => Promise<void>
+  signUp: (email: string, password: string, fullName?: string) => Promise<any>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   updateProgress: (stage: number, score?: number) => Promise<void>
@@ -90,7 +90,8 @@ export function LearningAuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, fullName?: string) => {
     setLoading(true)
     try {
-      await authService.signUp(email, password, fullName)
+      const result = await authService.signUp(email, password, fullName)
+      return result
     } catch (error) {
       console.error('Sign up error:', error)
       throw error

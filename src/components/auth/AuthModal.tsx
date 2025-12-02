@@ -39,7 +39,16 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'signin' }: AuthModal
       console.log('Attempting to', mode === 'signup' ? 'sign up' : 'sign in', 'with email:', email)
       
       if (mode === 'signup') {
-        await signUp(email, password, fullName)
+        const result = await signUp(email, password, fullName)
+        console.log('Sign up result:', result)
+        
+        // Check if email confirmation is required
+        if (result && !result.session) {
+          clearTimeout(timeoutId)
+          setIsLoading(false)
+          setSuccess('Account created! Please check your email to confirm your account before signing in.')
+          return
+        }
         console.log('Sign up successful! Redirecting to learning page...')
       } else {
         await signIn(email, password)
