@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Lock, Play, CheckCircle } from 'lucide-react'
-import { useLearningAuth } from '../../contexts/LearningAuthContext'
-import { AuthModal } from '../auth/AuthModal'
+import { useAuth } from '../Header/context/AuthContext'
 
 interface LearningStageGateProps {
   stage: number
@@ -20,52 +19,37 @@ export function LearningStageGate({
   children,
   onStageComplete 
 }: LearningStageGateProps) {
-  const { user, profile, updateProgress } = useLearningAuth()
-  const [showAuthModal, setShowAuthModal] = useState(false)
+  const { user, login } = useAuth()
   const [isUnlocked, setIsUnlocked] = useState(false)
 
-  const isAuthenticated = !!user && !!profile
-  const hasCompletedRequiredStage = profile?.completed_stages.includes(requiredStage) || requiredStage === 0
-  const hasCompletedCurrentStage = profile?.completed_stages.includes(stage)
-  const canAccess = isAuthenticated && hasCompletedRequiredStage
+  const isAuthenticated = !!user
+  const canAccess = isAuthenticated
 
   const handleUnlock = () => {
     if (!isAuthenticated) {
-      setShowAuthModal(true)
+      login()
       return
     }
     
-    if (canAccess) {
-      setIsUnlocked(true)
-    }
+    setIsUnlocked(true)
   }
 
   const handleStageComplete = async (score?: number) => {
     if (!isAuthenticated) return
     
     try {
-      await updateProgress(stage, score)
       onStageComplete?.(stage, score)
     } catch (error) {
       console.error('Error updating progress:', error)
     }
   }
 
-  // If stage is unlocked or user has completed it, show content
-  if (isUnlocked || hasCompletedCurrentStage) {
+  // If stage is unlocked, show content
+  if (isUnlocked) {
     return (
       <div className="relative">
-        {hasCompletedCurrentStage && (
-          <div className="absolute top-4 right-4 z-10">
-            <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-              <CheckCircle size={16} />
-              Completed
-            </div>
-          </div>
-        )}
         {React.cloneElement(children as React.ReactElement, { 
-          onComplete: handleStageComplete,
-          isCompleted: hasCompletedCurrentStage 
+          onComplete: handleStageComplete
         })}
       </div>
     )
@@ -101,15 +85,6 @@ export function LearningStageGate({
               Sign In to Continue
             </button>
           </div>
-        ) : !hasCompletedRequiredStage ? (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500">
-              Complete Stage {requiredStage} to unlock this stage
-            </p>
-            <div className="bg-gray-100 text-gray-600 px-6 py-3 rounded-lg font-medium">
-              Locked
-            </div>
-          </div>
         ) : (
           <button
             onClick={handleUnlock}
@@ -118,20 +93,7 @@ export function LearningStageGate({
             Start Stage {stage}
           </button>
         )}
-
-        {profile && (
-          <div className="mt-6 pt-6 border-t border-gray-100">
-            <div className="text-sm text-gray-500">
-              Your Progress: Stage {profile.current_stage} • {profile.total_score} points
-            </div>
-          </div>
-        )}
       </div>
-
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
     </>
   )
 }

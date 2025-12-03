@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Lock, ArrowRight, User, Trophy, BookOpen } from 'lucide-react'
-import { useLearningAuth } from '../../contexts/LearningAuthContext'
-import { AuthModal } from '../auth/AuthModal'
+import { useAuth } from '../Header/context/AuthContext'
 
 interface AuthGateProps {
   onContinueToStage2?: () => void
@@ -9,11 +8,10 @@ interface AuthGateProps {
 }
 
 export function AuthGate({ onContinueToStage2, className = '' }: AuthGateProps) {
-  const { user, profile } = useLearningAuth()
-  const [showAuthModal, setShowAuthModal] = useState(false)
+  const { user, login } = useAuth()
 
   const handleSignIn = () => {
-    setShowAuthModal(true)
+    login()
   }
 
   const handleContinue = () => {
@@ -23,7 +21,7 @@ export function AuthGate({ onContinueToStage2, className = '' }: AuthGateProps) 
   }
 
   // If user is already authenticated, show continue button
-  if (user && profile) {
+  if (user) {
     return (
       <div className={`bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-6 ${className}`}>
         <div className="text-center">
@@ -32,29 +30,12 @@ export function AuthGate({ onContinueToStage2, className = '' }: AuthGateProps) 
           </div>
           
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Welcome back, {profile.full_name || 'Learner'}!
+            Welcome back, {user.name || 'Learner'}!
           </h3>
           
           <p className="text-gray-600 mb-6">
-            You're signed in and ready to continue your learning journey to Stage 2.
+            You're signed in and ready to continue your learning journey.
           </p>
-
-          <div className="bg-white rounded-lg p-4 mb-6">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-lg font-semibold text-blue-600">{profile.current_stage}</div>
-                <div className="text-xs text-gray-500">Current Stage</div>
-              </div>
-              <div>
-                <div className="text-lg font-semibold text-green-600">{profile.total_score}</div>
-                <div className="text-xs text-gray-500">Total Points</div>
-              </div>
-              <div>
-                <div className="text-lg font-semibold text-purple-600">{profile.badges.length}</div>
-                <div className="text-xs text-gray-500">Badges Earned</div>
-              </div>
-            </div>
-          </div>
 
           <button
             onClick={handleContinue}
@@ -117,12 +98,6 @@ export function AuthGate({ onContinueToStage2, className = '' }: AuthGateProps) 
           </div>
         </div>
       </div>
-
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        defaultMode="signin"
-      />
     </>
   )
 }

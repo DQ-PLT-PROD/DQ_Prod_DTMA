@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./components/Header";
-import { LearningAuthProvider } from "./contexts/LearningAuthContext";
 import { MarketplaceRouter } from "./pages/marketplace/MarketplaceRouter";
 import { App } from "./App";
 import MarketplaceDetailsPage from "./pages/marketplace/MarketplaceDetailsPage";
@@ -37,9 +36,6 @@ import GrowthAreasPage from "./pages/GrowthAreasPage";
 import BusinessDirectoryMarketplace from "./pages/BusinessDirectoryMarketplace";
 import { ComingSoon } from "./pages/ComingSoon";
 import { Course } from "./types/dtma-lms";
-import { LearningPage } from "./pages/LearningPage";
-import { LearningProtectedRoute } from "./components/LearningProtectedRoute";
-import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 
 export function AppRouter() {
   const [bookmarkedCourses, setBookmarkedCourses] = useState<string[]>([]);
@@ -65,24 +61,10 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <LearningAuthProvider>
-          <KfBot />
-          <Routes>
+        <KfBot />
+        <Routes>
           <Route path="/" element={<App />} />
           <Route path="/courses" element={<App />} />
-          
-          {/* Stage 2: Protected Learning Page */}
-          <Route 
-            path="/learning" 
-            element={
-              <LearningProtectedRoute>
-                <LearningPage />
-              </LearningProtectedRoute>
-            } 
-          />
-
-          {/* Password Reset Page */}
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route
             path="/courses/:itemId"
             element={
@@ -98,9 +80,9 @@ export function AppRouter() {
           <Route
             path="/dashboard/*"
             element={
-              // <ProtectedRoute>
-              <DashboardRouter />
-              // </ProtectedRoute>
+              <ProtectedRoute>
+                <DashboardRouter />
+              </ProtectedRoute>
             }
           />
           <Route path="/discover-abudhabi" element={<DiscoverAbuDhabi />} />
@@ -170,7 +152,6 @@ export function AppRouter() {
 
           <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
-        </LearningAuthProvider>
       </AuthProvider>
     </BrowserRouter>
   );

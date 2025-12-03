@@ -6,8 +6,7 @@ import {
   BRAND_BACKDROP_BLUR,
   BRAND_PRIMARY,
 } from "../../../constants/branding";
-import { useLearningAuth } from "../../../contexts/LearningAuthContext";
-import { AuthModal } from "../../auth/AuthModal";
+import { useAuth } from "../context/AuthContext";
 
 interface MobileDrawerProps {
   onSignIn: () => void;
@@ -26,8 +25,7 @@ export function MobileDrawer({
 }: MobileDrawerProps) {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const { user, profile, signOut } = useLearningAuth();
+  const { user, login, logout } = useAuth();
 
   useEffect(() => {
     if (isDrawerOpen) {
@@ -45,13 +43,13 @@ export function MobileDrawer({
   }, [isDrawerOpen]);
 
   const handleSignIn = () => {
-    setShowAuthModal(true);
+    login();
     setIsDrawerOpen(false);
   };
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      logout();
       setIsDrawerOpen(false);
       navigate('/');
     } catch (error) {
@@ -242,12 +240,6 @@ export function MobileDrawer({
           </div>
         </>
       )}
-      
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
     </>
   );
 }

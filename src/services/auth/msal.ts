@@ -8,18 +8,27 @@ import {
 // Support both NEXT_PUBLIC_* and VITE_* envs
 const env = (import.meta as any).env as Record<string, string | undefined>;
 
-const CLIENT_ID =
-  env.NEXT_PUBLIC_AAD_CLIENT_ID ||
-  env.VITE_AZURE_CLIENT_ID ||
-  "f996140d-d79b-419d-a64c-f211d23a38ad";
-const REDIRECT_URI =
-  env.NEXT_PUBLIC_REDIRECT_URI ||
-  env.VITE_AZURE_REDIRECT_URI ||
-  window.location.origin;
-const POST_LOGOUT_REDIRECT_URI =
-  env.NEXT_PUBLIC_POST_LOGOUT_REDIRECT_URI ||
-  env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI ||
-  REDIRECT_URI;
+// Required environment variables - no fallbacks
+const CLIENT_ID = env.VITE_AZURE_CLIENT_ID || env.NEXT_PUBLIC_AAD_CLIENT_ID;
+const TENANT_NAME = env.VITE_B2C_TENANT_NAME || env.NEXT_PUBLIC_B2C_TENANT_NAME;
+const POLICY_SIGNUP_SIGNIN = env.VITE_B2C_POLICY_SIGNUP_SIGNIN || env.NEXT_PUBLIC_B2C_POLICY_SIGNUP_SIGNIN;
+
+// Optional environment variables with sensible defaults
+const REDIRECT_URI = env.VITE_AZURE_REDIRECT_URI || env.NEXT_PUBLIC_REDIRECT_URI || window.location.origin;
+const POST_LOGOUT_REDIRECT_URI = env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI || env.NEXT_PUBLIC_POST_LOGOUT_REDIRECT_URI || REDIRECT_URI;
+const POLICY_SIGNUP = env.VITE_B2C_POLICY_SIGNUP || env.NEXT_PUBLIC_B2C_POLICY_SIGNUP;
+
+// Validate required configuration
+if (!CLIENT_ID) {
+  throw new Error('VITE_AZURE_CLIENT_ID is required in environment variables');
+}
+if (!TENANT_NAME) {
+  throw new Error('VITE_B2C_TENANT_NAME is required in environment variables');
+}
+if (!POLICY_SIGNUP_SIGNIN) {
+  throw new Error('VITE_B2C_POLICY_SIGNUP_SIGNIN is required in environment variables');
+}
+
 const API_SCOPES = (env.NEXT_PUBLIC_API_SCOPES || env.VITE_AZURE_SCOPES || "")
   .split(/[\s,]+/)
   .map((s) => s.trim())
@@ -32,17 +41,6 @@ const DEFAULT_OIDC_SCOPES = [
   "email",
   "offline_access",
 ] as const;
-
-// Vite exposes only VITE_* via import.meta.env (not process.env)
-const TENANT_NAME =
-  env.NEXT_PUBLIC_B2C_TENANT_NAME || env.VITE_B2C_TENANT_NAME || "dqproj";
-const POLICY_SIGNUP_SIGNIN =
-  env.NEXT_PUBLIC_B2C_POLICY_SIGNUP_SIGNIN ||
-  env.VITE_B2C_POLICY_SIGNUP_SIGNIN ||
-  "F1_CustomerSUSILocal_KF";
-// Optional dedicated Sign-Up policy/user flow
-const POLICY_SIGNUP =
-  env.NEXT_PUBLIC_B2C_POLICY_SIGNUP || env.VITE_B2C_POLICY_SIGNUP;
 
 // Select correct login host. Prefer explicit host; default to B2C (b2clogin.com).
 // If you are using Entra External Identities (CIAM), set NEXT_PUBLIC_IDENTITY_HOST or VITE_IDENTITY_HOST
@@ -57,7 +55,7 @@ const LOGIN_HOST =
   env.NEXT_PUBLIC_IDENTITY_HOST ||
   env.VITE_IDENTITY_HOST ||
   (SUB ? `${SUB}.ciamlogin.com` : `${TENANT_NAME}.b2clogin.com`);
-const AUTHORITY_SIGNUP_SIGNIN = `https://${LOGIN_HOST}/${TENANT_NAME}.onmicrosoft.com/`;
+const AUTHORITY_SIGNUP_SIGNIN = `https://${LOGIN_HOST}/${TENANT_NAME}.onmicrosoft.com/${POLICY_SIGNUP_SIGNIN}`;
 const AUTHORITY_SIGNUP = POLICY_SIGNUP
   ? `https://${LOGIN_HOST}/${TENANT_NAME}.onmicrosoft.com/${POLICY_SIGNUP}`
   : AUTHORITY_SIGNUP_SIGNIN;
@@ -123,6 +121,17 @@ export const msalConfig: Configuration = {
     },
   },
 };
+
+// Debug: Log MSAL configuration
+console.log('MSAL Configuration:', {
+  clientId: CLIENT_ID,
+  authority: AUTHORITY_SIGNUP_SIGNIN,
+  redirectUri: REDIRECT_URI,
+  loginHost: LOGIN_HOST,
+  tenantName: TENANT_NAME,
+  policy: POLICY_SIGNUP_SIGNIN,
+  subdomain: SUB
+});
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
