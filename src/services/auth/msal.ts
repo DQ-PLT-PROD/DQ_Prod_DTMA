@@ -20,13 +20,16 @@ const POLICY_SIGNUP = env.VITE_B2C_POLICY_SIGNUP || env.NEXT_PUBLIC_B2C_POLICY_S
 
 // Validate required configuration
 if (!CLIENT_ID) {
-  throw new Error('VITE_AZURE_CLIENT_ID is required in environment variables');
+  console.error('⚠️ VITE_AZURE_CLIENT_ID is required in environment variables');
+  console.error('Authentication will not work until Azure credentials are configured.');
 }
 if (!TENANT_NAME) {
-  throw new Error('VITE_B2C_TENANT_NAME is required in environment variables');
+  console.error('⚠️ VITE_B2C_TENANT_NAME is required in environment variables');
+  console.error('Authentication will not work until Azure credentials are configured.');
 }
 if (!POLICY_SIGNUP_SIGNIN) {
-  throw new Error('VITE_B2C_POLICY_SIGNUP_SIGNIN is required in environment variables');
+  console.error('⚠️ VITE_B2C_POLICY_SIGNUP_SIGNIN is required in environment variables');
+  console.error('Authentication will not work until Azure credentials are configured.');
 }
 
 const API_SCOPES = (env.NEXT_PUBLIC_API_SCOPES || env.VITE_AZURE_SCOPES || "")
@@ -122,16 +125,7 @@ export const msalConfig: Configuration = {
   },
 };
 
-// Debug: Log MSAL configuration
-console.log('MSAL Configuration:', {
-  clientId: CLIENT_ID,
-  authority: AUTHORITY_SIGNUP_SIGNIN,
-  redirectUri: REDIRECT_URI,
-  loginHost: LOGIN_HOST,
-  tenantName: TENANT_NAME,
-  policy: POLICY_SIGNUP_SIGNIN,
-  subdomain: SUB
-});
+// MSAL configuration ready
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
