@@ -96,3 +96,14 @@ export interface FilterSidebarProps {
   businessStages: string[];
   providers: ProviderType[];
 }
+
+/**
+ * Represents a lesson in a course
+ */
+export interface Lesson {
+  id: number;
+  title: string;
+  duration: string;
+  completed: boolean;
+  description?: string;
+}
