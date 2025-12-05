@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowRight, Facebook, Instagram, Twitter } from "lucide-react";
+import { FEATURES } from "../../config/features";
 
 interface FooterProps {
   "data-id"?: string;
@@ -16,10 +17,10 @@ const ABOUT_TEXT = [
 
 const QUICK_LINKS = [
   { label: "Help Center", href: "#" },
-  { label: "Explore the AI Working Era", href: "/discover-abudhabi" },
+  FEATURES.GROWTH_AREAS && { label: "Explore the AI Working Era", href: "/discover-abudhabi" },
   { label: "Privacy Policy", href: "#" },
   { label: "Terms of Service", href: "#" },
-];
+].filter(Boolean) as { label: string; href: string }[];
 
 export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
   if (isLoggedIn) {

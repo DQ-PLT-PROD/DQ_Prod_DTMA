@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { FEATURES } from "./config/features";
 import { AuthProvider } from "./components/Header";
 import { MarketplaceRouter } from "./pages/marketplace/MarketplaceRouter";
 import { App } from "./App";
@@ -52,7 +53,7 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <KfBot />
+        {FEATURES.AI_CHATBOT && <KfBot />}
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/courses" element={<App />} />
@@ -76,9 +77,27 @@ export function AppRouter() {
             }
           />
           <Route path="/discover-abudhabi" element={<DiscoverAbuDhabi />} />
-          <Route path="/growth-areas-marketplace" element={<GrowthAreasMarketplace />} />
-          <Route path="/growth-areas" element={<GrowthAreasPage />} />
-          <Route path="/business-directory-marketplace" element={<BusinessDirectoryMarketplace />} />
+
+          {/* Feature Flagged: Growth Areas */}
+          {FEATURES.GROWTH_AREAS ? (
+            <>
+              <Route path="/growth-areas-marketplace" element={<GrowthAreasMarketplace />} />
+              <Route path="/growth-areas" element={<GrowthAreasPage />} />
+            </>
+          ) : (
+            <>
+              <Route path="/growth-areas-marketplace" element={<Navigate to="/404" replace />} />
+              <Route path="/growth-areas" element={<Navigate to="/404" replace />} />
+            </>
+          )}
+
+          {/* Feature Flagged: Other Marketplaces */}
+          {FEATURES.OTHER_MARKETPLACES ? (
+            <Route path="/business-directory-marketplace" element={<BusinessDirectoryMarketplace />} />
+          ) : (
+            <Route path="/business-directory-marketplace" element={<Navigate to="/404" replace />} />
+          )}
+
           <Route path="/coming-soon" element={<ComingSoon />} />
           <Route path="/coming-soon/:feature" element={<ComingSoon />} />
           <Route path="/learning" element={<LearningScreen />} />
@@ -87,52 +106,68 @@ export function AppRouter() {
           <Route path="/documentation" element={<Navigate to="/coming-soon/documentation" replace />} />
           <Route path="/documentation/*" element={<Navigate to="/coming-soon/documentation" replace />} />
           <Route path="/admin-ui/settings" element={<AdminSettings />} />
-          {/** Forms routes */}
-          <Route
-            path="/forms/needs-assessment"
-            element={<ProtectedRoute><NeedsAssessmentForm /></ProtectedRoute>}
-          />
-          <Route
-            path="/forms/request-for-membership"
-            element={<ProtectedRoute><RequestForMembership /></ProtectedRoute>}
-          />
-          <Route
-            path="/forms/request-for-funding"
-            element={<ProtectedRoute><RequestForFunding /></ProtectedRoute>}
-          />
-          <Route
-            path="/forms/book-consultation"
-            element={<BookConsultationForEntrepreneurship />}
-          />
-          <Route path="/forms/cancel-loan" element={<CancelLoan />} />
-          <Route
-            path="/forms/collateral-user-guide"
-            element={<ProtectedRoute><CollateralUserGuide /></ProtectedRoute>}
-          />
-          <Route
-            path="/forms/disburse-approved-loan"
-            element={<ProtectedRoute><DisburseApprovedLoan /></ProtectedRoute>}
-          />
-          <Route
-            path="/forms/facilitate-communication"
-            element={<ProtectedRoute><FacilitateCommunication /></ProtectedRoute>}
-          />
-          <Route
-            path="/forms/reallocation-of-loan-disbursement"
-            element={<ProtectedRoute><ReallocationOfLoanDisbursement /></ProtectedRoute>}
-          />
-          <Route
-            path="/forms/request-to-amend-existing-loan-details"
-            element={<ProtectedRoute><RequestToAmendExistingLoanDetails /></ProtectedRoute>}
-          />
-          <Route
-            path="/forms/training-in-entrepreneurship"
-            element={<ProtectedRoute><TrainingInEntrepreneurship /></ProtectedRoute>}
-          />
-          <Route
-            path="/forms/issue-support-letter"
-            element={<ProtectedRoute><IssueSupportLetter /></ProtectedRoute>}
-          />
+
+          {/** Forms routes - Feature Flagged */}
+          {FEATURES.ADVANCED_FORMS ? (
+            <>
+              <Route
+                path="/forms/needs-assessment"
+                element={<ProtectedRoute><NeedsAssessmentForm /></ProtectedRoute>}
+              />
+              <Route
+                path="/forms/request-for-membership"
+                element={<ProtectedRoute><RequestForMembership /></ProtectedRoute>}
+              />
+              <Route
+                path="/forms/request-for-funding"
+                element={<ProtectedRoute><RequestForFunding /></ProtectedRoute>}
+              />
+              <Route
+                path="/forms/book-consultation"
+                element={<BookConsultationForEntrepreneurship />}
+              />
+              <Route path="/forms/cancel-loan" element={<CancelLoan />} />
+              <Route
+                path="/forms/collateral-user-guide"
+                element={<ProtectedRoute><CollateralUserGuide /></ProtectedRoute>}
+              />
+              <Route
+                path="/forms/disburse-approved-loan"
+                element={<ProtectedRoute><DisburseApprovedLoan /></ProtectedRoute>}
+              />
+              <Route
+                path="/forms/facilitate-communication"
+                element={<ProtectedRoute><FacilitateCommunication /></ProtectedRoute>}
+              />
+              <Route
+                path="/forms/reallocation-of-loan-disbursement"
+                element={<ProtectedRoute><ReallocationOfLoanDisbursement /></ProtectedRoute>}
+              />
+              <Route
+                path="/forms/request-to-amend-existing-loan-details"
+                element={<ProtectedRoute><RequestToAmendExistingLoanDetails /></ProtectedRoute>}
+              />
+              <Route
+                path="/forms/training-in-entrepreneurship"
+                element={<ProtectedRoute><TrainingInEntrepreneurship /></ProtectedRoute>}
+              />
+              <Route
+                path="/forms/issue-support-letter"
+                element={<ProtectedRoute><IssueSupportLetter /></ProtectedRoute>}
+              />
+            </>
+          ) : (
+            // Redirect legacy form routes to 404 or a "not available" page
+            <>
+              <Route path="/forms/*" element={<Navigate to="/404" replace />} />
+              {/* Exception: Allow specific forms if needed for courses */}
+              <Route
+                path="/forms/needs-assessment"
+                element={<ProtectedRoute><NeedsAssessmentForm /></ProtectedRoute>}
+              />
+            </>
+          )}
+
           <Route path="/media/:type/:id" element={<MediaDetailPage />} />
           {/* Embedded Admin UI */}
           <Route path="/admin-ui/dashboard" element={<AdminDashboard />} />
