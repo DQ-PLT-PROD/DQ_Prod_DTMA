@@ -40,7 +40,6 @@ const mapRowToCourse = (row: any): Course => {
 export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[]> => {
     // If Supabase is not configured, fallback to local data
     if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, using local course data");
         const localCourses = getLocalCourses(filters);
         return localCourses.map(toMarketplaceItem);
     }
@@ -76,18 +75,14 @@ export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[
         const { data, error } = await query;
 
         if (error) {
-            console.error("Error fetching courses from Supabase:", error);
-            if (error.code === "42P01") { // undefined_table
-                console.warn("Courses table not found, falling back to local data");
-                const localCourses = getLocalCourses(filters);
-                return localCourses.map(toMarketplaceItem);
-            }
-            throw error;
+            console.warn("Supabase fetch failed, falling back to local data:", error.message);
+            const localCourses = getLocalCourses(filters);
+            return localCourses.map(toMarketplaceItem);
         }
 
         return (data || []).map((row) => toMarketplaceItem(mapRowToCourse(row)));
     } catch (err) {
-        console.error("Unexpected error fetching courses:", err);
+        console.warn("Unexpected error fetching courses, falling back to local data:", err);
         const localCourses = getLocalCourses(filters);
         return localCourses.map(toMarketplaceItem);
     }
@@ -108,20 +103,19 @@ export const fetchCourseBySlug = async (slug: string): Promise<any | null> => {
             .single();
 
         if (error) {
-            if (error.code === "42P01") { // undefined_table
-                console.warn("Courses table not found, falling back to local data");
+            if (error.code === 'PGRST116') {
+                // Try local if not found in Supabase (maybe local-only content?)
                 const localCourse = getLocalCourseBySlug(slug);
                 return localCourse ? toMarketplaceItem(localCourse) : null;
             }
-            if (error.code === 'PGRST116') return null;
-
-            console.error("Error fetching course by slug:", error);
-            throw error;
+            console.warn("Supabase fetch failed, falling back to local data:", error.message);
+            const localCourse = getLocalCourseBySlug(slug);
+            return localCourse ? toMarketplaceItem(localCourse) : null;
         }
 
         return data ? toMarketplaceItem(mapRowToCourse(data)) : null;
     } catch (err) {
-        console.error("Unexpected error fetching course:", err);
+        console.warn("Unexpected error fetching course, falling back to local data:", err);
         const localCourse = getLocalCourseBySlug(slug);
         return localCourse ? toMarketplaceItem(localCourse) : null;
     }
@@ -141,19 +135,16 @@ export const fetchFullCourse = async (slug: string): Promise<Course | null> => {
             .single();
 
         if (error) {
-            if (error.code === "42P01") { // undefined_table
-                console.warn("Courses table not found, falling back to local data");
+            if (error.code === 'PGRST116') {
                 return getLocalCourseBySlug(slug) || null;
             }
-            if (error.code === 'PGRST116') return null;
-
-            console.error("Error fetching full course by slug:", error);
-            throw error;
+            console.warn("Supabase fetch failed, falling back to local data:", error.message);
+            return getLocalCourseBySlug(slug) || null;
         }
 
         return data ? mapRowToCourse(data) : null;
     } catch (err) {
-        console.error("Unexpected error fetching full course:", err);
+        console.warn("Unexpected error fetching full course, falling back to local data:", err);
         return getLocalCourseBySlug(slug) || null;
     }
 };

@@ -745,11 +745,19 @@ const HeroVideoPlayer: React.FC<{
       if (videoRef.current) {
         // Ensure muted is set for autoplay policy
         videoRef.current.muted = true;
-        videoRef.current.play()
-          .then(() => setIsPlaying(true))
-          .catch((e) => {
-            console.warn("Autoplay prevented:", e);
-          });
+        const playPromise = videoRef.current.play();
+
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => setIsPlaying(true))
+            .catch((e) => {
+              console.warn("Autoplay prevented:", e);
+              // If autoplay fails, we are in a paused state. 
+              // We should ensure the video is visible so user can click play.
+              setIsPlaying(false);
+              setShowControls(true);
+            });
+        }
       }
     }, 1000);
 
@@ -796,7 +804,7 @@ const HeroVideoPlayer: React.FC<{
         ref={videoRef}
         src={videoUrl}
         poster={posterUrl}
-        className="w-full h-full object-cover"
+        className={`w-full h-full object-cover transition-opacity duration-500 ${isPlaying || !videoRef.current ? "opacity-100" : "opacity-100"}`}
         playsInline
         muted={isMuted}
         loop
@@ -805,7 +813,7 @@ const HeroVideoPlayer: React.FC<{
         onEnded={() => setIsPlaying(false)}
       />
 
-      {/* Overlay Controls */}
+      {/* Overlay Controls - Always visible if not playing */}
       <div
         className={`absolute inset-0 flex flex-col justify-between transition-opacity duration-300 pointer-events-none ${showControls || !isPlaying ? "opacity-100" : "opacity-0"
           }`}
@@ -838,7 +846,7 @@ const HeroVideoPlayer: React.FC<{
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <button
               onClick={togglePlay}
-              className="pointer-events-auto h-16 w-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:scale-110 transition-transform duration-300"
+              className="pointer-events-auto h-16 w-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:scale-110 transition-transform duration-300 group-hover:scale-110"
             >
               <div className="h-12 w-12 rounded-full bg-white text-blue-600 flex items-center justify-center shadow-lg pl-1">
                 <Play size={24} fill="currentColor" />
