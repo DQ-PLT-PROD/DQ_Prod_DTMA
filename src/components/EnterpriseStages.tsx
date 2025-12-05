@@ -36,11 +36,11 @@ const EnterpriseStages: React.FC = () => {
           <div className="relative z-10 bg-[#1839AD] text-white grid lg:grid-cols-[3fr,2fr] overflow-hidden">
             <div className="relative z-10 h-full pl-[9.5rem] pr-10 sm:pr-16 sm:pl-[13rem] py-6 md:py-8 flex flex-col justify-center space-y-4 overflow-visible">
               <div
-                className="absolute border-[1.5px] border-white rounded-full pointer-events-none"
+                className="absolute border-[2px] border-[#FFFFFF] rounded-full pointer-events-none"
                 style={{ width: "18rem", height: "18rem", left: "-9rem", top: "-6rem" }}
               ></div>
               <div
-                className="absolute hidden md:block border-[1.5px] border-white rounded-full pointer-events-none z-10"
+                className="absolute hidden md:block border-[2px] border-[#FFFFFF] rounded-full pointer-events-none z-10"
                 style={{ width: "250px", height: "250px", left: "4px", bottom: "-202px" }}
               ></div>
               <div
@@ -110,7 +110,7 @@ const EnterpriseStages: React.FC = () => {
 
 export default EnterpriseStages;
 <div
-  className="absolute hidden md:block border-[1.5px] border-white rounded-full pointer-events-none"
+  className="absolute hidden md:block border-[2px] border-[#FFFFFF] rounded-full pointer-events-none"
   style={{
     width: "16rem",
     height: "16rem",

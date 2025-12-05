@@ -256,7 +256,7 @@ const LearningScreen: React.FC = () => {
       </header>
 
       {/* Content Area Below Header */}
-      <div className="flex-1 flex">
+    <div className={`flex-1 flex ${isTheater ? "h-[calc(100vh-140px)] max-h-[calc(100vh-140px)] w-full" : ""}`}>
         {/* Minimal Side Navigation - Learning Page with collapse toggle (hidden in theater) */}
         {!isTheater && (
           <aside
@@ -265,21 +265,21 @@ const LearningScreen: React.FC = () => {
           >
             <nav>
               <div
-                className={`flex items-center px-4 py-3 bg-[#1839AD] text-white overflow-hidden ${!sidebarOpen ? 'cursor-pointer justify-center' : 'cursor-default'}`}
+                className={`flex items-center px-4 py-3 bg-white text-[#1839AD] overflow-hidden border-b border-gray-200 ${!sidebarOpen ? 'cursor-pointer justify-center' : 'cursor-default'}`}
                 onClick={() => !sidebarOpen && setSidebarOpen(true)}
               >
-                <span className="w-8 flex items-center justify-center flex-shrink-0">
+                <span className="w-8 flex items-center justify-center flex-shrink-0 text-[#1839AD]">
                   <BookOpen size={20} />
                 </span>
                 {sidebarOpen && (
                   <>
-                    <span className="flex-1 ml-3 font-medium whitespace-nowrap">Learning Page</span>
+                    <span className="flex-1 ml-3 font-medium whitespace-nowrap text-[#1839AD]">Learning Page</span>
                     <button
                       onClick={() => setSidebarOpen(false)}
-                      className="p-1 rounded hover:bg-white/20 transition flex-shrink-0"
+                      className="p-1 rounded hover:bg-gray-100 transition flex-shrink-0"
                       title="Collapse navigation"
                     >
-                      <ChevronLeft size={18} />
+                      <ChevronLeft size={18} className="text-[#1839AD]" />
                     </button>
                   </>
                 )}
@@ -361,19 +361,19 @@ const LearningScreen: React.FC = () => {
           </div>
 
           {/* Main Content */}
-          <main className={`flex-1 min-w-0 ${isTheater ? "p-2 md:p-3" : "p-4 md:p-6"} overflow-y-auto`}>
-            {showQuiz ? (
-              <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-8">
-                <CourseAssessment
-                  variant="inline"
-                  allLessonsCompleted={allLessonsCompleted}
+        <main className={`flex-1 min-w-0 ${isTheater ? "p-0 h-full" : "p-4 md:p-6"} overflow-y-auto`}>
+          {showQuiz ? (
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-8">
+              <CourseAssessment
+                variant="inline"
+                allLessonsCompleted={allLessonsCompleted}
                   onBack={handleBackFromQuiz}
                 />
               </div>
             ) : (
-              <div className="max-w-4xl mx-auto space-y-4">
+              <div className={`${isTheater ? "w-full h-full space-y-4" : "max-w-4xl mx-auto space-y-4"}`}>
                 {/* Video Player with Overlay Title */}
-                <div className="relative rounded-xl overflow-hidden shadow-lg">
+                <div className={`relative overflow-hidden ${isTheater ? "h-full w-full rounded-none" : "rounded-xl shadow-lg"}`}>
                   {/* Title Overlay - Dark Header Bar */}
                   <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/80 via-black/60 to-transparent px-4 py-3">
                     <p className="text-white/90 text-lg font-semibold">
@@ -403,6 +403,7 @@ const LearningScreen: React.FC = () => {
                     onTimeUpdate={handleTimeUpdate}
                     onLoadedMetadata={handleLoadedMetadata}
                     onEnded={() => setIsPlaying(false)}
+                    className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
                   />
                 </div>
 
