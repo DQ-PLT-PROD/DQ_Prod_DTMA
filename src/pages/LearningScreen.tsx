@@ -373,9 +373,19 @@ const LearningScreen: React.FC = () => {
             ) : (
               <div className={`${isTheater ? "w-full h-full space-y-4" : "max-w-4xl mx-auto space-y-4"}`}>
                 {/* Video Player with Overlay Title */}
-                <div className={`relative overflow-hidden ${isTheater ? "h-full w-full rounded-none" : "rounded-xl shadow-lg"}`}>
-                  {/* Title Overlay - Dark Header Bar */}
-                  <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/80 via-black/60 to-transparent px-4 py-3">
+                <div className={`relative overflow-hidden ${isTheater ? "h-full w-full rounded-none" : "rounded-xl shadow-lg"} group`}>
+                  {isTheater && (
+                    <button
+                      onClick={() => setIsTheater(false)}
+                      className="absolute top-3 right-3 z-20 bg-white/80 text-[#1839AD] px-3 py-1 rounded-full text-xs font-semibold shadow hover:bg-white transition"
+                    >
+                      Exit Fullscreen
+                    </button>
+                  )}
+                  {/* Title Overlay - transparent strip over video */}
+                  <div
+                    className={`absolute top-0 left-0 right-0 z-10 px-4 py-3 bg-black/35 backdrop-blur-sm transition-opacity duration-300 ${isPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
+                  >
                     <p className="text-white/90 text-lg font-semibold">
                       {courseTitle}
                     </p>
