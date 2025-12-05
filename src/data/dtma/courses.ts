@@ -26,6 +26,8 @@ export const courses: Course[] = [
     skillsGained: ["Macro digital economy awareness", "Strategic framing of Economy 4.0"],
     uponCompletion: "You will be able to confidently introduce Economy 4.0 to leaders and teams.",
     heroImageUrl: "/images/courses/course-thumb-1.png",
+    introVideoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    introVideoPosterUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-connecting-e4-dco",
