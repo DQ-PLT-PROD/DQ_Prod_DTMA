@@ -15,8 +15,8 @@ import { ServiceRequestsFilters } from '../../../components/ServiceRequestsFilte
 export function AllUpcomingObligationsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [obligations, setObligations] = useState([]);
-    const [filteredObligations, setFilteredObligations] = useState([]);
+    const [obligations, setObligations] = useState<any[]>([]);
+    const [filteredObligations, setFilteredObligations] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [dateRange, setDateRange] = useState({
         startDate: null,

@@ -26,14 +26,7 @@ export { ResourceCard } from './ResourceCard';
 // DESIGN SYSTEM - For Advanced Customization
 // export { designTokens, tagVariants } from './designTokens';
 // UTILITY COMPONENTS - For Custom Implementations
-<<<<<<< HEAD
 export { BaseCard } from './BaseCard';
 export { CardHeader } from './CardHeader';
 export { CardFooter } from './CardFooter';
 export { TagChip } from './TagChip';
-=======
-// export { BaseCard } from './BaseCard';
-// export { CardHeader } from './CardHeader';
-// export { CardFooter } from './CardFooter';
-// export { TagChip } from './TagChip';
->>>>>>> develop

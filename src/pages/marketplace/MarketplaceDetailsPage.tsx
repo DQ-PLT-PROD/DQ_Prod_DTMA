@@ -220,7 +220,9 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   const handlePrimaryAction = () => {
     // For courses, take learners straight into the DTMA learning experience
     if (marketplaceType === "courses") {
-      navigate(`/learning?courseId=${encodeURIComponent(item.id)}`);
+      if (item) {
+        navigate(`/learning?courseId=${encodeURIComponent(item.id)}`);
+      }
       return;
     }
 
@@ -244,13 +246,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     if (itemId) {
       try {
         refetch?.();
-<<<<<<< HEAD
-      } catch (err) {
-        console.error("Failed to refetch marketplace item:", err);
-      }
-=======
       } catch { }
->>>>>>> develop
     }
   };
 

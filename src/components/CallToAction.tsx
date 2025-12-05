@@ -1,15 +1,7 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ArrowRight } from "lucide-react";
-import { FadeInUpOnScroll } from "./AnimationUtils";
+import { FadeInUpOnScroll, useInView } from "./AnimationUtils";
 import {
-<<<<<<< HEAD
-  BRAND_GRADIENT,
-  BRAND_PRIMARY,
-  BRAND_BACKDROP_BLUR,
-} from "../constants/branding";
-
-const CallToAction: React.FC = () => {
-=======
   Users,
   ChevronRight,
   Phone,
@@ -18,7 +10,6 @@ const CallToAction: React.FC = () => {
   Briefcase,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FadeInUpOnScroll, useInView } from "./AnimationUtils";
 
 // Animated shape component
 const FloatingShape = ({ size, color, delay, duration, className = "" }) => {
@@ -560,7 +551,6 @@ const CallToAction: React.FC = () => {
     }
   }, [location.hash]);
 
->>>>>>> develop
   return (
     <section
       id="final-cta"
@@ -573,30 +563,45 @@ const CallToAction: React.FC = () => {
         <div className="absolute -top-10 -left-24 h-40 w-40 rounded-full border-4 border-white/60" />
         <div className="absolute -top-16 -right-24 h-48 w-48 rounded-full border-4 border-white/60" />
       </div>
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4 text-[#030C2B] flex flex-col items-center">
-        <FadeInUpOnScroll className="space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold leading-tight">
-            Ready to Grow in the AI Working Era?
-          </h2>
-          <p className="text-base md:text-lg text-[#030C2B]/80">
-            Join DTMA to learn practical, future-ready skills.
-          </p>
-        </FadeInUpOnScroll>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <FadeInUpOnScroll className="space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold leading-tight text-[#030C2B]">
+              Ready to Grow in the AI Working Era?
+            </h2>
+            <p className="text-base md:text-lg text-[#030C2B]/80">
+              Join DTMA to learn practical, future-ready skills.
+            </p>
+          </FadeInUpOnScroll>
+        </div>
 
-        <FadeInUpOnScroll delay={0.2}>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <a
-              href="#"
-              className="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl hover:opacity-90"
-              style={{ backgroundColor: BRAND_PRIMARY }}
-            >
-<<<<<<< HEAD
-              Get Started
-              <ArrowRight size={16} className="ml-2" />
-            </a>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+          {/* Card 1: Register Now */}
+          <div id="cta-register">
+            <CTACard
+              icon={<Users size={28} className="text-blue-600" />}
+              title="Register Now"
+              description="Create your account to access premium courses and track your progress."
+              buttonText="Sign Up"
+              buttonColor="blue"
+              onClick={handleSignIn}
+              delay={0.1}
+            />
           </div>
-        </FadeInUpOnScroll>
-=======
+
+          {/* Card 2: Become a Partner */}
+          <div id="cta-partner">
+            <CTACard
+              icon={<Briefcase size={28} className="text-emerald-600" />}
+              title="Become a Partner"
+              description="Join our network of educational providers and reach a wider audience."
+              buttonText="Apply Now"
+              buttonColor="green"
+              isExpanded={expandedCard === "partner"}
+              onExpand={() => handleExpandCard("partner")}
+              delay={0.2}
+              isSuccess={partnerFormSuccess}
+            >
               <form onSubmit={handlePartnerSubmit} className="mt-2">
                 {partnerSubmitError && (
                   <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -693,7 +698,7 @@ const CallToAction: React.FC = () => {
           </div>
 
           {/* Card 3: Contact Us */}
-          <div id="cta-contact" className="scroll-mt-20">
+          <div id="cta-contact">
             <CTACard
               icon={<Phone size={28} className="text-purple-600" />}
               title="Contact Us"
@@ -788,8 +793,14 @@ const CallToAction: React.FC = () => {
             </CTACard>
           </div>
         </div>
->>>>>>> develop
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type === "info" ? "success" : toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </section>
   );
 };

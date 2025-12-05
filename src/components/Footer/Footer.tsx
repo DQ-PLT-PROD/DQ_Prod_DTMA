@@ -1,9 +1,5 @@
 import React from "react";
-import { ArrowRight } from "lucide-react";
-<<<<<<< HEAD
-import { Facebook, Instagram, Twitter } from "lucide-react";
-=======
->>>>>>> develop
+import { ArrowRight, Facebook, Instagram, Twitter } from "lucide-react";
 
 interface FooterProps {
   "data-id"?: string;
@@ -14,15 +10,6 @@ const FOOTER_GRADIENT =
   "linear-gradient(90deg, #0a32a0 0%, #2a4090 40%, #4e5a8b 70%, #8b90a3 100%)";
 
 const ABOUT_TEXT = [
-<<<<<<< HEAD
-  "DTMA (Digital Transformation and Management Academy) equips professionals and organizations with essential digital skills through AI-driven, bite-sized learning paths.",
-  "Using the 6XD framework, we offer practical, personalized courses for digital workers and leaders across six key digital economy perspectives.",
-  "Our courses help individuals and executives stay ahead by focusing on real-world application, innovation, and adaptability to future-proof careers and drive business transformation.",
-];
-
-const QUICK_LINKS = [
-  { label: "Explore Courses", href: "/marketplace" },
-=======
   "DTMA (Digital Transformation and Management Academy) equips professionals and organizations with essential digital skills through AI-driven, bite-sized learning paths. Using the 6XD framework, we offer practical, personalized courses for digital workers and leaders across six key digital economy perspectives.",
   "Our courses help both individuals and executives stay ahead in a fast-changing landscape by focusing on real-world application, innovation, and adaptability to future-proof careers and drive business transformation.",
 ];
@@ -30,7 +17,6 @@ const QUICK_LINKS = [
 const QUICK_LINKS = [
   { label: "Help Center", href: "#" },
   { label: "Explore the AI Working Era", href: "/discover-abudhabi" },
->>>>>>> develop
   { label: "Privacy Policy", href: "#" },
   { label: "Terms of Service", href: "#" },
 ];
@@ -58,7 +44,6 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
       className="text-white w-full"
       style={{ background: FOOTER_GRADIENT }}
     >
-<<<<<<< HEAD
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-6">
         <div className="flex items-center justify-between gap-4">
           <img src="/DTMA%20LOGO%20WHITE.svg" alt="DTMA" className="h-10 w-auto" />
@@ -98,22 +83,6 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
           <div className="space-y-4 self-start">
             <h3 className="font-semibold text-lg text-white">Quick Links</h3>
             <div className="text-blue-100 text-sm">
-=======
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-left items-start">
-          <div className="space-y-4 text-blue-100 text-base leading-relaxed">
-            <img src="/DTMA%20LOGO%20WHITE.svg" alt="DTMA" className="h-10 w-auto" />
-            <div className="h-px w-full bg-white/30" />
-            <h3 className="font-semibold text-lg text-white">About Us</h3>
-            {ABOUT_TEXT.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-          </div>
-
-          <div className="space-y-4 self-start">
-            <h3 className="font-semibold text-lg text-white">Quick Links</h3>
-            <div className="text-blue-100 text-sm border-t border-white/30">
->>>>>>> develop
               {QUICK_LINKS.map((link) => (
                 <a
                   key={link.label}
@@ -126,13 +95,8 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
             </div>
           </div>
 
-<<<<<<< HEAD
           <div className="space-y-4 self-start">
-            <h3 className="font-semibold text-lg text-white">Contact</h3>
-=======
-          <div className="space-y-4">
             <h3 className="font-semibold text-lg text-white">Subscribe</h3>
->>>>>>> develop
             <p className="text-blue-100 text-sm leading-relaxed">
               Stay updated with the latest insights, courses, and tools for the AI working era
               from DTMA.
@@ -160,10 +124,4 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
       </div>
     </footer>
   );
-<<<<<<< HEAD
 }
-
-
-=======
-}
->>>>>>> develop

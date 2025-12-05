@@ -7,10 +7,5 @@ export { Header } from './Header';
 // export { ExploreDropdown } from './components/ExploreDropdown';
 // export { MobileDrawer } from './components/MobileDrawer';
 export { AuthProvider, useAuth } from './context/AuthContext';
-<<<<<<< HEAD
 export { mockNotifications } from './utils/mockNotifications';
 export type { Notification } from './utils/mockNotifications';
-=======
-// export { mockNotifications } from './utils/mockNotifications';
-// export type { Notification } from './utils/mockNotifications';
->>>>>>> develop

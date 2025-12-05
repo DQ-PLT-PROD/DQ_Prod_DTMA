@@ -242,8 +242,8 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
             <button
               onClick={onToggleBookmark}
               className={`p-2 rounded-full ${isBookmarked
-                  ? 'bg-yellow-100 text-yellow-600'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                ? 'bg-yellow-100 text-yellow-600'
+                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                 }`}
               aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
             >
@@ -293,9 +293,6 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
           </button>
         </div>
       </div>
-<<<<<<< HEAD
-    </div>;
-=======
     </div>
   );
 
@@ -322,5 +319,4 @@ export const MarketplaceQuickViewModal: React.FC<MarketplaceQuickViewModalProps>
     </div>,
     document.body
   );
->>>>>>> develop
 };

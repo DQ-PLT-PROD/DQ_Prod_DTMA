@@ -9,10 +9,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserIcon, ArrowRight } from "lucide-react";
 import { ExploreDropdown } from "./components/ExploreDropdown";
 import { BRAND_BACKDROP_BLUR } from "../../constants/branding";
-<<<<<<< HEAD
-=======
 import { AzureAuthModal } from "../auth/AzureAuthModal";
->>>>>>> develop
 
 const HEADER_GRADIENT =
   "linear-gradient(90deg, #0a32a0 0%, #2a4090 40%, #4e5a8b 70%, #8b90a3 100%)";
@@ -34,11 +31,7 @@ export function Header({
   const [showNotificationCenter, setShowNotificationCenter] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-<<<<<<< HEAD
   const { user, login } = useAuth();
-=======
-  const { user, isLoading } = useAuth();
->>>>>>> develop
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -74,7 +67,7 @@ export function Header({
 
   // Handle sign in
   const handleSignIn = () => {
-    login();
+    setShowAuthModal(true);
   };
 
   const handleBrowseCourses = () => {
@@ -100,25 +93,6 @@ export function Header({
       window.location.hash = targetHash;
     }
     const el = document.getElementById("d6-categories");
-<<<<<<< HEAD
-    if (el && typeof el.scrollIntoView === "function") {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
-  // Smooth scroll to final CTA block
-  const scrollToFinalCTA = () => {
-    const targetHash = "#final-cta";
-    if (location.pathname !== "/") {
-      navigate({ pathname: "/", hash: targetHash });
-      return;
-    }
-    if (window.location.hash !== targetHash) {
-      window.location.hash = targetHash;
-    }
-    const el = document.getElementById("final-cta");
-=======
->>>>>>> develop
     if (el && typeof el.scrollIntoView === "function") {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -145,24 +119,6 @@ export function Header({
   return (
     <>
       <header
-<<<<<<< HEAD
-        className={`w-full transition-all duration-300 ${
-          isSticky
-            ? "fixed top-0 left-0 right-0 z-50 shadow-lg"
-            : "relative z-50"
-        }`}
-        data-id={dataId}
-        style={{
-          background: HEADER_GRADIENT,
-          backdropFilter: BRAND_BACKDROP_BLUR,
-          WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
-        }}
-      >
-        <div
-          className={`flex w-full items-center text-white transition-all duration-300 ${
-            isSticky ? "px-5 py-2.5" : "px-8 py-4"
-          }`}
-=======
         className={`w-full transition-all duration-300 ${isSticky
           ? "fixed top-0 left-0 right-0 z-50 shadow-lg"
           : isTransparent
@@ -179,7 +135,6 @@ export function Header({
         <div
           className={`flex w-full items-center text-white transition-all duration-300 ${isSticky ? "px-5 py-2.5" : "px-8 py-4"
             }`}
->>>>>>> develop
         >
           {/* Logo */}
           <Link to="/" className="flex items-center transition-all duration-300">
@@ -197,25 +152,11 @@ export function Header({
 
           {/* Right side actions */}
           <div className="flex items-center gap-4 ml-auto relative">
-<<<<<<< HEAD
             {user ? (
-=======
-            {/* Azure MSAL Auth */}
-            {!user ? (
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors text-sm font-medium"
-              >
-                <UserIcon size={18} />
-                <span>Sign In</span>
-              </button>
-            ) : (
->>>>>>> develop
               <ProfileDropdown
                 onViewNotifications={toggleNotificationsMenu}
                 unreadNotifications={unreadCount}
               />
-<<<<<<< HEAD
             ) : (
               <div className="hidden lg:flex items-center gap-2 text-sm font-medium">
                 <button
@@ -234,10 +175,7 @@ export function Header({
                 </button>
               </div>
             )}
-=======
-            )}
-            
->>>>>>> develop
+
             <MobileDrawer
               onSignIn={handleSignIn}
               isSignedIn={!!user}

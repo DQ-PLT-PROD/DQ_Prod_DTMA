@@ -186,18 +186,12 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
               return (
                 <a
                   key={category.id}
-                  ref={(el) => (itemRefs.current[index] = el)}
+                  ref={(el) => { itemRefs.current[index] = el; }}
                   href={category.href}
                   target={external ? "_blank" : undefined}
                   rel={external ? "noopener noreferrer" : undefined}
-<<<<<<< HEAD
-                  className={`flex items-start px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors duration-150 ${
-                    focusedIndex === index ? "bg-gray-50" : ""
-                  }`}
-=======
                   className={`flex items-start px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors duration-150 ${focusedIndex === index ? "bg-gray-50" : ""
                     }`}
->>>>>>> develop
                   role="menuitem"
                   tabIndex={-1}
                   onClick={(e) => {

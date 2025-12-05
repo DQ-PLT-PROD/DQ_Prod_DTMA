@@ -1,4 +1,5 @@
 import "./index.css";
+// Force update to resolve Vercel build issue
 import { AppRouter } from "./AppRouter";
 import { createRoot } from "react-dom/client";
 import { MsalProvider } from "@azure/msal-react";
@@ -46,13 +47,7 @@ if (container) {
           window.location.replace("/dashboard/onboarding");
           return;
         }
-<<<<<<< HEAD
-      } catch (error) {
-        void error;
-      }
-=======
       } catch { }
->>>>>>> develop
       root.render(
         <ApolloProvider client={client}>
           <MsalProvider instance={msalInstance}>
