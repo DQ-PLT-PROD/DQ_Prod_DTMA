@@ -736,18 +736,22 @@ const HeroVideoPlayer: React.FC<{
 }> = ({ videoUrl, posterUrl }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(true);
 
-  // Autoplay after 3 seconds
+  // Autoplay after 1 second (reduced from 3)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (videoRef.current) {
+        // Ensure muted is set for autoplay policy
+        videoRef.current.muted = true;
         videoRef.current.play()
           .then(() => setIsPlaying(true))
-          .catch(() => { /* Autoplay prevented */ });
+          .catch((e) => {
+            console.warn("Autoplay prevented:", e);
+          });
       }
-    }, 3000);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -794,6 +798,9 @@ const HeroVideoPlayer: React.FC<{
         poster={posterUrl}
         className="w-full h-full object-cover"
         playsInline
+        muted={isMuted}
+        loop
+        preload="auto"
         onClick={togglePlay}
         onEnded={() => setIsPlaying(false)}
       />
