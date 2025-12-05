@@ -41,7 +41,6 @@ interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
   activeSection?: string;
-  onSectionChange?: (sectionId: string) => void;
   onboardingComplete?: boolean;
   companyName?: string;
   companies?: Company[];
@@ -54,7 +53,6 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({
   isOpen = true,
   onClose,
-  onSectionChange,
   onboardingComplete = true,
   companies = [
     {
@@ -539,7 +537,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }
 
           return (
-            <div key={item.id} className={baseClasses}>
+            <div
+              key={item.id}
+              className={baseClasses}
+              onMouseEnter={() => isDisabled && setTooltipItem(item.id)}
+              onMouseLeave={() => setTooltipItem(null)}
+            >
               {content}
               {tooltipItem === item.id && (
                 <div className="absolute left-full ml-2 bg-gray-800 text-white text-xs py-2 px-3 rounded-md w-48 z-50">

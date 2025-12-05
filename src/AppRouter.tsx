@@ -15,8 +15,7 @@ import AdminMediaList from "./admin-ui/pages/MediaList";
 import MediaCreate from "./admin-ui/pages/MediaCreate";
 import AdminMediaDetail from "./admin-ui/pages/MediaDetail2";
 import AdminSettings from "./admin-ui/pages/Settings";
-import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client";
-import { ApolloProvider } from "@apollo/client/react";
+
 import KfBot from "./bot/KfBot";
 // Forms
 import NeedsAssessmentForm from "./pages/forms/NeedsAssessmentForm";
@@ -40,7 +39,6 @@ import LearningScreen from "./pages/LearningScreen";
 
 export function AppRouter() {
   const [bookmarkedCourses, setBookmarkedCourses] = useState<string[]>([]);
-  const [compareCourses, setCompareCourses] = useState<Course[]>([]);
   const toggleBookmark = (courseId: string) => {
     setBookmarkedCourses((prev) => {
       if (prev.includes(courseId)) {
@@ -49,14 +47,6 @@ export function AppRouter() {
         return [...prev, courseId];
       }
     });
-  };
-  const handleAddToComparison = (course: Course) => {
-    if (
-      compareCourses.length < 3 &&
-      !compareCourses.some((c) => c.id === course.id)
-    ) {
-      setCompareCourses((prev) => [...prev, course]);
-    }
   };
 
   return (
@@ -73,7 +63,6 @@ export function AppRouter() {
                 marketplaceType="courses"
                 bookmarkedItems={bookmarkedCourses}
                 onToggleBookmark={toggleBookmark}
-                onAddToComparison={handleAddToComparison}
               />
             }
           />
@@ -153,8 +142,8 @@ export function AppRouter() {
           <Route path="/404" element={<NotFound />} />
 
           <Route path="*" element={<Navigate to="/404" replace />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+        </Routes >
+      </AuthProvider >
+    </BrowserRouter >
   );
 }
