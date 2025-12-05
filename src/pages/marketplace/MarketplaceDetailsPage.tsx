@@ -462,20 +462,17 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
         {/* Hero Banner - consistent header layout */}
         <div
           ref={heroRef}
-          className="w-full text-white relative overflow-hidden h-screen min-h-[600px]"
-          style={{
-            background: BRAND_GRADIENT
-          }}
+          className="w-full text-white relative overflow-hidden h-screen min-h-[600px] bg-slate-900"
           onMouseEnter={() => setShowScrollIndicator(true)}
           onMouseLeave={() => setShowScrollIndicator(false)}
         >
           {/* Background Pattern Overlay */}
-          <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
+          <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10 z-0"></div>
 
           {/* Video Background - Full Width */}
           {introVideoUrl && (
             <div
-              className="absolute inset-0 w-full h-full z-0 pointer-events-auto"
+              className="absolute inset-0 w-full h-full z-10 pointer-events-auto"
             >
               <HeroVideoPlayer
                 videoUrl={introVideoUrl}
