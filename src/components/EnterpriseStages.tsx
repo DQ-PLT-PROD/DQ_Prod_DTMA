@@ -28,7 +28,129 @@ const steps = [
   },
 ];
 
+<<<<<<< HEAD
 const EnterpriseStages: React.FC = () => {
+=======
+  useEffect(() => {
+    const normalize = (value?: string | null) => (value || '').toLowerCase().trim()
+    const currentStage = normalize(stageId)
+
+    const mappedProducts: ServiceItem[] = (productData?.products?.items || [])
+      .map((p: any) => {
+        // Determine financial vs non-financial using facetValues ids (66 financial, 67 non-financial) like MarketplacePage
+        const has66 = p.facetValues?.some((fv: any) => String(fv?.id) === '66')
+        const has67 = p.facetValues?.some((fv: any) => String(fv?.id) === '67')
+        const type: ServiceItem['type'] = has67 ? 'nonfinancial' : has66 ? 'financial' : 'nonfinancial'
+
+        // Derive stage from facetValues (preferred) or customFields fallback
+        const stageFacet = p?.facetValues?.find((fv: any) => normalize(fv?.facet?.code) === 'business-stage')
+        const facetStageName = normalize(stageFacet?.name)
+        const facetStageCode = normalize(stageFacet?.code)
+        const productStage = normalize(p?.customFields?.BusinessStage)
+        const stageCandidates = [currentStage]
+        const matchesStage =
+          !currentStage ||
+          stageCandidates.includes(facetStageName) ||
+          stageCandidates.includes(facetStageCode) ||
+          stageCandidates.includes(productStage)
+        if (!matchesStage) return null
+
+        const routeType = type === 'nonfinancial' ? 'non-financial' : type
+        return {
+          id: String(p.id),
+          title: p.name,
+          desc: p.description || 'Service description not available',
+          type,
+          cost: p?.customFields?.Cost != null ? String(p.customFields.Cost) : undefined,
+          provider: p?.customFields?.Partner || 'Khalifa Fund',
+          providerLogo: p?.customFields?.logoUrl || '/mzn_logo.png',
+          cta: 'Apply',
+          tags: [p?.customFields?.Addtags].filter(Boolean),
+          url: `/marketplace/${routeType}/${p.id}`,
+        } as ServiceItem
+      })
+      .filter(Boolean) as ServiceItem[]
+
+    const mappedCourses: ServiceItem[] = (courseData?.courses?.items || [])
+      .map((c: any) => {
+        const courseStage = normalize(c?.businessStage)
+        const matchesStage =
+          !currentStage ||
+          courseStage === currentStage ||
+          courseStage.includes(currentStage) ||
+          currentStage.includes(courseStage)
+        if (!matchesStage) return null
+        return {
+          id: String(c.id),
+          title: c.name,
+          desc: c.description || 'Course description not available',
+          type: 'courses',
+          cost: c?.cost != null ? String(c.cost) : undefined,
+          level: c?.duration,
+          provider: c?.partner || 'Khalifa Fund Academy',
+          providerLogo: c?.logoUrl || '/mzn_logo.png',
+          cta: 'Enroll',
+          tags: [c?.serviceCategory, c?.pricingModel].filter(Boolean),
+          url: `/courses/${c.id}`,
+        } as ServiceItem
+      })
+      .filter(Boolean) as ServiceItem[]
+
+    const combined = [...mappedProducts, ...mappedCourses]
+    setAllServices(combined)
+  }, [productData, courseData, stageId])
+  // Filter services based on selected filters
+  useEffect(() => {
+    if (allServices.length === 0) {
+      setFilteredServices([])
+      return
+    }
+    let filtered = [...allServices]
+    // Apply marketplace filters
+    if (!marketplaceFilters.includes('all')) {
+      filtered = filtered.filter((service) =>
+        marketplaceFilters.includes(service.type),
+      )
+    }
+    setFilteredServices(filtered)
+  }, [allServices, stageId, marketplaceFilters])
+  // Handle marketplace filter change
+  const handleMarketplaceFilterChange = (value: string) => {
+    if (value === 'all') {
+      setMarketplaceFilters(['all'])
+    } else {
+      const newFilters = marketplaceFilters.includes('all')
+        ? [value]
+        : marketplaceFilters.includes(value)
+          ? marketplaceFilters.filter((f) => f !== value)
+          : [...marketplaceFilters, value]
+      if (newFilters.length === 0) {
+        setMarketplaceFilters(['all'])
+      } else {
+        setMarketplaceFilters(newFilters)
+      }
+    }
+  }
+  // Reset all filters
+  const resetFilters = () => {
+    setMarketplaceFilters(['all'])
+  }
+  // Load more services
+  const loadMore = () => {
+    setVisibleCount((prev) => prev + 8)
+  }
+  // Create filter options for PillFilters (built from available data, keeping expected labels)
+  const marketplaceOptions = [
+    { value: 'all', label: 'All' },
+    { value: 'financial', label: 'Financial' },
+    { value: 'nonfinancial', label: 'Non-financial' },
+    { value: 'courses', label: 'Courses' },
+    { value: 'media', label: 'Media' },
+  ].filter((opt) => {
+    if (opt.value === 'all') return true
+    return allServices.some((s) => s.type === (opt.value as any))
+  })
+>>>>>>> develop
   return (
     <section className="bg-white pt-32 pb-16">
       <div className="w-full space-y-12">

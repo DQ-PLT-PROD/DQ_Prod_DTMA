@@ -22,6 +22,45 @@
   display: none;  /* Chrome, Safari and Opera */
 }
 
+/* Prevent accidental horizontal overflow on tablets/phones */
+html, body, #root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Map styles for better responsiveness */
+.map-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  border-radius: 0 !important;
+}
+
+.fullscreen-map {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Ensure map is responsive on all devices */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Fix map popup responsiveness */
+.map-popup .leaflet-popup-content-wrapper {
+  max-width: 90vw !important;
+}
+
+@media (max-width: 640px) {
+  .map-popup .leaflet-popup-content-wrapper {
+    max-width: 280px !important;
+  }
+}
+
 /* TipTap content gets readable defaults similar to public page */
 .tiptap :where(p)       { @apply my-3; }
 .tiptap :where(h2)      { @apply text-2xl font-bold mt-6 mb-3; }
@@ -66,3 +105,21 @@
     border-color: #1839AD;
   }
 }
+
+/* App-wide layout clamp used by PageLayout to avoid horizontal overflow on small screens */
+.app-clamp {
+  inline-size: 100%;            /* logical width */
+  max-inline-size: 100dvw;      /* cap at dynamic viewport width to avoid 100vw scrollbar spill */
+  overflow-x: clip;             /* hard-stop horizontal overflow */
+  overscroll-behavior-x: contain;
+}
+/* Ensure children can shrink within flex/grid containers */
+.app-clamp, .app-clamp * {
+  min-inline-size: 0;
+}
+/* Defensive: elements trying to be viewport-wide inside the clamp should not exceed container */
+.app-clamp .w-screen { width: 100% !important; max-width: 100% !important; }
+/* Media should never overflow the section */
+.app-clamp img, .app-clamp video, .app-clamp svg { max-width: 100%; height: auto; }
+/* Tables stretch but stay contained */
+.app-clamp table { width: 100%; max-width: 100%; border-collapse: collapse; }

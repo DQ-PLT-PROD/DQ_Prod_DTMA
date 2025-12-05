@@ -2,6 +2,12 @@ import React, { Component, ReactNode } from 'react';
 import { DollarSign, Calendar, Clock, Users, MapPin, CheckCircle, BarChart, Award, FileText, Info, BookOpen, Briefcase, ClipboardList, ScrollText, Building } from 'lucide-react';
 import { mockCourses, providers } from './mockData';
 import { mockFinancialServices, mockNonFinancialServices } from './mockMarketplaceData';
+
+/**
+ * LEGACY: duplicate marketplace config (unused by router).
+ * Canonical marketplace configuration lives in src/utils/marketplaceConfig.ts.
+ * Kept for reference while migrating/offboarding old course marketplace UI.
+ */
 // Define a Tab type for consistency across marketplace pages
 export interface MarketplaceTab {
   id: string;

@@ -44,7 +44,7 @@ const MapSearch = ({
       setResults([]);
     }
   }, [query, points]);
-  return <div className="absolute top-4 left-4 z-[2000] w-64 bg-white rounded-lg shadow-lg overflow-hidden">
+  return <div className="absolute top-4 left-4 z-[2000] w-64 sm:w-72 md:w-80 bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="relative">
         <input type="text" placeholder="Search businesses, zones, sectors..." className="w-full py-3 pl-10 pr-4 bg-white border-b border-gray-200 focus:outline-none text-sm" value={query} onChange={e => setQuery(e.target.value)} />
         <SearchIcon size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -2476,7 +2476,7 @@ const HeroSection = () => {
             </div>
           </div>
           {/* Map Container */}
-          <div ref={mapContainerRef} className={`order-1 lg:order-2 relative ${isFullscreen ? 'map-fullscreen' : 'h-[400px] md:h-[550px] rounded-2xl overflow-hidden shadow-2xl'}`}>
+          <div ref={mapContainerRef} className={`order-1 lg:order-2 relative ${isFullscreen ? 'map-fullscreen' : 'h-[300px] sm:h-[400px] md:h-[500px] lg:h-[550px] xl:h-[600px] rounded-2xl overflow-hidden shadow-2xl'}`}>
             {/* View Mode Toggle */}
             <div className="absolute top-4 right-20 z-[10000] bg-white rounded-lg shadow-md overflow-hidden">
               <div className="flex">

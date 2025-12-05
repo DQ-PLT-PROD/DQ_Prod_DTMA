@@ -40,7 +40,7 @@ const BusinessDirectoryMarketplace = () => {
     const allBusinesses: Business[] = [{
       id: 1,
       name: 'Abu Dhabi Global Market',
-      logo: 'https://www.adgm.com/media/3l2h4o3v/adgm-logo.png',
+      logo: '/logo/adgm.png',
       category: 'Finance',
       description: 'International financial center located on Al Maryah Island, providing a broad range of financial services.',
       phone: '+971 2 333 8888',
@@ -54,7 +54,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 2,
       name: 'Masdar',
-      logo: 'https://www.masdar.ae/-/media/project/masdar/masdar-website/masdar-logo-color-white-bg.png',
+      logo: '/logo/masdar-logo.webp',
       category: 'Energy',
       description: 'Renewable energy company that advances the development, commercialization and deployment of clean energy solutions.',
       phone: '+971 2 653 3333',
@@ -68,7 +68,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 3,
       name: 'Hub71',
-      logo: 'https://hub71.com/wp-content/uploads/2021/09/hub71-logo.png',
+      logo: '/logo/hub71.png',
       category: 'Technology',
       description: 'Global tech ecosystem that enables startups to scale globally through access to funding, networks, and business opportunities.',
       phone: '+971 2 449 7777',
@@ -81,7 +81,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 4,
       name: 'Cleveland Clinic Abu Dhabi',
-      logo: 'https://clevelandclinicabudhabi.ae/CCHPImages/CCAD-Logo.svg',
+      logo: '/logo/cleveland.png',
       category: 'Healthcare',
       description: 'Multispecialty hospital offering patients the highest level of specialized care across 40+ medical and surgical specialties.',
       phone: '+971 2 659 9999',
@@ -95,7 +95,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 5,
       name: 'Yas Mall',
-      logo: 'https://www.yasmall.ae/media/1412/yas-mall-logo.svg',
+      logo: '/logo/yas.png',
       category: 'Retail',
       description: 'Premier shopping, dining and entertainment destination located on Yas Island, featuring over 370 international brands.',
       phone: '+971 2 565 7000',
@@ -108,7 +108,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 6,
       name: 'Emirates Palace',
-      logo: 'https://www.mandarinoriental.com/dam/jcr:97c22cb6-f167-4f53-a6c7-7a5c7c0f7e3f/emirates-palace-logo.png',
+      logo: '/logo/palace.png',
       category: 'Tourism',
       description: 'Luxury hotel located in the heart of Abu Dhabi, offering world-class hospitality and stunning Arabian Gulf views.',
       phone: '+971 2 690 9000',
@@ -122,7 +122,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 7,
       name: 'Etihad Airways',
-      logo: 'https://www.etihad.com/content/dam/eag/etihadairways/etihadcom/Global/logos/etihad-logo-1.svg',
+      logo: '/logo/etihad-logo.webp',
       category: 'Tourism',
       description: 'The national airline of the UAE, connecting Abu Dhabi to the world with a fleet of modern aircraft.',
       phone: '+971 2 599 0000',
@@ -136,7 +136,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 8,
       name: 'Mubadala Investment Company',
-      logo: 'https://www.mubadala.com/sites/default/files/2022-05/mubadala-logo.png',
+      logo: '/logo/mubadala-logo.webp',
       category: 'Finance',
       description: 'Sovereign wealth fund investing in diversified sectors globally to transform the UAE economy.',
       phone: '+971 2 413 0000',
@@ -150,7 +150,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 9,
       name: 'Aldar Properties',
-      logo: 'https://www.aldar.com/getattachment/Style-Library/AldarFonts/Aldar_Logo.svg',
+      logo: '/logo/aldar-logo.webp',
       category: 'Real Estate',
       description: 'Leading real estate developer with iconic developments across Abu Dhabi and beyond.',
       phone: '+971 2 810 5555',
@@ -164,7 +164,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 10,
       name: 'Abu Dhabi Ports',
-      logo: 'https://www.adports.ae/-/media/Project/ADPorts/Header/ADPorts-Group-Logo.svg',
+      logo: '/logo/ad-ports-logo.webp',
       category: 'Logistics',
       description: 'Operates and manages ports and related logistics infrastructure in Abu Dhabi and beyond.',
       phone: '+971 2 695 2000',
@@ -178,7 +178,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 11,
       name: 'First Abu Dhabi Bank',
-      logo: 'https://www.bankfab.com/-/media/fabgroup/home/images/fab-logo-color.svg',
+      logo: '/logo/fab-logo.webp',
       category: 'Finance',
       description: 'The largest bank in the UAE, offering a full range of financial services to customers across multiple segments.',
       phone: '+971 2 818 1818',
@@ -192,7 +192,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 12,
       name: 'Twofour54',
-      logo: 'https://www.twofour54.com/wp-content/themes/twofour54/images/logo-twofour54.svg',
+      logo: '/logo/twofour54.png',
       category: 'Media',
       description: 'Media free zone that nurtures media and entertainment businesses in Abu Dhabi.',
       phone: '+971 2 401 2454',
@@ -205,7 +205,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 13,
       name: 'ADNOC',
-      logo: 'https://www.adnoc.ae/-/media/adnoc/images/logo-adnoc.png',
+      logo: '/logo/adnoc.png',
       category: 'Energy',
       description: "One of the world's leading energy producers and a primary catalyst for Abu Dhabi's growth and diversification.",
       phone: '+971 2 707 0000',
@@ -219,7 +219,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 14,
       name: 'NYU Abu Dhabi',
-      logo: 'https://nyuad.nyu.edu/content/dam/nyuad/departments-and-institutes/communications/logos/nyuad-logo-color.png',
+      logo: '/logo/nyu.png',
       category: 'Education',
       description: 'A leading liberal arts and research university bringing together the best of New York and Abu Dhabi.',
       phone: '+971 2 628 4000',
@@ -232,7 +232,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 15,
       name: 'Khalifa Port',
-      logo: 'https://www.adports.ae/-/media/Project/ADPorts/Header/ADPorts-Group-Logo.svg',
+      logo: '/logo/KFport.png',
       category: 'Logistics',
       description: "First semi-automated container port in the GCC region, handling all of Abu Dhabi's container traffic.",
       phone: '+971 2 695 2000',
@@ -245,7 +245,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 16,
       name: 'Abu Dhabi Investment Authority',
-      logo: 'https://www.adia.ae/style%20library/adia/images/adia-logo.png',
+      logo: '/logo/adia.png',
       category: 'Finance',
       description: "One of the world's largest sovereign wealth funds, investing funds on behalf of the Government of Abu Dhabi.",
       phone: '+971 2 626 7600',
@@ -259,7 +259,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 17,
       name: 'Ferrari World Abu Dhabi',
-      logo: 'https://ferrariworldabudhabi.com/content/dam/ferrari-world/logos/ferrari-world-logo-red.svg',
+      logo: '/logo/ferari.png',
       category: 'Tourism',
       description: "The world's first Ferrari-branded theme park, featuring record-breaking rides and attractions.",
       phone: '+971 2 496 8000',
@@ -272,7 +272,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 18,
       name: 'Louvre Abu Dhabi',
-      logo: 'https://www.louvreabudhabi.ae/content/dam/louvre-abu-dhabi/logos/louvre-abu-dhabi-logo.svg',
+      logo: '/logo/louvre.png',
       category: 'Tourism',
       description: 'Universal museum showcasing art and artifacts from around the world, housed in an architectural masterpiece.',
       phone: '+971 600 565566',
@@ -285,7 +285,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 19,
       name: 'Abu Dhabi Media',
-      logo: 'https://admedia.ae/wp-content/themes/adm/assets/images/logo.svg',
+      logo: '/logo/admn.png',
       category: 'Media',
       description: 'Multi-platform media company delivering content across television, radio, publishing and digital media.',
       phone: '+971 2 414 4000',
@@ -298,7 +298,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 20,
       name: 'Khalifa University',
-      logo: 'https://www.ku.ac.ae/wp-content/themes/khalifa-university/img/logo.png',
+      logo: '/logo/KFuni.png',
       category: 'Education',
       description: "Research-intensive university focused on science, engineering, and medicine to support Abu Dhabi's knowledge economy.",
       phone: '+971 2 312 3333',
@@ -311,7 +311,7 @@ const BusinessDirectoryMarketplace = () => {
     }, {
       id: 21,
       name: 'Abu Dhabi Commercial Bank',
-      logo: 'https://www.adcb.com/en/images/adcb-logo.png',
+      logo: '/logo/adcb.png',
       category: 'Finance',
       description: 'One of the largest banks in the UAE, providing a comprehensive range of retail and commercial banking services.',
       phone: '+971 2 621 0090',
@@ -415,182 +415,182 @@ const BusinessDirectoryMarketplace = () => {
     setIsProfileModalOpen(true);
   };
   return <div ref={pageRef} className="min-h-screen w-full bg-gray-50 pt-24 pb-20 px-6 md:px-12 opacity-0 -translate-y-4 transition-all duration-1000">
-      <div className="container mx-auto">
-        {/* Back button */}
-        <div className="mb-8">
-          <Link to="/discover-abudhabi" className="inline-flex items-center text-primary hover:text-primary-dark transition-colors transform hover:-translate-x-1 duration-200">
-            <ArrowLeftIcon size={18} className="mr-2" />
-            <span>Back to Home</span>
-          </Link>
+    <div className="container mx-auto">
+      {/* Back button */}
+      <div className="mb-8">
+        <Link to="/discover-abudhabi" className="inline-flex items-center text-primary hover:text-primary-dark transition-colors transform hover:-translate-x-1 duration-200">
+          <ArrowLeftIcon size={18} className="mr-2" />
+          <span>Back to Home</span>
+        </Link>
+      </div>
+      {/* Header Section */}
+      <div className="text-center mb-12">
+        <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
+          Business Directory
+        </h1>
+        <p className="font-body text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          Connect with leading organizations and service providers in Abu
+          Dhabi's dynamic business ecosystem to foster partnerships and drive
+          growth.
+        </p>
+      </div>
+      {/* Search and Filter Section */}
+      <div className="bg-white rounded-xl shadow-md mb-12 transition-all duration-300">
+        <div className="p-6 flex flex-col md:flex-row md:items-center gap-4">
+          {/* Search Input */}
+          <div className="flex-1 relative">
+            <input type="text" placeholder="Search companies, industries, or services..." className="w-full py-4 pl-12 pr-4 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all text-base" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+            <SearchIcon size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+          {/* Filter Toggle Button */}
+          <button className={`px-5 py-4 rounded-lg flex items-center justify-center transition-colors ${showFilters ? 'bg-primary text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`} onClick={() => setShowFilters(!showFilters)} aria-expanded={showFilters} aria-label="Toggle filters">
+            <FilterIcon size={20} className="mr-2" />
+            <span>Filters</span>
+          </button>
         </div>
-        {/* Header Section */}
-        <div className="text-center mb-12">
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
-            Business Directory
-          </h1>
-          <p className="font-body text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Connect with leading organizations and service providers in Abu
-            Dhabi's dynamic business ecosystem to foster partnerships and drive
-            growth.
+        {/* Expanded Filters */}
+        {showFilters && <div className="p-6 border-t border-gray-100 animate-fadeIn">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Category Filter */}
+            <div>
+              <label className="block font-medium text-gray-700 mb-2">
+                Industry Category
+              </label>
+              <div className="relative">
+                <select className="w-full p-3 bg-gray-50 rounded-lg appearance-none border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+                  {categories.map(category => <option key={category} value={category}>
+                    {category === 'all' ? 'All Categories' : category}
+                  </option>)}
+                </select>
+                <ChevronDownIcon size={20} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+            {/* Sort By Name */}
+            <div>
+              <label className="block font-medium text-gray-700 mb-2">
+                Sort by Name
+              </label>
+              <div className="relative">
+                <select className="w-full p-3 bg-gray-50 rounded-lg appearance-none border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" value={sortBy === 'nameAsc' ? 'nameAsc' : sortBy === 'nameDesc' ? 'nameDesc' : ''} onChange={e => {
+                  if (e.target.value) {
+                    setSortBy(e.target.value as SortOption);
+                  }
+                }}>
+                  <option value="">No sorting</option>
+                  <option value="nameAsc">A to Z</option>
+                  <option value="nameDesc">Z to A</option>
+                </select>
+                <ChevronDownIcon size={20} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+            {/* Sort By Founded Year */}
+            <div>
+              <label className="block font-medium text-gray-700 mb-2">
+                Sort by Established Year
+              </label>
+              <div className="relative">
+                <select className="w-full p-3 bg-gray-50 rounded-lg appearance-none border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" value={sortBy === 'foundedAsc' ? 'foundedAsc' : sortBy === 'foundedDesc' ? 'foundedDesc' : ''} onChange={e => {
+                  if (e.target.value) {
+                    setSortBy(e.target.value as SortOption);
+                  }
+                }}>
+                  <option value="">No sorting</option>
+                  <option value="foundedAsc">Oldest First</option>
+                  <option value="foundedDesc">Newest First</option>
+                </select>
+                <ChevronDownIcon size={20} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+          {/* Reset Filters */}
+          <div className="mt-6 flex justify-end">
+            <button onClick={resetFilters} className="flex items-center text-gray-500 hover:text-primary transition-colors">
+              <XIcon size={16} className="mr-1" />
+              Reset Filters
+            </button>
+          </div>
+        </div>}
+      </div>
+      {/* Active Filters Summary */}
+      {(searchQuery || categoryFilter !== 'all' || sortBy !== 'default') && <div className="mb-8 flex flex-wrap items-center gap-2">
+        <span className="text-gray-500">Active filters:</span>
+        {searchQuery && <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center">
+          <span className="mr-2">Search: {searchQuery}</span>
+          <button onClick={() => setSearchQuery('')} className="text-gray-400 hover:text-gray-600">
+            <XIcon size={14} />
+          </button>
+        </div>}
+        {categoryFilter !== 'all' && <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center">
+          <span className="mr-2">Category: {categoryFilter}</span>
+          <button onClick={() => setCategoryFilter('all')} className="text-gray-400 hover:text-gray-600">
+            <XIcon size={14} />
+          </button>
+        </div>}
+        {sortBy !== 'default' && <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center">
+          <span className="mr-2">
+            Sort:{' '}
+            {sortBy === 'nameAsc' ? 'Name (A-Z)' : sortBy === 'nameDesc' ? 'Name (Z-A)' : sortBy === 'foundedAsc' ? 'Established (Oldest)' : 'Established (Newest)'}
+          </span>
+          <button onClick={() => setSortBy('default')} className="text-gray-400 hover:text-gray-600">
+            <XIcon size={14} />
+          </button>
+        </div>}
+        <button onClick={resetFilters} className="text-primary hover:text-primary-dark text-sm ml-auto">
+          Clear All
+        </button>
+      </div>}
+      {/* Results Count */}
+      <div className="mb-6 flex justify-between items-center">
+        <div className="text-gray-500">
+          Showing {filteredBusinesses.length}{' '}
+          {filteredBusinesses.length === 1 ? 'business' : 'businesses'}
+        </div>
+        {/* Pagination Controls - Top */}
+        {totalPages > 1 && <div className="flex items-center space-x-1">
+          <button onClick={() => paginate(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`p-2 rounded ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
+            <ChevronUpIcon size={16} className="transform rotate-90" />
+          </button>
+          {Array.from({
+            length: totalPages
+          }, (_, i) => i + 1).map(number => <button key={number} onClick={() => paginate(number)} className={`w-8 h-8 rounded ${currentPage === number ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+            {number}
+          </button>)}
+          <button onClick={() => paginate(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`p-2 rounded ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
+            <ChevronDownIcon size={16} className="transform rotate-90" />
+          </button>
+        </div>}
+      </div>
+      {/* Business Grid */}
+      <div id="business-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        {currentBusinesses.length > 0 ? currentBusinesses.map(business => <ProfileCard key={business.id} name={business.name} logo={business.logo} category={business.category} description={business.description} phone={business.phone} email={business.email} website={business.website} onViewProfile={() => handleViewProfile(business)} />) : <div className="col-span-full text-center py-20 bg-white rounded-xl shadow-sm">
+          <div className="text-4xl mb-4">🔍</div>
+          <h3 className="text-xl font-bold mb-2">No businesses found</h3>
+          <p className="text-gray-500">
+            Try adjusting your search or filter criteria
           </p>
-        </div>
-        {/* Search and Filter Section */}
-        <div className="bg-white rounded-xl shadow-md mb-12 transition-all duration-300">
-          <div className="p-6 flex flex-col md:flex-row md:items-center gap-4">
-            {/* Search Input */}
-            <div className="flex-1 relative">
-              <input type="text" placeholder="Search companies, industries, or services..." className="w-full py-4 pl-12 pr-4 bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all text-base" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-              <SearchIcon size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            </div>
-            {/* Filter Toggle Button */}
-            <button className={`px-5 py-4 rounded-lg flex items-center justify-center transition-colors ${showFilters ? 'bg-primary text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`} onClick={() => setShowFilters(!showFilters)} aria-expanded={showFilters} aria-label="Toggle filters">
-              <FilterIcon size={20} className="mr-2" />
-              <span>Filters</span>
-            </button>
-          </div>
-          {/* Expanded Filters */}
-          {showFilters && <div className="p-6 border-t border-gray-100 animate-fadeIn">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Category Filter */}
-                <div>
-                  <label className="block font-medium text-gray-700 mb-2">
-                    Industry Category
-                  </label>
-                  <div className="relative">
-                    <select className="w-full p-3 bg-gray-50 rounded-lg appearance-none border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
-                      {categories.map(category => <option key={category} value={category}>
-                          {category === 'all' ? 'All Categories' : category}
-                        </option>)}
-                    </select>
-                    <ChevronDownIcon size={20} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-                {/* Sort By Name */}
-                <div>
-                  <label className="block font-medium text-gray-700 mb-2">
-                    Sort by Name
-                  </label>
-                  <div className="relative">
-                    <select className="w-full p-3 bg-gray-50 rounded-lg appearance-none border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" value={sortBy === 'nameAsc' ? 'nameAsc' : sortBy === 'nameDesc' ? 'nameDesc' : ''} onChange={e => {
-                  if (e.target.value) {
-                    setSortBy(e.target.value as SortOption);
-                  }
-                }}>
-                      <option value="">No sorting</option>
-                      <option value="nameAsc">A to Z</option>
-                      <option value="nameDesc">Z to A</option>
-                    </select>
-                    <ChevronDownIcon size={20} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-                {/* Sort By Founded Year */}
-                <div>
-                  <label className="block font-medium text-gray-700 mb-2">
-                    Sort by Established Year
-                  </label>
-                  <div className="relative">
-                    <select className="w-full p-3 bg-gray-50 rounded-lg appearance-none border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary" value={sortBy === 'foundedAsc' ? 'foundedAsc' : sortBy === 'foundedDesc' ? 'foundedDesc' : ''} onChange={e => {
-                  if (e.target.value) {
-                    setSortBy(e.target.value as SortOption);
-                  }
-                }}>
-                      <option value="">No sorting</option>
-                      <option value="foundedAsc">Oldest First</option>
-                      <option value="foundedDesc">Newest First</option>
-                    </select>
-                    <ChevronDownIcon size={20} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-              </div>
-              {/* Reset Filters */}
-              <div className="mt-6 flex justify-end">
-                <button onClick={resetFilters} className="flex items-center text-gray-500 hover:text-primary transition-colors">
-                  <XIcon size={16} className="mr-1" />
-                  Reset Filters
-                </button>
-              </div>
-            </div>}
-        </div>
-        {/* Active Filters Summary */}
-        {(searchQuery || categoryFilter !== 'all' || sortBy !== 'default') && <div className="mb-8 flex flex-wrap items-center gap-2">
-            <span className="text-gray-500">Active filters:</span>
-            {searchQuery && <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center">
-                <span className="mr-2">Search: {searchQuery}</span>
-                <button onClick={() => setSearchQuery('')} className="text-gray-400 hover:text-gray-600">
-                  <XIcon size={14} />
-                </button>
-              </div>}
-            {categoryFilter !== 'all' && <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center">
-                <span className="mr-2">Category: {categoryFilter}</span>
-                <button onClick={() => setCategoryFilter('all')} className="text-gray-400 hover:text-gray-600">
-                  <XIcon size={14} />
-                </button>
-              </div>}
-            {sortBy !== 'default' && <div className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center">
-                <span className="mr-2">
-                  Sort:{' '}
-                  {sortBy === 'nameAsc' ? 'Name (A-Z)' : sortBy === 'nameDesc' ? 'Name (Z-A)' : sortBy === 'foundedAsc' ? 'Established (Oldest)' : 'Established (Newest)'}
-                </span>
-                <button onClick={() => setSortBy('default')} className="text-gray-400 hover:text-gray-600">
-                  <XIcon size={14} />
-                </button>
-              </div>}
-            <button onClick={resetFilters} className="text-primary hover:text-primary-dark text-sm ml-auto">
-              Clear All
-            </button>
-          </div>}
-        {/* Results Count */}
-        <div className="mb-6 flex justify-between items-center">
-          <div className="text-gray-500">
-            Showing {filteredBusinesses.length}{' '}
-            {filteredBusinesses.length === 1 ? 'business' : 'businesses'}
-          </div>
-          {/* Pagination Controls - Top */}
-          {totalPages > 1 && <div className="flex items-center space-x-1">
-              <button onClick={() => paginate(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`p-2 rounded ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
-                <ChevronUpIcon size={16} className="transform rotate-90" />
-              </button>
-              {Array.from({
+          <button onClick={resetFilters} className="mt-6 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+            Reset Filters
+          </button>
+        </div>}
+      </div>
+      {/* Pagination Controls - Bottom */}
+      {totalPages > 1 && <div className="flex justify-center mt-8 mb-12">
+        <div className="flex items-center space-x-1">
+          <button onClick={() => paginate(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`p-2 rounded ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
+            <ChevronUpIcon size={16} className="transform rotate-90" />
+          </button>
+          {Array.from({
             length: totalPages
           }, (_, i) => i + 1).map(number => <button key={number} onClick={() => paginate(number)} className={`w-8 h-8 rounded ${currentPage === number ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-                  {number}
-                </button>)}
-              <button onClick={() => paginate(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`p-2 rounded ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
-                <ChevronDownIcon size={16} className="transform rotate-90" />
-              </button>
-            </div>}
+            {number}
+          </button>)}
+          <button onClick={() => paginate(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`p-2 rounded ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
+            <ChevronDownIcon size={16} className="transform rotate-90" />
+          </button>
         </div>
-        {/* Business Grid */}
-        <div id="business-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {currentBusinesses.length > 0 ? currentBusinesses.map(business => <ProfileCard key={business.id} name={business.name} logo={business.logo} category={business.category} description={business.description} phone={business.phone} email={business.email} website={business.website} onViewProfile={() => handleViewProfile(business)} />) : <div className="col-span-full text-center py-20 bg-white rounded-xl shadow-sm">
-              <div className="text-4xl mb-4">🔍</div>
-              <h3 className="text-xl font-bold mb-2">No businesses found</h3>
-              <p className="text-gray-500">
-                Try adjusting your search or filter criteria
-              </p>
-              <button onClick={resetFilters} className="mt-6 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
-                Reset Filters
-              </button>
-            </div>}
-        </div>
-        {/* Pagination Controls - Bottom */}
-        {totalPages > 1 && <div className="flex justify-center mt-8 mb-12">
-            <div className="flex items-center space-x-1">
-              <button onClick={() => paginate(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className={`p-2 rounded ${currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
-                <ChevronUpIcon size={16} className="transform rotate-90" />
-              </button>
-              {Array.from({
-            length: totalPages
-          }, (_, i) => i + 1).map(number => <button key={number} onClick={() => paginate(number)} className={`w-8 h-8 rounded ${currentPage === number ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-                  {number}
-                </button>)}
-              <button onClick={() => paginate(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className={`p-2 rounded ${currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
-                <ChevronDownIcon size={16} className="transform rotate-90" />
-              </button>
-            </div>
-          </div>}
-        {/* CTA Section */}
-        {/* <div className="bg-white rounded-xl shadow-md p-8 md:p-12 text-center">
+      </div>}
+      {/* CTA Section */}
+      {/* <div className="bg-white rounded-xl shadow-md p-8 md:p-12 text-center">
           <h2 className="font-display text-3xl font-bold mb-6">
             Ready to Join Abu Dhabi's Business Community?
           </h2>
@@ -607,9 +607,9 @@ const BusinessDirectoryMarketplace = () => {
             </Link>
           </div>
         </div> */}
-      </div>
-      {/* Profile Modal */}
-      <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} profile={selectedProfile} />
-    </div>;
+    </div>
+    {/* Profile Modal */}
+    <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} profile={selectedProfile} />
+  </div>;
 };
 export default BusinessDirectoryMarketplace;

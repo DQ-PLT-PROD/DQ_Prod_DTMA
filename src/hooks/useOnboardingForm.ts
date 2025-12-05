@@ -51,7 +51,7 @@ export function useOnboardingForm(steps, onComplete, isRevisit) {
             industry: "Technology",
             companyStage: "Startup",
             contactName: "John Smith",
-            email: "john.smith@futuretech.com",
+            email: "jsmith.futuretech@gmail.com",
             phone: "+971501234567",
           };
           setFormData(mockData);
@@ -64,7 +64,7 @@ export function useOnboardingForm(steps, onComplete, isRevisit) {
           industry: "Technology",
           companyStage: "Startup",
           contactName: "John Smith",
-          email: "john.smith@futuretech.com",
+          email: "jsmith.futuretech@gmail.com",
           phone: "+971501234567",
         };
         setFormData(mockData);

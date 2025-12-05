@@ -7,7 +7,7 @@ import ProfileModal from './ProfileModal';
 const initialProfiles = [{
   id: 1,
   name: 'Abu Dhabi Global Market',
-  logo: 'https://www.adgm.com/media/3l2h4o3v/adgm-logo.png',
+  logo: '/logo/adgm.png',
   category: 'Finance',
   description: 'International financial center located on Al Maryah Island, providing a broad range of financial services.',
   phone: '+971 2 333 8888',
@@ -21,7 +21,7 @@ const initialProfiles = [{
 }, {
   id: 2,
   name: 'Masdar',
-  logo: 'https://www.masdar.ae/-/media/project/masdar/masdar-website/masdar-logo-color-white-bg.png',
+  logo: '/logo/masdar-logo.webp',
   category: 'Energy',
   description: 'Renewable energy company that advances the development, commercialization and deployment of clean energy solutions.',
   phone: '+971 2 653 3333',
@@ -35,7 +35,7 @@ const initialProfiles = [{
 }, {
   id: 3,
   name: 'Hub71',
-  logo: 'https://hub71.com/wp-content/uploads/2021/09/hub71-logo.png',
+  logo: '/logo/hub71.png',
   category: 'Technology',
   description: 'Global tech ecosystem that enables startups to scale globally through access to funding, networks, and business opportunities.',
   phone: '+971 2 449 7777',
@@ -48,7 +48,7 @@ const initialProfiles = [{
 }, {
   id: 4,
   name: 'Cleveland Clinic Abu Dhabi',
-  logo: 'https://clevelandclinicabudhabi.ae/CCHPImages/CCAD-Logo.svg',
+  logo: '/logo/cleveland.png',
   category: 'Healthcare',
   description: 'Multispecialty hospital offering patients the highest level of specialized care across 40+ medical and surgical specialties.',
   phone: '+971 2 659 9999',
@@ -62,7 +62,8 @@ const initialProfiles = [{
 }, {
   id: 5,
   name: 'Yas Mall',
-  logo: 'https://www.yasmall.ae/media/1412/yas-mall-logo.svg',
+  logo: '/logo/yas.png',
+
   category: 'Retail',
   description: 'Premier shopping, dining and entertainment destination located on Yas Island, featuring over 370 international brands.',
   phone: '+971 2 565 7000',
@@ -91,7 +92,7 @@ const initialProfiles = [{
 const additionalProfiles = [{
   id: 7,
   name: 'Etihad Airways',
-  logo: 'https://www.etihad.com/content/dam/eag/etihadairways/etihadcom/Global/logos/etihad-logo-1.svg',
+  logo: '/logo/etihad-logo.webp',
   category: 'Tourism',
   description: 'The national airline of the UAE, connecting Abu Dhabi to the world with a fleet of modern aircraft.',
   phone: '+971 2 599 0000',
@@ -105,7 +106,7 @@ const additionalProfiles = [{
 }, {
   id: 8,
   name: 'Mubadala Investment Company',
-  logo: 'https://www.mubadala.com/sites/default/files/2022-05/mubadala-logo.png',
+  logo: '/logo/mubadala-logo.webp',
   category: 'Finance',
   description: 'Sovereign wealth fund investing in diversified sectors globally to transform the UAE economy.',
   phone: '+971 2 413 0000',
@@ -119,8 +120,8 @@ const additionalProfiles = [{
 }, {
   id: 9,
   name: 'Aldar Properties',
-  logo: 'https://www.aldar.com/getattachment/Style-Library/AldarFonts/Aldar_Logo.svg',
-  category: 'Retail',
+  logo: '/logo/aldar-logo.webp',
+  category: 'Real Estate',
   description: 'Leading real estate developer with iconic developments across Abu Dhabi and beyond.',
   phone: '+971 2 810 5555',
   email: 'customercare@aldar.com',
@@ -202,40 +203,40 @@ const DirectorySection = () => {
     setIsProfileModalOpen(true);
   };
   return <section id="directory" ref={sectionRef} className="py-28 px-6 md:px-12 opacity-0 -translate-y-4 transition-all duration-1000">
-      <div className="container mx-auto">
-        <div className="text-center mb-20">
-          <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 tracking-tight">
-            Business Directory
-          </h2>
-          <p className="font-body text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Connect with leading organizations and service providers in Abu
-            Dhabi's dynamic business ecosystem.
-          </p>
-        </div>
-        <div className="mb-16">
-          <SearchBar onSearch={handleSearch} />
-        </div>
-        {isSearching ? <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          </div> : <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProfiles.length > 0 ? filteredProfiles.map(profile => <ProfileCard key={profile.id} name={profile.name} logo={profile.logo} category={profile.category} description={profile.description} phone={profile.phone} email={profile.email} website={profile.website} onViewProfile={() => handleViewProfile(profile)} buttonText="Contact" />) : <div className="col-span-full text-center py-20 bg-gray-50 rounded-xl">
-                  <p className="text-gray-500 font-body text-lg mb-4">
-                    No results found.
-                  </p>
-                  <p className="text-gray-400 font-body">
-                    Please try a different search term or filter.
-                  </p>
-                </div>}
-            </div>
-            {filteredProfiles.length > 0 && hasMoreProfiles && <div className="mt-16 text-center">
-                <Link to="/business-directory-marketplace" className="px-10 py-4 bg-white border-2 border-primary text-primary font-body font-medium rounded-lg hover:bg-primary hover:text-white transition-colors shadow-sm hover:shadow-md">
-                  View Full Directory
-                </Link>
-              </div>}
-          </>}
+    <div className="container mx-auto">
+      <div className="text-center mb-20">
+        <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+          Business Directory
+        </h2>
+        <p className="font-body text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          Connect with leading organizations and service providers in Abu
+          Dhabi's dynamic business ecosystem.
+        </p>
       </div>
-      <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} profile={selectedProfile} />
-    </section>;
+      <div className="mb-16">
+        <SearchBar onSearch={handleSearch} />
+      </div>
+      {isSearching ? <div className="flex justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div> : <>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredProfiles.length > 0 ? filteredProfiles.map(profile => <ProfileCard key={profile.id} name={profile.name} logo={profile.logo} category={profile.category} description={profile.description} phone={profile.phone} email={profile.email} website={profile.website} onViewProfile={() => handleViewProfile(profile)} buttonText="Contact" />) : <div className="col-span-full text-center py-20 bg-gray-50 rounded-xl">
+            <p className="text-gray-500 font-body text-lg mb-4">
+              No results found.
+            </p>
+            <p className="text-gray-400 font-body">
+              Please try a different search term or filter.
+            </p>
+          </div>}
+        </div>
+        {filteredProfiles.length > 0 && hasMoreProfiles && <div className="mt-16 text-center">
+          <Link to="/business-directory-marketplace" className="px-10 py-4 bg-white border-2 border-primary text-primary font-body font-medium rounded-lg hover:bg-primary hover:text-white transition-colors shadow-sm hover:shadow-md">
+            View Full Directory
+          </Link>
+        </div>}
+      </>}
+    </div>
+    <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} profile={selectedProfile} />
+  </section>;
 };
 export default DirectorySection;

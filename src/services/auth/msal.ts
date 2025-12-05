@@ -7,38 +7,47 @@ import {
 
 // Support both NEXT_PUBLIC_* and VITE_* envs
 const env = (import.meta as any).env as Record<string, string | undefined>;
-console.log(env);
 
-const CLIENT_ID = env.NEXT_PUBLIC_AAD_CLIENT_ID || env.VITE_AZURE_CLIENT_ID || "f996140d-d79b-419d-a64c-f211d23a38ad";
-const REDIRECT_URI =
-  env.NEXT_PUBLIC_REDIRECT_URI ||
-  env.VITE_AZURE_REDIRECT_URI ||
-  window.location.origin;
-const POST_LOGOUT_REDIRECT_URI =
-  env.NEXT_PUBLIC_POST_LOGOUT_REDIRECT_URI ||
-  env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI ||
-  REDIRECT_URI;
+// Required environment variables - no fallbacks
+const CLIENT_ID = env.VITE_AZURE_CLIENT_ID || env.NEXT_PUBLIC_AAD_CLIENT_ID;
+const TENANT_NAME = env.VITE_B2C_TENANT_NAME || env.NEXT_PUBLIC_B2C_TENANT_NAME;
+const POLICY_SIGNUP_SIGNIN = env.VITE_B2C_POLICY_SIGNUP_SIGNIN || env.NEXT_PUBLIC_B2C_POLICY_SIGNUP_SIGNIN;
+
+// Optional environment variables with sensible defaults
+const REDIRECT_URI = env.VITE_AZURE_REDIRECT_URI || env.NEXT_PUBLIC_REDIRECT_URI || window.location.origin;
+const POST_LOGOUT_REDIRECT_URI = env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI || env.NEXT_PUBLIC_POST_LOGOUT_REDIRECT_URI || REDIRECT_URI;
+const POLICY_SIGNUP = env.VITE_B2C_POLICY_SIGNUP || env.NEXT_PUBLIC_B2C_POLICY_SIGNUP;
+
+// Validate required configuration
+if (!CLIENT_ID) {
+  console.error('⚠️ VITE_AZURE_CLIENT_ID is required in environment variables');
+  console.error('Authentication will not work until Azure credentials are configured.');
+}
+if (!TENANT_NAME) {
+  console.error('⚠️ VITE_B2C_TENANT_NAME is required in environment variables');
+  console.error('Authentication will not work until Azure credentials are configured.');
+}
+if (!POLICY_SIGNUP_SIGNIN) {
+  console.error('⚠️ VITE_B2C_POLICY_SIGNUP_SIGNIN is required in environment variables');
+  console.error('Authentication will not work until Azure credentials are configured.');
+}
+
 const API_SCOPES = (env.NEXT_PUBLIC_API_SCOPES || env.VITE_AZURE_SCOPES || "")
   .split(/[\s,]+/)
   .map((s) => s.trim())
   .filter(Boolean);
 
 // Always request standard OIDC scopes; include email to avoid UPN-only claims and offline_access for refresh tokens
-const DEFAULT_OIDC_SCOPES = ["openid", "profile", "email", "offline_access"] as const;
-
-// Vite exposes only VITE_* via import.meta.env (not process.env)
-const TENANT_NAME = env.NEXT_PUBLIC_B2C_TENANT_NAME || env.VITE_B2C_TENANT_NAME || "dqproj";
-const POLICY_SIGNUP_SIGNIN =
-  env.NEXT_PUBLIC_B2C_POLICY_SIGNUP_SIGNIN || env.VITE_B2C_POLICY_SIGNUP_SIGNIN || "F1_CustomerSUSILocal_KF";
-// Optional dedicated Sign-Up policy/user flow
-const POLICY_SIGNUP = env.NEXT_PUBLIC_B2C_POLICY_SIGNUP || env.VITE_B2C_POLICY_SIGNUP;
+const DEFAULT_OIDC_SCOPES = [
+  "openid",
+  "profile",
+  "email",
+  "offline_access",
+] as const;
 
 // Select correct login host. Prefer explicit host; default to B2C (b2clogin.com).
 // If you are using Entra External Identities (CIAM), set NEXT_PUBLIC_IDENTITY_HOST or VITE_IDENTITY_HOST
 // to e.g. "yourtenant.ciamlogin.com".
-
-
-
 
 // For external Entra ID (Azure AD), prefer tenant ID or domain
 // const TENANT_ID = env.NEXT_PUBLIC_TENANT_ID || env.VITE_AZURE_TENANT_ID;
@@ -49,7 +58,7 @@ const LOGIN_HOST =
   env.NEXT_PUBLIC_IDENTITY_HOST ||
   env.VITE_IDENTITY_HOST ||
   (SUB ? `${SUB}.ciamlogin.com` : `${TENANT_NAME}.b2clogin.com`);
-const AUTHORITY_SIGNUP_SIGNIN = `https://${LOGIN_HOST}/${TENANT_NAME}.onmicrosoft.com/`;
+const AUTHORITY_SIGNUP_SIGNIN = `https://${LOGIN_HOST}/${TENANT_NAME}.onmicrosoft.com/${POLICY_SIGNUP_SIGNIN}`;
 const AUTHORITY_SIGNUP = POLICY_SIGNUP
   ? `https://${LOGIN_HOST}/${TENANT_NAME}.onmicrosoft.com/${POLICY_SIGNUP}`
   : AUTHORITY_SIGNUP_SIGNIN;
@@ -66,7 +75,7 @@ let computedAuthority: string;
 // } else if (TENANT_ID) {
 //   computedAuthority = `https://login.microsoftonline.com/${TENANT_ID}`;
 // } else if (SUB) {
-  computedAuthority = `https://${SUB}.ciamlogin.com/`;
+computedAuthority = `https://${SUB}.ciamlogin.com/`;
 // } else {
 //   computedAuthority = env.VITE_AZURE_AUTHORITY || "https://login.microsoftonline.com/common";
 // }
@@ -116,10 +125,14 @@ export const msalConfig: Configuration = {
   },
 };
 
+// MSAL configuration ready
+
 export const msalInstance = new PublicClientApplication(msalConfig);
 
 // Optionally include Graph User.Read for email resolution fallback (see AuthContext)
-const ENABLE_GRAPH_USER_READ = (env.VITE_MSAL_ENABLE_GRAPH_FALLBACK || env.NEXT_PUBLIC_MSAL_ENABLE_GRAPH_FALLBACK) === 'true';
+const ENABLE_GRAPH_USER_READ =
+  (env.VITE_MSAL_ENABLE_GRAPH_FALLBACK ||
+    env.NEXT_PUBLIC_MSAL_ENABLE_GRAPH_FALLBACK) === "true";
 const GRAPH_SCOPES: string[] = ENABLE_GRAPH_USER_READ ? ["User.Read"] : [];
 
 export const defaultLoginRequest = {

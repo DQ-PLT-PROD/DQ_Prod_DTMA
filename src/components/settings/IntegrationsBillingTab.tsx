@@ -91,37 +91,38 @@ export default function IntegrationsBillingTab() {
         </section>
         {/* API Tokens Section */}
         <section className="opacity-60">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">API Tokens</h2>
                 <button disabled className="inline-flex items-center px-3 py-1.5 bg-gray-300 text-gray-600 text-sm rounded-md cursor-not-allowed">
                     <PlusIcon className="h-4 w-4 mr-1" />
                     Generate New Token
                 </button>
             </div>
-            <div className="bg-white overflow-hidden border border-gray-200 rounded-md">
+            <div className="hidden lg:block bg-white border border-gray-200 rounded-md">
+                <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Token Name
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Token
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Created
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Last Used
                             </th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                             </th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {mockApiTokens.map(token => <tr key={token.id}>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                     <KeyIcon className="h-4 w-4 text-gray-500 mr-2" />
                                     <div className="text-sm font-medium text-gray-900">
@@ -129,7 +130,7 @@ export default function IntegrationsBillingTab() {
                                     </div>
                                 </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                     <div className="text-sm text-gray-500 font-mono">
                                         {visibleTokens[token.id] ? token.token : '••••••••••••••••••••••••••••'}
@@ -142,13 +143,13 @@ export default function IntegrationsBillingTab() {
                                     </button>
                                 </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {token.created}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {token.lastUsed}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <button disabled className="text-gray-400 cursor-not-allowed mr-3">
                                     Regenerate
                                 </button>
@@ -159,6 +160,26 @@ export default function IntegrationsBillingTab() {
                         </tr>)}
                     </tbody>
                 </table>
+                </div>
+            </div>
+            {/* Mobile & tablet cards */}
+            <div className="lg:hidden space-y-3">
+                {mockApiTokens.map(token => (
+                    <div key={token.id} className="bg-white border border-gray-200 rounded-md p-4">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <KeyIcon className="h-4 w-4 text-gray-500" />
+                                    <div className="text-sm font-medium text-gray-900">{token.name}</div>
+                                </div>
+                                <div className="mt-2 text-xs text-gray-500 font-mono break-all">••••••••••••••••••••••••••••••••</div>
+                                <div className="mt-2 text-xs text-gray-500">Created: {token.created}</div>
+                                <div className="text-xs text-gray-500">Last used: {token.lastUsed}</div>
+                            </div>
+                            <div className="text-xs text-gray-400">Preview</div>
+                        </div>
+                    </div>
+                ))}
             </div>
         </section>
         {/* Billing & Subscription Section (Coming Soon) */}

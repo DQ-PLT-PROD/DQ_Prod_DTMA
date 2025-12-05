@@ -35,6 +35,7 @@ class ChatService {
   private advisorAvatar =
     "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80";
   private deletedMessages: Message[] = [];
+  private automaticResponsesEnabled: boolean = false;
   constructor() {
     // Initialize with existing messages
     this.simulateConnection();
@@ -63,6 +64,28 @@ class ChatService {
   // Get current connection status
   getConnectionStatus(): ConnectionStatus {
     return this.connectionStatus;
+  }
+
+  // Get automatic responses setting
+  getAutomaticResponsesEnabled(): boolean {
+    return this.automaticResponsesEnabled;
+  }
+
+  // Enable or disable automatic responses
+  setAutomaticResponsesEnabled(enabled: boolean): void {
+    this.automaticResponsesEnabled = enabled;
+  }
+
+  // Manually trigger an advisor response (for when automatic responses are disabled)
+  triggerAdvisorResponse(replyToId?: string, withVoice: boolean = false): void {
+    // Show typing indicator
+    this.setAdvisorTyping(true);
+    // Simulate advisor typing and responding
+    const typingTime = 1500 + Math.random() * 2000; // Random typing time between 1.5-3.5 seconds
+    this.typingTimeout = setTimeout(() => {
+      this.setAdvisorTyping(false);
+      this.simulateAdvisorResponse(replyToId, withVoice);
+    }, typingTime);
   }
   // Subscribe to message changes
   subscribeToMessages(listener: MessageListener): () => void {
@@ -173,17 +196,21 @@ class ChatService {
         // Simulate read status after another delay
         setTimeout(() => {
           this.updateMessageStatus(newMessage.id, MessageStatus.READ);
-          // Show typing indicator
-          this.setAdvisorTyping(true);
-          // Simulate advisor typing and responding
-          const typingTime = 1500 + Math.random() * 2000; // Random typing time between 1.5-3.5 seconds
-          this.typingTimeout = setTimeout(() => {
-            this.setAdvisorTyping(false);
-            this.simulateAdvisorResponse(
-              newMessage.id,
-              voiceMessage ? true : false
-            );
-          }, typingTime);
+          
+          // Only show typing indicator and respond if automatic responses are enabled
+          if (this.automaticResponsesEnabled) {
+            // Show typing indicator
+            this.setAdvisorTyping(true);
+            // Simulate advisor typing and responding
+            const typingTime = 1500 + Math.random() * 2000; // Random typing time between 1.5-3.5 seconds
+            this.typingTimeout = setTimeout(() => {
+              this.setAdvisorTyping(false);
+              this.simulateAdvisorResponse(
+                newMessage.id,
+                voiceMessage ? true : false
+              );
+            }, typingTime);
+          }
         }, 500); // Read status delay
       }, 500); // Delivered status delay
     }, 500); // Sent status delay

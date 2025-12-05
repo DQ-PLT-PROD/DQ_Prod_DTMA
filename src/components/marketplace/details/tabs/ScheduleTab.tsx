@@ -1,105 +1,106 @@
-import React, { useMemo } from "react";
-import { Calendar, MapPin } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { ChevronDown, ChevronUp, PlayCircle, FileText } from "lucide-react";
+import { AudienceFitIndicator } from "../AudienceFitIndicator";
 
 export interface ScheduleTabProps {
   item: any;
+  audienceLevel?: string;
 }
 
-const ScheduleTab: React.FC<ScheduleTabProps> = ({ item }) => {
-  const formattedStartDate = useMemo(() => {
-    if (!item?.startDate) return "";
-    try {
-      const d = new Date(item.startDate);
-      if (isNaN(d.getTime())) return String(item.startDate);
-      return d.toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    } catch {
-      return String(item.startDate);
-    }
-  }, [item?.startDate]);
+const ScheduleTab: React.FC<ScheduleTabProps> = ({ item, audienceLevel }) => {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const steps: Array<{ title: string; description?: string; cost?: string | number }> = useMemo(() => {
+  const steps: Array<{ title: string; description?: string; duration?: string; type?: 'video' | 'reading' }> = useMemo(() => {
     const ap = Array.isArray(item?.applicationProcess) ? item.applicationProcess : [];
+    // If no applicationProcess, generate mock lessons based on lessonCount
+    if (ap.length === 0 && item.lessonCount) {
+      return Array.from({ length: item.lessonCount }).map((_, i) => ({
+        title: `Lesson ${i + 1}: ${['Introduction', 'Core Concepts', 'Advanced Topics', 'Case Studies', 'Conclusion'][i % 5]}`,
+        description: "In this lesson, we will cover the fundamental principles and explore real-world examples to solidify your understanding.",
+        duration: "12 mins",
+        type: i % 3 === 0 ? 'video' : 'reading'
+      }));
+    }
+
     return ap
       .map((s: any) => ({
         title: s?.title || (typeof s?.week === "number" ? `Week ${s.week}` : ""),
         description: typeof s?.description === "string" ? s.description : "",
-        cost: s?.cost,
+        duration: s?.duration || "15 mins",
+        type: 'video'
       }))
       .filter((s) => s.title);
-  }, [item?.applicationProcess]);
+  }, [item?.applicationProcess, item?.lessonCount]);
 
-  const formatCost = (val: any) => {
-    if (val === undefined || val === null || val === "") return undefined;
-    const num = typeof val === "number" ? val : parseFloat(String(val));
-    if (!isNaN(num)) {
-      const rounded = Math.round(num);
-      return `AED ${rounded.toLocaleString()}`;
-    }
-    // Fallback to raw string
-    return `AED ${String(val)}`;
+  const toggleStep = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
   };
 
   return (
     <div className="space-y-6">
-      <p className="text-gray-600 text-lg mb-6">Here's the complete schedule and timeline for this course.</p>
-      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-        <div className="flex flex-col md:flex-row md:items-center mb-6 bg-blue-50 p-3 rounded-lg">
-          <div className="flex-grow flex items-center">
-            <Calendar className="text-blue-600 mr-3" size={18} />
-            <div>
-              <p className="font-medium text-gray-800">
-                Start Date: <span className="text-blue-700">{formattedStartDate}</span>
-              </p>
-              <p className="text-sm text-gray-600">Duration: {item.duration}</p>
+      {audienceLevel && (
+        <AudienceFitIndicator audienceLevel={audienceLevel} />
+      )}
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-bold text-gray-900">Course Schedule</h3>
+        <div className="text-sm text-gray-500 font-medium">
+          {steps.length} Lessons • {item.duration || "55m total"}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {steps.length > 0 ? (
+          steps.map((s, idx) => (
+            <div
+              key={idx}
+              className={`border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 ${openIndex === idx ? 'ring-2 ring-blue-100 border-blue-200' : 'hover:border-gray-300'}`}
+            >
+              <button
+                onClick={() => toggleStep(idx)}
+                className="w-full flex items-center justify-between p-5 bg-white text-left"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`
+                    h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold
+                    ${openIndex === idx ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'}
+                  `}>
+                    {idx + 1}
+                  </div>
+                  <span className={`font-bold text-lg ${openIndex === idx ? 'text-gray-900' : 'text-gray-700'}`}>
+                    {s.title}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  {s.duration && (
+                    <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full">
+                      {s.type === 'video' ? <PlayCircle size={12} /> : <FileText size={12} />}
+                      {s.type === 'video' ? 'Video' : 'Reading'}
+                      <span className="mx-1">•</span>
+                      {s.duration}
+                    </div>
+                  )}
+                  {openIndex === idx ? (
+                    <ChevronUp size={20} className="text-gray-400" />
+                  ) : (
+                    <ChevronDown size={20} className="text-gray-400" />
+                  )}
+                </div>
+              </button>
+
+              {openIndex === idx && (
+                <div className="px-5 pb-5 pt-0 bg-white">
+                  <div className="pl-12 pr-4">
+                    <p className="text-gray-600 leading-relaxed">
+                      {s.description || "No description available for this lesson."}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-          <div className="mt-2 md:mt-0 md:ml-auto">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700 border border-green-100">
-              {item.deliveryMode}
-            </span>
-          </div>
-        </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Timeline</h3>
-        <div className="space-y-4">
-          {steps.length > 0 ? (
-            steps.map((s, idx) => (
-              <div key={idx} className={`relative pl-8 ${idx < steps.length - 1 ? "pb-4" : ""} border-l-2 border-blue-200`}>
-                <div className="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-blue-500"></div>
-                <h4 className="font-semibold text-gray-900">{s.title}</h4>
-                {s.description && (
-                  <p className="text-gray-700">{s.description}</p>
-                )}
-                {formatCost(s.cost) && (
-                  <p className="text-gray-600 text-sm mt-1">Cost: {formatCost(s.cost)}</p>
-                )}
-              </div>
-            ))
-          ) : (
-            <>
-              <div className="relative pl-8 pb-4 border-l-2 border-blue-200">
-                <div className="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-blue-500"></div>
-                <h4 className="font-semibold text-gray-900">Week 1</h4>
-                <p className="text-gray-700">Introduction and foundation concepts</p>
-              </div>
-              <div className="relative pl-8 pb-4 border-l-2 border-blue-200">
-                <div className="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-blue-500"></div>
-                <h4 className="font-semibold text-gray-900">Week 2</h4>
-                <p className="text-gray-700">Core principles and practical exercises</p>
-              </div>
-            </>
-          )}
-        </div>
-        {item.location && (
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
-              <MapPin className="text-blue-600 mr-2" size={16} />
-              Location Details
-            </h4>
-            <p className="text-gray-700 ml-6">{item.location}</p>
+          ))
+        ) : (
+          <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+            <p className="text-gray-500">Course schedule details coming soon.</p>
           </div>
         )}
       </div>

@@ -1,7 +1,8 @@
-import React from 'react';
-import { BookmarkIcon, ScaleIcon } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMarketplaceConfig } from '../../utils/marketplaceConfig';
+import { getCoursePoster } from '../../utils/courseMedia';
+import { CourseTile } from '../CourseTile';
 
 export interface MarketplaceItemProps {
   item: {
@@ -21,151 +22,125 @@ export interface MarketplaceItemProps {
   marketplaceType: string;
   isBookmarked: boolean;
   onToggleBookmark: () => void;
-  onAddToComparison: () => void;
-  onQuickView: () => void;
+
+  isPointerFine?: boolean;
+  onTagClick?: (type: string, value: string) => void;
 }
+
 
 export const MarketplaceCard: React.FC<MarketplaceItemProps> = ({
   item,
   marketplaceType,
   isBookmarked,
   onToggleBookmark,
-  onAddToComparison,
-  onQuickView
+
+  isPointerFine = true,
 }) => {
   const navigate = useNavigate();
   const config = getMarketplaceConfig(marketplaceType);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Generate route based on marketplace type
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) {
+        clearTimeout(hoverTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleMouseEnter = () => {
+    if (!isPointerFine) return;
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+    }
+    // Delay the hover effect slightly to prevent accidental triggers
+    hoverTimerRef.current = setTimeout(() => {
+      setIsHovered(true);
+    }, 300);
+  };
+
+  const handleMouseLeave = () => {
+    if (!isPointerFine) return;
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+    }
+    setIsHovered(false);
+  };
+
   const getItemRoute = () => {
     return `${config.route}/${item.id}`;
   };
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log('View Details Clicked - Navigating to:', getItemRoute());
     navigate(getItemRoute());
   };
 
-  // Navigate to the formUrl when the primary action is clicked
   const handlePrimaryAction = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Log item details for debugging
-    console.log('Primary Action Clicked:', {
-      itemId: item.id,
-      itemTitle: item.title,
-      formUrl: item.formUrl,
-      marketplaceType,
-    });
-    // Apply external fallback if formUrl is null/falsy
     const effectiveUrl = item.formUrl || "https://www.tamm.abudhabi/en/login";
-    // Handle external: open in new tab
     if (effectiveUrl.startsWith('http')) {
       window.open(effectiveUrl, '_blank', 'noopener,noreferrer');
-      console.log('Opening external URL:', effectiveUrl);
       return;
     }
-    // Internal route: normalize with /forms/ prefix if needed
     const targetUrl = effectiveUrl.startsWith('/forms/') ? effectiveUrl : `/forms/${effectiveUrl}`;
-    console.log('Navigating to internal route:', targetUrl);
     navigate(targetUrl);
   };
 
-  // Display tags if available, otherwise use category and deliveryMode
-  const displayTags = item.tags || [item.category, item.deliveryMode].filter(Boolean);
+  const topicTags = useMemo(() => {
+    return Array.isArray(item.topicTags) ? item.topicTags : [];
+  }, [item.topicTags]);
 
-  // Log item props on render to verify formUrl presence
-  console.log('MarketplaceCard Rendered:', {
-    itemId: item.id,
-    itemTitle: item.title,
-    formUrl: item.formUrl,
-    marketplaceType,
-  });
+  const thumbnailUrl = useMemo(() => {
+    return getCoursePoster(item);
+  }, [item]);
 
   return (
     <div
-      className="flex flex-col min-h-[340px] bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
-      onClick={onQuickView}
+      ref={cardRef}
+      className="h-full relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{ zIndex: isHovered ? 50 : 1 }}
     >
-      {/* Card Header with fixed height for title and provider */}
-      <div className="px-4 py-5 flex-grow flex flex-col">
-        <div className="flex items-start mb-5">
-          <img
-            src={item.provider.logoUrl}
-            alt={`${item.provider.name} logo`}
-            className="h-12 w-12 object-contain rounded-md flex-shrink-0 mr-3"
-          />
-          <div className="flex-grow min-h-[72px] flex flex-col justify-center">
-            <h3 className="font-bold text-gray-900 line-clamp-2 min-h-[48px] leading-snug">
-              {item.title}
-            </h3>
-            <p className="text-sm text-gray-500 min-h-[20px] mt-1">
-              {item.provider.name}
-            </p>
-          </div>
-        </div>
-        {/* Description with consistent height */}
-        <div className="mb-5">
-          <p className="text-sm text-gray-600 line-clamp-3 min-h-[60px] leading-relaxed">
-            {item.description}
-          </p>
-        </div>
-        {/* Tags and Actions in same row - fixed position */}
-        <div className="flex justify-between items-center mt-auto">
-          <div className="flex flex-wrap gap-1 max-w-[70%]">
-            {displayTags.map((tag, index) => <span key={index} className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium truncate ${index === 0 ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-green-50 text-green-700 border border-green-100'}`}>
-                {tag}
-              </span>)}
-          </div>
-          <div className="flex space-x-2 flex-shrink-0">
-            {/* <button
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('Bookmark Clicked:', { itemId: item.id, isBookmarked });
-                onToggleBookmark();
-              }}
-              className={`p-1.5 rounded-full ${
-                isBookmarked
-                  ? 'bg-yellow-100 text-yellow-600'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-              }`}
-              aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
-              title={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
-            >
-              <BookmarkIcon size={16} className={isBookmarked ? 'fill-yellow-600' : ''} />
-            </button> */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('Compare Clicked:', { itemId: item.id });
-                onAddToComparison();
-              }}
-              className="p-1.5 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
-              aria-label="Add to comparison"
-              title="Add to comparison"
-            >
-              <ScaleIcon size={16} />
-            </button>
-          </div>
-        </div>
+      <div
+        className={`
+          transition-all duration-300 ease-out
+          ${isHovered ? 'absolute top-0 left-0 w-full z-50 transform scale-105 shadow-2xl' : 'h-full'}
+        `}
+      >
+        <CourseTile
+          title={item.title}
+          description={item.description}
+          providerName={item.provider?.name || "Provider"}
+          providerLogoUrl={item.provider?.logoUrl || "/mzn_logo.png"}
+          variant={marketplaceType === "courses" ? "course" : "classic"}
+          thumbnailUrl={thumbnailUrl}
+          videoUrl={item.introVideoUrl} // Pass videoUrl
+          category={item.category}
+          levelTag={item.levelTag}
+          audienceLevel={item.audienceLevel}
+          topicTags={topicTags}
+          duration={item.duration}
+          lessonCount={item.lessonCount}
+          rating={item.rating}
+          reviewCount={item.reviewCount}
+          primaryCtaLabel={config.primaryCTA}
+          secondaryCtaLabel={config.secondaryCTA}
+          onPrimaryClick={handlePrimaryAction}
+          onSecondaryClick={handleViewDetails}
+
+          onCardClick={handleViewDetails}
+          onToggleBookmark={onToggleBookmark}
+          isBookmarked={isBookmarked}
+          showActions={isHovered} // Show actions only on hover
+          isHovered={isHovered}
+        />
       </div>
-      {/* Card Footer - with two buttons */}
-      <div className="mt-auto border-t border-gray-100 p-4 pt-5">
-        <div className="flex justify-between gap-2">
-          <button
-            onClick={handleViewDetails}
-            className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-md hover:bg-blue-50 transition-colors whitespace-nowrap min-w-[120px] flex-1"
-          >
-            {config.secondaryCTA}
-          </button>
-          <button
-            onClick={handlePrimaryAction}
-            className="px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors whitespace-nowrap flex-1"
-          >
-            {config.primaryCTA}
-          </button>
-        </div>
-      </div>
+      {/* Placeholder to maintain layout space when card is absolute/scaled */}
+      {isHovered && <div className="h-full w-full invisible" />}
     </div>
   );
 };

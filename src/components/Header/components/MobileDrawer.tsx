@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { MenuIcon, XIcon, ChevronRightIcon } from "lucide-react";
+=======
+import { MenuIcon, XIcon, ChevronRightIcon, User, LogOut } from "lucide-react";
+>>>>>>> develop
 import {
   BRAND_GRADIENT,
   BRAND_BACKDROP_BLUR,
   BRAND_PRIMARY,
 } from "../../../constants/branding";
+<<<<<<< HEAD
+=======
+import { useAuth } from "../context/AuthContext";
+>>>>>>> develop
 
 interface MobileDrawerProps {
   onSignIn: () => void;
@@ -24,6 +32,10 @@ export function MobileDrawer({
 }: MobileDrawerProps) {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+<<<<<<< HEAD
+=======
+  const { user, login, logout } = useAuth();
+>>>>>>> develop
 
   useEffect(() => {
     if (isDrawerOpen) {
@@ -41,8 +53,18 @@ export function MobileDrawer({
   }, [isDrawerOpen]);
 
   const handleSignIn = () => {
-    onSignIn();
+    login();
     setIsDrawerOpen(false);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      logout();
+      setIsDrawerOpen(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   const handleCTAClick = (action: string) => {
@@ -182,6 +204,7 @@ export function MobileDrawer({
                 </div>
               </div>
 
+<<<<<<< HEAD
               {/* Sticky CTA at bottom for non-signed-in users */}
               {!isSignedIn && (
                 <div className="sticky bottom-0 left-0 right-0 px-4 py-4 border-t border-gray-200 bg-white shadow-lg">
@@ -197,6 +220,50 @@ export function MobileDrawer({
                   </p>
                 </div>
               )}
+=======
+              {/* User Profile or Sign In at bottom */}
+              <div className="sticky bottom-0 left-0 right-0 px-4 py-4 border-t border-gray-200 bg-white shadow-lg">
+                {user && profile ? (
+                  // Signed in - show profile
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <User size={20} className="text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900 text-sm">
+                          {profile.full_name || 'Learner'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Stage {profile.current_stage} • {profile.total_score} pts
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+                    >
+                      <LogOut size={16} />
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  // Not signed in - show sign in button
+                  <div>
+                    <button
+                      className="w-full px-4 py-3 text-white rounded-lg transition-all duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-white/30 font-bold text-base tracking-tight shadow-md md:text-[15px] sm:text-sm"
+                      style={{ backgroundColor: BRAND_PRIMARY }}
+                      onClick={handleSignIn}
+                    >
+                      Sign In to Get Started
+                    </button>
+                    <p className="text-xs text-gray-500 text-center mt-2 md:text-[11px] sm:text-[10px]">
+                      Access your personalized dashboard
+                    </p>
+                  </div>
+                )}
+              </div>
+>>>>>>> develop
             </div>
           </div>
         </>

@@ -16,7 +16,7 @@ import { ReportsPage } from "./reportingObligations/ReportsPage";
 import { AllReceivedReportsPage } from "./reportingObligations/AllReceivedReportsPage";
 import { AllSubmittedReportsPage } from "./reportingObligations/AllSubmittedReportsPage";
 import { AllUpcomingObligationsPage } from "./reportingObligations/AllUpcomingObligationsPage";
-import BusinessProfilePage from "./businessProfile";
+import StudentProfilePage from "./studentProfile";
 import SupportPage from "./support";
 import SettingsPage from "./settings";
 import { ChatInterface } from "../../components/Chat/ChatInterface";
@@ -38,40 +38,60 @@ import CollateralUserGuide from "../forms/CollateralUserGuide";
 // Main Dashboard Router Component
 const DashboardRouter = () => {
   const [onboardingComplete, setOnboardingComplete] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState<boolean>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        return window.innerWidth >= 1024; // lg and up open by default
+      }
+    } catch {}
+    return true;
+  });
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
 
+  // useEffect(() => {
+  //   const checkOnboarding = async () => {
+  //     try {
+  //       const completed = await isOnboardingCompleted();
+  //       setOnboardingComplete(!!completed);
+  //       if (!completed) {
+  //         if (!location.pathname.includes("/dashboard/onboarding")) {
+  //           navigate("/dashboard/onboarding", { replace: true });
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking onboarding status:", error);
+  //     } finally {
+  //       // no-op
+  //     }
+  //   };
+  //   checkOnboarding();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
+  // Keep sidebar hidden on tablet/mobile by default; open on desktop
   useEffect(() => {
-    const checkOnboarding = async () => {
-      try {
-        const completed = await isOnboardingCompleted();
-        setOnboardingComplete(!!completed);
-        if (!completed) {
-          if (!location.pathname.includes("/dashboard/onboarding")) {
-            navigate("/dashboard/onboarding", { replace: true });
-          }
-        }
-      } catch (error) {
-        console.error("Error checking onboarding status:", error);
-      } finally {
-        // no-op
+    const onResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsOpen(true);
+      } else {
+        setIsOpen(false);
       }
     };
-    checkOnboarding();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   // If onboarding is complete and user is on onboarding route, send to overview
-  useEffect(() => {
-    if (
-      onboardingComplete &&
-      location.pathname.includes("/dashboard/onboarding")
-    ) {
-      navigate("/dashboard/overview", { replace: true });
-    }
-  }, [onboardingComplete, location.pathname, navigate]);
+  // useEffect(() => {
+  //   if (
+  //     onboardingComplete &&
+  //     location.pathname.includes("/dashboard/onboarding")
+  //   ) {
+  //     navigate("/dashboard/overview", { replace: true });
+  //   }
+  // }, [onboardingComplete, location.pathname, navigate]);
 
   const handleOnboardingComplete = () => {
     setOnboardingComplete(true);
@@ -115,7 +135,7 @@ const DashboardRouter = () => {
             />
           }
         />
-        <Route path="overview" element={<Overview />} />
+        <Route path="overview" element={<Overview setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
         <Route
           path="documents"
           element={
@@ -140,7 +160,7 @@ const DashboardRouter = () => {
           path="reporting"
           element={<Navigate to="reporting-obligations" replace />}
         />
-        <Route path="reporting-obligations" element={<ReportsPage />} />
+        <Route path="reporting-obligations" element={<ReportsPage setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
         <Route
           path="reporting-obligations/obligations"
           element={<AllUpcomingObligationsPage />}
@@ -153,10 +173,10 @@ const DashboardRouter = () => {
           path="reporting-obligations/received"
           element={<AllReceivedReportsPage />}
         />
-        <Route path="profile" element={<BusinessProfilePage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="support" element={<SupportPage />} />
-        <Route path="chat-support" element={<ChatInterface />} />
+        <Route path="profile" element={<StudentProfilePage />} />
+        <Route path="settings" element={<SettingsPage setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
+        <Route path="support" element={<SupportPage setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
+        <Route path="chat-support" element={<ChatInterface setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
 
         {/* Forms Routes */}
         <Route
@@ -207,7 +227,7 @@ const DashboardRouter = () => {
           element={<TrainingInEntrepreneurship />}
         />
 
-        
+
 
         <Route path="*" element={<Navigate to="overview" replace />} />
       </Routes>

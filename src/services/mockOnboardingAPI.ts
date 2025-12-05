@@ -228,7 +228,7 @@ export const mockOnboardingAPI = {
       industry: "Technology",
       companyStage: "Startup",
       contactName: "John Smith",
-      email: "john.smith@futuretech.com",
+      email: "jsmith.futuretech@gmail.com",
       phone: "+971501234567",
       businessSize: "small",
       registrationNumber: "TRN-2024-001",

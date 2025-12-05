@@ -85,7 +85,7 @@ export default function PreferencesNotificationsTab() {
                             <GlobeIcon className="h-5 w-5 text-gray-500" />
                         </div>
                         <div className="ml-3 flex-1">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <label htmlFor="language" className="block text-sm font-medium text-gray-700">
                                     Language
                                 </label>
@@ -93,7 +93,7 @@ export default function PreferencesNotificationsTab() {
                                     id="language"
                                     value={prefs.language}
                                     onChange={handleSelect('language')}
-                                    className="mt-1 block w-full max-w-xs border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    className="mt-2 sm:mt-0 block w-full sm:max-w-xs border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                 >
                                     <option value="en">English</option>
                                     <option value="ar">Arabic</option>
@@ -109,7 +109,7 @@ export default function PreferencesNotificationsTab() {
                             <ClockIcon className="h-5 w-5 text-gray-500" />
                         </div>
                         <div className="ml-3 flex-1">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <label htmlFor="timezone" className="block text-sm font-medium text-gray-700">
                                     Time Zone
                                 </label>
@@ -117,7 +117,7 @@ export default function PreferencesNotificationsTab() {
                                     id="timezone"
                                     value={prefs.timezone}
                                     onChange={handleSelect('timezone')}
-                                    className="mt-1 block w-full max-w-xs border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    className="mt-2 sm:mt-0 block w-full sm:max-w-xs border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                 >
                                     <option value="gmt+4">(GMT+4) Gulf Standard Time</option>
                                     <option value="gmt+3">(GMT+3) Eastern European Time</option>
@@ -133,7 +133,7 @@ export default function PreferencesNotificationsTab() {
                             <MoonIcon className="h-5 w-5 text-gray-500" />
                         </div>
                         <div className="ml-3 flex-1">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                 <div>
                                     <span className="block text-sm font-medium text-gray-700">Dark Mode</span>
                                     <span className="text-sm text-gray-500">Switch between light and dark theme</span>
@@ -164,7 +164,7 @@ export default function PreferencesNotificationsTab() {
                                 <BellIcon className="h-5 w-5 text-gray-500" />
                             </div>
                             <div className="ml-3 flex-1">
-                                <div className="flex justify-between items-center">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                     <div>
                                         <h3 className="text-sm font-medium text-gray-900">Compliance Alerts</h3>
                                         <p className="text-sm text-gray-500 mt-1">Get notified about important compliance deadlines and requirements</p>
@@ -184,7 +184,7 @@ export default function PreferencesNotificationsTab() {
                                 <BellIcon className="h-5 w-5 text-gray-500" />
                             </div>
                             <div className="ml-3 flex-1">
-                                <div className="flex justify-between items-center">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                     <div>
                                         <h3 className="text-sm font-medium text-gray-900">Submission Deadlines</h3>
                                         <p className="text-sm text-gray-500 mt-1">Receive reminders about upcoming submission deadlines</p>
@@ -204,7 +204,7 @@ export default function PreferencesNotificationsTab() {
                                 <BellIcon className="h-5 w-5 text-gray-500" />
                             </div>
                             <div className="ml-3 flex-1">
-                                <div className="flex justify-between items-center">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                     <div>
                                         <h3 className="text-sm font-medium text-gray-900">Partner Messages</h3>
                                         <p className="text-sm text-gray-500 mt-1">Get notified when partners send you messages or updates</p>
@@ -222,7 +222,7 @@ export default function PreferencesNotificationsTab() {
                 </div>
             </section>
             <div className="flex justify-end">
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" onClick={() => {
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 w-full sm:w-auto" onClick={() => {
                     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch (e) { console.error(e); }
                 }}>Save preferences</button>
             </div>

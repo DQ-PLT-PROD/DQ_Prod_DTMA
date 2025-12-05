@@ -1308,17 +1308,17 @@ export const profileConfig = {
 };
 
 // Helper function to get section metadata for sidebar and overview
-export const getSectionsMetadata = () => {
-  return profileConfig.tabs.map((tab) => ({
-    id: tab.id,
-    title: tab.title,
-  }));
-};
+// export const getSectionsMetadata = () => {
+//   return profileConfig.tabs.map((tab) => ({
+//     id: tab.id,
+//     title: tab.title,
+//   }));
+// };
 
 // Get section configuration by ID
-export const getSectionConfigById = (sectionId) => {
-  return profileConfig.tabs.find((tab) => tab.id === sectionId);
-};
+// export const getSectionConfigById = (sectionId) => {
+//   return profileConfig.tabs.find((tab) => tab.id === sectionId);
+// };
 
 // Check if a field is mandatory for a given company stage
 export const isFieldMandatory = (field, companyStage) => {

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { CourseType } from "./utils/mockData";
 import { AuthProvider } from "./components/Header";
 import { MarketplaceRouter } from "./pages/marketplace/MarketplaceRouter";
 import { App } from "./App";
@@ -36,10 +35,12 @@ import GrowthAreasMarketplace from "./pages/GrowthAreasMarketplace";
 import GrowthAreasPage from "./pages/GrowthAreasPage";
 import BusinessDirectoryMarketplace from "./pages/BusinessDirectoryMarketplace";
 import { ComingSoon } from "./pages/ComingSoon";
+import { Course } from "./types/dtma-lms";
+import LearningScreen from "./pages/LearningScreen";
 
 export function AppRouter() {
   const [bookmarkedCourses, setBookmarkedCourses] = useState<string[]>([]);
-  const [compareCourses, setCompareCourses] = useState<CourseType[]>([]);
+  const [compareCourses, setCompareCourses] = useState<Course[]>([]);
   const toggleBookmark = (courseId: string) => {
     setBookmarkedCourses((prev) => {
       if (prev.includes(courseId)) {
@@ -49,7 +50,7 @@ export function AppRouter() {
       }
     });
   };
-  const handleAddToComparison = (course: CourseType) => {
+  const handleAddToComparison = (course: Course) => {
     if (
       compareCourses.length < 3 &&
       !compareCourses.some((c) => c.id === course.id)
@@ -80,9 +81,9 @@ export function AppRouter() {
           <Route
             path="/dashboard/*"
             element={
-              // <ProtectedRoute>
-              <DashboardRouter />
-              // </ProtectedRoute>
+              <ProtectedRoute>
+                <DashboardRouter />
+              </ProtectedRoute>
             }
           />
           <Route path="/discover-abudhabi" element={<DiscoverAbuDhabi />} />
@@ -91,6 +92,11 @@ export function AppRouter() {
           <Route path="/business-directory-marketplace" element={<BusinessDirectoryMarketplace />} />
           <Route path="/coming-soon" element={<ComingSoon />} />
           <Route path="/coming-soon/:feature" element={<ComingSoon />} />
+          <Route path="/learning" element={<LearningScreen />} />
+
+          {/* Documentation routes - redirect to coming soon */}
+          <Route path="/documentation" element={<Navigate to="/coming-soon/documentation" replace />} />
+          <Route path="/documentation/*" element={<Navigate to="/coming-soon/documentation" replace />} />
           <Route path="/admin-ui/settings" element={<AdminSettings />} />
           {/** Forms routes */}
           <Route
@@ -138,12 +144,12 @@ export function AppRouter() {
             path="/forms/issue-support-letter"
             element={<ProtectedRoute><IssueSupportLetter /></ProtectedRoute>}
           />
-            <Route path="/media/:type/:id" element={<MediaDetailPage />} />
-            {/* Embedded Admin UI */}
-            <Route path="/admin-ui/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin-ui/media" element={<AdminMediaList />} />
-            <Route path="/admin-ui/media/new" element={<MediaCreate />} />
-            <Route path="/admin-ui/media/:id" element={<AdminMediaDetail />} />
+          <Route path="/media/:type/:id" element={<MediaDetailPage />} />
+          {/* Embedded Admin UI */}
+          <Route path="/admin-ui/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin-ui/media" element={<AdminMediaList />} />
+          <Route path="/admin-ui/media/new" element={<MediaCreate />} />
+          <Route path="/admin-ui/media/:id" element={<AdminMediaDetail />} />
           <Route path="/404" element={<NotFound />} />
 
           <Route path="*" element={<Navigate to="/404" replace />} />

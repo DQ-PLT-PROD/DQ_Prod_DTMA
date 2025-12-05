@@ -18,6 +18,10 @@ export interface CourseType {
   startDate: string;
   price?: string;
   location?: string;
+  thumbnailUrl?: string;
+  introVideoUrl?: string;
+  rating?: number;
+  reviewCount?: number;
 }
 // Categories
 export const categories = [
@@ -58,7 +62,7 @@ export const businessStages = [
 export const providers = [
   {
     name: "Khalifa Fund Academy",
-    logoUrl: "/image.png",
+    logoUrl: "https://media.licdn.com/dms/image/v2/D4D0BAQEm7hh-vPHtNg/company-logo_200_200/company-logo_200_200/0/1730726304605/khalifa_fund_logo?e=2147483647&v=beta&t=AtpC5HexpPIneFytzHCc6-wjOCF9u0ShL3s5GXPW8K8",
     description:
       "Khalifa Fund for Enterprise Development is an independent, not-for-profit small and medium enterprises (SMEs) socio-economic development organization established in 2007.",
   },
@@ -90,7 +94,7 @@ export const providers = [
       "Google for Startups connects startups with the right people, products, and best practices to help them grow.",
   },
 ];
-// Mock Courses
+// Mock Courses (legacy dataset — not used by /marketplace/courses)
 export const mockCourses: CourseType[] = [
   {
     id: "1",
@@ -112,6 +116,8 @@ export const mockCourses: CourseType[] = [
     ],
     startDate: "January 15, 2024",
     price: "AED 1,500",
+    thumbnailUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
   },
   {
     id: "2",
@@ -133,6 +139,8 @@ export const mockCourses: CourseType[] = [
     ],
     startDate: "February 1, 2024",
     price: "AED 2,200",
+    thumbnailUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=2626&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
   },
   {
     id: "3",
@@ -154,6 +162,8 @@ export const mockCourses: CourseType[] = [
     ],
     startDate: "January 22, 2024",
     price: "AED 1,800",
+    thumbnailUrl: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?q=80&w=2674&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
   },
   {
     id: "4",
@@ -176,6 +186,8 @@ export const mockCourses: CourseType[] = [
     startDate: "March 5, 2024",
     price: "AED 3,500",
     location: "NYU Abu Dhabi Campus",
+    thumbnailUrl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2670&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
   },
   {
     id: "5",
@@ -197,6 +209,8 @@ export const mockCourses: CourseType[] = [
     ],
     startDate: "February 15, 2024",
     price: "AED 2,800",
+    thumbnailUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2612&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
   },
   {
     id: "6",
@@ -218,6 +232,8 @@ export const mockCourses: CourseType[] = [
     ],
     startDate: "March 1, 2024",
     price: "Free",
+    thumbnailUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?q=80&w=2670&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
   },
   {
     id: "7",
@@ -240,6 +256,8 @@ export const mockCourses: CourseType[] = [
     startDate: "April 10, 2024",
     price: "AED 2,500",
     location: "Khalifa Fund Headquarters, Abu Dhabi",
+    thumbnailUrl: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2670&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
   },
   {
     id: "8",
@@ -261,6 +279,8 @@ export const mockCourses: CourseType[] = [
     ],
     startDate: "February 20, 2024",
     price: "AED 2,000",
+    thumbnailUrl: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2684&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
   },
   {
     id: "9",
@@ -282,6 +302,8 @@ export const mockCourses: CourseType[] = [
     ],
     startDate: "March 15, 2024",
     price: "AED 3,200",
+    thumbnailUrl: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2670&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
   },
   {
     id: "10",
@@ -303,6 +325,8 @@ export const mockCourses: CourseType[] = [
     ],
     startDate: "April 1, 2024",
     price: "Free",
+    thumbnailUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
   },
   {
     id: "11",
@@ -324,6 +348,8 @@ export const mockCourses: CourseType[] = [
     ],
     startDate: "February 5, 2024",
     price: "AED 2,100",
+    thumbnailUrl: "https://images.unsplash.com/photo-1533750349088-cd871a92f312?q=80&w=2670&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
   },
   {
     id: "12",
@@ -346,6 +372,8 @@ export const mockCourses: CourseType[] = [
     startDate: "March 10, 2024",
     price: "AED 2,800",
     location: "ADGM Academy, Abu Dhabi",
+    thumbnailUrl: "https://images.unsplash.com/photo-1565514020176-dbf2277f18f3?q=80&w=2670&auto=format&fit=crop",
+    introVideoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
   },
   {
     id: "ai-working-era",
@@ -501,7 +529,7 @@ export const mockProfileData = {
         { label: "Business Type", value: "Limited Liability Company" },
         { label: "Industry", value: "Information Technology" },
         { label: "Business Size", value: "Medium Enterprise" },
-        { label: "Annual Revenue", value: "$25M - $50M" },
+        { label: "Annual Revenue", value: "AED25M - AED50M" },
         { label: "Number of Employees", value: "120" },
         {
           label: "Business Description",
@@ -516,7 +544,7 @@ export const mockProfileData = {
         { label: "License Expiry", value: "31-Dec-2023" },
         { label: "Renewal Status", value: "Pending" },
         { label: "Compliance Status", value: "Compliant" },
-        { label: "Last Updated", value: "10-Jun-2023" },
+        { label: "Last Updated", value: "10-Jun-2025" },
       ]),
     },
     {
@@ -552,7 +580,7 @@ export const mockProfileData = {
         },
         {
           label: "Investment Goals",
-          value: "$15M by Q2 2024 (Series B) - 60% complete",
+          value: "AED15M by Q2 2024 (Series B) - 60% complete",
         },
         {
           label: "Technology Roadmap",
@@ -568,7 +596,7 @@ export const mockProfileData = {
       fields: assignFieldStatuses([
         { label: "Contact Name", value: "John Smith" },
         { label: "Position", value: "Chief Executive Officer" },
-        { label: "Email", value: "test@digitalqatalyst.com" },
+        { label: "Email", value: "jsmith.futuretech@gmail.com" },
         { label: "Phone", value: "+971 50 123 4567" },
         { label: "Nationality", value: "British" },
         { label: "Languages", value: "English, Arabic" },
@@ -701,12 +729,12 @@ export const mockProfileData = {
     {
       groupName: "Financial Overview",
       fields: [
-        { label: "Annual Revenue", value: "$38.5 Million" },
-        { label: "Total Assets", value: "$42.7 Million" },
+        { label: "Annual Revenue", value: "AED38.5 Million" },
+        { label: "Total Assets", value: "AED42.7 Million" },
         { label: "Fiscal Year End", value: "31 December" },
         { label: "Revenue Growth YoY", value: "12.4%" },
         { label: "Profit Margin", value: "18.7%" },
-        { label: "EBITDA", value: "$7.2 Million" },
+        { label: "EBITDA", value: "AED7.2 Million" },
       ],
     },
     {
@@ -727,17 +755,17 @@ export const mockProfileData = {
         { label: "External Auditor", value: "KPMG" },
         { label: "Last Audit Date", value: "15-Feb-2023" },
         { label: "Audit Opinion", value: "Unqualified" },
-        { label: "Reporting Currency", value: "USD" },
+        { label: "Reporting Currency", value: "AED" },
         { label: "Consolidated Statements", value: "Yes" },
       ],
     },
     {
       groupName: "Capital Structure",
       fields: [
-        { label: "Authorized Capital", value: "$50 Million" },
-        { label: "Paid-up Capital", value: "$25 Million" },
+        { label: "Authorized Capital", value: "AED50 Million" },
+        { label: "Paid-up Capital", value: "AED25 Million" },
         { label: "Number of Shares", value: "2,500,000" },
-        { label: "Par Value per Share", value: "$10" },
+        { label: "Par Value per Share", value: "AED10" },
         { label: "Debt-to-Equity Ratio", value: "0.8" },
         { label: "Last Capital Increase", value: "10-Jun-2020" },
       ],
@@ -978,7 +1006,7 @@ export const mockProfileData = {
           value: "Digital Document Management System",
         },
         { label: "Last Compliance Review", value: "05-May-2023" },
-        { label: "Licensing Budget", value: "$125,000 Annual" },
+        { label: "Licensing Budget", value: "AED125,000 Annual" },
       ],
     },
   ]),
@@ -1228,7 +1256,7 @@ export const mockProfileData = {
           label: "Compensation Structure",
           value: "Base + Variable + Benefits",
         },
-        { label: "Training Budget", value: "$2,500 per employee annually" },
+        { label: "Training Budget", value: "AED2,500 per employee annually" },
         { label: "Employee Turnover", value: "8.5% annual" },
         { label: "Succession Planning", value: "In place for key positions" },
       ],

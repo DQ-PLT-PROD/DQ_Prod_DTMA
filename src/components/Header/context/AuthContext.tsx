@@ -34,6 +34,12 @@ export function AuthProvider({
   const viteEnv = (import.meta as any).env as Record<string, string | undefined>;
   const enableGraphFallback = (viteEnv?.VITE_MSAL_ENABLE_GRAPH_FALLBACK || viteEnv?.NEXT_PUBLIC_MSAL_ENABLE_GRAPH_FALLBACK) === 'true';
 
+  // Debug: Check if instance is available
+  useEffect(() => {
+    console.log('AuthProvider mounted - Instance available:', !!instance);
+    console.log('AuthProvider - Accounts:', accounts.length);
+  }, [instance, accounts]);
+
   // Ensure active account is set for convenience
   useEffect(() => {
     const active = instance.getActiveAccount();
@@ -130,9 +136,21 @@ export function AuthProvider({
   }, [accounts, instance, enableGraphFallback, looksSynthetic]);
 
   const login = useCallback(() => {
-    instance.loginRedirect({
-      ...defaultLoginRequest
-    });
+    console.log('Login button clicked - initiating MSAL redirect...');
+    
+    if (!instance) {
+      console.error('MSAL instance is not available!');
+      alert('Authentication system not initialized. Please refresh the page.');
+      return;
+    }
+    
+    try {
+      console.log('Calling loginRedirect with request:', defaultLoginRequest);
+      instance.loginRedirect(defaultLoginRequest);
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('Login failed: ' + (error as Error).message);
+    }
   }, [instance]);
 
   // For B2C with a combined SUSI policy, signup is the same as login

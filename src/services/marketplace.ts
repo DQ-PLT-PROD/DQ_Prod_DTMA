@@ -1,8 +1,9 @@
 import { request } from "./graphql/client";
 import { MARKETPLACE_QUERIES } from "./graphql/queries";
 import { FilterConfig } from "../components/marketplace/FilterSidebar";
-import { MarketplaceItem } from "../components/marketplace/MarketplaceGrid";
 import { getMarketplaceConfig } from "../utils/marketplaceConfig";
+import { getCourses as getDtmaCourses, getCourseBySlug, getRelatedCourses, toMarketplaceItem } from "../lib/api/dtmaCourses";
+import { categories as dtmaCategories } from "../data/dtma/categories";
 
 /**
  * Fetches marketplace items based on marketplace type, filters, and search query
@@ -13,6 +14,18 @@ export const fetchMarketplaceItems = async (
   searchQuery?: string
 ): Promise<any[]> => {
   try {
+    // Courses: bypass GraphQL and use DTMA data layer directly
+    if (marketplaceType === "courses") {
+      const courseFilters = {
+        search: searchQuery,
+        categorySlug: filters.category || undefined,
+        audienceLevel: filters.audienceLevel || undefined,
+        levelTag: filters.levelTag || undefined,
+        deliveryMode: filters.deliveryMode || undefined,
+      };
+      return getDtmaCourses(courseFilters).map(toMarketplaceItem);
+    }
+
     // Get the marketplace config to access query and mapping functions
     const config = getMarketplaceConfig(marketplaceType);
     // Get the appropriate query for this marketplace type
@@ -63,6 +76,22 @@ export const fetchMarketplaceFilters = async (
   marketplaceType: string
 ): Promise<FilterConfig[]> => {
   try {
+    // Courses: generate filters from canonical config + live DTMA categories
+    if (marketplaceType === "courses") {
+      const config = getMarketplaceConfig(marketplaceType);
+      return config.filterCategories.map((fc) =>
+        fc.id === "category"
+          ? {
+              ...fc,
+              options: dtmaCategories.map((c) => ({
+                id: c.slug,
+                name: c.name,
+              })),
+            }
+          : fc
+      );
+    }
+
     // Get the marketplace config
     const config = getMarketplaceConfig(marketplaceType);
     // Get the appropriate query for this marketplace type
@@ -107,6 +136,28 @@ export const fetchMarketplaceItemDetails = async (
   itemId: string
 ): Promise<any> => {
   try {
+    // Courses: use DTMA data layer, skip GraphQL
+    if (marketplaceType === "courses") {
+      const course = getCourseBySlug(itemId);
+      if (!course) {
+        throw new Error("Course not found");
+      }
+      const category = dtmaCategories.find((c) => c.id === course.categoryId);
+      return {
+        ...toMarketplaceItem(course),
+        description: course.longDescription || course.shortDescription,
+        learningOutcomes: course.learningOutcomes || [],
+        skillsGained: course.skillsGained || [],
+        audienceLevel: course.audienceLevel,
+        levelTag: course.levelTag,
+        durationMinutes: course.estimatedDurationMinutes,
+        category: category?.name,
+        categorySlug: category?.slug,
+        provider: course.provider,
+        location: course.location,
+      };
+    }
+
     // Get the marketplace config
     const config = getMarketplaceConfig(marketplaceType);
     // Get the appropriate query for this marketplace type
@@ -150,6 +201,11 @@ export const fetchRelatedMarketplaceItems = async (
   provider: string
 ): Promise<any[]> => {
   try {
+    // Courses: use DTMA related courses
+    if (marketplaceType === "courses") {
+      return getRelatedCourses(itemId).map(toMarketplaceItem);
+    }
+
     // Get the marketplace config
     const config = getMarketplaceConfig(marketplaceType);
     // Get the appropriate query for this marketplace type
@@ -192,6 +248,15 @@ export const fetchMarketplaceProviders = async (
   marketplaceType: string
 ): Promise<any[]> => {
   try {
+    // Courses: derive providers from DTMA catalog
+    if (marketplaceType === "courses") {
+      const providers = getDtmaCourses().map((c) => c.provider);
+      const unique = Array.from(
+        new Map(providers.map((p) => [p.name, p])).values()
+      );
+      return unique;
+    }
+
     // Get the appropriate query for this marketplace type
     const query =
       MARKETPLACE_QUERIES[marketplaceType as keyof typeof MARKETPLACE_QUERIES]

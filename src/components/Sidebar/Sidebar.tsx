@@ -18,6 +18,7 @@ import {
   Check,
   Menu,
   MessageCircleIcon,
+  BookOpen,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -178,6 +179,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       });
     }
 
+    items.push({
+      id: "learning",
+      label: "Learning Page",
+      icon: <BookOpen size={20} />,
+      href: "/learning",
+    });
+
     items.push(
       {
         id: "essentials",
@@ -256,9 +264,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div
-      className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-gray-50 border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${
-        isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      } lg:w-60 overflow-y-auto`}
+      className={`fixed lg:static left-0 top-16 bottom-0 z-40 w-64 bg-gray-50 border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        } lg:w-60 overflow-y-auto`}
       data-id={dataId}
     >
       {/* Header with Company Switcher */}
@@ -285,9 +292,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <ChevronDown
               size={18}
-              className={`text-gray-500 transition-transform ml-2 flex-shrink-0 ${
-                companyDropdownOpen ? "rotate-180" : ""
-              }`}
+              className={`text-gray-500 transition-transform ml-2 flex-shrink-0 ${companyDropdownOpen ? "rotate-180" : ""
+                }`}
             />
           </button>
           {companyDropdownOpen && (
@@ -366,13 +372,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           const isDisabled = !onboardingComplete && item.id !== "onboarding";
           const isActive = activeSection === item.id;
 
-          const baseClasses = `flex items-center px-4 py-3 relative transition-colors ${
-            isActive
-              ? "bg-blue-700 text-white"
-              : isDisabled
+          const baseClasses = `flex items-center px-4 py-3 relative transition-colors ${isActive
+            ? "bg-blue-700 text-white"
+            : isDisabled
               ? "text-gray-400 cursor-not-allowed"
               : "text-gray-700 hover:bg-gray-200 cursor-pointer"
-          }`;
+            }`;
 
           const content = (
             <>
@@ -413,17 +418,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span className="flex-1 ml-3">{item.label}</span>
                   <ChevronDown
                     size={16}
-                    className={`text-gray-500 transition-transform ml-2 flex-shrink-0 ${
-                      formsDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`text-gray-500 transition-transform ml-2 flex-shrink-0 ${formsDropdownOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </div>
                 <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    formsDropdownOpen
-                      ? "max-h-96 opacity-100"
-                      : "max-h-0 opacity-0"
-                  }`}
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${formsDropdownOpen
+                    ? "max-h-96 opacity-100"
+                    : "max-h-0 opacity-0"
+                    }`}
                 >
                   <div className="transform transition-transform duration-300 ease-in-out max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                     <Link
@@ -567,7 +570,7 @@ export const BurgerMenuButton: React.FC<{
       data-id={dataId}
       aria-label="Open navigation menu"
     >
-      <Menu size={20} />
+      <Menu size={24} />
     </button>
   );
 };

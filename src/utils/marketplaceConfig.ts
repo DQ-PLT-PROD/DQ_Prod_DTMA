@@ -1,8 +1,13 @@
 import * as React from 'react';
 import { ReactNode } from 'react';
-import { DollarSign, Calendar, Clock, Users, MapPin, CheckCircle, BarChart, Award, FileText, Info, BookOpen, ClipboardList, Building, FileType, Bookmark, TrendingUp } from 'lucide-react';
-import { mockCourses, providers } from './mockData';
+import { DollarSign, Calendar, Clock, Users, CheckCircle, BarChart, Award, FileText, Info, BookOpen, ClipboardList, Building, FileType, Bookmark, TrendingUp } from 'lucide-react';
+import { providers } from './mockData';
 import { mockFinancialServices, mockNonFinancialServices, mockKnowledgeHubItems, mockKnowledgeHubFilterOptions } from './mockMarketplaceData';
+import { categories } from '../data/dtma/categories';
+import { getCourses, toMarketplaceItem } from '../lib/api/dtmaCourses';
+
+// Canonical marketplace configuration used by MarketplaceRouter/MarketplacePage.
+// Legacy duplicate: src/utils/marketplaceConfiguration.tsx (kept for reference only).
 // Define a Tab type for consistency across marketplace pages
 export interface MarketplaceTab {
   id: string;
@@ -44,6 +49,7 @@ export interface MarketplaceConfig {
   secondaryCTA: string;
   itemName: string;
   itemNamePlural: string;
+  showPromoCards?: boolean;
   attributes: AttributeConfig[];
   detailSections: string[];
   tabs: TabConfig[];
@@ -135,46 +141,38 @@ export const mockNonFinancialServicesData = {
 };
 // Mock data for courses
 export const mockCoursesData = {
-  items: mockCourses,
+  items: getCourses().map(toMarketplaceItem),
   filterOptions: {
-    categories: [{
-      id: 'entrepreneurship',
-      name: 'Entrepreneurship'
+    categories: categories.map((category) => ({
+      id: category.slug,
+      name: category.name
+    })),
+    audienceLevels: [{
+      id: 'Digital Leaders',
+      name: 'Digital Leaders'
     }, {
-      id: 'finance',
-      name: 'Finance'
-    }, {
-      id: 'marketing',
-      name: 'Marketing'
-    }, {
-      id: 'technology',
-      name: 'Technology'
-    }, {
-      id: 'operations',
-      name: 'Operations'
+      id: 'Digital Workers',
+      name: 'Digital Workers'
     }],
     deliveryModes: [{
-      id: 'online',
+      id: 'Online',
       name: 'Online'
     }, {
-      id: 'inperson',
+      id: 'In-person',
       name: 'In-person'
     }, {
-      id: 'hybrid',
+      id: 'Hybrid',
       name: 'Hybrid'
     }],
-    businessStages: [{
-      id: 'conception',
-      name: 'Conception'
+    levelTags: [{
+      id: 'Beginner',
+      name: 'Beginner'
     }, {
-      id: 'growth',
-      name: 'Growth'
+      id: 'Intermediate',
+      name: 'Intermediate'
     }, {
-      id: 'maturity',
-      name: 'Maturity'
-    }, {
-      id: 'restructuring',
-      name: 'Restructuring'
+      id: 'Advanced',
+      name: 'Advanced'
     }]
   },
   providers: providers
@@ -192,40 +190,31 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     title: 'Course Marketplace',
     description: 'Discover and enroll in courses tailored for SMEs to help grow your business',
     route: '/marketplace/courses',
-    primaryCTA: 'Enroll Now',
-    secondaryCTA: 'View Details',
+    primaryCTA: 'Start Learning Now',
+    secondaryCTA: 'Add to Library',
     itemName: 'Course',
     itemNamePlural: 'Courses',
+    showPromoCards: false,
     attributes: [{
       key: 'duration',
       label: 'Duration',
       icon: React.createElement(Clock, { size: 18, className: "mr-2" })
     }, {
-      key: 'startDate',
-      label: 'Starts',
-      icon: React.createElement(Calendar, { size: 18, className: "mr-2" })
-    }, {
       key: 'price',
       label: 'Cost',
       icon: React.createElement(DollarSign, { size: 18, className: "mr-2" })
     }, {
-      key: 'location',
-      label: 'Location',
-      icon: React.createElement(MapPin, { size: 18, className: "mr-2" })
+      key: 'levelTag',
+      label: 'Level',
+      icon: React.createElement(BarChart, { size: 18, className: "mr-2" })
     }],
     detailSections: ['description', 'learningOutcomes', 'schedule', 'provider', 'related'],
     tabs: [{
-      id: 'about',
-      label: 'About This Service',
-      icon: Info,
+      id: 'schedule',
+      label: 'Course Outline',
+      icon: Calendar,
       iconBgColor: 'bg-blue-50',
       iconColor: 'text-blue-600'
-    }, {
-      id: 'schedule',
-      label: 'Schedule',
-      icon: Calendar,
-      iconBgColor: 'bg-green-50',
-      iconColor: 'text-green-600'
     }, {
       id: 'learning_outcomes',
       label: 'Learning Outcomes',
@@ -233,73 +222,55 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
       iconBgColor: 'bg-purple-50',
       iconColor: 'text-purple-600'
     }, {
-      id: 'provider',
-      label: 'About Provider',
-      icon: Building,
-      iconBgColor: 'bg-blue-50',
-      iconColor: 'text-blue-600'
+      id: 'resources',
+      label: 'Resources',
+      icon: FileText,
+      iconBgColor: 'bg-amber-50',
+      iconColor: 'text-amber-600'
     }],
     summarySticky: true,
     filterCategories: [{
       id: 'category',
-      title: 'Course Category',
+      title: 'Category',
+      options: categories.map((category) => ({
+        id: category.slug,
+        name: category.name
+      }))
+    }, {
+      id: 'audienceLevel',
+      title: 'Role',
       options: [{
-        id: 'entrepreneurship',
-        name: 'Entrepreneurship'
+        id: 'Digital Leaders',
+        name: 'Digital Leaders'
       }, {
-        id: 'finance',
-        name: 'Finance'
+        id: 'Digital Workers',
+        name: 'Digital Workers'
+      }]
+    }, {
+      id: 'levelTag',
+      title: 'Level',
+      options: [{
+        id: 'Beginner',
+        name: 'Beginner'
       }, {
-        id: 'marketing',
-        name: 'Marketing'
+        id: 'Intermediate',
+        name: 'Intermediate'
       }, {
-        id: 'technology',
-        name: 'Technology'
-      }, {
-        id: 'operations',
-        name: 'Operations'
+        id: 'Advanced',
+        name: 'Advanced'
       }]
     }, {
       id: 'deliveryMode',
       title: 'Delivery Mode',
       options: [{
-        id: 'online',
+        id: 'Online',
         name: 'Online'
       }, {
-        id: 'inperson',
+        id: 'In-person',
         name: 'In-person'
       }, {
-        id: 'hybrid',
+        id: 'Hybrid',
         name: 'Hybrid'
-      }]
-    }, {
-      id: 'duration',
-      title: 'Duration',
-      options: [{
-        id: 'short',
-        name: 'Short (<1 week)'
-      }, {
-        id: 'medium',
-        name: 'Medium (1-4 weeks)'
-      }, {
-        id: 'long',
-        name: 'Long (1+ month)'
-      }]
-    }, {
-      id: 'businessStage',
-      title: 'Business Stage',
-      options: [{
-        id: 'conception',
-        name: 'Conception'
-      }, {
-        id: 'growth',
-        name: 'Growth'
-      }, {
-        id: 'maturity',
-        name: 'Maturity'
-      }, {
-        id: 'restructuring',
-        name: 'Restructuring'
       }]
     }],
     // Data mapping functions
@@ -320,29 +291,47 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     mapFilterResponse: data => {
       return [{
         id: 'category',
-        title: 'Course Category',
-        options: data.categories || []
+        title: 'Category',
+        options: data.categories || categories.map((category) => ({
+          id: category.slug,
+          name: category.name
+        }))
+      }, {
+        id: 'audienceLevel',
+        title: 'Role',
+        options: data.audienceLevels || [{
+          id: 'Digital Leaders',
+          name: 'Digital Leaders'
+        }, {
+          id: 'Digital Workers',
+          name: 'Digital Workers'
+        }]
+      }, {
+        id: 'levelTag',
+        title: 'Level',
+        options: data.levelTags || [{
+          id: 'Beginner',
+          name: 'Beginner'
+        }, {
+          id: 'Intermediate',
+          name: 'Intermediate'
+        }, {
+          id: 'Advanced',
+          name: 'Advanced'
+        }]
       }, {
         id: 'deliveryMode',
         title: 'Delivery Mode',
-        options: data.deliveryModes || []
-      }, {
-        id: 'duration',
-        title: 'Duration',
-        options: [{
-          id: 'short',
-          name: 'Short (<1 week)'
+        options: data.deliveryModes || [{
+          id: 'Online',
+          name: 'Online'
         }, {
-          id: 'medium',
-          name: 'Medium (1-4 weeks)'
+          id: 'In-person',
+          name: 'In-person'
         }, {
-          id: 'long',
-          name: 'Long (1+ month)'
+          id: 'Hybrid',
+          name: 'Hybrid'
         }]
-      }, {
-        id: 'businessStage',
-        title: 'Business Stage',
-        options: data.businessStages || []
       }];
     },
     // Mock data for fallback and schema reference

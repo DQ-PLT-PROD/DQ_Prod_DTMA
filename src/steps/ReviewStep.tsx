@@ -53,8 +53,8 @@ export function ReviewStep({ formData, isRevisit }) {
         {
             title: 'Funding & Needs',
             fields: [
-                { label: 'Initial Capital (USD)', value: formData.initialCapital },
-                { label: 'Funding Needs (USD)', value: formData.fundingNeeds },
+                { label: 'Initial Capital (AED)', value: formData.initialCapital },
+                { label: 'Funding Needs (AED)', value: formData.fundingNeeds },
                 { label: 'Business Needs', value: formData.needsList },
             ],
         },

@@ -127,61 +127,62 @@ export default function UserRolesTab() {
     return <div className="space-y-6">
         {/* User Management Section */}
         <section>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">
                     User Management
                 </h2>
-                <button onClick={() => setShowUserModal(true)} className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button onClick={() => setShowUserModal(true)} className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto">
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Invite New User
                 </button>
             </div>
-            <div className="bg-white overflow-hidden border border-gray-200 rounded-md">
+            <div className="hidden lg:block bg-white border border-gray-200 rounded-md">
+                <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Name
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Email
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Role
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Last Login
                             </th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                             </th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {mockUsers.map(user => <tr key={user.id}>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm font-medium text-gray-900">
                                     {user.name}
                                 </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm text-gray-500">{user.email}</div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm text-gray-500">{user.role}</div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                     {user.status}
                                 </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {user.lastLogin}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <button className="text-blue-600 hover:text-blue-900 mr-3">
                                     <PencilIcon className="h-4 w-4" />
                                 </button>
@@ -195,29 +196,53 @@ export default function UserRolesTab() {
                         </tr>)}
                     </tbody>
                 </table>
+                </div>
+            </div>
+            {/* Mobile list */}
+            <div className="lg:hidden space-y-3">
+                {mockUsers.map(user => (
+                    <div key={user.id} className="bg-white border border-gray-200 rounded-md p-4">
+                        <div className="flex items-start justify-between gap-3">
+                            <div>
+                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                <div className="text-xs text-gray-500 break-all">{user.email}</div>
+                                <div className="mt-2 flex items-center gap-2 text-xs text-gray-600">
+                                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">{user.role}</span>
+                                    <span className={`px-2 py-0.5 rounded-full ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{user.status}</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-600">
+                                <button className="p-2 rounded hover:bg-gray-50" aria-label="Edit user"><PencilIcon className="h-4 w-4" /></button>
+                                <button className="p-2 rounded hover:bg-gray-50 text-red-600" aria-label="Delete user"><TrashIcon className="h-4 w-4" /></button>
+                                <button className="p-2 rounded hover:bg-gray-50" aria-label="Manage access"><KeyIcon className="h-4 w-4" /></button>
+                            </div>
+                        </div>
+                        <div className="mt-3 text-xs text-gray-500">Last login: {user.lastLogin}</div>
+                    </div>
+                ))}
             </div>
         </section>
         {/* Roles & Permissions Section */}
         <section>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">
                     Roles & Permissions
                 </h2>
-                <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto">
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Create New Role
                 </button>
             </div>
             <div className="space-y-3">
                 {mockRoles.map(role => <div key={role.id} className="border border-gray-200 rounded-md bg-white overflow-hidden">
-                    <div className="px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-gray-50" onClick={() => toggleRoleExpand(role.id)}>
-                        <div>
+                    <div className="px-4 py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 cursor-pointer hover:bg-gray-50" onClick={() => toggleRoleExpand(role.id)}>
+                        <div className="min-w-0">
                             <h3 className="text-md font-medium text-gray-900">
                                 {role.name}
                             </h3>
                             <p className="text-sm text-gray-500">{role.description}</p>
                         </div>
-                        <div>
+                        <div className="self-start sm:self-auto">
                             {expandedRoleId === role.id ? <ChevronUpIcon className="h-5 w-5 text-gray-500" /> : <ChevronDownIcon className="h-5 w-5 text-gray-500" />}
                         </div>
                     </div>
@@ -256,7 +281,7 @@ export default function UserRolesTab() {
             </div>
         </section>
         {/* User Invite Modal */}
-        {showUserModal && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        {showUserModal && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
                 <div className="p-6">
                     <h3 className="text-lg font-medium text-gray-900 mb-4">

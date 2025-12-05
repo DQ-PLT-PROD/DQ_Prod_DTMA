@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { PhoneIcon, MailIcon, GlobeIcon } from "lucide-react";
 interface ProfileCardProps {
   name: string;
@@ -20,16 +20,32 @@ const ProfileCard = ({
   website,
   onViewProfile,
 }: ProfileCardProps) => {
+  const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col">
       <div className="p-8 flex-1 flex flex-col">
         <div className="flex items-center mb-6">
-          <div className="w-16 h-16 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden mr-5 shadow-sm">
-            <img
-              src={logo}
-              alt={`${name} logo`}
-              className="w-12 h-12 object-contain"
-            />
+          <div className="w-16 h-16 rounded-lg bg-gray-50 flex items-center justify-center mr-5 shadow-sm p-2">
+            {!imgLoaded && !imgError && (
+              <div className="w-12 h-12 bg-gray-200 rounded animate-pulse"></div>
+            )}
+            {imgError ? (
+              <div className="text-xs font-semibold text-gray-600">
+                {name.substring(0, 2).toUpperCase()}
+              </div>
+            ) : (
+              <img
+                src={logo}
+                alt={`${name} logo`}
+                className="w-full h-full object-contain"
+                style={{ display: imgLoaded ? 'block' : 'none' }}
+                crossOrigin="anonymous"
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgError(true)}
+              />
+            )}
           </div>
           <div>
             <h3 className="font-display text-xl font-bold mb-1">{name}</h3>

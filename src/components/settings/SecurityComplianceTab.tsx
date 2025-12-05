@@ -91,7 +91,7 @@ export default function SecurityComplianceTab() {
                     <LaptopIcon className="h-5 w-5 text-gray-500" />
                   </div>
                   <div className="ml-3 flex-1">
-                    <div className="flex justify-between items-start">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                       <div>
                         <div className="flex items-center">
                           <h4 className="text-sm font-medium text-gray-900">

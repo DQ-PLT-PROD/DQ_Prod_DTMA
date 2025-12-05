@@ -1,10 +1,15 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import {
   BookmarkIcon,
-  StarIcon,
   ChevronRightIcon,
   HomeIcon,
+  Share2Icon,
+  Volume2,
+  VolumeX,
+  Maximize,
+  Play,
+  ChevronDown,
 } from "lucide-react";
 import { Header } from "../../components/Header";
 import { Footer } from "../../components/Footer";
@@ -15,24 +20,31 @@ import ScheduleTab from "../../components/marketplace/details/tabs/ScheduleTab";
 import LearningOutcomesTab from "../../components/marketplace/details/tabs/LearningOutcomesTab";
 import EligibilityTermsTab from "../../components/marketplace/details/tabs/EligibilityTermsTab";
 import ApplicationProcessTab from "../../components/marketplace/details/tabs/ApplicationProcessTab";
-import SummaryCard from "../../components/marketplace/details/SummaryCard";
+import ResourcesTab from "../../components/marketplace/details/tabs/ResourcesTab";
 import TabsNav from "../../components/marketplace/details/TabsNav";
-import { getMarketplaceConfig } from "../../utils/marketplaceConfiguration";
-import { addCompareId } from "../../utils/comparisonStorage";
+import { getMarketplaceConfig } from "../../utils/marketplaceConfig";
+import { getCourseMedia } from "../../utils/courseMedia";
+
 import { ErrorDisplay } from "../../components/SkeletonLoader";
-import { Link } from "react-router-dom";
 import { useProductDetails } from "../../hooks/useProductDetails";
+import { CourseMeta } from "../../components/ui/CourseMeta";
+import { Tag } from "../../components/ui/Tag";
+import { AudienceFitIndicator } from "../../components/marketplace/details/AudienceFitIndicator";
+import { MarketplaceCard } from "../../components/marketplace/MarketplaceCard";
+import { BRAND_GRADIENT } from "../../constants/branding";
+
 interface MarketplaceDetailsPageProps {
   marketplaceType: "courses" | "financial" | "non-financial" | "knowledge-hub";
   bookmarkedItems?: string[];
   onToggleBookmark?: (itemId: string) => void;
-  onAddToComparison?: (item: any) => void;
+
 }
+
 const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   marketplaceType,
   bookmarkedItems = [],
-  onToggleBookmark = (_: string) => {},
-  onAddToComparison = (_: any) => {},
+  onToggleBookmark = (_: string) => { },
+
 }) => {
   const { itemId } = useParams<{
     itemId: string;
@@ -44,16 +56,34 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTabsMenu, setShowTabsMenu] = useState(false);
-  const [showNavigation, setShowNavigation] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isFloatingCardVisible, setIsFloatingCardVisible] = useState(true);
   const [showStickyBottomCTA, setShowStickyBottomCTA] = useState(false);
-  const [headerHeight, setHeaderHeight] = useState(80);
+  const [showStickyHeaderCTA, setShowStickyHeaderCTA] = useState(false);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const summaryCardRef = useRef<HTMLDivElement>(null);
+  const relatedRef = useRef<HTMLElement>(null);
+  const [isPointerFine, setIsPointerFine] = useState<boolean>(true);
+  const [showDescription, setShowDescription] = useState(true);
+
+  // Auto-hide description after 8 seconds to focus on video
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowDescription(false);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+
+  // Auto-hide scroll indicator
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowScrollIndicator(false);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Centralized data fetching & mapping
   const { item, relatedItems, loading, error, refetch } = useProductDetails({
     itemId,
@@ -61,45 +91,44 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     shouldTakeAction,
   });
 
+  const { videoUrl: introVideoUrl, poster: introVideoPoster } = useMemo(
+    () => getCourseMedia(item),
+    [item]
+  );
+
+  const seeAllHref = useMemo(() => {
+    if (marketplaceType !== "courses") return config.route;
+    const params = new URLSearchParams();
+    const courseItem: any = item || {};
+    if (courseItem?.categorySlug) params.set("category", courseItem.categorySlug);
+    if (courseItem?.audienceLevel) params.set("audience", courseItem.audienceLevel);
+    if (courseItem?.levelTag) params.set("level", courseItem.levelTag);
+    const qs = params.toString();
+    return qs ? `${config.route}?${qs}` : config.route;
+  }, [item, config.route, marketplaceType]);
+
   // Sync bookmark state when item or bookmarks change
   useEffect(() => {
     if (item?.id) {
       setIsBookmarked(bookmarkedItems.includes(item.id));
     }
   }, [item?.id, bookmarkedItems]);
-  // Check if tabs overflow and need navigation controls
-  const checkOverflow = () => {
-    if (tabsRef.current && containerRef.current) {
-      const scrollWidth = tabsRef.current.scrollWidth;
-      const clientWidth = containerRef.current.clientWidth - 96; // Account for potential arrow buttons
-      setShowNavigation(scrollWidth > clientWidth);
-    }
-  };
-  useEffect(() => {
-    checkOverflow();
-    const resizeObserver = new ResizeObserver(checkOverflow);
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
-    return () => resizeObserver.disconnect();
-  }, [config.tabs]);
+
+
+
   // Update floating card visibility based on scroll position
   useEffect(() => {
     const handleScroll = () => {
       // Get header height dynamically
-      const header = document.querySelector("header");
-      const headerHeight = header ? header.offsetHeight : 80;
-      setHeaderHeight(headerHeight);
+
+
+
       if (heroRef.current && mainContentRef.current) {
         const heroRect = heroRef.current.getBoundingClientRect();
         const heroBottom = heroRect.bottom;
-        // Show floating card when hero section is scrolled past the header
-        setIsVisible(heroBottom <= headerHeight + 16); // Add small margin
         // For mobile, we'll handle this differently with the sticky bottom CTA
         if (window.innerWidth < 1024) {
-          const summaryCardBottom =
-            summaryCardRef.current?.getBoundingClientRect().bottom || 0;
-          setShowStickyBottomCTA(summaryCardBottom < 0);
+          setShowStickyBottomCTA(heroBottom < 0);
         } else {
           setShowStickyBottomCTA(false);
         }
@@ -114,17 +143,26 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       window.removeEventListener("resize", handleScroll);
     };
   }, []);
+
   useEffect(() => {
     const handleScroll = () => {
-      if (summaryCardRef.current && window.innerWidth < 1024) {
-        const summaryCardBottom =
-          summaryCardRef.current.offsetTop +
-          summaryCardRef.current.offsetHeight;
-        const scrollPosition = window.scrollY + window.innerHeight;
-        // Show sticky CTA when scrolled past summary card
-        setShowStickyBottomCTA(scrollPosition > summaryCardBottom + 100);
-      } else {
-        setShowStickyBottomCTA(false);
+      if (heroRef.current && relatedRef.current) {
+        const heroRect = heroRef.current.getBoundingClientRect();
+        const relatedRect = relatedRef.current.getBoundingClientRect();
+
+        // Show sticky header CTA when hero is scrolled past (bottom < 80 for sticky header offset)
+        // and before related courses section (top > 80)
+        const isPastHero = heroRect.bottom < 80;
+        const isBeforeRelated = relatedRect.top > 80;
+
+        setShowStickyHeaderCTA(isPastHero && isBeforeRelated);
+
+        // Mobile sticky bottom CTA logic (keep existing behavior for mobile if needed, or adjust)
+        if (window.innerWidth < 1024) {
+          setShowStickyBottomCTA(heroRect.bottom < 0);
+        } else {
+          setShowStickyBottomCTA(false);
+        }
       }
     };
     window.addEventListener("scroll", handleScroll);
@@ -134,6 +172,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       window.removeEventListener("resize", handleScroll);
     };
   }, []);
+
   const scrollLeft = () => {
     if (tabsRef.current) {
       tabsRef.current.scrollBy({
@@ -142,6 +181,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       });
     }
   };
+
   const scrollRight = () => {
     if (tabsRef.current) {
       tabsRef.current.scrollBy({
@@ -150,34 +190,40 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       });
     }
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(pointer: fine)");
+    const update = () => setIsPointerFine(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+
+
   const [activeTab, setActiveTab] = useState<string>(
     config.tabs[0]?.id || "about"
   );
-  const rating = (item as any)?.rating
-    ? String((item as any).rating)
-    : (4 + Math.random()).toFixed(1);
-  const reviewCount = (item as any)?.reviewCount
-    ? Number((item as any).reviewCount)
-    : Math.floor(Math.random() * 50) + 10;
+
+
+
   const handleToggleBookmark = () => {
     if (item) {
       onToggleBookmark(item.id);
       setIsBookmarked(!isBookmarked);
     }
   };
-  const handleAddToComparison = () => {
-    if (item) {
-      // Persist selection locally so it is available on marketplace pages
-      addCompareId(marketplaceType, item.id);
-      // Keep existing behavior: inform parent handler (if provided)
-      onAddToComparison(item);
-      // Navigate to marketplace listing so the user can add more services,
-      // also pass the item in state for immediate UI hydration
-      const configForType = getMarketplaceConfig(marketplaceType);
-      navigate(configForType.route, { state: { addToCompare: item } });
-    }
-  };
+
+
+
   const handlePrimaryAction = () => {
+    // For courses, take learners straight into the DTMA learning experience
+    if (marketplaceType === "courses") {
+      navigate(`/learning?courseId=${encodeURIComponent(item.id)}`);
+      return;
+    }
+
     let url: string | undefined = (item as any)?.formUrl?.trim();
     if (!url) {
       url = "/forms/request-for-membership";
@@ -193,15 +239,21 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     }
     navigate(url);
   };
+
   const retryFetch = () => {
     if (itemId) {
       try {
         refetch?.();
+<<<<<<< HEAD
       } catch (err) {
         console.error("Failed to refetch marketplace item:", err);
       }
+=======
+      } catch { }
+>>>>>>> develop
     }
   };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -219,6 +271,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       </div>
     );
   }
+
   if (error) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -267,6 +320,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       </div>
     );
   }
+
   if (!item) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -295,53 +349,45 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
       </div>
     );
   }
+
   // Extract display properties based on marketplace type
   const itemTitle = item.title;
   const itemDescription = item.description;
   const serviceApplication = item.serviceApplication;
   const provider = item.provider;
   const primaryAction = config.primaryCTA;
-  const secondaryAction = config.secondaryCTA;
-  // Extract tags based on marketplace type
-  const displayTags =
-    item.tags ||
-    [
-      item.category,
-      marketplaceType === "courses" ? item.deliveryMode : item.serviceType,
-      item.businessStage,
-    ].filter(Boolean);
-  // Extract details for the sidebar
-  const detailItems = config.attributes
-    .map((attr) => {
-      const raw = (item as any)[attr.key];
-      const formatted = attr?.formatter ? attr.formatter(raw) : raw;
-      return {
-        label: attr.label,
-        value: formatted || "N/A",
-      };
-    })
-    .filter((detail) => detail.value !== "N/A");
+
+
+
   // Extract highlights/features based on marketplace type
   const highlights =
     marketplaceType === "courses"
       ? item.keyHighlights || item.learningOutcomes || []
       : item.details || item.keyHighlights || [];
+
   // Render tab content with consistent styling
   const renderTabContent = (tabId: string) => {
     const tab = config.tabs.find((t) => t.id === tabId);
     if (!tab) return null;
+
     // Return specific tab content based on tab ID
     switch (tabId) {
       case "about":
         return (
-          <AboutTab
-            itemDescription={itemDescription}
-            marketplaceType={marketplaceType}
-            item={item}
-            serviceApplication={serviceApplication}
-            config={config}
-            highlights={highlights}
-          />
+          <div className="space-y-8">
+            <AboutTab
+              itemDescription={itemDescription}
+              marketplaceType={marketplaceType}
+              item={item}
+              serviceApplication={serviceApplication}
+              config={config}
+              highlights={highlights}
+            />
+            {/* Audience Fit Indicator - DTMA Specific */}
+            {(item as any).audienceLevel && (
+              <AudienceFitIndicator audienceLevel={(item as any).audienceLevel} />
+            )}
+          </div>
         );
 
       case "schedule":
@@ -371,10 +417,12 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
         return (
           <ProviderTab
             provider={provider}
-            marketplaceType={marketplaceType}
+            marketplaceType={marketplaceType as any}
             item={item}
           />
         );
+      case "resources":
+        return <ResourcesTab />;
       // Add other tab cases as needed
       default:
         if (tab.renderContent) {
@@ -398,38 +446,74 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
         );
     }
   };
+
   // SummaryCard is now an external presentational component
   return (
     <div className="bg-white min-h-screen flex flex-col">
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-md focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       <Header
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         sidebarOpen={sidebarOpen}
+        transparent={true}
       />
-      <main className="flex-grow">
+      <main id="main-content" className="flex-grow">
         {/* Hero Banner - consistent header layout */}
         <div
           ref={heroRef}
-          className="w-full bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200"
+          className="w-full text-white relative overflow-hidden h-screen min-h-[600px]"
+          style={{
+            background: BRAND_GRADIENT
+          }}
+          onMouseEnter={() => setShowScrollIndicator(true)}
+          onMouseLeave={() => setShowScrollIndicator(false)}
         >
-          <div className="container mx-auto px-4 md:px-6 max-w-7xl">
-            {/* Breadcrumbs */}
-            <nav className="flex pt-4" aria-label="Breadcrumb">
-              <ol className="inline-flex items-center space-x-1 md:space-x-2">
+          {/* Background Pattern Overlay */}
+          <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>
+
+          {/* Video Background - Full Width */}
+          {introVideoUrl && (
+            <div
+              className="absolute inset-0 w-full h-full z-0 pointer-events-auto"
+            >
+              <HeroVideoPlayer
+                videoUrl={introVideoUrl}
+                posterUrl={introVideoPoster}
+              />
+              {/* Gradient Overlays for Readability */}
+              <div className={`absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent pointer-events-none transition-all duration-1000 ease-in-out ${showDescription ? 'opacity-100' : 'opacity-0'}`}></div>
+              <div className={`absolute inset-0 bg-gradient-to-tr from-black/90 via-black/40 to-transparent pointer-events-none transition-all duration-1000 ease-in-out ${showDescription ? 'opacity-0' : 'opacity-100'}`}></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+            </div>
+          )}
+
+          <div className="container mx-auto px-4 relative z-20 h-full flex flex-col pt-20 pointer-events-none">
+            {/* Breadcrumbs - Fixed at top */}
+            <nav
+              className="flex pb-4 pointer-events-auto opacity-60 hover:opacity-100 transition-opacity duration-300 flex-none"
+              aria-label="Breadcrumb"
+            >
+              <ol className="inline-flex items-center space-x-1 md:space-x-2 text-sm">
                 <li className="inline-flex items-center">
                   <Link
                     to="/"
-                    className="text-gray-600 hover:text-gray-900 inline-flex items-center"
+                    className="text-white hover:text-blue-200 inline-flex items-center transition-colors shadow-sm"
                   >
-                    <HomeIcon size={16} className="mr-1" />
-                    <span>Home</span>
+                    <HomeIcon size={14} className="mr-1.5 drop-shadow-md" />
+                    <span className="drop-shadow-md">Home</span>
                   </Link>
                 </li>
                 <li>
                   <div className="flex items-center">
-                    <ChevronRightIcon size={16} className="text-gray-400" />
+                    <ChevronRightIcon size={14} className="text-white/80 drop-shadow-md" />
                     <Link
-                      to={config.route}
-                      className="ml-1 text-gray-600 hover:text-gray-900 md:ml-2"
+                      to={config.route as string}
+                      className="ml-1 text-white hover:text-blue-200 md:ml-2 transition-colors drop-shadow-md"
                     >
                       {config.itemNamePlural}
                     </Link>
@@ -437,121 +521,133 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
                 </li>
                 <li aria-current="page">
                   <div className="flex items-center">
-                    <ChevronRightIcon size={16} className="text-gray-400" />
-                    <span className="ml-1 text-gray-500 md:ml-2">
+                    <ChevronRightIcon size={14} className="text-white/80 drop-shadow-md" />
+                    <span className="ml-1 text-white font-medium md:ml-2 line-clamp-1 max-w-[200px] sm:max-w-none drop-shadow-md">
                       {itemTitle}
                     </span>
                   </div>
                 </li>
               </ol>
             </nav>
-            <div className="flex flex-col items-start max-w-3xl py-8">
-              {/* Provider */}
-              <div className="flex items-center mb-3">
-                <img
-                  src={provider?.logoUrl || "/mzn_logo.png"}
-                  alt={`${provider?.name || 'Provider'} logo`}
-                  className="h-10 w-10 object-contain mr-3 rounded-md bg-white border border-gray-200 p-1"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "/mzn_logo.png";
-                  }}
-                />
-                <span className="text-gray-600 font-medium">
-                  {provider?.name || 'Provider'}
-                </span>
+
+            {/* Centered Content */}
+            <div className="flex-1 flex flex-col justify-end items-start max-w-3xl pointer-events-auto pb-8">
+              {/* Badges Row */}
+              {/* Badges Row */}
+              <div className="flex flex-wrap items-center gap-3 mb-6">
+                {(item as any).category && (
+                  <Tag variant="category" className="bg-blue-500/10 text-blue-300 border-blue-500/20 backdrop-blur-sm">
+                    {(item as any).category}
+                  </Tag>
+                )}
+                {(item as any).audienceLevel && (
+                  <Tag variant="audience" className="bg-purple-500/10 text-purple-300 border-purple-500/20 backdrop-blur-sm">
+                    {(item as any).audienceLevel}
+                  </Tag>
+                )}
+                {(item as any).levelTag && (
+                  <Tag variant="level" className="bg-white/10 text-gray-200 border-white/10 backdrop-blur-sm">
+                    {(item as any).levelTag}
+                  </Tag>
+                )}
               </div>
+
               {/* Title */}
-              <h1 className="text-3xl font-bold text-gray-900 mb-2 leading-tight">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white mb-4 leading-tight tracking-tight drop-shadow-lg">
                 {itemTitle}
               </h1>
-              {/* Tags row - Separated from ratings */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                {displayTags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                      index === 0
-                        ? "bg-blue-50 text-blue-700 border border-blue-100"
-                        : index === 1
-                        ? "bg-green-50 text-green-700 border border-green-100"
-                        : "bg-purple-50 text-purple-700 border border-purple-100"
-                    }`}
-                  >
-                    {tag}
-                  </span>
-                ))}
+
+              {/* Meta Row */}
+              <div className="flex flex-wrap items-center gap-6 text-white/90 text-sm mb-6">
+                {marketplaceType === "courses" && (
+                  <>
+                    <CourseMeta
+                      duration={item.duration}
+                      lessonCount={item.lessonCount}
+                      className="text-white/90 font-medium text-sm"
+                    />
+                  </>
+                )}
               </div>
-              {/* Ratings and bookmark row - Now in a single row with proper alignment */}
-              <div className="flex items-center justify-between w-full mb-4">
-                <div className="flex items-center">
-                  {marketplaceType === "courses" && (
-                    <div className="flex items-center">
-                      <div className="flex items-center">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <StarIcon
-                            key={star}
-                            size={16}
-                            className={`${
-                              parseFloat(rating) >= star
-                                ? "text-yellow-400 fill-yellow-400"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="ml-2 text-sm font-medium text-gray-700">
-                        {rating}
-                      </span>
-                      <span className="mx-1.5 text-gray-500">·</span>
-                      <span className="text-sm text-gray-500">
-                        {reviewCount} reviews
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {/* <button
-                  onClick={handleToggleBookmark}
-                  className={`p-1.5 rounded-full ${
-                    isBookmarked
-                      ? "bg-yellow-100 text-yellow-600"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  } ml-2`}
-                  aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
-                  title={isBookmarked ? "Remove bookmark" : "Add bookmark"}
+
+              {/* Description with Collapse Animation */}
+              <div
+                className={`overflow-hidden transition-all duration-1000 ease-in-out ${showDescription ? 'max-h-[300px] opacity-100 mb-8' : 'max-h-0 opacity-0 mb-4'}`}
+                onMouseEnter={() => setShowDescription(true)}
+              >
+                <p className="text-white text-base leading-relaxed max-w-2xl font-light drop-shadow-md">
+                  {itemDescription}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 w-full sm:w-auto mt-2">
+                <button
+                  onClick={handlePrimaryAction}
+                  className="flex-1 sm:flex-none px-6 py-3 bg-white text-blue-700 font-bold text-base rounded-xl shadow-xl hover:bg-blue-50 transition-all transform hover:-translate-y-1"
                 >
-                  <BookmarkIcon
-                    size={18}
-                    className={isBookmarked ? "fill-yellow-600" : ""}
-                  />
-                </button> */}
+                  {primaryAction}
+                </button>
+                <button
+                  onClick={handleToggleBookmark}
+                  className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
+                >
+                  <BookmarkIcon size={20} className={isBookmarked ? "fill-white" : ""} />
+                </button>
+                <button
+                  className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
+                >
+                  <Share2Icon size={20} />
+                </button>
               </div>
-              {/* Description */}
-              <p className="text-gray-700 mb-6 max-w-2xl">{itemDescription}</p>
+            </div>
+
+            {/* Scroll Indicator */}
+            <div
+              className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-none transition-all duration-500 ${showScrollIndicator ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+            >
+              <div className="animate-bounce">
+                <ChevronDown size={32} className="text-white/70 drop-shadow-md" />
+              </div>
             </div>
           </div>
         </div>
+
         {/* Tabs Navigation */}
-        <TabsNav
-          tabs={config.tabs as any}
-          activeTab={activeTab}
-          onChange={setActiveTab}
-          showNavigation={showNavigation}
-          showTabsMenu={showTabsMenu}
-          setShowTabsMenu={setShowTabsMenu}
-          tabsRef={tabsRef}
-          containerRef={containerRef}
-          scrollLeft={scrollLeft}
-          scrollRight={scrollRight}
-        />
+        <div className="sticky top-[80px] z-40 bg-white border-b border-gray-200 shadow-sm">
+          <TabsNav
+            tabs={config.tabs as any}
+            activeTab={activeTab}
+            onChange={setActiveTab}
+            showNavigation={false} // User requested to remove arrows
+            showTabsMenu={showTabsMenu}
+            setShowTabsMenu={setShowTabsMenu}
+            tabsRef={tabsRef as React.RefObject<HTMLDivElement>}
+            containerRef={containerRef as React.RefObject<HTMLDivElement>}
+            scrollLeft={scrollLeft}
+            scrollRight={scrollRight}
+            onCheckOverflow={() => { }}
+            rightContent={showStickyHeaderCTA ? (
+              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+
+                <button
+                  onClick={handlePrimaryAction}
+                  className="px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
+                >
+                  Start Learning
+                </button>
+              </div>
+            ) : undefined}
+          />
+        </div>
         {/* Main content area with 12-column grid layout */}
         <div
           ref={mainContentRef}
           className="container mx-auto px-4 md:px-6 max-w-7xl py-8"
         >
           <div className="grid grid-cols-12 gap-8">
-            {/* Content column (~8 columns) */}
-            <div className="col-span-12 lg:col-span-8">
+            {/* Content column (Full width since summary card is removed) */}
+            <div className="col-span-12">
               {/* Tab Content */}
               <div className="mb-8">
                 {config.tabs.map((tab) => (
@@ -566,158 +662,190 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
                   </div>
                 ))}
               </div>
-              {/* Mobile/Tablet Summary Card - only visible on mobile/tablet; hidden while floating card is visible */}
-              {!isVisible && (
-                <div className="lg:hidden mt-8">
-                  <SummaryCard
-                    isFloating={false}
-                    summaryCardRef={summaryCardRef}
-                    config={config}
-                    detailItems={detailItems}
-                    highlights={highlights}
-                    primaryAction={primaryAction}
-                    onPrimaryAction={handlePrimaryAction}
-                    onAddToComparison={handleAddToComparison}
-                    onCloseFloating={() => setIsFloatingCardVisible(false)}
-                  />
-                </div>
-              )}
-            </div>
-            {/* Summary card column (~4 columns) - visible only on desktop */}
-            <div className="hidden lg:block lg:col-span-4">
-              <div className="sticky top-[96px]">
-                {isFloatingCardVisible && (
-                  <SummaryCard
-                    isFloating={isVisible}
-                    config={config}
-                    detailItems={detailItems}
-                    highlights={highlights}
-                    primaryAction={primaryAction}
-                    onPrimaryAction={handlePrimaryAction}
-                    onAddToComparison={handleAddToComparison}
-                    onCloseFloating={() => setIsFloatingCardVisible(false)}
-                  />
-                )}
-              </div>
             </div>
           </div>
         </div>
-        {/* Floating card - visible when scrolled past hero section (mobile/tablet only) */}
-        {isVisible && isFloatingCardVisible && (
-          <div className="lg:hidden">
-            <SummaryCard
-              isFloating={true}
-              config={config}
-              detailItems={detailItems}
-              highlights={highlights}
-              primaryAction={primaryAction}
-              onPrimaryAction={handlePrimaryAction}
-              onAddToComparison={handleAddToComparison}
-              onCloseFloating={() => setIsFloatingCardVisible(false)}
-            />
-          </div>
-        )}
+
         {/* Related Items */}
-        <section className="bg-gray-50 py-10 border-t border-gray-200">
+        <section ref={relatedRef} className="bg-gray-50 py-10 border-t border-gray-200">
           <div className="container mx-auto px-4 md:px-6 max-w-7xl">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
                 Related {config.itemNamePlural}
               </h2>
-              <a
-                href={config.route}
+              <Link
+                to={seeAllHref}
                 className="text-blue-600 font-medium hover:text-blue-800 flex items-center"
               >
                 See All {config.itemNamePlural}
                 <ChevronRightIcon size={16} className="ml-1" />
-              </a>
+              </Link>
             </div>
-            {relatedItems.length > 0 ? (
-              <div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {relatedItems.map((relatedItem) => (
-                    <div
-                      key={relatedItem.id}
-                      className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() =>
-                        navigate(
-                          `/marketplace/${marketplaceType}/${relatedItem.id}`
-                        )
-                      }
-                    >
-                      <div className="flex items-center mb-3">
-                        <img
-                          src={relatedItem.provider?.logoUrl || "/mzn_logo.png"}
-                          alt={relatedItem.provider.name}
-                          className="h-8 w-8 object-contain mr-2 rounded bg-gray-50 p-1"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "/mzn_logo.png";
-                          }}
-                        />
-                        <span className="text-sm text-gray-600">
-                          {relatedItem.provider.name}
-                        </span>
-                      </div>
-                      <h3 className="font-semibold text-gray-900 mb-2">
-                        {relatedItem.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-                        {relatedItem.description}
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        {(relatedItem.tags || [])
-                          .slice(0, 2)
-                          .map((tag, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                      </div>
-                    </div>
-                  ))}
+
+            {/* Related Items Grid - Adjusted to fill width */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedItems.slice(0, 4).map((relatedItem) => (
+                <div key={relatedItem.id} className="h-full">
+                  <MarketplaceCard
+                    item={relatedItem}
+                    marketplaceType={marketplaceType}
+                    isBookmarked={bookmarkedItems.includes(relatedItem.id)}
+                    onToggleBookmark={() => onToggleBookmark(relatedItem.id)}
+
+                    isPointerFine={isPointerFine}
+                  />
                 </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 bg-white rounded-lg shadow-sm border border-gray-200">
-                <p className="text-gray-500">
-                  No related {config.itemNamePlural.toLowerCase()} found
-                </p>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         </section>
+
         {/* Sticky mobile CTA */}
-        {showStickyBottomCTA && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 lg:hidden z-30 transform transition-transform duration-300 ease-in-out">
-            <div className="flex items-center justify-between max-w-sm mx-auto">
-              <div className="mr-3">
-                <div className="text-gray-900 font-bold">
-                  {marketplaceType === "courses"
-                    ? item.price || "Free"
-                    : marketplaceType === "financial"
-                    ? item.amount || "Apply Now"
-                    : "Request Now"}
+        {
+          showStickyBottomCTA && (
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 lg:hidden z-30 transform transition-transform duration-300 ease-in-out">
+              <div className="flex items-center justify-between max-w-sm mx-auto">
+                <div className="mr-3">
+                  <div className="text-gray-900 font-bold">
+                    {marketplaceType === "courses"
+                      ? item.price || "Free"
+                      : marketplaceType === "financial"
+                        ? item.amount || "Apply Now"
+                        : "Request Now"}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {item.duration || item.serviceType || ""}
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  {item.duration || item.serviceType || ""}
-                </div>
+                <button
+                  onClick={handlePrimaryAction}
+                  className="flex-1 px-4 py-3 text-white font-bold rounded-md bg-gradient-to-r from-teal-500 via-blue-500 to-purple-600 hover:from-teal-600 hover:via-blue-600 hover:to-purple-700 transition-colors shadow-md"
+                >
+                  {primaryAction}
+                </button>
               </div>
-              <button
-                onClick={handlePrimaryAction}
-                className="flex-1 px-4 py-3 text-white font-bold rounded-md bg-gradient-to-r from-teal-500 via-blue-500 to-purple-600 hover:from-teal-600 hover:via-blue-600 hover:to-purple-700 transition-colors shadow-md"
-              >
-                {primaryAction}
-              </button>
             </div>
-          </div>
-        )}
+          )
+        }
       </main>
       <Footer isLoggedIn={false} />
     </div>
   );
 };
+
+// Internal Hero Video Component with Custom Controls
+const HeroVideoPlayer: React.FC<{
+  videoUrl: string;
+  posterUrl?: string;
+}> = ({ videoUrl, posterUrl }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+
+  // Autoplay after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.play()
+          .then(() => setIsPlaying(true))
+          .catch(() => { /* Autoplay prevented */ });
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const toggleFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        videoRef.current.requestFullscreen();
+      }
+    }
+  };
+
+  return (
+    <div
+      className="relative w-full h-full group"
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => isPlaying && setShowControls(false)}
+    >
+      <video
+        ref={videoRef}
+        src={videoUrl}
+        poster={posterUrl}
+        className="w-full h-full object-cover"
+        playsInline
+        onClick={togglePlay}
+        onEnded={() => setIsPlaying(false)}
+      />
+
+      {/* Overlay Controls */}
+      <div
+        className={`absolute inset-0 flex flex-col justify-between transition-opacity duration-300 pointer-events-none ${showControls || !isPlaying ? "opacity-100" : "opacity-0"
+          }`}
+      >
+        {/* Bottom Right Controls - Aligned with Container */}
+        <div className="container mx-auto px-4 h-full relative">
+          <div className="absolute bottom-8 right-4 flex gap-2 z-20 pointer-events-auto">
+            <button
+              onClick={toggleMute}
+              className="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors backdrop-blur-sm border border-white/10"
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? (
+                <VolumeX size={20} />
+              ) : (
+                <Volume2 size={20} />
+              )}
+            </button>
+            <button
+              onClick={toggleFullscreen}
+              className="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors backdrop-blur-sm border border-white/10"
+            >
+              <Maximize size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* Center Play Button (only when paused) */}
+        {!isPlaying && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <button
+              onClick={togglePlay}
+              className="pointer-events-auto h-16 w-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:scale-110 transition-transform duration-300"
+            >
+              <div className="h-12 w-12 rounded-full bg-white text-blue-600 flex items-center justify-center shadow-lg pl-1">
+                <Play size={24} fill="currentColor" />
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default MarketplaceDetailsPage;
