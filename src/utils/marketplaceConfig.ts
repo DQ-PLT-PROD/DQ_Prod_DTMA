@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ReactNode } from 'react';
-import { DollarSign, Calendar, Clock, Users, MapPin, CheckCircle, BarChart, Award, FileText, Info, BookOpen, ClipboardList, Building, FileType, Bookmark, TrendingUp } from 'lucide-react';
+import { DollarSign, Calendar, Clock, Users, CheckCircle, BarChart, Award, FileText, Info, BookOpen, ClipboardList, Building, FileType, Bookmark, TrendingUp } from 'lucide-react';
 import { providers } from './mockData';
 import { mockFinancialServices, mockNonFinancialServices, mockKnowledgeHubItems, mockKnowledgeHubFilterOptions } from './mockMarketplaceData';
 import { categories } from '../data/dtma/categories';
@@ -190,8 +190,8 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     title: 'Course Marketplace',
     description: 'Discover and enroll in courses tailored for SMEs to help grow your business',
     route: '/marketplace/courses',
-    primaryCTA: 'Start Learning',
-    secondaryCTA: 'View Details',
+    primaryCTA: 'Start Learning Now',
+    secondaryCTA: 'Add to Library',
     itemName: 'Course',
     itemNamePlural: 'Courses',
     showPromoCards: false,
@@ -200,31 +200,21 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
       label: 'Duration',
       icon: React.createElement(Clock, { size: 18, className: "mr-2" })
     }, {
-      key: 'startDate',
-      label: 'Starts',
-      icon: React.createElement(Calendar, { size: 18, className: "mr-2" })
-    }, {
       key: 'price',
       label: 'Cost',
       icon: React.createElement(DollarSign, { size: 18, className: "mr-2" })
     }, {
-      key: 'location',
-      label: 'Location',
-      icon: React.createElement(MapPin, { size: 18, className: "mr-2" })
+      key: 'levelTag',
+      label: 'Level',
+      icon: React.createElement(BarChart, { size: 18, className: "mr-2" })
     }],
     detailSections: ['description', 'learningOutcomes', 'schedule', 'provider', 'related'],
     tabs: [{
-      id: 'about',
-      label: 'Overview',
-      icon: Info,
-      iconBgColor: 'bg-blue-50',
-      iconColor: 'text-blue-600'
-    }, {
       id: 'schedule',
       label: 'Course Outline',
       icon: Calendar,
-      iconBgColor: 'bg-green-50',
-      iconColor: 'text-green-600'
+      iconBgColor: 'bg-blue-50',
+      iconColor: 'text-blue-600'
     }, {
       id: 'learning_outcomes',
       label: 'Learning Outcomes',
@@ -232,11 +222,11 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
       iconBgColor: 'bg-purple-50',
       iconColor: 'text-purple-600'
     }, {
-      id: 'provider',
-      label: 'About Instructor',
-      icon: Building,
-      iconBgColor: 'bg-blue-50',
-      iconColor: 'text-blue-600'
+      id: 'resources',
+      label: 'Resources',
+      icon: FileText,
+      iconBgColor: 'bg-amber-50',
+      iconColor: 'text-amber-600'
     }],
     summarySticky: true,
     filterCategories: [{

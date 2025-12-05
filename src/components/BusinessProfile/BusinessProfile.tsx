@@ -22,11 +22,16 @@ import {
   calculateSectionCompletion,
   calculateMandatoryCompletion,
 } from "../../services/DataverseService";
+import { BurgerMenuButton } from '../Sidebar';
 
 export function BusinessProfile({
   activeSection = "profile",
-  toggleSidebar,
-  sidebarOpen,
+  setIsOpen,
+  isLoggedIn,
+}: {
+  activeSection?: string;
+  setIsOpen: (isOpen: boolean) => void;
+  isLoggedIn: boolean;
 }) {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [showAll, setShowAll] = useState(false);
@@ -127,16 +132,16 @@ export function BusinessProfile({
   const overallMandatoryCompletion =
     profileData && (profileData as any).companyStage
       ? Math.round(
-          (checkMandatoryFieldsCompletion(
+        (checkMandatoryFieldsCompletion(
+          profileData,
+          (profileData as any).companyStage
+        ).completed /
+          checkMandatoryFieldsCompletion(
             profileData,
             (profileData as any).companyStage
-          ).completed /
-            checkMandatoryFieldsCompletion(
-              profileData,
-              (profileData as any).companyStage
-            ).total) *
-            100
-        )
+          ).total) *
+        100
+      )
       : 0;
 
   const getCurrentSectionTitle = () => {
@@ -167,24 +172,25 @@ export function BusinessProfile({
   return (
     <div className="flex-1 min-w-0 overflow-hidden">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 py-3 px-3 sm:px-4 lg:px-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center min-w-0">
-            <button
-              className="md:hidden mr-3 text-gray-600 flex-shrink-0"
-              onClick={toggleSidebar}
-              aria-label="Toggle sidebar"
-            >
-              {sidebarOpen ? <XIcon size={20} /> : <MenuIcon size={20} />}
-            </button>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
-              {activeSection === "overview"
-                ? "Business Overview"
-                : activeSection === "profile"
-                ? "Company Profile"
-                : activeSection.charAt(0).toUpperCase() +
-                  activeSection.slice(1)}
-            </h1>
+      <div className="sticky top-0 z-20  py-3 px-3 sm:px-4 lg:px-6">
+        <div className="lg:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className='sm:flex gap-2'>
+            <div className='lg:hidden'>
+              <BurgerMenuButton
+                onClick={() => setIsOpen(true)}
+                isLoggedIn={isLoggedIn}
+              />
+            </div>
+            <div className="flex items-center min-w-0">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
+                {activeSection === "overview"
+                  ? "Business Overview"
+                  : activeSection === "profile"
+                    ? "Company Profile"
+                    : activeSection.charAt(0).toUpperCase() +
+                    activeSection.slice(1)}
+              </h1>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -207,15 +213,14 @@ export function BusinessProfile({
               </span>
               <div className="w-16 sm:w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
                 <div
-                  className={`h-full rounded-full transition-all duration-300 ${
-                    overallMandatoryCompletion === 100
-                      ? "bg-green-500"
-                      : overallMandatoryCompletion >= 70
+                  className={`h-full rounded-full transition-all duration-300 ${overallMandatoryCompletion === 100
+                    ? "bg-green-500"
+                    : overallMandatoryCompletion >= 70
                       ? "bg-blue-500"
                       : overallMandatoryCompletion >= 30
-                      ? "bg-yellow-500"
-                      : "bg-red-500"
-                  }`}
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                    }`}
                   style={{ width: `${overallMandatoryCompletion}%` }}
                 ></div>
               </div>
@@ -263,11 +268,10 @@ export function BusinessProfile({
                   </div>
                 ) : (
                   <div
-                    className={`w-20 h-20 sm:w-24 sm:h-24 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer ${
-                      isUploadingLogo
-                        ? "border-blue-400 bg-blue-50"
-                        : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
-                    }`}
+                    className={`w-20 h-20 sm:w-24 sm:h-24 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer ${isUploadingLogo
+                      ? "border-blue-400 bg-blue-50"
+                      : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
+                      }`}
                     onClick={() => setIsUploadingLogo(true)}
                   >
                     {isUploadingLogo ? (
@@ -313,15 +317,14 @@ export function BusinessProfile({
                   </span>
                   <div className="w-16 sm:w-20 h-1 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
                     <div
-                      className={`h-full rounded-full transition-all duration-300 ${
-                        overallMandatoryCompletion === 100
-                          ? "bg-green-500"
-                          : overallMandatoryCompletion >= 70
+                      className={`h-full rounded-full transition-all duration-300 ${overallMandatoryCompletion === 100
+                        ? "bg-green-500"
+                        : overallMandatoryCompletion >= 70
                           ? "bg-blue-500"
                           : overallMandatoryCompletion >= 30
-                          ? "bg-yellow-500"
-                          : "bg-red-500"
-                      }`}
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
+                        }`}
                       style={{ width: `${overallMandatoryCompletion}%` }}
                     ></div>
                   </div>
@@ -349,11 +352,10 @@ export function BusinessProfile({
                     {sectionsToDisplay.map((section, index) => (
                       <button
                         key={section.id}
-                        className={`w-full text-left px-3 py-3 text-sm flex items-center justify-between min-w-0 ${
-                          activeTabIndex === index
-                            ? "bg-blue-50 text-blue-600"
-                            : "text-gray-700 hover:bg-gray-100"
-                        }`}
+                        className={`w-full text-left px-3 py-3 text-sm flex items-center justify-between min-w-0 ${activeTabIndex === index
+                          ? "bg-blue-50 text-blue-600"
+                          : "text-gray-700 hover:bg-gray-100"
+                          }`}
                         onClick={() => {
                           setActiveTabIndex(index);
                           setShowTabsMenu(false);
@@ -388,83 +390,82 @@ export function BusinessProfile({
 
           {/* Desktop Tabs */}
           {activeSection === "profile" && !showAll && (
-  <div className="hidden md:block border-b border-gray-200 bg-gray-50 sticky top-[73px] z-10">
-    <div className="px-3 sm:px-4 lg:px-6 py-3">
-      <div className="flex items-center justify-between">
-        {/* Current Section Display */}
-        <div className="flex items-center">
-          <span className="text-sm text-blue-600 font-medium">
-            {getCurrentSectionTitle()}
-          </span>
-          <div className="flex items-center ml-2">
-            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-              {sectionsToDisplay[activeTabIndex]?.completion}% complete
-            </span>
-          </div>
-        </div>
+            <div className="hidden md:block border-b border-gray-200 bg-gray-50 sticky top-[73px] z-10">
+              <div className="px-3 sm:px-4 lg:px-6 py-3">
+                <div className="flex items-center justify-between">
+                  {/* Current Section Display */}
+                  <div className="flex items-center">
+                    <span className="text-sm text-blue-600 font-medium">
+                      {getCurrentSectionTitle()}
+                    </span>
+                    <div className="flex items-center ml-2">
+                      <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                        {sectionsToDisplay[activeTabIndex]?.completion}% complete
+                      </span>
+                    </div>
+                  </div>
 
-        {/* Section Selector Dropdown */}
-        <div className="relative">
-          <button
-            className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onClick={() => setShowTabsMenu(!showTabsMenu)}
-            style={{
-              width: 'auto', 
-              minWidth: '250px', 
-            }}
-          >
-            <span className="flex justify-center w-full">View More Sections(13)</span>
-            <ChevronDownIcon size={16} className="ml-2" />
-          </button>
-          {showTabsMenu && (
-            <>
-              {/* Backdrop */}
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowTabsMenu(false)}
-              ></div>
-              {/* Dropdown */}
-              <div
-                className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-xl z-[9999] border border-gray-200"
-                style={{ zIndex: 9999 }}
-              >
-                <div className="py-1 max-h-64 overflow-y-auto">
-                  {sectionsToDisplay.map((section, index) => (
+                  {/* Section Selector Dropdown */}
+                  <div className="relative">
                     <button
-                      key={section.id}
-                      className={`w-full text-left px-4 py-3 text-sm flex items-center justify-between hover:bg-gray-50 ${
-                        activeTabIndex === index
-                          ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600"
-                          : "text-gray-700"
-                      }`}
-                      onClick={() => {
-                        setActiveTabIndex(index);
-                        setShowTabsMenu(false);
+                      className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onClick={() => setShowTabsMenu(!showTabsMenu)}
+                      style={{
+                        width: 'auto',
+                        minWidth: '250px',
                       }}
                     >
-                      <div className="flex flex-col">
-                        <span className="font-medium">{section.title}</span>
-                        <span className="text-xs text-gray-500 mt-1">
-                          {section.completion}% complete
-                        </span>
-                      </div>
-                      {activeTabIndex === index && (
-                        <CheckCircleIcon
-                          size={16}
-                          className="text-blue-600"
-                        />
-                      )}
+                      <span className="flex justify-center w-full">View More Sections(13)</span>
+                      <ChevronDownIcon size={16} className="ml-2" />
                     </button>
-                  ))}
+                    {showTabsMenu && (
+                      <>
+                        {/* Backdrop */}
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => setShowTabsMenu(false)}
+                        ></div>
+                        {/* Dropdown */}
+                        <div
+                          className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-xl z-[9999] border border-gray-200"
+                          style={{ zIndex: 9999 }}
+                        >
+                          <div className="py-1 max-h-64 overflow-y-auto">
+                            {sectionsToDisplay.map((section, index) => (
+                              <button
+                                key={section.id}
+                                className={`w-full text-left px-4 py-3 text-sm flex items-center justify-between hover:bg-gray-50 ${activeTabIndex === index
+                                  ? "bg-blue-50 text-blue-600 border-r-2 border-blue-600"
+                                  : "text-gray-700"
+                                  }`}
+                                onClick={() => {
+                                  setActiveTabIndex(index);
+                                  setShowTabsMenu(false);
+                                }}
+                              >
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{section.title}</span>
+                                  <span className="text-xs text-gray-500 mt-1">
+                                    {section.completion}% complete
+                                  </span>
+                                </div>
+                                {activeTabIndex === index && (
+                                  <CheckCircleIcon
+                                    size={16}
+                                    className="text-blue-600"
+                                  />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
-        </div>
-      </div>
-    </div>
-  </div>
-)}
 
 
           {/* Content Area */}
@@ -474,8 +475,8 @@ export function BusinessProfile({
                 key={section.id}
                 className={
                   activeSection === "profile" &&
-                  !showAll &&
-                  activeTabIndex !== index
+                    !showAll &&
+                    activeTabIndex !== index
                     ? "hidden"
                     : "block min-w-0"
                 }

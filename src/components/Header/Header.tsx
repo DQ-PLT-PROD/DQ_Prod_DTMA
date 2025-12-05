@@ -9,6 +9,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserIcon, ArrowRight } from "lucide-react";
 import { ExploreDropdown } from "./components/ExploreDropdown";
 import { BRAND_BACKDROP_BLUR } from "../../constants/branding";
+import { AzureAuthModal } from "../auth/AzureAuthModal";
 
 const HEADER_GRADIENT =
   "linear-gradient(90deg, #0a32a0 0%, #2a4090 40%, #4e5a8b 70%, #8b90a3 100%)";
@@ -28,8 +29,9 @@ export function Header({
 }: HeaderProps) {
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
   const [showNotificationCenter, setShowNotificationCenter] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const { user, login } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -150,29 +152,22 @@ export function Header({
 
           {/* Right side actions */}
           <div className="flex items-center gap-4 ml-auto relative">
-            {user ? (
+            {/* Azure MSAL Auth */}
+            {!user ? (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                <UserIcon size={18} />
+                <span>Sign In</span>
+              </button>
+            ) : (
               <ProfileDropdown
                 onViewNotifications={toggleNotificationsMenu}
                 unreadNotifications={unreadCount}
               />
-            ) : (
-              <div className="hidden lg:flex items-center gap-2 text-sm font-medium">
-                <button
-                  className="flex items-center gap-2 rounded-full px-5 py-2.5 h-11 bg-white text-[#1839AD] font-medium hover:bg-white/90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/40"
-                  onClick={handleSignIn}
-                >
-                  <UserIcon size={18} className="text-[#1839AD]" />
-                  <span>Sign In</span>
-                </button>
-                <button
-                  className="flex items-center gap-2 rounded-full px-5 py-2.5 h-11 text-white font-medium bg-[#1839AD] hover:opacity-90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/40"
-                  onClick={scrollToFinalCTA}
-                >
-                  <span>Get Started</span>
-                  <ArrowRight size={16} className="text-white" />
-                </button>
-              </div>
             )}
+            
             <MobileDrawer
               onSignIn={handleSignIn}
               isSignedIn={!!user}
@@ -205,6 +200,12 @@ export function Header({
           </div>
         </div>
       )}
+
+      {/* Auth Modal */}
+      <AzureAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </>
   );
 }

@@ -264,7 +264,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div
-      className={`fixed lg:static inset-y-0 left-0 z-30 w-64 bg-gray-50 border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      className={`fixed lg:static left-0 top-16 bottom-0 z-40 w-64 bg-gray-50 border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         } lg:w-60 overflow-y-auto`}
       data-id={dataId}
     >
@@ -570,7 +570,7 @@ export const BurgerMenuButton: React.FC<{
       data-id={dataId}
       aria-label="Open navigation menu"
     >
-      <Menu size={20} />
+      <Menu size={24} />
     </button>
   );
 };

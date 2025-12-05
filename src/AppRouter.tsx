@@ -81,9 +81,9 @@ export function AppRouter() {
           <Route
             path="/dashboard/*"
             element={
-              // <ProtectedRoute>
-              <DashboardRouter />
-              // </ProtectedRoute>
+              <ProtectedRoute>
+                <DashboardRouter />
+              </ProtectedRoute>
             }
           />
           <Route path="/discover-abudhabi" element={<DiscoverAbuDhabi />} />
@@ -93,6 +93,10 @@ export function AppRouter() {
           <Route path="/coming-soon" element={<ComingSoon />} />
           <Route path="/coming-soon/:feature" element={<ComingSoon />} />
           <Route path="/learning" element={<LearningScreen />} />
+
+          {/* Documentation routes - redirect to coming soon */}
+          <Route path="/documentation" element={<Navigate to="/coming-soon/documentation" replace />} />
+          <Route path="/documentation/*" element={<Navigate to="/coming-soon/documentation" replace />} />
           <Route path="/admin-ui/settings" element={<AdminSettings />} />
           {/** Forms routes */}
           <Route
@@ -140,12 +144,12 @@ export function AppRouter() {
             path="/forms/issue-support-letter"
             element={<ProtectedRoute><IssueSupportLetter /></ProtectedRoute>}
           />
-            <Route path="/media/:type/:id" element={<MediaDetailPage />} />
-            {/* Embedded Admin UI */}
-            <Route path="/admin-ui/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin-ui/media" element={<AdminMediaList />} />
-            <Route path="/admin-ui/media/new" element={<MediaCreate />} />
-            <Route path="/admin-ui/media/:id" element={<AdminMediaDetail />} />
+          <Route path="/media/:type/:id" element={<MediaDetailPage />} />
+          {/* Embedded Admin UI */}
+          <Route path="/admin-ui/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin-ui/media" element={<AdminMediaList />} />
+          <Route path="/admin-ui/media/new" element={<MediaCreate />} />
+          <Route path="/admin-ui/media/:id" element={<AdminMediaDetail />} />
           <Route path="/404" element={<NotFound />} />
 
           <Route path="*" element={<Navigate to="/404" replace />} />

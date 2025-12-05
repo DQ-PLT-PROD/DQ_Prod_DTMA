@@ -70,11 +70,11 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
 
         {/* Add to Later Button (Secondary) */}
         <button
-          onClick={onAddToComparison} // Using this for now as per request, but ideally should be a separate prop or reused
+          onClick={onAddToComparison}
           className="w-full px-4 py-2.5 text-gray-600 font-medium bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-gray-900 transition-colors flex items-center justify-center text-sm mb-6"
         >
           <BookmarkIcon size={16} className="mr-2" />
-          Add to Later
+          Add to Library
         </button>
 
         {/* Details List */}

@@ -19,6 +19,7 @@ export interface TabsNavProps {
   scrollLeft: () => void;
   scrollRight: () => void;
   onCheckOverflow?: () => void;
+  rightContent?: React.ReactNode;
 }
 
 const TabsNav: React.FC<TabsNavProps> = ({
@@ -33,6 +34,7 @@ const TabsNav: React.FC<TabsNavProps> = ({
   scrollLeft,
   scrollRight,
   onCheckOverflow,
+  rightContent,
 }) => {
   // Check overflow on mount and window resize
   useEffect(() => {
@@ -70,8 +72,8 @@ const TabsNav: React.FC<TabsNavProps> = ({
                 key={tab.id}
                 onClick={() => onChange(tab.id)}
                 className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 rounded-lg ${activeTab === tab.id
-                    ? "text-blue-700 bg-blue-50 border border-blue-100 shadow-sm"
-                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                  ? "text-blue-700 bg-blue-50 border border-blue-100 shadow-sm"
+                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                   }`}
                 aria-selected={activeTab === tab.id}
                 aria-controls={`tabpanel-${tab.id}`}
@@ -112,8 +114,8 @@ const TabsNav: React.FC<TabsNavProps> = ({
                           <button
                             key={tab.id}
                             className={`w-full text-left px-4 py-2 text-sm transition-colors ${activeTab === tab.id
-                                ? "bg-blue-50 text-blue-600"
-                                : "text-gray-700 hover:bg-gray-100"
+                              ? "bg-blue-50 text-blue-600"
+                              : "text-gray-700 hover:bg-gray-100"
                               }`}
                             onClick={() => {
                               onChange(tab.id);
@@ -131,10 +133,16 @@ const TabsNav: React.FC<TabsNavProps> = ({
               </div>
             </>
           )}
+          {rightContent && (
+            <div className="ml-auto pl-4 flex items-center gap-2">
+              {rightContent}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
+export { TabsNav };
 export default TabsNav;

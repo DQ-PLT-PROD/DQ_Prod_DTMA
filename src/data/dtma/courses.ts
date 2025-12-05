@@ -25,6 +25,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Explain what Economy 4.0 is and how it evolved.", "Identify the core drivers of Economy 4.0 in your context."],
     skillsGained: ["Macro digital economy awareness", "Strategic framing of Economy 4.0"],
     uponCompletion: "You will be able to confidently introduce Economy 4.0 to leaders and teams.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-connecting-e4-dco",
@@ -50,6 +51,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Describe the characteristics of a Digital Cognitive Organization.", "Map Economy 4.0 trends to DCO design choices."],
     skillsGained: ["DCO conceptual understanding", "Operating model mapping"],
     uponCompletion: "You will be able to frame why your organization needs to evolve toward a DCO model.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-designing-plt-e4",
@@ -75,6 +77,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Explain the Perfect Life Transactions concept.", "Map and prioritize critical transactions in your organization."],
     skillsGained: ["Transaction design", "Journey mapping"],
     uponCompletion: "You will leave with a PLT map and a shortlist of improvement opportunities.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-building-dbp-e4",
@@ -100,6 +103,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Differentiate DBPs from traditional systems.", "Identify where platform thinking applies in your organization."],
     skillsGained: ["Platform literacy", "Opportunity framing"],
     uponCompletion: "You will be able to outline where a platform could create value in your organization.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-leading-workforce-4-0",
@@ -125,6 +129,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Describe Workforce 4.0 in clear, practical terms.", "Identify key capability gaps in your workforce."],
     skillsGained: ["Workforce framing", "Strategic reskilling planning"],
     uponCompletion: "You will be able to guide leadership conversations about Workforce 4.0.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-accelerating-dt-e4",
@@ -150,6 +155,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Identify the levers that accelerate digital transformation.", "Prioritize transformation initiatives for impact."],
     skillsGained: ["Transformation planning", "Execution sequencing"],
     uponCompletion: "You will be able to design a more realistic and accelerated transformation roadmap.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-using-ai-for-advantage-e4",
@@ -175,6 +181,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Identify high-value AI use cases.", "Connect AI initiatives to measurable business outcomes."],
     skillsGained: ["AI opportunity framing", "Business/AI alignment"],
     uponCompletion: "You will be able to evaluate AI ideas through a strategic lens.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-trust-security-e4",
@@ -200,6 +207,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Explain the key components of digital trust.", "Identify security gaps that impact innovation."],
     skillsGained: ["Cyber risk framing", "Trust-by-design thinking"],
     uponCompletion: "You will be able to discuss security and trust without blocking innovation.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-strategic-ai-advantage",
@@ -225,6 +233,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Align AI initiatives with business strategy.", "Define a simple AI portfolio and success measures."],
     skillsGained: ["Strategic AI roadmapping", "Outcome-based AI planning"],
     uponCompletion: "You will be able to discuss AI in the same language as strategy and value.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-culture-innovation-e4",
@@ -250,6 +259,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Identify barriers to innovation in your context.", "Design simple practices that encourage experimentation."],
     skillsGained: ["Innovation culture design", "Experimentation practices"],
     uponCompletion: "You will be able to propose concrete steps to strengthen innovation culture.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-measuring-success-e4",
@@ -275,6 +285,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Differentiate between vanity and value metrics.", "Design a simple measurement stack for Economy 4.0."],
     skillsGained: ["KPI design", "Value-based measurement"],
     uponCompletion: "You will be able to propose smarter metrics for digital initiatives.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-building-dco",
@@ -300,6 +311,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Define the concept of a Digital Cognitive Organization.", "Identify the core building blocks of a DCO."],
     skillsGained: ["DCO literacy", "High-level organization design"],
     uponCompletion: "You will be able to explain what it means to become a Digital Cognitive Organization.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-designing-plt-org",
@@ -325,6 +337,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Map high-value transactions in your organization.", "Identify improvement opportunities for PLTs."],
     skillsGained: ["Transaction mapping", "Journey optimization"],
     uponCompletion: "You will leave with a prioritized PLT improvement backlog.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-dbp-as-dco-backbone",
@@ -350,6 +363,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Describe how DBPs support DCOs.", "Map DBP towers to organization needs."],
     skillsGained: ["Platform mapping", "DCO/DBP alignment"],
     uponCompletion: "You will be able to frame DBPs as core infrastructure for DCOs.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-building-ai-driven-orgs",
@@ -375,6 +389,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Identify processes suitable for AI enablement.", "Plan for change when introducing AI at scale."],
     skillsGained: ["AI-enabled process design", "Change planning for AI"],
     uponCompletion: "You will be able to sketch a roadmap for becoming more AI-driven.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-monetizing-data",
@@ -400,6 +415,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Identify potential data value streams.", "Outline simple data-to-value pathways."],
     skillsGained: ["Data product thinking", "Data monetization framing"],
     uponCompletion: "You will be able to explain how data can directly contribute to revenue or impact.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-behavioral-economics-ai",
@@ -425,6 +441,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Recognize common decision biases in your context.", "Design AI-assisted decision flows."],
     skillsGained: ["Behavioral design", "Decision-flow design"],
     uponCompletion: "You will be able to propose improvements to how key decisions are made.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-designing-digital-workforce",
@@ -450,6 +467,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Map current work and identify automation candidates.", "Redesign roles to focus on higher-value tasks."],
     skillsGained: ["Workflow mapping", "Role redesign"],
     uponCompletion: "You will have a clearer view of how your own work can evolve.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-api-economy-growth",
@@ -475,6 +493,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Explain the business value of APIs.", "Identify potential API-based opportunities."],
     skillsGained: ["API strategy thinking", "Ecosystem design"],
     uponCompletion: "You will be able to propose API-related growth opportunities.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-automating-grc-ai",
@@ -500,6 +519,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Identify GRC processes suitable for automation.", "Design simple AI-supported control patterns."],
     skillsGained: ["GRC process design", "Control automation framing"],
     uponCompletion: "You will be able to suggest smarter, automated GRC patterns.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-scaling-strategy-tmaas",
@@ -525,6 +545,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Explain the TMaaS concept.", "Outline a simple TMaaS-based execution model."],
     skillsGained: ["Portfolio thinking", "Transformation management"],
     uponCompletion: "You will be able to connect strategy to a concrete execution model.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-using-dco-canvas",
@@ -550,6 +571,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Capture your organization on the DCO Canvas.", "Use the canvas to structure design discussions."],
     skillsGained: ["Visual organization design", "Facilitation using the canvas"],
     uponCompletion: "You will have a first version of your organization’s DCO Canvas.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-getting-value-dbp",
@@ -575,6 +597,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Explain DBPs in simple, non-technical language.", "Identify where a DBP approach might apply."],
     skillsGained: ["Platform value framing", "Opportunity spotting"],
     uponCompletion: "You will be able to communicate DBP value to business and tech stakeholders.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-operational-excellence-dbp",
@@ -600,6 +623,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Identify operational pain points that DBPs can address.", "Connect DBP capabilities to performance improvements."],
     skillsGained: ["Operational improvement framing", "DBP operations literacy"],
     uponCompletion: "You will see how your day-to-day work fits into platform-enabled operations.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-designing-experiences-dbp",
@@ -625,6 +649,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Map experiences across channels using the platform.", "Spot breaks and friction in current journeys."],
     skillsGained: ["Journey mapping on DBP", "Experience orchestration"],
     uponCompletion: "You will be able to propose improvements to key digital journeys.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-building-intelligence-dbp",
@@ -650,6 +675,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Describe the main components of the Intelligence Tower.", "Connect analytics outputs back into business workflows."],
     skillsGained: ["Analytics literacy", "Insight-to-action thinking"],
     uponCompletion: "You will see how data work supports better decisions and journeys.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-modernizing-core-operations",
@@ -675,6 +701,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Explain the risks and benefits of core modernization.", "Identify candidate systems and migration patterns."],
     skillsGained: ["Modernization planning", "Migration pattern selection"],
     uponCompletion: "You will be able to support modernization conversations with practical options.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-trust-framework-security-tower",
@@ -700,6 +727,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Understand the main components of the Security Tower.", "Balance security requirements with innovation needs."],
     skillsGained: ["Security-by-design framing", "Risk/innovation balancing"],
     uponCompletion: "You will be able to discuss trust and security in platform terms.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-scaling-capabilities-dbp",
@@ -725,6 +753,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Describe business capabilities in modular terms.", "Identify where capability reuse is possible."],
     skillsGained: ["Capability thinking", "Reuse/scale framing"],
     uponCompletion: "You will be able to outline a capability-based view of your platform.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-interoperability-dbp",
@@ -750,6 +779,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Describe basic integration and interoperability patterns.", "Recognize where poor interoperability is hurting value."],
     skillsGained: ["Integration literacy", "Interoperability mapping"],
     uponCompletion: "You will see how better connections improve both internal and external experiences.",
+    heroImageUrl: "/images/courses/course-thumb-2.png",
   },
   {
     id: "course-enabling-digital-workforce-workspace-tower",
@@ -775,6 +805,7 @@ export const courses: Course[] = [
     learningOutcomes: ["Describe the purpose of the Workspace Tower.", "Identify gaps in current digital work tooling."],
     skillsGained: ["Digital workspace literacy", "Work tooling evaluation"],
     uponCompletion: "You will be able to suggest improvements to your digital work environment.",
+    heroImageUrl: "/images/courses/course-thumb-1.png",
   },
   {
     id: "course-designing-plt-on-dbp",
@@ -798,6 +829,7 @@ export const courses: Course[] = [
     deliveryMode: "Online",
     enrollmentUrl: "/forms/dtma-needs-assessment",
     learningOutcomes: ["Map PLTs onto DBP components.", "Define measures of transaction quality on the platform."],
+    heroImageUrl: "/images/courses/course-thumb-2.png",
     skillsGained: ["PLT/platform mapping", "Transaction orchestration"],
     uponCompletion: "You will be able to design PLTs directly on the Digital Business Platform.",
   },

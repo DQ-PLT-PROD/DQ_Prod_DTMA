@@ -153,7 +153,10 @@ export default function ContactSupportTab() {
                     <p className="mt-1 text-xs sm:text-sm text-gray-500">
                         Get instant help from our support agents
                     </p>
-                    <button className="mt-1 sm:mt-2 text-blue-600 font-medium text-sm sm:text-base">
+                    <button 
+                        className="mt-1 sm:mt-2 text-blue-600 font-medium text-sm sm:text-base hover:text-blue-800 transition-colors"
+                        onClick={() => window.location.href = '/dashboard/chat-support'}
+                    >
                         Start Chat Session
                     </button>
                 </div>

@@ -7,7 +7,15 @@ import { DocumentWalletPanel } from './DocumentWalletPanel';
 import { mockReportData } from './mockReportsData';
 import { HomeIcon, ChevronRightIcon, FilterIcon } from 'lucide-react';
 import { ServiceRequestsFilters } from '../../../components/ServiceRequestsFilters';
-export function ReportsPage() {
+import { BurgerMenuButton } from '../../../components/Sidebar';
+import { PageLayout } from '../../../components/PageLayout';
+export function ReportsPage({
+    setIsOpen,
+    isLoggedIn
+}: {
+    setIsOpen?: (isOpen: boolean) => void;
+    isLoggedIn?: boolean;
+} = {}) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [reportData, setReportData] = useState(null);
@@ -87,67 +95,65 @@ export function ReportsPage() {
     // Loading state
     if (isLoading) {
         return (
-            <div className="min-h-screen">
-
-                <div className="flex flex-1 overflow-hidden">
-                    <div className="bg-gray-50 min-h-screen w-full">
-                        <div className=" mx-auto p-4 pt-2 md:p-6 md:pt-4 lg:p-8 lg:pt-4 ">
-                            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                                Reports & Reporting Obligations
-                            </h1>
-                            <div className="bg-white rounded-2xl shadow-sm p-6 flex items-center justify-center h-screen">
-                                <div className="text-center">
-                                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                                    <p className="text-gray-600">Loading reports data...</p>
-                                </div>
-                            </div>
+            <PageLayout
+                title="Reporting & Reporting Obligations"
+                headerClassName="pt-4 pb-4 pl-0.5"
+                titleClassName="text-3xl font-bold text-gray-900"
+                setIsOpen={setIsOpen}
+                isLoggedIn={isLoggedIn}
+            >
+                <div className="min-h-screen">
+                    <div className="bg-white rounded-2xl shadow-sm p-6 flex items-center justify-center h-screen">
+                        <div className="text-center">
+                            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-gray-600">Loading reports data...</p>
                         </div>
                     </div>
                 </div>
-            </div>
+
+            </PageLayout>
         );
     }
     // Error state
     if (error) {
         return (
-            <div className="min-h-screen">
+            <PageLayout
+                title="Reporting & Reporting Obligations"
+                headerClassName="pt-4 pb-4 pl-0.5"
+                titleClassName="text-3xl font-bold text-gray-900"
+                setIsOpen={setIsOpen}
+                isLoggedIn={isLoggedIn}
+            >
+                <div className="min-h-screen">
 
-                <div className="flex flex-1 overflow-hidden">
-
-                    <div className="bg-gray-50 min-h-screen w-full">
-                        <div className="  p-4 md:p-6 lg:p-8">
-                            <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                                Reports & Reporting Obligations
-                            </h1>
-
-                            <div className="bg-white rounded-2xl shadow-sm p-6">
-                                <div className="text-center py-12">
-                                    <div className="text-red-500 text-lg mb-2">Error</div>
-                                    <p className="text-gray-600 mb-4">{error}</p>
-                                    <button
-                                        onClick={() => window.location.reload()}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                                    >
-                                        Retry
-                                    </button>
-                                </div>
-                            </div>
+                    <div className="bg-white rounded-2xl shadow-sm p-6">
+                        <div className="text-center py-12">
+                            <div className="text-red-500 text-lg mb-2">Error</div>
+                            <p className="text-gray-600 mb-4">{error}</p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                            >
+                                Retry
+                            </button>
                         </div>
                     </div>
+
                 </div>
-            </div>
+            </PageLayout>
         );
     }
     return (
         <div className="min-h-screen">
-
             <div className="flex flex-1 overflow-hidden">
                 <div className="bg-gray-50 min-h-screen w-full">
-                    <div className=" mx-auto p-4 pt-2 md:p-6 md:pt-4 lg:p-8 lg:pt-5">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                            Reports & Reporting Obligations
-                        </h1>
-
+                    <PageLayout
+                        title="Reporting & Reporting Obligations"
+                        headerClassName="pt-4 pt-4 pb-4 pl-0.5"
+                        titleClassName="text-3xl font-bold text-gray-900"
+                        setIsOpen={setIsOpen}
+                        isLoggedIn={isLoggedIn}
+                    >
                         {/* Grid layout with 12 columns */}
                         <div className="grid grid-cols-12 gap-6">
                             {/* Main content section with fixed height proportions */}
@@ -204,7 +210,7 @@ export function ReportsPage() {
                                 <SubmittedReports reports={reportData.submittedReports} />
                             </div>
                         </div>
-                    </div>
+                    </PageLayout>
                 </div>
             </div>
         </div>

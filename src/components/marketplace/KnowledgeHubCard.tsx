@@ -58,7 +58,7 @@ export interface KnowledgeHubItemProps {
   }
   isBookmarked: boolean
   onToggleBookmark: () => void
-  onAddToComparison?: () => void
+
   onQuickView?: () => void
 }
 // Utility function to get the details href for an item
@@ -104,7 +104,7 @@ export const KnowledgeHubCard: React.FC<KnowledgeHubItemProps> = ({
   item,
   isBookmarked,
   onToggleBookmark,
-  onAddToComparison,
+
   onQuickView,
 }) => {
   const navigate = useNavigate()
@@ -161,6 +161,11 @@ export const KnowledgeHubCard: React.FC<KnowledgeHubItemProps> = ({
       return ''
     }
   }
+  // Ensure description is plain text (strip any visible HTML)
+  const plainDescription = (item.description || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
   // Render metadata row with date and author
   const renderMetadata = () => {
     const dateToUse = item.lastUpdated || item.date
@@ -455,7 +460,7 @@ export const KnowledgeHubCard: React.FC<KnowledgeHubItemProps> = ({
       <MediaCard
         type={getCardType()}
         title={item.title}
-        description={item.description}
+        description={plainDescription}
         image={getPosterUrl(item)}
         tags={getEnhancedTags()}
         {...getAdditionalProps()}

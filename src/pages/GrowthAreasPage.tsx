@@ -394,7 +394,7 @@ const GrowthAreasPage = () => {
     description: 'Leading innovation hub for AI, fintech, and digital transformation with world-class infrastructure.',
     icon: <TrendingUpIcon size={28} className="text-primary" />,
     growth: '12.5%',
-    investment: '$10B+',
+    investment: 'AED 10B+',
     color: 'bg-primary',
     detailsContent: technologyDetails
   }, {
@@ -402,7 +402,7 @@ const GrowthAreasPage = () => {
     description: 'Pioneering sustainable energy solutions while leveraging traditional energy expertise.',
     icon: <ZapIcon size={28} className="text-teal" />,
     growth: '8.3%',
-    investment: '$15B+',
+    investment: 'AED 15B+',
     color: 'bg-teal',
     detailsContent: energyDetails
   }, {
@@ -410,7 +410,7 @@ const GrowthAreasPage = () => {
     description: 'International financial center with progressive regulatory frameworks and global connections.',
     icon: <DatabaseIcon size={28} className="text-purple" />,
     growth: '7.2%',
-    investment: '$8B+',
+    investment: 'AED 8B+',
     color: 'bg-purple',
     detailsContent: financeDetails
   }, {
@@ -418,7 +418,7 @@ const GrowthAreasPage = () => {
     description: 'Luxury destination blending cultural heritage with modern attractions and world-class hospitality.',
     icon: <GlobeIcon size={28} className="text-primary-light" />,
     growth: '9.5%',
-    investment: '$12B+',
+    investment: 'AED 12B+',
     color: 'bg-primary-light',
     detailsContent: tourismDetails
   }, {
@@ -426,7 +426,7 @@ const GrowthAreasPage = () => {
     description: 'Premium shopping destination with innovative retail concepts and digital marketplace growth.',
     icon: <ShoppingBagIcon size={28} className="text-teal-light" />,
     growth: '6.8%',
-    investment: '$5B+',
+    investment: 'AED 5B+',
     color: 'bg-teal-light',
     detailsContent: retailDetails
   }, {

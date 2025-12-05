@@ -72,7 +72,7 @@ const DashboardLayout = ({
 
   return (
     <div className="flex-1 flex flex-col">
-      <Header />
+      <Header toggleSidebar={() => setIsOpen(true)} sidebarOpen={isOpen} />
       <div className="min-h-screen bg-gray-50 flex">
         {/* Sidebar */}
         <Sidebar

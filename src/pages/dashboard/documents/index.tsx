@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-import { BellIcon, UploadIcon } from 'lucide-react';
-import { DocumentNotification } from '../../../components/DocumentWallet/DocumentNotification';
-import { DocumentUpload } from '../../../components/DocumentWallet/DocumentUpload';
-import { DocumentWallet } from '../../../components/DocumentWallet/DocumentWallet';
-import { mockDocumentData } from '../../../components/DocumentWallet/mockDocumentData';
-import { BurgerMenuButton } from '../../../components/Sidebar';
+import { BellIcon, UploadIcon } from "lucide-react";
+import { DocumentNotification } from "../../../components/DocumentWallet/DocumentNotification";
+import { DocumentUpload } from "../../../components/DocumentWallet/DocumentUpload";
+import { DocumentWallet } from "../../../components/DocumentWallet/DocumentWallet";
+import { mockDocumentData } from "../../../components/DocumentWallet/mockDocumentData";
+import { BurgerMenuButton } from "../../../components/Sidebar";
 
 export function DocumentsPage({
   isOpen,
   setIsOpen,
   isLoggedIn,
-  setIsLoggedIn
+  setIsLoggedIn,
 }: {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
@@ -42,7 +42,7 @@ export function DocumentsPage({
       <div className="sticky top-0 z-20 py-3 px-4 lg:px-6">
         <div className="flex flex-row items-center justify-between">
           <div className='flex gap-4'>
-            <div className='lg:hidden'>
+            <div className='lg:hidden mt-2'>
               <BurgerMenuButton
                 onClick={() => setIsOpen(true)}
                 isLoggedIn={isLoggedIn}
@@ -60,7 +60,7 @@ export function DocumentsPage({
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100 relative"
               >
-                
+
                 <BellIcon size={20} />
                 {expiringDocuments.length > 0 && (
                   <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -106,14 +106,14 @@ export function DocumentsPage({
             setIsUploadModalOpen(false);
           }}
           categories={[
-            'Licensing',
-            'Legal',
-            'Certifications',
-            'Compliance',
-            'Insurance',
-            'Facilities',
-            'Tax',
-            'HR',
+            "Licensing",
+            "Legal",
+            "Certifications",
+            "Compliance",
+            "Insurance",
+            "Facilities",
+            "Tax",
+            "HR",
           ]}
         />
       )}

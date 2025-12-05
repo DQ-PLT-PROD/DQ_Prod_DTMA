@@ -39,14 +39,25 @@ export const MarketplaceComparison: React.FC<MarketplaceComparisonProps> = ({
       document.body.style.overflow = "auto";
     };
   }, [onClose]);
-  // Generate comparison categories: only the confirmed fields for now
-  const comparisonCategories = [
+  // Generate comparison categories based on marketplace type
+  const courseComparisonCategories = [
+    { name: "Category", key: "category" },
+    { name: "Level", key: "levelTag" },
+    { name: "Duration", key: "duration" },
+    { name: "Delivery Mode", key: "deliveryMode" },
+  ];
+
+  const serviceComparisonCategories = [
     { name: "Benefit", key: "description" },
     { name: "Customer Type", key: "CustomerType" },
     { name: "Business Stage", key: "BusinessStage" },
     { name: "Nationality", key: "Nationality" },
     { name: "Processing Time", key: "ProcessingTime" },
   ];
+
+  const comparisonCategories = marketplaceType === 'courses'
+    ? courseComparisonCategories
+    : serviceComparisonCategories;
   // Deterministic, per-item creative fallbacks instead of bland 'N/A'
   const hashString = (s: string) => {
     let h = 0;
@@ -107,6 +118,12 @@ export const MarketplaceComparison: React.FC<MarketplaceComparisonProps> = ({
         ];
         return seededPick(seed, options);
       }
+      // Course specific fallbacks
+      case "category": return "General";
+      case "levelTag": return "Beginner";
+      case "duration": return "Self-paced";
+      case "deliveryMode": return "Online";
+
       default: {
         const options = [
           "Information provided during application",

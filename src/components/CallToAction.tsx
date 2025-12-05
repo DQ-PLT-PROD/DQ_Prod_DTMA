@@ -113,24 +113,21 @@ const Toast = ({ message, type = "success", onClose }) => {
   return (
     <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
       <div
-        className={`rounded-lg shadow-lg p-4 flex items-start ${
-          type === "success"
-            ? "bg-green-50 border-l-4 border-green-500"
-            : "bg-red-50 border-l-4 border-red-500"
-        }`}
+        className={`rounded-lg shadow-lg p-4 flex items-start ${type === "success"
+          ? "bg-green-50 border-l-4 border-green-500"
+          : "bg-red-50 border-l-4 border-red-500"
+          }`}
       >
         <div
-          className={`flex-shrink-0 mr-3 ${
-            type === "success" ? "text-green-500" : "text-red-500"
-          }`}
+          className={`flex-shrink-0 mr-3 ${type === "success" ? "text-green-500" : "text-red-500"
+            }`}
         >
           {type === "success" ? <CheckCircle size={20} /> : <X size={20} />}
         </div>
         <div className="flex-1">
           <p
-            className={`text-sm font-medium ${
-              type === "success" ? "text-green-800" : "text-red-800"
-            }`}
+            className={`text-sm font-medium ${type === "success" ? "text-green-800" : "text-red-800"
+              }`}
           >
             {message}
           </p>
@@ -167,7 +164,7 @@ const CTACard: React.FC<CTACardProps> = ({
   description,
   buttonText,
   buttonColor,
-  onClick = () => {},
+  onClick = () => { },
   delay = 0,
   isExpanded = false,
   onExpand = undefined,
@@ -219,15 +216,13 @@ const CTACard: React.FC<CTACardProps> = ({
         {!isExpanded ? (
           <>
             <div
-              className={`${
-                buttonColor === "blue"
-                  ? "bg-blue-100"
-                  : buttonColor === "green"
+              className={`${buttonColor === "blue"
+                ? "bg-blue-100"
+                : buttonColor === "green"
                   ? "bg-emerald-100"
                   : "bg-purple-100"
-              } p-4 rounded-full inline-block mb-6 transition-transform duration-500 ${
-                isHovered ? "scale-110" : ""
-              }`}
+                } p-4 rounded-full inline-block mb-6 transition-transform duration-500 ${isHovered ? "scale-110" : ""
+                }`}
             >
               {icon}
             </div>
@@ -243,20 +238,18 @@ const CTACard: React.FC<CTACardProps> = ({
                     onClick();
                   }
                 }}
-                className={`relative overflow-hidden px-6 py-3 font-medium rounded-lg shadow-md transition-all duration-300 flex items-center ${
-                  buttonColor === "blue"
-                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800"
-                    : buttonColor === "green"
+                className={`relative overflow-hidden px-6 py-3 font-medium rounded-lg shadow-md transition-all duration-300 flex items-center ${buttonColor === "blue"
+                  ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800"
+                  : buttonColor === "green"
                     ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700"
                     : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
-                } ${isHovered ? "shadow-lg" : ""}`}
+                  } ${isHovered ? "shadow-lg" : ""}`}
               >
                 {buttonText}
                 <ChevronRight
                   size={16}
-                  className={`ml-2 transition-transform duration-300 ${
-                    isHovered ? "translate-x-1" : ""
-                  }`}
+                  className={`ml-2 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""
+                    }`}
                 />
                 <span
                   ref={rippleRef}
@@ -299,18 +292,16 @@ const CTACard: React.FC<CTACardProps> = ({
       </div>
       {/* Background glow effect */}
       <div
-        className={`absolute inset-0 transition-opacity duration-700 ${
-          isHovered ? "opacity-100" : "opacity-0"
-        }`}
+        className={`absolute inset-0 transition-opacity duration-700 ${isHovered ? "opacity-100" : "opacity-0"
+          }`}
       >
         <div
-          className={`absolute -inset-1 rounded-xl blur-xl ${
-            buttonColor === "blue"
-              ? "bg-blue-600/20"
-              : buttonColor === "green"
+          className={`absolute -inset-1 rounded-xl blur-xl ${buttonColor === "blue"
+            ? "bg-blue-600/20"
+            : buttonColor === "green"
               ? "bg-emerald-600/20"
               : "bg-purple-600/20"
-          }`}
+            }`}
         ></div>
       </div>
     </div>
@@ -330,7 +321,7 @@ const CallToAction: React.FC = () => {
   });
 
   const handleSignIn = () => {
-    navigate("/signin");
+    navigate("/coming-soon");
   };
 
   // State for expandable cards
@@ -711,9 +702,8 @@ const CallToAction: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmittingPartner}
-                  className={`w-full px-6 py-3 mt-2 font-medium rounded-lg shadow-md bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 flex items-center justify-center relative overflow-hidden ${
-                    isSubmittingPartner ? "opacity-70 cursor-not-allowed" : ""
-                  }`}
+                  className={`w-full px-6 py-3 mt-2 font-medium rounded-lg shadow-md bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 flex items-center justify-center relative overflow-hidden ${isSubmittingPartner ? "opacity-70 cursor-not-allowed" : ""
+                    }`}
                 >
                   {isSubmittingPartner ? (
                     <>
@@ -808,9 +798,8 @@ const CallToAction: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmittingContact}
-                  className={`w-full px-6 py-3 mt-2 font-medium rounded-lg shadow-md bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 flex items-center justify-center ${
-                    isSubmittingContact ? "opacity-70 cursor-not-allowed" : ""
-                  }`}
+                  className={`w-full px-6 py-3 mt-2 font-medium rounded-lg shadow-md bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 flex items-center justify-center ${isSubmittingContact ? "opacity-70 cursor-not-allowed" : ""
+                    }`}
                 >
                   {isSubmittingContact ? (
                     <>

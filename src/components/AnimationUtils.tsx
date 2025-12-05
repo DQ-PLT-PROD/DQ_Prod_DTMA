@@ -302,46 +302,46 @@ export const AnimatedCounter: React.FC<{
   );
 };
 // Typing animation effect
-export const TypingAnimation = ({
-  text,
-  speed = 50,
-  className = "",
-  delay = 0,
-}) => {
-  const [displayedText, setDisplayedText] = useState("");
-  const [ref, isInView] = useInView({
-    threshold: 0.5,
-  });
-  const hasStartedRef = useRef(false);
-  // Fallback to show full text if animation doesn't trigger
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (displayedText !== text) {
-        setDisplayedText(text);
-      }
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [text, displayedText]);
-  useEffect(() => {
-    if (isInView && !hasStartedRef.current) {
-      hasStartedRef.current = true;
-      const timer = setTimeout(() => {
-        let i = 0;
-        const typingInterval = setInterval(() => {
-          setDisplayedText(text.substring(0, i));
-          i++;
-          if (i > text.length) {
-            clearInterval(typingInterval);
-          }
-        }, speed);
-        return () => clearInterval(typingInterval);
-      }, delay * 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [isInView, text, speed, delay]);
-  return (
-    <span ref={ref} className={className}>
-      {displayedText}
-    </span>
-  );
-};
+// export const TypingAnimation = ({
+//   text,
+//   speed = 50,
+//   className = "",
+//   delay = 0,
+// }) => {
+//   const [displayedText, setDisplayedText] = useState("");
+//   const [ref, isInView] = useInView({
+//     threshold: 0.5,
+//   });
+//   const hasStartedRef = useRef(false);
+//   // Fallback to show full text if animation doesn't trigger
+//   useEffect(() => {
+//     const timer = setTimeout(() => {
+//       if (displayedText !== text) {
+//         setDisplayedText(text);
+//       }
+//     }, 2000);
+//     return () => clearTimeout(timer);
+//   }, [text, displayedText]);
+//   useEffect(() => {
+//     if (isInView && !hasStartedRef.current) {
+//       hasStartedRef.current = true;
+//       const timer = setTimeout(() => {
+//         let i = 0;
+//         const typingInterval = setInterval(() => {
+//           setDisplayedText(text.substring(0, i));
+//           i++;
+//           if (i > text.length) {
+//             clearInterval(typingInterval);
+//           }
+//         }, speed);
+//         return () => clearInterval(typingInterval);
+//       }, delay * 1000);
+//       return () => clearTimeout(timer);
+//     }
+//   }, [isInView, text, speed, delay]);
+//   return (
+//     <span ref={ref} className={className}>
+//       {displayedText}
+//     </span>
+//   );
+// };

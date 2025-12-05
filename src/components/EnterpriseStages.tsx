@@ -95,7 +95,7 @@ const AvailableServices: React.FC<AvailableServicesProps> = ({ stageId }) => {
           stageCandidates.includes(productStage)
         if (!matchesStage) return null
 
-        const formUrl = p?.customFields?.formUrl || 'https://www.tamm.abudhabi/en/login'
+        const routeType = type === 'nonfinancial' ? 'non-financial' : type
         return {
           id: String(p.id),
           title: p.name,
@@ -106,7 +106,7 @@ const AvailableServices: React.FC<AvailableServicesProps> = ({ stageId }) => {
           providerLogo: p?.customFields?.logoUrl || '/mzn_logo.png',
           cta: 'Apply',
           tags: [p?.customFields?.Addtags].filter(Boolean),
-          url: formUrl,
+          url: `/marketplace/${routeType}/${p.id}`,
         } as ServiceItem
       })
       .filter(Boolean) as ServiceItem[]

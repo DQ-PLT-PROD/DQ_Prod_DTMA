@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { FilterSidebar, FilterConfig } from "./FilterSidebar";
 import { MarketplaceGrid } from "./MarketplaceGrid";
@@ -7,24 +7,14 @@ import { SearchBar } from "../SearchBar";
 import { FilterIcon, XIcon, HomeIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { ErrorDisplay, CourseCardSkeleton } from "../SkeletonLoader";
 import { getMarketplaceConfig } from "../../utils/marketplaceConfig";
-import { MarketplaceComparison } from "./MarketplaceComparison";
-import { CourseComparison } from "../CourseComparison";
-import { Header, useAuth } from "../Header";
+import { Header } from "../Header";
 import { Footer } from "../Footer";
-import {
-  getStoredCompareIds,
-  setStoredCompareIds,
-  addCompareId as storageAddCompareId,
-  removeCompareId as storageRemoveCompareId,
-  clearCompare as storageClearCompare,
-} from "../../utils/comparisonStorage";
-import { useQuery } from "@apollo/client/react";
-import { useLocation } from "react-router-dom";
-import { GET_PRODUCTS, GET_FACETS } from "../../services/marketplaceQueries.ts";
-import { fetchMarketplaceFilters } from "../../services/marketplace";
 import { getFallbackKnowledgeHubItems } from "../../utils/fallbackData";
 import { isSupabaseConfigured, getSupabase } from "../../admin-ui/utils/supabaseClient";
-import { getCourses as getDtmaCourses, getCategories as getDtmaCategories, toMarketplaceItem } from "../../lib/api/dtmaCourses";
+import { getCategories as getDtmaCategories } from "../../lib/api/dtmaCourses";
+import { fetchCourses } from "../../services/courseService";
+import { useQuery } from "@apollo/client/react";
+import { GET_PRODUCTS, GET_FACETS } from "../../services/marketplaceQueries";
 
 
 // Mapping of Media Types to their relevant Format options (uses filter labels)
@@ -38,12 +28,7 @@ const MEDIA_TYPE_FORMAT_MAPPING: Record<string, string[]> = {
   'Podcasts': ['Recorded Media']
 };
 
-// Type for comparison items
-interface ComparisonItem {
-  id: string;
-  title: string;
-  [key: string]: any;
-}
+
 
 // Types for GET_FACETS query
 interface FacetValue {
@@ -150,7 +135,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   promoCards = [],
 }) => {
   const navigate = useNavigate();
-  const { user, isLoading } = useAuth();
+
   const location = useLocation() as any;
   const config = getMarketplaceConfig(marketplaceType);
   const heroTitle =
@@ -174,9 +159,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   const [bookmarkedItems, setBookmarkedItems] = useState<string[]>([]);
 
   // Avoid clobbering localStorage with empty state before hydration
-  const [hasHydratedCompare, setHasHydratedCompare] = useState(false);
-  const [compareItems, setCompareItems] = useState<ComparisonItem[]>([]);
-  const [showComparison, setShowComparison] = useState(false);
+
 
   // State for filter options
   const [filterConfig, setFilterConfig] = useState<FilterConfig[]>([]);
@@ -275,7 +258,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           // Initialize empty filters based on the configuration
           const initialFilters: Record<string, string | string[]> = {};
           filterOptions.forEach((config) => {
-            initialFilters[config.id] = marketplaceType === 'courses' ? [] : '';
+            initialFilters[config.id] = '';
           });
           setFilters(initialFilters);
         }
@@ -509,24 +492,51 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           return;
         }
 
-        // Handle Courses via DTMA data layer
+        // Handle Courses via Supabase (with fallback)
         if (marketplaceType === "courses") {
-          const courseList = getDtmaCourses();
-          const mappedItems = courseList.map((course) => {
-            const mapped = toMarketplaceItem(course);
-            return {
-              ...mapped,
-              duration: mapped.duration,
-            };
-          });
-
-          const lowerSearch = searchQuery.trim().toLowerCase();
           const selectedCategories = toArrayFilter(filters.category);
           const selectedAudiences = toArrayFilter(filters.audienceLevel);
           const selectedLevels = toArrayFilter(filters.levelTag);
           const selectedTopics = toArrayFilter(filters.topic);
+          const selectedDeliveryModes = toArrayFilter(filters.deliveryMode);
 
-          const filteredCourses = mappedItems.filter((item) => {
+          // Prepare filters for service
+          const serviceFilters: any = {
+            search: searchQuery.trim(),
+          };
+
+          // Only apply if specific filters are selected
+          if (selectedCategories.length === 1) serviceFilters.categorySlug = selectedCategories[0];
+          if (selectedAudiences.length === 1) serviceFilters.audienceLevel = selectedAudiences[0];
+          if (selectedLevels.length === 1) serviceFilters.levelTag = selectedLevels[0];
+          if (selectedTopics.length === 1) serviceFilters.topic = selectedTopics[0];
+          if (selectedDeliveryModes.length === 1) serviceFilters.deliveryMode = selectedDeliveryModes[0];
+
+          // Fetch from service
+          // const courses = await fetchCourses(serviceFilters);
+
+          // Client-side filtering for multi-selects (since basic Supabase query above handles single values)
+          // If we wanted full server-side multi-select, we'd need more complex query logic in the service.
+          // For now, we let the service handle basic filtering and refine here if needed, 
+          // OR we rely on the service to return everything if we can't filter perfectly there.
+          // Given the service implementation currently handles single values for equality, 
+          // let's do client-side filtering for the complex cases to ensure accuracy 
+          // while we transition.
+
+          // Actually, let's just use the service for the heavy lifting if possible, 
+          // but since the service implementation I wrote handles single values, 
+          // let's fetch all if multiple filters are applied and filter locally, 
+          // or just filter locally for now to be safe and consistent with previous behavior 
+          // until the backend query is robust enough for complex AND/OR logic.
+
+          // REVISION: The service I wrote handles single values. 
+          // To minimize regression, let's fetch *all* (or filtered by search) and filter locally 
+          // like the original code did, but sourced from the service.
+          // This ensures "ready" state without breaking complex filter combos.
+
+          const allCourses = await fetchCourses({ search: searchQuery.trim() });
+
+          const filteredCourses = allCourses.filter((item) => {
             const categoryMatch =
               selectedCategories.length === 0 ||
               selectedCategories.includes(item.categorySlug || item.category);
@@ -542,6 +552,12 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 item.topicTags.some((tag: string) =>
                   selectedTopics.includes(tag)
                 ));
+            const deliveryMatch =
+              selectedDeliveryModes.length === 0 ||
+              selectedDeliveryModes.includes(item.deliveryMode);
+
+            // Search is already handled by service but good to double check if we fetched all
+            const lowerSearch = searchQuery.trim().toLowerCase();
             const matchesSearch =
               lowerSearch === "" ||
               item.title.toLowerCase().includes(lowerSearch) ||
@@ -559,11 +575,12 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
               audienceMatch &&
               levelMatch &&
               topicMatch &&
+              deliveryMatch &&
               matchesSearch
             );
           });
 
-          setItems(mappedItems);
+          setItems(allCourses);
           setFilteredItems(filteredCourses);
           setLoading(false);
           return;
@@ -672,59 +689,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     loadItems();
   }, [productData, filters, searchQuery, marketplaceType, activeFilters, filterConfig, toArrayFilter]);
 
-  // Immediately hydrate compare from navigation state when arriving from details page
-  useEffect(() => {
-    const pending = location?.state?.addToCompare;
-    if (pending) {
-      // Add if not present and under cap
-      if (
-        !compareItems.some((c) => c.id === pending.id) &&
-        compareItems.length < 3
-      ) {
-        setCompareItems((prev) => [...prev, pending]);
-        storageAddCompareId(marketplaceType, pending.id);
-      }
-      // Clear the navigation state to avoid duplicate adds on back/refresh
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location?.state, location?.pathname, marketplaceType, compareItems]);
 
-  // Hydrate compareItems from localStorage when items are available (merge, don't clear)
-  useEffect(() => {
-    if (!items || items.length === 0) return; // wait until items are loaded
-    // Build a map for quick lookup
-    const byId: Record<string, any> = {};
-    items.forEach((it) => {
-      byId[it.id] = it;
-    });
-    const storedIds = getStoredCompareIds(marketplaceType);
-    if (!storedIds.length) return; // nothing stored; don't alter current state
-
-    // Start with current selections
-    const merged: ComparisonItem[] = [...compareItems];
-    for (const id of storedIds) {
-      if (merged.length >= 3) break;
-      if (!merged.some((c) => c.id === id)) {
-        const found = byId[id];
-        if (found) merged.push(found);
-      }
-    }
-    const currentIds = compareItems.map((i) => i.id).join(",");
-    const nextIds = merged.map((i) => i.id).join(",");
-    if (currentIds !== nextIds) {
-      setCompareItems(merged.slice(0, 3));
-    }
-    setHasHydratedCompare(true);
-  }, [items, marketplaceType, compareItems]);
-
-  // Keep storage in sync with current compareItems
-  useEffect(() => {
-    // Don't sync to storage until we've attempted hydration to avoid wiping existing selections
-    if (!hasHydratedCompare) return;
-    const ids = compareItems.map((i) => i.id);
-    setStoredCompareIds(marketplaceType, ids);
-  }, [compareItems, marketplaceType, hasHydratedCompare]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((filterType: string, value: string) => {
@@ -777,7 +742,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   }, [marketplaceType, toArrayFilter]);
 
   // Apply filters directly from clickable tags on cards/quick views
-  const handleTagFilter = useCallback((filterType: 'category' | 'audienceLevel' | 'levelTag' | 'deliveryMode' | 'topic', value: string) => {
+  const handleTagFilter = useCallback((filterType: string, value: string) => {
     if (marketplaceType === 'courses') {
       setFilters((prev) => {
         const current = toArrayFilter(prev[filterType]);
@@ -819,12 +784,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     setShowFilters((prev) => !prev);
   }, []);
 
-  // Clear all comparison selections
-  const handleClearComparison = useCallback(() => {
-    setCompareItems([]);
-    storageClearCompare(marketplaceType);
-    setShowComparison(false);
-  }, [marketplaceType]);
+
 
   // Toggle bookmark for an item
   const toggleBookmark = useCallback((itemId: string) => {
@@ -835,28 +795,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     });
   }, []);
 
-  // Add an item to comparison
-  const handleAddToComparison = useCallback(
-    (item: any) => {
-      if (
-        compareItems.length < 3 &&
-        !compareItems.some((c) => c.id === item.id)
-      ) {
-        setCompareItems((prev) => [...prev, item]);
-        storageAddCompareId(marketplaceType, item.id);
-      }
-    },
-    [compareItems, marketplaceType]
-  );
 
-  // Remove an item from comparison
-  const handleRemoveFromComparison = useCallback(
-    (itemId: string) => {
-      setCompareItems((prev) => prev.filter((item) => item.id !== itemId));
-      storageRemoveCompareId(marketplaceType, itemId);
-    },
-    [marketplaceType]
-  );
 
   // Retry loading items after an error
   const retryFetch = useCallback(() => {
@@ -911,9 +850,9 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
 
       if (isMediaTypeFilter) {
         const formatFilter = filterConfig.find(c => c.id === 'format');
-        const currentFormatFilters = newFilters.filter(f =>
-          formatFilter?.options.some(opt => opt.name === f)
-        );
+        // const currentFormatFilters = newFilters.filter(f =>
+        //   formatFilter?.options.some(opt => opt.name === f)
+        // );
 
         // Find the new selected media type
         const newMediaTypes = newFilters.filter(f =>
@@ -946,9 +885,9 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   }, [filterConfig]);
 
   // Clear Knowledge Hub filters
-  const clearKnowledgeHubFilters = useCallback(() => {
-    setActiveFilters([]);
-  }, []);
+  // const clearKnowledgeHubFilters = useCallback(() => {
+  //   setActiveFilters([]);
+  // }, []);
 
   // Toggle collapse state for a filter category
   const toggleCategoryCollapse = useCallback((categoryId: string) => {
@@ -1064,47 +1003,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           </div>
         )}
 
-        {/* Comparison bar */}
-        {compareItems.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-medium text-blue-800">
-                {config.itemName} Comparison ({compareItems.length}/3)
-              </h3>
-              <div>
-                <button
-                  onClick={() => setShowComparison(true)}
-                  className="text-blue-600 hover:text-blue-800 font-medium mr-4"
-                >
-                  Compare Selected
-                </button>
-                <button
-                  onClick={handleClearComparison}
-                  className="text-gray-500 hover:text-gray-700 text-sm"
-                >
-                  Clear All
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {compareItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-full px-3 py-1 flex items-center gap-2 text-sm border border-gray-200"
-                >
-                  <span className="truncate max-w-[150px]">{item.title}</span>
-                  <button
-                    onClick={() => handleRemoveFromComparison(item.id)}
-                    className="text-gray-400 hover:text-gray-600"
-                    aria-label={`Remove ${item.title} from comparison`}
-                  >
-                    <XIcon size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+
 
         <div className="flex flex-col xl:flex-row gap-6">
           {/* Mobile filter toggle */}
@@ -1326,7 +1225,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                 marketplaceType={marketplaceType}
                 bookmarkedItems={bookmarkedItems}
                 onToggleBookmark={toggleBookmark}
-                onAddToComparison={handleAddToComparison}
                 promoCards={allowPromoCards ? promoCards : []}
                 onTagClick={handleTagFilter}
               // Quick view interactions are handled inside MarketplaceGrid/MarketplaceCard; MarketplacePage just passes data through
@@ -1335,23 +1233,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           </div>
         </div>
 
-        {/* Comparison modal */}
-        {showComparison && (
-          marketplaceType === "courses" ? (
-            <CourseComparison
-              courses={compareItems as any}
-              onClose={() => setShowComparison(false)}
-              onRemoveCourse={handleRemoveFromComparison}
-            />
-          ) : (
-            <MarketplaceComparison
-              items={compareItems}
-              onClose={() => setShowComparison(false)}
-              onRemoveItem={handleRemoveFromComparison}
-              marketplaceType={marketplaceType}
-            />
-          )
-        )}
+
       </div>
       <Footer isLoggedIn={false} />
     </div>

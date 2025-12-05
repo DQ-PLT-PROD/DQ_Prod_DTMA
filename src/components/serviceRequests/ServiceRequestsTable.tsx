@@ -36,24 +36,20 @@ export function ServiceRequestsTable({
   );
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Add click outside handler
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setActionMenuOpen(null);
       }
     }
-    // Add event listener when menu is open
     if (actionMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-    // Clean up
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [actionMenuOpen]);
 
-  // Calculate pagination
   const totalPages = Math.ceil(requests.length / rowsPerPage);
   const startIndex = (page - 1) * rowsPerPage;
   const paginatedRequests = requests.slice(
@@ -76,7 +72,7 @@ export function ServiceRequestsTable({
   const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newRowsPerPage = parseInt(e.target.value, 10);
     setRowsPerPage(newRowsPerPage);
-    setPage(1); // Reset to first page when changing rows per page
+    setPage(1);
   };
 
   const formatDate = (dateString: string) => {
@@ -89,15 +85,10 @@ export function ServiceRequestsTable({
   };
 
   const toggleActionMenu = (requestId: string) => {
-    if (actionMenuOpen === requestId) {
-      setActionMenuOpen(null);
-    } else {
-      setActionMenuOpen(requestId);
-    }
+    setActionMenuOpen(actionMenuOpen === requestId ? null : requestId);
   };
 
   const handleAction = (action: string, request: ServiceRequest) => {
-    console.log(`Action: ${action}`, request);
     setActionMenuOpen(null);
 
     if (action === "view") {
@@ -121,7 +112,6 @@ export function ServiceRequestsTable({
     );
   };
 
-  // Determine if edit/cancel actions are allowed based on request status
   const canEdit = (request: ServiceRequest) => {
     return request.status === "draft";
   };
@@ -132,8 +122,8 @@ export function ServiceRequestsTable({
 
   return (
     <div>
-      {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto">
+      {/* Desktop Table (large screens only) */}
+      <div className="hidden lg:block overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -174,9 +164,7 @@ export function ServiceRequestsTable({
               >
                 <div className="flex items-center">
                   Service Provider
-                  <span className="ml-1">
-                    {renderSortIcon("serviceProvider")}
-                  </span>
+                  <span className="ml-1">{renderSortIcon("serviceProvider")}</span>
                 </div>
               </th>
               <th
@@ -186,9 +174,7 @@ export function ServiceRequestsTable({
               >
                 <div className="flex items-center">
                   Submitted Date
-                  <span className="ml-1">
-                    {renderSortIcon("submittedDate")}
-                  </span>
+                  <span className="ml-1">{renderSortIcon("submittedDate")}</span>
                 </div>
               </th>
               <th scope="col" className="relative px-6 py-3">
@@ -235,11 +221,7 @@ export function ServiceRequestsTable({
                         ref={menuRef}
                         className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
                       >
-                        <div
-                          className="py-1"
-                          role="menu"
-                          aria-orientation="vertical"
-                        >
+                        <div className="py-1" role="menu" aria-orientation="vertical">
                           <button
                             onClick={() => handleAction("view", request)}
                             className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -285,8 +267,8 @@ export function ServiceRequestsTable({
         </table>
       </div>
 
-      {/* Mobile Cards */}
-      <div className="md:hidden">
+      {/* Cards for Mobile + iPad */}
+      <div className="lg:hidden">
         <div className="divide-y divide-gray-200">
           {paginatedRequests.map((request) => (
             <div key={request.id} className="p-4 hover:bg-gray-50">
@@ -298,24 +280,18 @@ export function ServiceRequestsTable({
                   >
                     {request.serviceName}
                   </button>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {request.category}
-                  </p>
+                  <p className="text-sm text-gray-500 mt-1">{request.category}</p>
                 </div>
                 <StatusBadge status={request.status} />
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <p className="text-gray-500">Provider:</p>
-                  <p className="font-medium">
-                    {request.serviceProvider || "N/A"}
-                  </p>
+                  <p className="font-medium">{request.serviceProvider || "N/A"}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Submitted:</p>
-                  <p className="font-medium">
-                    {formatDate(request.submittedDate)}
-                  </p>
+                  <p className="font-medium">{formatDate(request.submittedDate)}</p>
                 </div>
               </div>
               <div className="mt-3 flex justify-end">
@@ -329,11 +305,7 @@ export function ServiceRequestsTable({
                   </button>
                   {actionMenuOpen === request.id && (
                     <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                      <div
-                        className="py-1"
-                        role="menu"
-                        aria-orientation="vertical"
-                      >
+                      <div className="py-1" role="menu" aria-orientation="vertical">
                         <button
                           onClick={() => handleAction("view", request)}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -378,7 +350,6 @@ export function ServiceRequestsTable({
         </div>
       </div>
 
-      {/* Service Request Details Modal */}
       {selectedRequest && (
         <ServiceRequestDetails
           request={selectedRequest}
@@ -390,33 +361,30 @@ export function ServiceRequestsTable({
         />
       )}
 
-      {/* Pagination */}
       <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-        <div className="flex-1 flex justify-between sm:hidden">
+        <div className="flex-1 flex justify-between lg:hidden">
           <button
             onClick={handlePreviousPage}
             disabled={page === 1}
-            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-              page === 1
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-white text-gray-700 hover:bg-gray-50"
-            }`}
+            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${page === 1
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-white text-gray-700 hover:bg-gray-50"
+              }`}
           >
             Previous
           </button>
           <button
             onClick={handleNextPage}
             disabled={page === totalPages}
-            className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-              page === totalPages
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-white text-gray-700 hover:bg-gray-50"
-            }`}
+            className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${page === totalPages
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-white text-gray-700 hover:bg-gray-50"
+              }`}
           >
             Next
           </button>
         </div>
-        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div className="hidden lg:flex-1 lg:flex lg:items-center lg:justify-between">
           <div>
             <p className="text-sm text-gray-700">
               Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
@@ -428,10 +396,7 @@ export function ServiceRequestsTable({
           </div>
           <div className="flex items-center">
             <div className="mr-4">
-              <label
-                htmlFor="rows-per-page"
-                className="mr-2 text-sm text-gray-600"
-              >
+              <label htmlFor="rows-per-page" className="mr-2 text-sm text-gray-600">
                 Rows per page:
               </label>
               <select
@@ -448,24 +413,21 @@ export function ServiceRequestsTable({
             </div>
             <nav
               className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-              aria-label="Pagination"
-            >
+              aria-label="Pagination
+">
               <button
                 onClick={handlePreviousPage}
                 disabled={page === 1}
-                className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                  page === 1
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-500 hover:bg-gray-50"
-                }`}
+                className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${page === 1
+                  ? "text-gray-300 cursor-not-allowed"
+                  : "text-gray-500 hover:bg-gray-50"
+                  }`}
               >
                 <span className="sr-only">Previous</span>
                 <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
               </button>
-              {/* Page numbers */}
               {[...Array(totalPages)].map((_, i) => {
                 const pageNumber = i + 1;
-                // Show current page, first page, last page, and pages around current page
                 if (
                   pageNumber === 1 ||
                   pageNumber === totalPages ||
@@ -475,17 +437,15 @@ export function ServiceRequestsTable({
                     <button
                       key={pageNumber}
                       onClick={() => setPage(pageNumber)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                        page === pageNumber
-                          ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                      }`}
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${page === pageNumber
+                        ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                        }`}
                     >
                       {pageNumber}
                     </button>
                   );
                 }
-                // Show ellipsis for gaps
                 if (
                   (pageNumber === 2 && page > 3) ||
                   (pageNumber === totalPages - 1 && page < totalPages - 2)
@@ -504,11 +464,10 @@ export function ServiceRequestsTable({
               <button
                 onClick={handleNextPage}
                 disabled={page === totalPages}
-                className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                  page === totalPages
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-500 hover:bg-gray-50"
-                }`}
+                className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${page === totalPages
+                  ? "text-gray-300 cursor-not-allowed"
+                  : "text-gray-500 hover:bg-gray-50"
+                  }`}
               >
                 <span className="sr-only">Next</span>
                 <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />

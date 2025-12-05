@@ -280,6 +280,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
     variant: (index === 0 ? 'primary' : 'info') as const,
   }))
   const ctaColorClass = getCTAColorByType(type)
+  const finalCTALabel = (cta && cta.label) ? cta.label : getCTAText(type)
   const isCtaDisabled = !detailsHref
   // Render media section based on type
   const renderMediaSection = () => {
@@ -605,7 +606,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
               disabled={isCtaDisabled}
               aria-disabled={isCtaDisabled}
               className={`w-full px-4 py-3 text-sm font-bold text-white rounded-md transition-colors flex items-center justify-center gap-2 ${isCtaDisabled ? 'bg-gray-400 cursor-not-allowed' : ctaColorClass}`}
-              aria-label={`${getCTAText(type)}: ${title}`}
+              aria-label={`${finalCTALabel}: ${title}`}
             >
               {type === 'video' && <Play size={16} />}
               {type === 'podcast' && <Mic size={16} />}
@@ -619,7 +620,7 @@ export const MediaCard: React.FC<MediaCardProps> = ({
               {type === 'infographic' && <ZoomIn size={16} />}
               {type === 'tool' && <ExternalLink size={16} />}
               {type === 'announcement' && <ExternalLink size={16} />}
-              {getCTAText(type)}
+              {finalCTALabel}
             </button>
           )}
         </div>

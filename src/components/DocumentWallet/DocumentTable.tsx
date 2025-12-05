@@ -1,3 +1,7 @@
+// ✅ CHANGES MADE:
+// - Replaced `md:` with `lg:` so desktop mode starts at 1024px
+// - Mobile/card layout now applies to iPad/tablet screens too
+
 import React, { useState } from 'react';
 import {
     FileTextIcon,
@@ -14,11 +18,18 @@ import {
     UserIcon,
     TagIcon,
 } from 'lucide-react';
-export function DocumentTable({ documents, onViewDocument }: { documents: any, onViewDocument: (document: any) => void; }) {
+
+export function DocumentTable({
+    documents,
+    onViewDocument,
+}: {
+    documents: any;
+    onViewDocument: (document: any) => void;
+}) {
     const [sortField, setSortField] = useState('uploadDate');
     const [sortDirection, setSortDirection] = useState('desc');
     const [expandedRows, setExpandedRows] = useState<any[]>([]);
-    // Handle sort
+
     const handleSort = (field: string) => {
         if (sortField === field) {
             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -27,20 +38,21 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
             setSortDirection('asc');
         }
     };
-    // Sort documents
+
     const sortedDocuments = [...documents].sort((a, b) => {
         let aValue = a[sortField];
         let bValue = b[sortField];
-        // Handle dates
+
         if (sortField === 'uploadDate' || sortField === 'expiryDate') {
             aValue = aValue ? new Date(aValue).getTime() : 0;
             bValue = bValue ? new Date(bValue).getTime() : 0;
         }
+
         if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
         if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
         return 0;
     });
-    // Toggle row expansion for mobile view
+
     const toggleRowExpansion = (id: string) => {
         if (expandedRows.includes(id)) {
             setExpandedRows(expandedRows.filter((rowId) => rowId !== id));
@@ -48,7 +60,7 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
             setExpandedRows([...expandedRows, id]);
         }
     };
-    // Get icon based on file type
+
     const getFileIcon = (type: string) => {
         switch (type) {
             case 'pdf':
@@ -61,7 +73,7 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
                 return <FileIcon size={16} className="text-gray-500" />;
         }
     };
-    // Get status color
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'Active':
@@ -74,7 +86,7 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
                 return 'bg-gray-100 text-gray-800';
         }
     };
-    // Format date for display
+
     const formatDate = (dateString: string) => {
         if (!dateString) return 'N/A';
         const date = new Date(dateString);
@@ -84,7 +96,7 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
             day: 'numeric',
         });
     };
-    // Check if document is expiring soon (within 30 days)
+
     const isExpiringSoon = (expiryDate: string) => {
         if (!expiryDate) return false;
         const today = new Date();
@@ -93,10 +105,11 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays <= 30 && diffDays >= 0;
     };
+
     return (
         <div className="border border-gray-200 rounded-lg overflow-hidden">
-            {/* Desktop view */}
-            <div className="hidden md:block overflow-x-auto">
+            {/* ✅ Desktop view now hidden until lg (1024px+) */}
+            <div className="hidden lg:block overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -211,7 +224,9 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
                                     </td>
                                     <td className="px-4 py-4 whitespace-nowrap">
                                         <span
-                                            className={`px-2.5 py-1 text-xs rounded-full ${getStatusColor(doc.status)}`}
+                                            className={`px-2.5 py-1 text-xs rounded-full ${getStatusColor(
+                                                doc.status
+                                            )}`}
                                         >
                                             {doc.status}
                                         </span>
@@ -228,7 +243,10 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                                <td
+                                    colSpan={6}
+                                    className="px-4 py-8 text-center text-gray-500"
+                                >
                                     No documents found
                                 </td>
                             </tr>
@@ -236,8 +254,9 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
                     </tbody>
                 </table>
             </div>
-            {/* Enhanced Mobile view - Card-based layout */}
-            <div className="md:hidden">
+
+            {/* ✅ Mobile + Tablet (up to 1023px) */}
+            <div className="lg:hidden">
                 {sortedDocuments.length > 0 ? (
                     <div className="divide-y divide-gray-200">
                         {sortedDocuments.map((doc: any) => (
@@ -264,13 +283,18 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
                                             {expandedRows.includes(doc.id) ? (
                                                 <ChevronUpIcon size={20} className="text-gray-400" />
                                             ) : (
-                                                <ChevronRightIcon size={20} className="text-gray-400" />
+                                                <ChevronRightIcon
+                                                    size={20}
+                                                    className="text-gray-400"
+                                                />
                                             )}
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between mt-3">
                                         <span
-                                            className={`px-2.5 py-1 text-xs rounded-full ${getStatusColor(doc.status)}`}
+                                            className={`px-2.5 py-1 text-xs rounded-full ${getStatusColor(
+                                                doc.status
+                                            )}`}
                                         >
                                             {doc.status}
                                         </span>
@@ -281,7 +305,10 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
                                                     className="text-gray-400 mr-1.5"
                                                 />
                                                 <span
-                                                    className={`text-xs ${isExpiringSoon(doc.expiryDate) ? 'text-yellow-600 font-medium' : 'text-gray-500'}`}
+                                                    className={`text-xs ${isExpiringSoon(doc.expiryDate)
+                                                        ? 'text-yellow-600 font-medium'
+                                                        : 'text-gray-500'
+                                                        }`}
                                                 >
                                                     {isExpiringSoon(doc.expiryDate)
                                                         ? 'Expires soon'
@@ -297,14 +324,23 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
                                         <div className="grid grid-cols-2 gap-3 py-3">
                                             <div>
                                                 <p className="text-xs text-gray-500 mb-1 flex items-center">
-                                                    <CalendarIcon size={12} className="mr-1.5" /> Upload
-                                                    Date
+                                                    <CalendarIcon
+                                                        size={12}
+                                                        className="mr-1.5"
+                                                    />{' '}
+                                                    Upload Date
                                                 </p>
-                                                <p className="text-sm">{formatDate(doc.uploadDate)}</p>
+                                                <p className="text-sm">
+                                                    {formatDate(doc.uploadDate)}
+                                                </p>
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-500 mb-1 flex items-center">
-                                                    <UserIcon size={12} className="mr-1.5" /> Uploaded By
+                                                    <UserIcon
+                                                        size={12}
+                                                        className="mr-1.5"
+                                                    />{' '}
+                                                    Uploaded By
                                                 </p>
                                                 <p className="text-sm">{doc.uploadedBy}</p>
                                             </div>
@@ -312,7 +348,11 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
                                         {doc.tags && doc.tags.length > 0 && (
                                             <div className="mb-3 pt-1">
                                                 <p className="text-xs text-gray-500 mb-1.5 flex items-center">
-                                                    <TagIcon size={12} className="mr-1.5" /> Tags
+                                                    <TagIcon
+                                                        size={12}
+                                                        className="mr-1.5"
+                                                    />{' '}
+                                                    Tags
                                                 </p>
                                                 <div className="flex flex-wrap gap-1.5">
                                                     {doc.tags.map((tag: string, idx: number) => (
@@ -333,7 +373,8 @@ export function DocumentTable({ documents, onViewDocument }: { documents: any, o
                                                 onViewDocument(doc);
                                             }}
                                         >
-                                            <EyeIcon size={16} className="mr-2" /> View Details
+                                            <EyeIcon size={16} className="mr-2" /> View
+                                            Details
                                         </button>
                                     </div>
                                 )}

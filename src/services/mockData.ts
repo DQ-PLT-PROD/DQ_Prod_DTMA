@@ -14,7 +14,7 @@ export const mockHeroData = {
     value: '87%'
   }, {
     label: 'Investment Secured',
-    value: '$120M+'
+    value: 'AED 120M+'
   }]
 };
 // Growth areas data
@@ -533,7 +533,7 @@ export const mockBusinessInsights = [{
   author: 'Dr. James Wilson',
   readTime: 7,
   // minutes
-  keyPoints: ['Telemedicine adoption up 87% since 2020', 'AI in diagnostics improving accuracy by 43%', 'Digital health startups secured $420M in funding', 'Electronic health records implemented in 92% of facilities'],
+  keyPoints: ['Telemedicine adoption up 87% since 2020', 'AI in diagnostics improving accuracy by 43%', 'Digital health startups secured AED 420M in funding', 'Electronic health records implemented in 92% of facilities'],
   imageUrl: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop'
 }, {
   id: 'insight6',
@@ -554,104 +554,104 @@ export const mockInvestmentOpportunities = [{
   sector: 'Real Estate',
   location: 'Abu Dhabi',
   investmentAmount: 25000000,
-  // $25M
+  // AED 25M
   expectedReturn: '18-22%',
   duration: '5-7 years',
   description: 'Mixed-use development project incorporating sustainable design principles, renewable energy and smart city technologies.',
   highlights: ['LEED Platinum certification target', 'Solar power integration', 'Smart building management systems', 'Water recycling and conservation features'],
   status: 'Seeking Investors',
-  minimumInvestment: 500000 // $500K
+  minimumInvestment: 500000 // AED 500K
 }, {
   id: 'inv2',
   title: 'AgTech Innovation Fund',
   sector: 'Agriculture',
   location: 'UAE-wide',
   investmentAmount: 15000000,
-  // $15M
+  // AED 15M
   expectedReturn: '15-20%',
   duration: '4-6 years',
   description: 'Venture fund focused on agricultural technology startups addressing food security challenges in arid environments.',
   highlights: ['Vertical farming technologies', 'Water-efficient irrigation solutions', 'AI-powered crop management', 'Sustainable packaging innovations'],
   status: 'Actively Investing',
-  minimumInvestment: 250000 // $250K
+  minimumInvestment: 250000 // AED 250K
 }, {
   id: 'inv3',
   title: 'Healthcare Technology Accelerator',
   sector: 'Healthcare',
   location: 'Dubai',
   investmentAmount: 10000000,
-  // $10M
+  // AED 10M
   expectedReturn: '20-25%',
   duration: '3-5 years',
   description: 'Accelerator program investing in early-stage healthcare technology companies with innovative solutions.',
   highlights: ['Telemedicine platforms', 'AI diagnostic tools', 'Remote patient monitoring', 'Healthcare data analytics'],
   status: 'Seeking Investors',
-  minimumInvestment: 200000 // $200K
+  minimumInvestment: 200000 // AED 200K
 }, {
   id: 'inv4',
   title: 'Renewable Energy Infrastructure Project',
   sector: 'Energy',
   location: 'Ras Al Khaimah',
   investmentAmount: 50000000,
-  // $50M
+  // AED 50M
   expectedReturn: '12-15%',
   duration: '8-10 years',
   description: 'Large-scale solar energy project with advanced storage solutions providing clean energy to industrial zones.',
   highlights: ['200MW capacity', 'Battery storage integration', 'Power purchase agreements in place', 'Carbon credit generation'],
   status: 'Under Development',
-  minimumInvestment: 1000000 // $1M
+  minimumInvestment: 1000000 // AED 1M
 }, {
   id: 'inv5',
   title: 'Fintech Venture Portfolio',
   sector: 'Finance',
   location: 'DIFC, Dubai',
   investmentAmount: 20000000,
-  // $20M
+  // AED 20M
   expectedReturn: '22-28%',
   duration: '4-6 years',
   description: 'Diversified portfolio of financial technology startups focusing on payments, blockchain and financial inclusion.',
   highlights: ['Digital payment solutions', 'Blockchain applications', 'Regulatory technology', 'Financial inclusion platforms'],
   status: 'Actively Investing',
-  minimumInvestment: 300000 // $300K
+  minimumInvestment: 300000 // AED 300K
 }, {
   id: 'inv6',
   title: 'Advanced Manufacturing Facility',
   sector: 'Manufacturing',
   location: 'Sharjah',
   investmentAmount: 35000000,
-  // $35M
+  // AED 35M
   expectedReturn: '14-18%',
   duration: '6-8 years',
   description: 'State-of-the-art manufacturing facility utilizing Industry 4.0 technologies for precision components.',
   highlights: ['Robotics and automation', 'IoT-enabled production', 'Advanced materials processing', 'Digital twin technology'],
   status: 'Seeking Investors',
-  minimumInvestment: 750000 // $750K
+  minimumInvestment: 750000 // AED 750K
 }, {
   id: 'inv7',
   title: 'E-commerce Fulfillment Network',
   sector: 'Logistics',
   location: 'Multiple UAE Locations',
   investmentAmount: 18000000,
-  // $18M
+  // AED 18M
   expectedReturn: '16-20%',
   duration: '5-7 years',
   description: 'Network of automated fulfillment centers optimized for e-commerce operations across the UAE.',
   highlights: ['Automated sorting and packaging', 'Last-mile delivery optimization', 'Cross-border e-commerce capabilities', 'Integrated inventory management'],
   status: 'Under Development',
-  minimumInvestment: 400000 // $400K
+  minimumInvestment: 400000 // AED 400K
 }, {
   id: 'inv8',
   title: 'Tourism & Hospitality Innovation Fund',
   sector: 'Tourism',
   location: 'UAE-wide',
   investmentAmount: 12000000,
-  // $12M
+  // AED 12M
   expectedReturn: '15-19%',
   duration: '4-6 years',
   description: 'Investment fund focusing on innovative concepts and technologies in tourism and hospitality.',
   highlights: ['Experiential tourism concepts', 'Virtual and augmented reality applications', 'Sustainable hospitality solutions', 'Smart hotel technologies'],
   status: 'Actively Investing',
-  minimumInvestment: 200000 // $200K
+  minimumInvestment: 200000 // AED 200K
 }];
 // Economic indicators data
 export const mockEconomicIndicators = [{
@@ -668,7 +668,7 @@ export const mockEconomicIndicators = [{
   id: 'econ2',
   indicator: 'Foreign Direct Investment',
   value: 22.7,
-  unit: 'billion USD',
+  unit: 'billion AED',
   year: 2023,
   trend: 'increasing',
   previousValue: 20.2,
@@ -790,7 +790,7 @@ export const mockEconomicIndicators = [{
   id: 'econ14',
   indicator: 'Foreign Direct Investment',
   value: 20.2,
-  unit: 'billion USD',
+  unit: 'billion AED',
   year: 2022,
   trend: 'increasing',
   previousValue: 17.8,

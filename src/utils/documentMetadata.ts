@@ -6,20 +6,20 @@
  * Get file size from a URL using HTTP HEAD request
  * Returns formatted string (e.g., "4.2 MB") or null if unable to retrieve
  */
-export async function getFileSizeFromUrl(url: string): Promise<string | null> {
-  try {
-    const response = await fetch(url, { method: 'HEAD' })
-    const contentLength = response.headers.get('Content-Length')
+// export async function getFileSizeFromUrl(url: string): Promise<string | null> {
+//   try {
+//     const response = await fetch(url, { method: 'HEAD' })
+//     const contentLength = response.headers.get('Content-Length')
 
-    if (!contentLength) return null
+//     if (!contentLength) return null
 
-    const bytes = parseInt(contentLength, 10)
-    return formatFileSize(bytes)
-  } catch (error) {
-    console.error('Failed to get file size from URL:', error)
-    return null
-  }
-}
+//     const bytes = parseInt(contentLength, 10)
+//     return formatFileSize(bytes)
+//   } catch (error) {
+//     console.error('Failed to get file size from URL:', error)
+//     return null
+//   }
+// }
 
 /**
  * Get PDF page count using pdf.js

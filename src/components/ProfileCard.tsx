@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PhoneIcon, MailIcon, GlobeIcon } from 'lucide-react';
-import { useCachedImage } from '../utils/imageCache';
 interface ProfileCardProps {
   name: string;
   logo: string;
@@ -23,19 +22,31 @@ const ProfileCard = ({
   onViewProfile,
   buttonText = 'View Profile'
 }: ProfileCardProps) => {
-  // Use the cached image hook
-  const {
-    imageUrl,
-    isLoading
-  } = useCachedImage(logo);
+  const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+
   return <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col">
       <div className="p-8 flex-1 flex flex-col">
         <div className="flex items-center mb-6">
-          <div className="w-16 h-16 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden mr-5 shadow-sm">
-            {isLoading ? <div className="animate-pulse w-12 h-12 bg-gray-200 rounded"></div> : <img src={imageUrl || logo} alt={`${name} logo`} className="w-12 h-12 object-contain" onError={e => {
-            // Fallback for any runtime errors
-            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNFNUU3RUIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzZCN0M5MyIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNnB4Ij5Mb2dvPC90ZXh0Pjwvc3ZnPg==';
-          }} />}
+          <div className="w-16 h-16 rounded-lg bg-gray-50 p-2 mr-5 shadow-sm flex items-center justify-center">
+            {!imgLoaded && !imgError && (
+              <div className="w-12 h-12 bg-gray-200 rounded animate-pulse"></div>
+            )}
+            {imgError ? (
+              <div className="text-xs font-semibold text-gray-600">
+                {name.substring(0, 2).toUpperCase()}
+              </div>
+            ) : (
+              <img 
+                src={logo} 
+                alt={`${name} logo`} 
+                className="w-full h-full object-contain" 
+                style={{ display: imgLoaded ? 'block' : 'none' }}
+                crossOrigin="anonymous"
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgError(true)} 
+              />
+            )}
           </div>
           <div>
             <h3 className="font-display text-xl font-bold mb-1">{name}</h3>
