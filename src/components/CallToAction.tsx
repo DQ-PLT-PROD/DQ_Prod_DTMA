@@ -215,18 +215,6 @@ const CTACard: React.FC<CTACardProps> = ({
       <div className="relative z-10">
         {!isExpanded ? (
           <div className="flex flex-col items-center text-center">
-            <div
-              className={`${buttonColor === "blue"
-                ? "bg-blue-100"
-                : buttonColor === "green"
-                  ? "bg-emerald-100"
-                  : "bg-purple-100"
-                } p-4 rounded-full inline-block mb-6 transition-transform duration-500 ${isHovered ? "scale-110" : ""
-                }`}
-            >
-              {icon}
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
             <p className="text-gray-600 mb-6">{description}</p>
             <div className="flex justify-center w-full">
               <button
