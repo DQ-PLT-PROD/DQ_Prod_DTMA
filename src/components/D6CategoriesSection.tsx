@@ -70,6 +70,9 @@ const D6CategoriesSection: React.FC = () => {
                     <img
                       src={category.image}
                       alt={category.title}
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
                       className={`h-full w-full object-cover ${
                         category.title === "Digital Transformation 2.0 (DT2.0)"
                           ? "object-top"
