@@ -552,7 +552,7 @@ const CallToAction: React.FC = () => {
         <div className="absolute -top-16 -right-24 h-48 w-48 rounded-full border-4 border-white/60" />
       </div>
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <FadeInUpOnScroll className="space-y-4">
             <h2 className="text-3xl md:text-4xl font-bold leading-tight text-[#030C2B]">
               Ready to Grow in the AI Working Era?
@@ -566,7 +566,7 @@ const CallToAction: React.FC = () => {
             <CTACard
               icon={<Users size={28} className="text-blue-600" />}
               title="Register Now"
-              description="Create your account to access our courses."
+              description="Create your account and start your learning journey."
               buttonText="Sign Up"
               buttonColor="blue"
               onClick={handleSignIn}

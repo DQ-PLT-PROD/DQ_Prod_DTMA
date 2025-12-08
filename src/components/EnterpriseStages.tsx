@@ -30,7 +30,7 @@ const steps = [
 
 const EnterpriseStages: React.FC = () => {
   return (
-    <section className="bg-white pt-32 pb-16">
+    <section className="bg-white pt-32 pb-8">
       <div className="w-full space-y-12">
         <FadeInUpOnScroll className="overflow-visible w-full min-h-[650px]">
           <div className="relative z-10 bg-[#1839AD] text-white grid lg:grid-cols-[3fr,2fr] overflow-hidden">
@@ -65,7 +65,7 @@ const EnterpriseStages: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white p-8 sm:p-10 space-y-10 pt-24 mt-7 relative z-10">
+          <div className="bg-white p-8 sm:p-10 space-y-8 pt-12 mt-4 relative z-10">
             <StaggeredFadeIn staggerDelay={0.1}>
               <div className="flex flex-col gap-10">
                 <div className="flex flex-col gap-8 md:gap-0 md:flex-row justify-between relative z-20">
@@ -92,15 +92,6 @@ const EnterpriseStages: React.FC = () => {
                 </div>
               </div>
             </StaggeredFadeIn>
-            <div className="flex justify-center mt-16">
-              <button
-                className="px-10 py-4 text-white font-semibold text-lg rounded-full shadow-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex items-center justify-center gap-2"
-                style={{ backgroundColor: "#1839AD" }}
-              >
-                Start Your Learning Journey
-                <ArrowRight size={18} />
-              </button>
-            </div>
           </div>
         </FadeInUpOnScroll>
       </div>
@@ -109,14 +100,3 @@ const EnterpriseStages: React.FC = () => {
 };
 
 export default EnterpriseStages;
-<div
-  className="absolute hidden md:block border-[2px] border-[#FFFFFF] rounded-full pointer-events-none z-20"
-  style={{
-    width: "16rem",
-    height: "16rem",
-    left: "47%",
-    bottom: "-160px",
-    transform: "translateX(-50%)",
-    zIndex: 5,
-  }}
-></div>
