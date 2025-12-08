@@ -36,18 +36,18 @@ const EnterpriseStages: React.FC = () => {
           <div className="relative z-10 bg-[#1839AD] text-white grid lg:grid-cols-[3fr,2fr] overflow-hidden">
             <div className="relative z-10 h-full pl-[9.5rem] pr-10 sm:pr-16 sm:pl-[13rem] py-6 md:py-8 flex flex-col justify-center space-y-4 overflow-visible">
               <div
-                className="absolute border-[2px] border-[#FFFFFF] rounded-full pointer-events-none"
+                className="absolute border-[2px] border-[#FFFFFF] rounded-full pointer-events-none z-20"
                 style={{ width: "18rem", height: "18rem", left: "-9rem", top: "-6rem" }}
               ></div>
               <div
-                className="absolute hidden md:block border-[2px] border-[#FFFFFF] rounded-full pointer-events-none z-10"
+                className="absolute hidden md:block border-[2px] border-[#FFFFFF] rounded-full pointer-events-none z-20"
                 style={{ width: "250px", height: "250px", left: "4px", bottom: "-202px" }}
               ></div>
               <div
-                className="absolute bg-black/30 pointer-events-none z-10"
+                className="absolute bg-black/30 pointer-events-none z-0"
                 style={{ top: "-12rem", bottom: "-12rem", left: "-12rem", right: 0 }}
               ></div>
-              <div className="relative space-y-4 z-20 ml-4">
+              <div className="relative space-y-4 z-30 ml-4">
                 <h2 className="text-3xl md:text-4xl font-bold">How You Learn</h2>
                 <p className="text-base md:text-lg text-white/90 max-w-lg">
                   DTMA takes learners from fundamentals to applied mastery
@@ -110,7 +110,7 @@ const EnterpriseStages: React.FC = () => {
 
 export default EnterpriseStages;
 <div
-  className="absolute hidden md:block border-[2px] border-[#FFFFFF] rounded-full pointer-events-none"
+  className="absolute hidden md:block border-[2px] border-[#FFFFFF] rounded-full pointer-events-none z-20"
   style={{
     width: "16rem",
     height: "16rem",
