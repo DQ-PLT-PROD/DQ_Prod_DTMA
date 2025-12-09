@@ -34,7 +34,7 @@ if (container) {
           msalInstance.setActiveAccount(accounts[0]);
         }
       }
-      // If this was an explicit Sign Up flow or a brand new account, route to onboarding
+      // If this was an explicit Sign Up flow or a brand new account, route to learning page
       try {
         const isSignupState =
           typeof result?.state === "string" &&
@@ -43,11 +43,17 @@ if (container) {
         const isNewUser =
           claims?.newUser === true || claims?.newUser === "true";
         if (isSignupState || isNewUser) {
-          // Navigate to onboarding without adding history entry
-          window.location.replace("/dashboard/onboarding");
+          // Navigate to learning page without adding history entry
+          window.location.replace("/learning");
           return;
         }
       } catch { }
+      
+      // If user just logged in (not signup), also redirect to learning page
+      if (result?.account) {
+        window.location.replace("/learning");
+        return;
+      }
       root.render(
         <ApolloProvider client={client}>
           <MsalProvider instance={msalInstance}>
