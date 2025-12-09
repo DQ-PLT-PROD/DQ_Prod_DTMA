@@ -31,7 +31,7 @@ import { CourseMeta } from "../../components/ui/CourseMeta";
 import { Tag } from "../../components/ui/Tag";
 import { AudienceFitIndicator } from "../../components/marketplace/details/AudienceFitIndicator";
 import { MarketplaceCard } from "../../components/marketplace/MarketplaceCard";
-import { BRAND_GRADIENT } from "../../constants/branding";
+
 
 interface MarketplaceDetailsPageProps {
   marketplaceType: "courses" | "financial" | "non-financial" | "knowledge-hub";
@@ -65,6 +65,8 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   const relatedRef = useRef<HTMLElement>(null);
   const [isPointerFine, setIsPointerFine] = useState<boolean>(true);
   const [showDescription, setShowDescription] = useState(true);
+  const [isMuted, setIsMuted] = useState(true); // Video starts muted for autoplay
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Auto-hide description after 8 seconds to focus on video
   useEffect(() => {
@@ -95,6 +97,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     () => getCourseMedia(item),
     [item]
   );
+
 
   const seeAllHref = useMemo(() => {
     if (marketplaceType !== "courses") return config.route;
@@ -459,33 +462,59 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
         transparent={true}
       />
       <main id="main-content" className="flex-grow">
-        {/* Hero Banner - consistent header layout */}
+        {/* Hero Banner - Netflix-style video with layered structure */}
         <div
           ref={heroRef}
-          className="w-full text-white relative overflow-hidden h-screen min-h-[600px] bg-slate-900"
+          className="w-full text-white relative h-screen min-h-[600px] overflow-hidden isolate"
           onMouseEnter={() => setShowScrollIndicator(true)}
           onMouseLeave={() => setShowScrollIndicator(false)}
         >
-          {/* Background Pattern Overlay */}
-          <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10 z-0"></div>
-
-          {/* Video Background - Full Width */}
+          {/* Video Background Layer */}
           {introVideoUrl && (
-            <div
-              className="absolute inset-0 w-full h-full z-10 pointer-events-auto"
-            >
-              <HeroVideoPlayer
-                videoUrl={introVideoUrl}
-                posterUrl={introVideoPoster}
-              />
-              {/* Gradient Overlays for Readability */}
-              <div className={`absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent pointer-events-none transition-all duration-1000 ease-in-out ${showDescription ? 'opacity-100' : 'opacity-0'}`}></div>
-              <div className={`absolute inset-0 bg-gradient-to-tr from-black/90 via-black/40 to-transparent pointer-events-none transition-all duration-1000 ease-in-out ${showDescription ? 'opacity-0' : 'opacity-100'}`}></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+            <video
+              ref={videoRef}
+              id="hero-video"
+              className="absolute top-0 left-0 w-full h-full object-cover z-0"
+              src={introVideoUrl}
+              poster={introVideoPoster}
+              autoPlay
+              muted={isMuted}
+              loop
+              playsInline
+            />
+          )}
+
+          {/* Video Controls Layer */}
+          {introVideoUrl && (
+            <div className="absolute bottom-8 right-8 flex gap-2 z-20">
+              <button
+                onClick={() => {
+                  if (videoRef.current) {
+                    videoRef.current.muted = !videoRef.current.muted;
+                    setIsMuted(!isMuted);
+                  }
+                }}
+                className="p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors backdrop-blur-sm border border-white/20"
+                aria-label={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
+              </button>
+              <button
+                onClick={() => {
+                  if (videoRef.current) {
+                    videoRef.current.requestFullscreen();
+                  }
+                }}
+                className="p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors backdrop-blur-sm border border-white/20"
+                aria-label="Fullscreen"
+              >
+                <Maximize size={22} />
+              </button>
             </div>
           )}
 
-          <div className="container mx-auto px-4 relative z-20 h-full flex flex-col pt-20 pointer-events-none">
+          {/* Content Overlay Layer */}
+          <div className="container mx-auto px-4 absolute inset-0 flex flex-col pt-20 pointer-events-none z-10">
             {/* Breadcrumbs - Fixed at top */}
             <nav
               className="flex pb-4 pointer-events-auto opacity-60 hover:opacity-100 transition-opacity duration-300 flex-none"
@@ -525,7 +554,6 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
 
             {/* Centered Content */}
             <div className="flex-1 flex flex-col justify-end items-start max-w-3xl pointer-events-auto pb-8">
-              {/* Badges Row */}
               {/* Badges Row */}
               <div className="flex flex-wrap items-center gap-3 mb-6">
                 {(item as any).category && (
@@ -633,29 +661,25 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
             ) : undefined}
           />
         </div>
-        {/* Main content area with 12-column grid layout */}
+
+        {/* Main content area - full width */}
         <div
           ref={mainContentRef}
           className="container mx-auto px-4 md:px-6 max-w-7xl py-8"
         >
-          <div className="grid grid-cols-12 gap-8">
-            {/* Content column (Full width since summary card is removed) */}
-            <div className="col-span-12">
-              {/* Tab Content */}
-              <div className="mb-8">
-                {config.tabs.map((tab) => (
-                  <div
-                    key={tab.id}
-                    className={activeTab === tab.id ? "block" : "hidden"}
-                    id={`tabpanel-${tab.id}`}
-                    role="tabpanel"
-                    aria-labelledby={`tab-${tab.id}`}
-                  >
-                    {renderTabContent(tab.id)}
-                  </div>
-                ))}
+          {/* Tab Content - Full width */}
+          <div className="mb-8">
+            {config.tabs.map((tab) => (
+              <div
+                key={tab.id}
+                className={activeTab === tab.id ? "block" : "hidden"}
+                id={`tabpanel-${tab.id}`}
+                role="tabpanel"
+                aria-labelledby={`tab-${tab.id}`}
+              >
+                {renderTabContent(tab.id)}
               </div>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -726,134 +750,5 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   );
 };
 
-// Internal Hero Video Component with Custom Controls
-const HeroVideoPlayer: React.FC<{
-  videoUrl: string;
-  posterUrl?: string;
-}> = ({ videoUrl, posterUrl }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const [showControls, setShowControls] = useState(true);
-
-  // Autoplay after 1 second (reduced from 3)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (videoRef.current) {
-        // Ensure muted is set for autoplay policy
-        videoRef.current.muted = true;
-        const playPromise = videoRef.current.play();
-
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => setIsPlaying(true))
-            .catch((e) => {
-              console.warn("Autoplay prevented:", e);
-              // If autoplay fails, we are in a paused state. 
-              // We should ensure the video is visible so user can click play.
-              setIsPlaying(false);
-              setShowControls(true);
-            });
-        }
-      }
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-
-  const toggleFullscreen = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (videoRef.current) {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        videoRef.current.requestFullscreen();
-      }
-    }
-  };
-
-  return (
-    <div
-      className="relative w-full h-full group"
-      onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => isPlaying && setShowControls(false)}
-    >
-      <video
-        ref={videoRef}
-        src={videoUrl}
-        poster={posterUrl}
-        className={`w-full h-full object-cover transition-opacity duration-500 ${isPlaying || !videoRef.current ? "opacity-100" : "opacity-100"}`}
-        playsInline
-        muted={isMuted}
-        loop
-        preload="auto"
-        onClick={togglePlay}
-        onEnded={() => setIsPlaying(false)}
-      />
-
-      {/* Overlay Controls - Always visible if not playing */}
-      <div
-        className={`absolute inset-0 flex flex-col justify-between transition-opacity duration-300 pointer-events-none ${showControls || !isPlaying ? "opacity-100" : "opacity-0"
-          }`}
-      >
-        {/* Bottom Right Controls - Aligned with Container */}
-        <div className="container mx-auto px-4 h-full relative">
-          <div className="absolute bottom-8 right-4 flex gap-2 z-20 pointer-events-auto">
-            <button
-              onClick={toggleMute}
-              className="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors backdrop-blur-sm border border-white/10"
-              aria-label={isMuted ? "Unmute" : "Mute"}
-            >
-              {isMuted ? (
-                <VolumeX size={20} />
-              ) : (
-                <Volume2 size={20} />
-              )}
-            </button>
-            <button
-              onClick={toggleFullscreen}
-              className="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors backdrop-blur-sm border border-white/10"
-            >
-              <Maximize size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* Center Play Button (only when paused) */}
-        {!isPlaying && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <button
-              onClick={togglePlay}
-              className="pointer-events-auto h-16 w-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:scale-110 transition-transform duration-300 group-hover:scale-110"
-            >
-              <div className="h-12 w-12 rounded-full bg-white text-blue-600 flex items-center justify-center shadow-lg pl-1">
-                <Play size={24} fill="currentColor" />
-              </div>
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 export default MarketplaceDetailsPage;
