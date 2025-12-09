@@ -273,7 +273,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               <h1 className="text-[48px] md:text-[56px] leading-[1.2] font-bold text-white tracking-[-0.5px] max-w-3xl mx-auto">
               Every Skill to Grow and Scale in the Digital Economy
             </h1>
-            <p className="text-[16px] leading-[1.5] text-white/80 font-normal max-w-xl mx-auto">
+            <p className="text-[18px] leading-[1.5] text-white/80 font-semibold max-w-2xl mx-auto">
               Start your digital transformation journey with easy‑to‑follow lessons that help you understand, improve, and innovate at your own pace.
             </p>
           </div>
@@ -297,7 +297,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
       {/* Scroll indicator with animation */}
       <div
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce cursor-pointer"
+        className="absolute bottom-8 inset-x-0 flex justify-center animate-bounce cursor-pointer"
         onClick={() => {
           const nextSection = document.querySelector('main > div:nth-child(2)');
           nextSection?.scrollIntoView({
