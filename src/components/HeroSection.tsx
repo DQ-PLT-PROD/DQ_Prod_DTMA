@@ -245,7 +245,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         className="absolute inset-0"
         style={{
           background: BRAND_GRADIENT,
-          opacity: 0.5,
+          opacity: 0.25,
           backdropFilter: BRAND_BACKDROP_BLUR,
           WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
           animation: 'pulse-gradient 8s ease-in-out infinite alternate',
@@ -256,24 +256,24 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundColor: "#030C2B",
-          opacity: 0.65,
+          opacity: 0.4,
         }}
       ></div>
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundColor: "#000000",
-          opacity: 0.2,
+          opacity: 0.1,
         }}
       ></div>
 
       <div className="container mx-auto px-4 h-full py-16 md:py-24 flex flex-col justify-center items-center gap-8 relative z-10 text-center">
-        <FadeInUpOnScroll className="space-y-4 w-full flex flex-col items-center">
-          <div className="space-y-4 w-full">
-            <h1 className="text-[58px] md:text-[64px] leading-[110%] font-bold text-white tracking-tight max-w-4xl mx-auto">
-              Every skill to grow and scale in the digital economy.
+        <FadeInUpOnScroll className="space-y-5 w-full flex flex-col items-center">
+            <div className="space-y-5 w-full flex flex-col items-center text-center">
+              <h1 className="text-[48px] md:text-[56px] leading-[1.2] font-bold text-white tracking-[-0.5px] max-w-3xl mx-auto">
+              Every Skill to Grow and Scale in the Digital Economy
             </h1>
-            <p className="text-[18px] leading-[140%] text-white/80 font-semibold max-w-xl mx-auto">
+            <p className="text-[16px] leading-[1.5] text-white/80 font-normal max-w-xl mx-auto">
               Start your digital transformation journey with easy‑to‑follow lessons that help you understand, improve, and innovate at your own pace.
             </p>
           </div>
@@ -281,14 +281,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
         {/* AI Prompt Interface removed as requested */}
 
-        <StaggeredFadeIn staggerDelay={0.2} className="flex justify-center w-full">
+        <StaggeredFadeIn staggerDelay={0.2} className="flex justify-center w-full mt-5">
           <button
             onClick={handleSignIn}
             className="px-10 py-4 text-white font-semibold text-lg rounded-full shadow-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:opacity-90 text-center flex items-center justify-center overflow-hidden group tracking-wide min-w-[260px]"
             style={{ backgroundColor: BRAND_PRIMARY }}
           >
-            <span className="relative z-10">Start Your Learning Journey</span>
-            <ArrowRight size={18} className="ml-2 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
+            <span className="relative z-10">Get Started</span>
             <span className="absolute inset-0 overflow-hidden rounded-lg">
               <span className="absolute inset-0 bg-white/20 transform scale-0 opacity-0 group-hover:scale-[2.5] group-hover:opacity-100 rounded-full transition-all duration-700 origin-center"></span>
             </span>

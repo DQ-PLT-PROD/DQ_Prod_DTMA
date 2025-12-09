@@ -50,9 +50,7 @@ const EnterpriseStages: React.FC = () => {
               <div className="relative space-y-4 z-30 ml-4">
                 <h2 className="text-3xl md:text-4xl font-bold">How You Learn</h2>
                 <p className="text-base md:text-lg text-white/90 max-w-md">
-                  DTMA takes learners from fundamentals to applied mastery
-                  through a clear learning path that builds proven, confident
-                  capability in the AI era.
+                  DTMA guides learners from basic concepts to advanced skills, building confidence in the AI era.
                 </p>
               </div>
             </div>
