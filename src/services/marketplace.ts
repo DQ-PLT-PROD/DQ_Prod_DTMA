@@ -4,6 +4,7 @@ import { FilterConfig } from "../components/marketplace/FilterSidebar";
 import { getMarketplaceConfig } from "../utils/marketplaceConfig";
 import { getCourses as getDtmaCourses, getCourseBySlug, getRelatedCourses, toMarketplaceItem } from "../lib/api/dtmaCourses";
 import { categories as dtmaCategories } from "../data/dtma/categories";
+import { AudienceLevel } from "../types/dtma-lms";
 
 /**
  * Fetches marketplace items based on marketplace type, filters, and search query
@@ -19,7 +20,7 @@ export const fetchMarketplaceItems = async (
       const courseFilters = {
         search: searchQuery,
         categorySlug: filters.category || undefined,
-        audienceLevel: filters.audienceLevel || undefined,
+        audienceLevel: (filters.audienceLevel as AudienceLevel) || undefined,
         levelTag: filters.levelTag || undefined,
         deliveryMode: filters.deliveryMode || undefined,
       };
@@ -51,8 +52,7 @@ export const fetchMarketplaceItems = async (
     const data = (await request(
       query,
       variables,
-      `get${
-        marketplaceType.charAt(0).toUpperCase() + marketplaceType.slice(1)
+      `get${marketplaceType.charAt(0).toUpperCase() + marketplaceType.slice(1)
       }Items`,
       marketplaceType
     )) as any;
@@ -82,12 +82,12 @@ export const fetchMarketplaceFilters = async (
       return config.filterCategories.map((fc) =>
         fc.id === "category"
           ? {
-              ...fc,
-              options: dtmaCategories.map((c) => ({
-                id: c.slug,
-                name: c.name,
-              })),
-            }
+            ...fc,
+            options: dtmaCategories.map((c) => ({
+              id: c.slug,
+              name: c.name,
+            })),
+          }
           : fc
       );
     }
@@ -106,8 +106,7 @@ export const fetchMarketplaceFilters = async (
     const data = (await request(
       query,
       {},
-      `get${
-        marketplaceType.charAt(0).toUpperCase() + marketplaceType.slice(1)
+      `get${marketplaceType.charAt(0).toUpperCase() + marketplaceType.slice(1)
       }FilterOptions`,
       marketplaceType
     )) as any;
@@ -175,8 +174,7 @@ export const fetchMarketplaceItemDetails = async (
       {
         id: itemId,
       },
-      `get${
-        marketplaceType.charAt(0).toUpperCase() + marketplaceType.slice(1)
+      `get${marketplaceType.charAt(0).toUpperCase() + marketplaceType.slice(1)
       }ItemDetails`,
       marketplaceType
     )) as any;
@@ -225,8 +223,7 @@ export const fetchRelatedMarketplaceItems = async (
         category,
         provider,
       },
-      `getRelated${
-        marketplaceType.charAt(0).toUpperCase() + marketplaceType.slice(1)
+      `getRelated${marketplaceType.charAt(0).toUpperCase() + marketplaceType.slice(1)
       }Items`,
       marketplaceType
     )) as any;
@@ -270,8 +267,7 @@ export const fetchMarketplaceProviders = async (
     const data = (await request(
       query,
       {},
-      `get${
-        marketplaceType.charAt(0).toUpperCase() + marketplaceType.slice(1)
+      `get${marketplaceType.charAt(0).toUpperCase() + marketplaceType.slice(1)
       }Providers`,
       marketplaceType
     )) as any;
