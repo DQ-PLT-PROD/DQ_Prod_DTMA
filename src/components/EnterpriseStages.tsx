@@ -4,10 +4,6 @@ import { FadeInUpOnScroll, StaggeredFadeIn } from "./AnimationUtils";
 
 const steps = [
   {
-    title: "Orientation",
-    description: "Set your goals and pick a D6 category to start.",
-  },
-  {
     title: "Learn",
     description: "Short, practical lessons with examples and quick checks.",
   },
