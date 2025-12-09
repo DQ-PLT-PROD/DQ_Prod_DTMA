@@ -5,7 +5,7 @@ import { FadeInUpOnScroll } from "./AnimationUtils";
 const stats = [
   {
     value: "6",
-    label: "Learning paths built on the 6XD framework",
+    label: "Course categories built on the 6XD framework",
   },
   { value: "30+", label: "Courses based on real transformation work" },
   { value: "1", label: "Recognition badge validating AI-ready skills" },
