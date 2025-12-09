@@ -10,6 +10,7 @@ import {
 interface VideoPlayerProps {
     src: string;
     poster?: string;
+    className?: string;
     isPlaying: boolean;
     volume: number;
     playbackRate: number;
@@ -30,6 +31,7 @@ interface VideoPlayerProps {
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     src,
     poster,
+    className = "",
     isPlaying,
     volume,
     playbackRate,
@@ -123,7 +125,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
 
     return (
-        <div className="bg-white border border-gray-200 shadow-md overflow-hidden flex-1 flex flex-col rounded-xl">
+        <div className={`bg-white border border-gray-200 shadow-md overflow-hidden flex-1 flex flex-col rounded-xl ${className}`}>
             <div className="bg-[#0E1940] flex-1 relative group">
                 <video
                     ref={videoRef}

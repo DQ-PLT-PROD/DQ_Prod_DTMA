@@ -149,9 +149,9 @@ const ProofAndTrust: React.FC = () => {
 
         <div className="space-y-8">
           <FadeInUpOnScroll className="space-y-3 text-center">
-            <h3 className="text-3xl font-bold text-[#030C2B]">Trusted by Our First Customers</h3>
+            <h3 className="text-3xl font-bold text-[#030C2B]">Trusted by Our Customers</h3>
             <p className="text-lg text-gray-600 max-w-xl mx-auto text-center">
-              Our learners didn’t just finish the courses, they translated the insights gained into tangible wins across their teams and organisations.
+              Our learners don't just finish our courses, they translate the insights gained into tangible wins across their teams and organisations.
             </p>
           </FadeInUpOnScroll>
 

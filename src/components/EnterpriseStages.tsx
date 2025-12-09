@@ -30,26 +30,26 @@ const steps = [
 
 const EnterpriseStages: React.FC = () => {
   return (
-    <section className="bg-white pt-32 pb-16">
+    <section className="bg-white pt-32 pb-8">
       <div className="w-full space-y-12">
         <FadeInUpOnScroll className="overflow-visible w-full min-h-[650px]">
           <div className="relative z-10 bg-[#1839AD] text-white grid lg:grid-cols-[3fr,2fr] overflow-hidden">
             <div className="relative z-10 h-full pl-[9.5rem] pr-10 sm:pr-16 sm:pl-[13rem] py-6 md:py-8 flex flex-col justify-center space-y-4 overflow-visible">
               <div
-                className="absolute border-[1.5px] border-white rounded-full pointer-events-none"
+                className="absolute border border-[#FFFFFF] rounded-full pointer-events-none z-20"
                 style={{ width: "18rem", height: "18rem", left: "-9rem", top: "-6rem" }}
               ></div>
               <div
-                className="absolute hidden md:block border-[1.5px] border-white rounded-full pointer-events-none z-10"
+                className="absolute hidden md:block border border-[#FFFFFF] rounded-full pointer-events-none z-20"
                 style={{ width: "250px", height: "250px", left: "4px", bottom: "-202px" }}
               ></div>
               <div
-                className="absolute bg-black/30 pointer-events-none z-10"
+                className="absolute bg-black/30 pointer-events-none z-0"
                 style={{ top: "-12rem", bottom: "-12rem", left: "-12rem", right: 0 }}
               ></div>
-              <div className="relative space-y-4 z-20 ml-4">
+              <div className="relative space-y-4 z-30 ml-4">
                 <h2 className="text-3xl md:text-4xl font-bold">How You Learn</h2>
-                <p className="text-base md:text-lg text-white/90 max-w-lg">
+                <p className="text-base md:text-lg text-white/90 max-w-md">
                   DTMA takes learners from fundamentals to applied mastery
                   through a clear learning path that builds proven, confident
                   capability in the AI era.
@@ -65,7 +65,7 @@ const EnterpriseStages: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white p-8 sm:p-10 space-y-10 pt-24 mt-7 relative z-10">
+          <div className="bg-white p-8 sm:p-10 space-y-8 pt-12 mt-4 relative z-10">
             <StaggeredFadeIn staggerDelay={0.1}>
               <div className="flex flex-col gap-10">
                 <div className="flex flex-col gap-8 md:gap-0 md:flex-row justify-between relative z-20">
@@ -92,15 +92,6 @@ const EnterpriseStages: React.FC = () => {
                 </div>
               </div>
             </StaggeredFadeIn>
-            <div className="flex justify-center mt-16">
-              <button
-                className="px-10 py-4 text-white font-semibold text-lg rounded-full shadow-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex items-center justify-center gap-2"
-                style={{ backgroundColor: "#1839AD" }}
-              >
-                Start Your Learning Journey
-                <ArrowRight size={18} />
-              </button>
-            </div>
           </div>
         </FadeInUpOnScroll>
       </div>
@@ -109,14 +100,3 @@ const EnterpriseStages: React.FC = () => {
 };
 
 export default EnterpriseStages;
-<div
-  className="absolute hidden md:block border-[1.5px] border-white rounded-full pointer-events-none"
-  style={{
-    width: "16rem",
-    height: "16rem",
-    left: "47%",
-    bottom: "-160px",
-    transform: "translateX(-50%)",
-    zIndex: 5,
-  }}
-></div>

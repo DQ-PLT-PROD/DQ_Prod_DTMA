@@ -16,6 +16,7 @@ const ABOUT_TEXT = [
 ];
 
 const QUICK_LINKS = [
+  { label: "Explore Courses", href: "/marketplace/courses" },
   { label: "Help Center", href: "#" },
   FEATURES.GROWTH_AREAS && { label: "Explore the AI Working Era", href: "/discover-abudhabi" },
   { label: "Privacy Policy", href: "#" },

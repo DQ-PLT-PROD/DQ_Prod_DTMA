@@ -17,7 +17,6 @@ import MediaCreate from "./admin-ui/pages/MediaCreate";
 import AdminMediaDetail from "./admin-ui/pages/MediaDetail2";
 import AdminSettings from "./admin-ui/pages/Settings";
 
-import KfBot from "./bot/KfBot";
 // Forms
 import NeedsAssessmentForm from "./pages/forms/NeedsAssessmentForm";
 import RequestForMembership from "./pages/forms/RequestForMembership";
@@ -53,7 +52,7 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        {FEATURES.AI_CHATBOT && <KfBot />}
+
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/courses" element={<App />} />
