@@ -3,7 +3,10 @@ import { ArrowRight, ArrowLeft } from "lucide-react";
 import { FadeInUpOnScroll } from "./AnimationUtils";
 
 const stats = [
-  { value: "6XD", label: "Framework powering all DTMA courses" },
+  {
+    value: "6",
+    label: "Learning paths built on the 6XD framework",
+  },
   { value: "30+", label: "Courses based on real transformation work" },
   { value: "1", label: "Recognition badge validating AI-ready skills" },
 ];
@@ -33,19 +36,19 @@ const typingWords = ["leaders", "workers"];
 
 const whyHighlights = [
   {
-    title: "Framework-first Learning",
+    title: "Master the Skills That Matter in the AI Era",
     description:
-      "Every DTMA course is grounded in the 6XD Framework so teams move from theory into applied outcomes.",
+      "Bite‑sized, practical lessons that make digital transformation simple, clear, and actionable.",
   },
   {
-    title: "Built by Practitioners",
+    title: "Learn Through a Proven Digital Transformation Framework",
     description:
-      "Digital Qatalyst’s transformation architects translate field playbooks into practical, guided lessons.",
+      "Every course follows a structure, which is your roadmap for understanding and leading change.",
   },
   {
-    title: "Designed for Momentum",
+    title: "Built for Busy Professionals Who Need Real Results",
     description:
-      "Bite-sized sprints, templates, and reflections help leaders orchestrate change while work keeps moving.",
+      "Tools, playbooks, and frameworks you can apply immediately to grow your career or transform your organization.",
   },
 ];
 

@@ -51,7 +51,7 @@ const D6CategoriesSection: React.FC = () => {
             className="text-3xl md:text-4xl font-bold text-gray-900"
             style={{ textShadow: "0 8px 20px rgba(3, 12, 43, 0.1)" }}
           >
-            Discover Our D6 Course Categories
+            Discover Our Course Categories
           </h2>
           <p className="text-lg text-gray-600">
             Each category opens a pathway into the AI era. Choose the dimension aligned to your goals and explore guided courses that translate directly to your role.
