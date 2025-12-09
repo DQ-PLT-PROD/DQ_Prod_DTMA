@@ -34,7 +34,7 @@ if (container) {
           msalInstance.setActiveAccount(accounts[0]);
         }
       }
-      // If this was an explicit Sign Up flow or a brand new account, route to learning page
+      // Handle post-authentication redirects
       try {
         const isSignupState =
           typeof result?.state === "string" &&
@@ -42,18 +42,23 @@ if (container) {
         const claims = (result as any)?.idTokenClaims || {};
         const isNewUser =
           claims?.newUser === true || claims?.newUser === "true";
+        
+        // If this was a signup flow, log them out and redirect to home for signin
         if (isSignupState || isNewUser) {
-          // Navigate to learning page without adding history entry
+          const account = result?.account;
+          msalInstance.logoutRedirect({ 
+            account: account,
+            postLogoutRedirectUri: window.location.origin
+          });
+          return;
+        }
+        
+        // If user just logged in (regular signin), redirect to learning page
+        if (result?.account) {
           window.location.replace("/learning");
           return;
         }
       } catch { }
-      
-      // If user just logged in (not signup), also redirect to learning page
-      if (result?.account) {
-        window.location.replace("/learning");
-        return;
-      }
       root.render(
         <ApolloProvider client={client}>
           <MsalProvider instance={msalInstance}>
