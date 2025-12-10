@@ -2,5 +2,14 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/" }
-  ]
+  ],
+  "env": {
+    "VITE_AZURE_CLIENT_ID": "66ab04e3-a85d-48f1-b7a9-db7fdedd5e9d",
+    "VITE_B2C_TENANT_NAME": "dqproddev",
+    "VITE_B2C_POLICY_SIGNUP_SIGNIN": "Cross_Prod_Register_Login",
+    "VITE_AZURE_REDIRECT_URI": "https://dq-prod-dtma.vercel.app",
+    "VITE_AZURE_POST_LOGOUT_REDIRECT_URI": "https://dq-prod-dtma.vercel.app",
+    "VITE_SUPABASE_URL": "https://ugmybskacomcdgdngolz.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnbXlic2thY29tY2RnZG5nb2x6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2NTM0MDEsImV4cCI6MjA4MDIyOTQwMX0.iwNLBgOsE1k8Eb3noMhJ4kCZX6b5oLdq-0B5S7CcPpo"
+  }
 }
