@@ -36,7 +36,7 @@ const courseCategories: CourseCategory[] = [
   },
   {
     id: "d3",
-    name: "Understanding the Core/Engine of Digital Transformation",
+    name: "Mastering Digital Transformation",
     description:
       "What legacy value or orchestration engine powers the future?",
     icon: CreditCardIcon,

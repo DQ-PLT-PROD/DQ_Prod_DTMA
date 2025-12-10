@@ -17,7 +17,7 @@ const categories = [
     image: "/2nd category Thumbnail.jpg",
   },
   {
-    title: "Understanding the Core/Engine of Digital Transformation",
+    title: "Mastering Digital Transformation",
     description:
       "What legacy value or orchestration engine powers the future?",
     image: "/tl.jpg",
