@@ -147,5 +147,5 @@ export const defaultLoginRequest = {
 
 export const signupRequest = {
   scopes: Array.from(new Set([...DEFAULT_OIDC_SCOPES, ...GRAPH_SCOPES])),
-  authority: AUTHORITY_SIGNUP,
+  authority: AUTHORITY_SIGNUP_SIGNIN,
 };
