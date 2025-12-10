@@ -9,7 +9,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserIcon, ArrowRight } from "lucide-react";
 import { ExploreDropdown } from "./components/ExploreDropdown";
 import { BRAND_BACKDROP_BLUR } from "../../constants/branding";
-import { AzureAuthModal } from "../auth/AzureAuthModal";
 import { FEATURES } from "../../config/features";
 
 const HEADER_GRADIENT =
@@ -30,9 +29,8 @@ export function Header({
 }: HeaderProps) {
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
   const [showNotificationCenter, setShowNotificationCenter] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const { user, login } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -68,7 +66,7 @@ export function Header({
 
   // Handle sign in
   const handleSignIn = () => {
-    setShowAuthModal(true);
+    openAuthModal('signin');
   };
 
   const handleBrowseCourses = () => {
@@ -134,9 +132,8 @@ export function Header({
         }}
       >
         <div
-          className={`flex w-full items-center justify-between text-white transition-all duration-300 ${
-            isSticky ? "px-5 py-2.5" : "px-8 py-4"
-          }`}
+          className={`flex w-full items-center justify-between text-white transition-all duration-300 ${isSticky ? "px-5 py-2.5" : "px-8 py-4"
+            }`}
         >
           <div className="flex items-center gap-6">
             {/* Logo */}
@@ -205,12 +202,6 @@ export function Header({
           </div>
         </div>
       )}
-
-      {/* Auth Modal */}
-      <AzureAuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
     </>
   );
 }

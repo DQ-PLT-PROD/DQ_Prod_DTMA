@@ -1,24 +1,25 @@
 import React, { useState } from 'react'
 import { X, User, ArrowRight } from 'lucide-react'
-import { useAuth } from '../Header/context/AuthContext'
+
 
 interface AzureAuthModalProps {
   isOpen: boolean
   onClose: () => void
   defaultMode?: 'signin' | 'signup'
+  onLogin: () => void
+  onSignup: () => void
 }
 
-export function AzureAuthModal({ isOpen, onClose, defaultMode = 'signin' }: AzureAuthModalProps) {
+export function AzureAuthModal({ isOpen, onClose, defaultMode = 'signin', onLogin, onSignup }: AzureAuthModalProps) {
   const [mode, setMode] = useState<'signin' | 'signup'>(defaultMode)
-  const { login, signup } = useAuth()
 
   const handleSignIn = () => {
-    login()
+    onLogin()
     onClose()
   }
 
   const handleSignUp = () => {
-    signup()
+    onSignup()
     onClose()
   }
 
@@ -50,9 +51,9 @@ export function AzureAuthModal({ isOpen, onClose, defaultMode = 'signin' }: Azur
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <User size={32} className="text-blue-600" />
             </div>
-            
+
             <p className="text-gray-600 mb-6">
-              {mode === 'signin' 
+              {mode === 'signin'
                 ? 'Sign in with your Microsoft account to access your dashboard and protected content.'
                 : 'Create a new account using Microsoft authentication to get started.'
               }
@@ -84,10 +85,10 @@ export function AzureAuthModal({ isOpen, onClose, defaultMode = 'signin' }: Azur
             className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" viewBox="0 0 23 23" fill="none">
-              <path d="M11 0H0V11H11V0Z" fill="#F25022"/>
-              <path d="M23 0H12V11H23V0Z" fill="#7FBA00"/>
-              <path d="M11 12H0V23H11V12Z" fill="#00A4EF"/>
-              <path d="M23 12H12V23H23V12Z" fill="#FFB900"/>
+              <path d="M11 0H0V11H11V0Z" fill="#F25022" />
+              <path d="M23 0H12V11H23V0Z" fill="#7FBA00" />
+              <path d="M11 12H0V23H11V12Z" fill="#00A4EF" />
+              <path d="M23 12H12V23H23V12Z" fill="#FFB900" />
             </svg>
             <span>
               {mode === 'signin' ? 'Sign In with Microsoft' : 'Sign Up with Microsoft'}
@@ -101,8 +102,8 @@ export function AzureAuthModal({ isOpen, onClose, defaultMode = 'signin' }: Azur
               onClick={toggleMode}
               className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
             >
-              {mode === 'signin' 
-                ? "Don't have an account? Sign up" 
+              {mode === 'signin'
+                ? "Don't have an account? Sign up"
                 : 'Already have an account? Sign in'
               }
             </button>
@@ -111,7 +112,7 @@ export function AzureAuthModal({ isOpen, onClose, defaultMode = 'signin' }: Azur
           {/* Info */}
           <div className="mt-6 pt-4 border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center">
-              By continuing, you'll be redirected to Microsoft's secure login page. 
+              By continuing, you'll be redirected to Microsoft's secure login page.
               Your credentials are never stored on our servers.
             </p>
           </div>

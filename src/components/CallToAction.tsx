@@ -10,6 +10,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "./Header/context/AuthContext";
 
 // Animated shape component
 const FloatingShape = ({ size, color, delay, duration, className = "" }) => {
@@ -235,9 +236,9 @@ const CTACard: React.FC<CTACardProps> = ({
               >
                 {buttonColor === "blue" ? "Get Started" : buttonText}
                 <ArrowRight
-                    size={16}
-                    className={`ml-1 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""
-                      }`}
+                  size={16}
+                  className={`ml-1 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""
+                    }`}
                 />
                 <span
                   ref={rippleRef}
@@ -304,12 +305,13 @@ interface ToastData {
 const CallToAction: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { openAuthModal } = useAuth();
   const [ref, isInView] = useInView({
     threshold: 0.2,
   });
 
   const handleSignIn = () => {
-    navigate("/coming-soon");
+    openAuthModal('signup');
   };
 
   // State for expandable cards
