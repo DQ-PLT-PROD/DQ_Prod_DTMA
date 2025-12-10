@@ -5,9 +5,9 @@ import { FadeInUpOnScroll } from "./AnimationUtils";
 const stats = [
   {
     value: "6",
-    label: "Course categories built on the 6XD framework",
+    label: "Expertly designed course categories",
   },
-  { value: "30+", label: "Courses based on real transformation work" },
+  { value: "30+", label: "Bite‑sized courses for future‑ready professionals" },
   { value: "1", label: "Recognition badge validating AI-ready skills" },
 ];
 
@@ -36,17 +36,17 @@ const typingWords = ["leaders", "workers"];
 
 const whyHighlights = [
   {
-    title: "Master the Skills That Matter in the AI Era",
+    title: "Master the skills that matter in the AI era",
     description:
       "Bite‑sized, practical lessons that make digital transformation simple, clear, and actionable.",
   },
   {
-    title: "Learn Through a Proven Digital Transformation Framework",
+    title: "Learn through a proven digital transformation framework",
     description:
       "Every course follows a structure, which is your roadmap for understanding and leading change.",
   },
   {
-    title: "Built for Busy Professionals Who Need Real Results",
+    title: "Built for busy professionals who need results",
     description:
       "Tools, playbooks, and frameworks you can apply immediately to grow your career or transform your organization.",
   },
