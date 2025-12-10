@@ -22,7 +22,7 @@ import {
 import { Header } from '../../components/Header'
 import { Footer } from '../../components/Footer'
 import { MediaCard } from '../../components/Cards/MediaCard'
-import { getSupabase } from '../../admin-ui/utils/supabaseClient'
+import { getSupabase } from '../../lib/supabase/client'
 import {
   VideoDurationInfo,
 } from '../../utils/videoUtils'
@@ -466,10 +466,10 @@ const MediaDetailPage: React.FC = () => {
       if (audioRef.current) {
         const audio = audioRef.current
         audio.pause()
-        audio.removeEventListener('timeupdate', () => {})
-        audio.removeEventListener('loadedmetadata', () => {})
-        audio.removeEventListener('ended', () => {})
-        audio.removeEventListener('error', () => {})
+        audio.removeEventListener('timeupdate', () => { })
+        audio.removeEventListener('loadedmetadata', () => { })
+        audio.removeEventListener('ended', () => { })
+        audio.removeEventListener('error', () => { })
       }
     }
   }, [volume])
@@ -718,7 +718,7 @@ const MediaDetailPage: React.FC = () => {
     if (!item || !type) return null
     const t = String(type).toLowerCase()
     // If we have stored rich body for article-like content, render it directly (sanitized)
-    const articleTypes = new Set(['news','blog','report','guide','announcement','tool','article'])
+    const articleTypes = new Set(['news', 'blog', 'report', 'guide', 'announcement', 'tool', 'article'])
     if (articleTypes.has(t) && item.content && String(item.content).trim()) {
       return (
         <div
@@ -1505,11 +1505,10 @@ const MediaDetailPage: React.FC = () => {
                     <button
                       onClick={handleDownload}
                       disabled={!isDocumentAvailable}
-                      className={`w-full py-2 px-4 font-medium rounded-md flex items-center justify-center transition-colors ${
-                        isDocumentAvailable
+                      className={`w-full py-2 px-4 font-medium rounded-md flex items-center justify-center transition-colors ${isDocumentAvailable
                           ? 'bg-blue-600 hover:bg-blue-700 text-white'
                           : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       <Download size={18} className="mr-2" />
                       {isDocumentAvailable ? 'Download Now' : 'No Document Available'}
@@ -2565,10 +2564,10 @@ const MediaDetailPage: React.FC = () => {
                               {item.date ? item.date.split('-')[1] : '15'}{' '}
                               {item.date
                                 ? new Date(
-                                    item.date.split('-')[0],
-                                  ).toLocaleString('default', {
-                                    month: 'long',
-                                  })
+                                  item.date.split('-')[0],
+                                ).toLocaleString('default', {
+                                  month: 'long',
+                                })
                                 : 'June'}
                             </h4>
                             <div className="space-y-3">

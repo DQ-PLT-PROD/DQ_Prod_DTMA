@@ -10,6 +10,7 @@ const env = (import.meta as any).env as Record<string, string | undefined>;
 
 // Required environment variables - no fallbacks
 const CLIENT_ID = env.VITE_AZURE_CLIENT_ID || env.NEXT_PUBLIC_AAD_CLIENT_ID;
+const TENANT_ID = env.VITE_AZURE_TENANT_ID || env.NEXT_PUBLIC_TENANT_ID;
 const TENANT_NAME = env.VITE_B2C_TENANT_NAME || env.NEXT_PUBLIC_B2C_TENANT_NAME;
 const POLICY_SIGNUP_SIGNIN = env.VITE_B2C_POLICY_SIGNUP_SIGNIN || env.NEXT_PUBLIC_B2C_POLICY_SIGNUP_SIGNIN;
 
@@ -21,15 +22,9 @@ const POLICY_SIGNUP = env.VITE_B2C_POLICY_SIGNUP || env.NEXT_PUBLIC_B2C_POLICY_S
 // Validate required configuration
 if (!CLIENT_ID) {
   console.error('⚠️ VITE_AZURE_CLIENT_ID is required in environment variables');
-  console.error('Authentication will not work until Azure credentials are configured.');
 }
-if (!TENANT_NAME) {
-  console.error('⚠️ VITE_B2C_TENANT_NAME is required in environment variables');
-  console.error('Authentication will not work until Azure credentials are configured.');
-}
-if (!POLICY_SIGNUP_SIGNIN) {
-  console.error('⚠️ VITE_B2C_POLICY_SIGNUP_SIGNIN is required in environment variables');
-  console.error('Authentication will not work until Azure credentials are configured.');
+if (!TENANT_ID && !TENANT_NAME) {
+  console.error('⚠️ Either VITE_AZURE_TENANT_ID or VITE_B2C_TENANT_NAME is required');
 }
 
 const API_SCOPES = (env.NEXT_PUBLIC_API_SCOPES || env.VITE_AZURE_SCOPES || "")
@@ -54,13 +49,23 @@ const DEFAULT_OIDC_SCOPES = [
 // const CUSTOM_DOMAIN = env.NEXT_PUBLIC_CIAM_CUSTOM_DOMAIN || env.VITE_AZURE_CUSTOM_DOMAIN;
 const SUB = env.NEXT_PUBLIC_CIAM_SUBDOMAIN || env.VITE_AZURE_SUBDOMAIN;
 
+// If Tenant ID is provided without subdomain, use standard Azure AD login
 const LOGIN_HOST =
   env.NEXT_PUBLIC_IDENTITY_HOST ||
   env.VITE_IDENTITY_HOST ||
-  (SUB ? `${SUB}.ciamlogin.com` : `${TENANT_NAME}.b2clogin.com`);
-const AUTHORITY_SIGNUP_SIGNIN = `https://${LOGIN_HOST}/${TENANT_NAME}.onmicrosoft.com/${POLICY_SIGNUP_SIGNIN}`;
-const AUTHORITY_SIGNUP = POLICY_SIGNUP
-  ? `https://${LOGIN_HOST}/${TENANT_NAME}.onmicrosoft.com/${POLICY_SIGNUP}`
+  (SUB ? `${SUB}.ciamlogin.com` : TENANT_ID ? 'login.microsoftonline.com' : `${TENANT_NAME}.b2clogin.com`);
+
+// Determine if using External ID/CIAM or B2C
+const isExternalID = LOGIN_HOST.includes('.ciamlogin.com') || LOGIN_HOST === 'login.microsoftonline.com';
+const tenantIdentifier = TENANT_ID || `${TENANT_NAME}.onmicrosoft.com`;
+
+// For External ID/standard Azure AD, don't include policy
+// For B2C, include the policy name
+const AUTHORITY_SIGNUP_SIGNIN = isExternalID
+  ? `https://${LOGIN_HOST}/${tenantIdentifier}/`
+  : `https://${LOGIN_HOST}/${tenantIdentifier}/${POLICY_SIGNUP_SIGNIN}`;
+const AUTHORITY_SIGNUP = POLICY_SIGNUP && !isExternalID
+  ? `https://${LOGIN_HOST}/${tenantIdentifier}/${POLICY_SIGNUP}`
   : AUTHORITY_SIGNUP_SIGNIN;
 
 // Compute authority URL:

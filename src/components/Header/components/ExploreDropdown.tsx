@@ -24,7 +24,7 @@ const courseCategories: CourseCategory[] = [
     name: "Mastering Economy 4.0",
     description: "Navigating the opportunities and challenges in the new economy",
     icon: BuildingIcon,
-    href: "/marketplace/courses?category=d1",
+    href: "/marketplace/courses?category=economy-4-0",
   },
   {
     id: "d2",
@@ -32,7 +32,7 @@ const courseCategories: CourseCategory[] = [
     description:
       "Where organizations are headed in the age of digital transformation",
     icon: UsersIcon,
-    href: "/marketplace/courses?category=d2",
+    href: "/marketplace/courses?category=digital-cognitive-organization",
   },
   {
     id: "d3",
@@ -40,7 +40,7 @@ const courseCategories: CourseCategory[] = [
     description:
       "What legacy value or orchestration engine powers the future?",
     icon: CreditCardIcon,
-    href: "/marketplace/courses?category=d3",
+    href: "/marketplace/courses?category=digital-business-platform",
   },
   {
     id: "d4",
@@ -48,7 +48,7 @@ const courseCategories: CourseCategory[] = [
     description:
       "How to design and deploy next-generation transformation frameworks",
     icon: TrendingUpIcon,
-    href: "/marketplace/courses?category=d4",
+    href: "/marketplace/courses?category=digital-transformation-2-0",
   },
   {
     id: "d5",
@@ -56,7 +56,7 @@ const courseCategories: CourseCategory[] = [
     description:
       "Who are the orchestrators of the new digital workspace?",
     icon: GraduationCapIcon,
-    href: "/marketplace/courses?category=d5",
+    href: "/marketplace/courses?category=digital-worker-workspace",
   },
   {
     id: "d6",
@@ -64,7 +64,7 @@ const courseCategories: CourseCategory[] = [
     description:
       "When will we get there? Exploring tools to accelerate transformation",
     icon: TrendingUpIcon,
-    href: "/marketplace/courses?category=d6",
+    href: "/marketplace/courses?category=digital-accelerators-tools",
   },
 ];
 

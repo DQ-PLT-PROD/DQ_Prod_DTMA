@@ -56,15 +56,15 @@ export const mockOnboardingAPI = {
   // Check onboarding status
   async checkOnboardingStatus(): Promise<OnboardingStatus> {
     await delay(300); // Simulate API latency
-    
+
     try {
       const statusData = localStorage.getItem(STORAGE_KEYS.ONBOARDING_STATUS);
       const isComplete = localStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETE) === 'true';
-      
+
       if (statusData) {
         return JSON.parse(statusData);
       }
-      
+
       return {
         isComplete,
         completedSteps: [],
@@ -83,7 +83,7 @@ export const mockOnboardingAPI = {
   // Save onboarding progress (intermediate state)
   async saveOnboardingProgress(formData: OnboardingData): Promise<{ success: boolean; message: string }> {
     await delay(500); // Simulate API latency
-    
+
     try {
       // Save progress data
       localStorage.setItem(STORAGE_KEYS.ONBOARDING_PROGRESS, JSON.stringify({
@@ -97,9 +97,9 @@ export const mockOnboardingAPI = {
         ...currentStatus,
         lastSavedAt: new Date().toISOString()
       };
-      
+
       localStorage.setItem(STORAGE_KEYS.ONBOARDING_STATUS, JSON.stringify(updatedStatus));
-      
+
       return mockAPIResponses.success;
     } catch (error) {
       console.error('Error saving onboarding progress:', error);
@@ -110,11 +110,11 @@ export const mockOnboardingAPI = {
   // Save complete onboarding data
   async saveOnboardingData(formData: OnboardingData): Promise<{ success: boolean; message: string }> {
     await delay(800); // Simulate API latency
-    
+
     try {
       // Clean and validate form data
       const cleanedData = this.cleanFormData(formData);
-      
+
       // Save complete data
       localStorage.setItem(STORAGE_KEYS.ONBOARDING_DATA, JSON.stringify({
         ...cleanedData,
@@ -125,16 +125,16 @@ export const mockOnboardingAPI = {
 
       // Mark onboarding as complete
       localStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETE, 'true');
-      
+
       // Update status
       const updatedStatus = {
         isComplete: true,
         completedSteps: [0, 1, 2, 3, 4, 5], // All steps completed
         lastSavedAt: new Date().toISOString()
       };
-      
+
       localStorage.setItem(STORAGE_KEYS.ONBOARDING_STATUS, JSON.stringify(updatedStatus));
-      
+
       return mockAPIResponses.success;
     } catch (error) {
       console.error('Error saving onboarding data:', error);
@@ -145,7 +145,7 @@ export const mockOnboardingAPI = {
   // Load onboarding data
   async loadOnboardingData(): Promise<OnboardingData | null> {
     await delay(200); // Simulate API latency
-    
+
     try {
       // Try to load complete data first
       const completeData = localStorage.getItem(STORAGE_KEYS.ONBOARDING_DATA);
@@ -169,7 +169,7 @@ export const mockOnboardingAPI = {
   // Load onboarding progress
   async loadOnboardingProgress(): Promise<OnboardingData | null> {
     await delay(200); // Simulate API latency
-    
+
     try {
       const progressData = localStorage.getItem(STORAGE_KEYS.ONBOARDING_PROGRESS);
       if (progressData) {
@@ -185,13 +185,13 @@ export const mockOnboardingAPI = {
   // Reset onboarding data
   async resetOnboardingData(): Promise<{ success: boolean; message: string }> {
     await delay(300); // Simulate API latency
-    
+
     try {
       localStorage.removeItem(STORAGE_KEYS.ONBOARDING_DATA);
       localStorage.removeItem(STORAGE_KEYS.ONBOARDING_PROGRESS);
       localStorage.removeItem(STORAGE_KEYS.ONBOARDING_STATUS);
       localStorage.removeItem(STORAGE_KEYS.ONBOARDING_COMPLETE);
-      
+
       return mockAPIResponses.success;
     } catch (error) {
       console.error('Error resetting onboarding data:', error);
@@ -202,18 +202,18 @@ export const mockOnboardingAPI = {
   // Helper methods
   cleanFormData(formData: OnboardingData): OnboardingData {
     const cleaned: OnboardingData = {};
-    
+
     Object.keys(formData).forEach((key) => {
       const value = formData[key as keyof OnboardingData];
       if (value !== undefined && value !== null) {
         if (typeof value === 'string') {
           cleaned[key as keyof OnboardingData] = value.trim() as any;
         } else {
-          cleaned[key as keyof OnboardingData] = value;
+          cleaned[key as keyof OnboardingData] = value as any;
         }
       }
     });
-    
+
     return cleaned;
   },
 
