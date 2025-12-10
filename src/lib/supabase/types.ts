@@ -246,6 +246,120 @@ export interface Database {
                     created_at?: string
                 }
                 Relationships: []
+            },
+            lessons: {
+                Row: {
+                    id: string
+                    course_slug: string
+                    title: string
+                    type: string
+                    order_index: number
+                    estimated_duration_minutes: number | null
+                    video_url: string | null
+                    resource_url: string | null
+                    content: string | null
+                    created_at: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    course_slug: string
+                    title: string
+                    type: string
+                    order_index: number
+                    estimated_duration_minutes?: number | null
+                    video_url?: string | null
+                    resource_url?: string | null
+                    content?: string | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    course_slug?: string
+                    title?: string
+                    type?: string
+                    order_index?: number
+                    estimated_duration_minutes?: number | null
+                    video_url?: string | null
+                    resource_url?: string | null
+                    content?: string | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Relationships: []
+            },
+            quizzes: {
+                Row: {
+                    id: string
+                    course_slug: string
+                    title: string
+                    order_index: number
+                    question: string
+                    options: Json
+                    correct_answer: string
+                    explanation: string | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    course_slug: string
+                    title: string
+                    order_index: number
+                    question: string
+                    options: Json
+                    correct_answer: string
+                    explanation?: string | null
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    course_slug?: string
+                    title?: string
+                    order_index?: number
+                    question?: string
+                    options?: Json
+                    correct_answer?: string
+                    explanation?: string | null
+                    created_at?: string | null
+                }
+                Relationships: []
+            },
+            course_resources: {
+                Row: {
+                    id: string
+                    course_slug: string
+                    title: string
+                    type: string
+                    description: string | null
+                    resource_url: string
+                    file_size_bytes: number | null
+                    order_index: number | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    course_slug: string
+                    title: string
+                    type: string
+                    description?: string | null
+                    resource_url: string
+                    file_size_bytes?: number | null
+                    order_index?: number | null
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    course_slug?: string
+                    title?: string
+                    type?: string
+                    description?: string | null
+                    resource_url?: string
+                    file_size_bytes?: number | null
+                    order_index?: number | null
+                    created_at?: string | null
+                }
+                Relationships: []
             }
         }
         Views: {}

@@ -6,7 +6,7 @@ import {
   getFallbackItems,
 } from "../utils/fallbackData";
 import { getLessonsByCourse, getRelatedCourses, toMarketplaceItem, formatDuration, getIntroVideoForCourse } from "../lib/api/dtmaCourses";
-import { fetchFullCourse } from "../services/courseService";
+import { fetchFullCourse, fetchCourseWithContent } from "../services/courseService";
 import { categories } from "../data/dtma/categories";
 import { Course } from "../types/dtma-lms";
 
@@ -318,7 +318,7 @@ export function useProductDetails({
     setCourseLoading(true);
     setCourseError(null);
     try {
-      const course = await fetchFullCourse(itemId);
+      const { course, lessons } = await fetchCourseWithContent(itemId);
       if (!course) {
         const fallback = getFallbackItemDetails("courses", itemId);
         if (fallback) {
@@ -332,10 +332,8 @@ export function useProductDetails({
         return;
       }
 
-      // For now, we still fetch lessons locally because we haven't migrated lessons to Supabase yet.
-      // If the course comes from Supabase, we might not find local lessons if the ID doesn't match a local one.
-      // But assuming ID/Slug parity for now or that we are in fallback mode.
-      const courseLessons = getLessonsByCourse(course.id);
+      // Use fetched lessons if available, otherwise fallback to local
+      const courseLessons = lessons && lessons.length > 0 ? lessons : getLessonsByCourse(course.id);
       const mapped = mapCourseToItem(course, courseLessons);
       if (mapped) {
         setItem(mapped);
