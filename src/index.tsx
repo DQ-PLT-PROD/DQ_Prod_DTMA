@@ -36,19 +36,19 @@ if (container) {
       }
       // Handle post-authentication redirects
       try {
-        const isSignupState =
-          typeof result?.state === "string" &&
-          result.state.includes("ej-signup");
-        const claims = (result as any)?.idTokenClaims || {};
-        const isNewUser =
-          claims?.newUser === true || claims?.newUser === "true";
+        // Check if user just completed authentication (has result) OR is already authenticated
+        const hasAuthResult = result?.account;
+        const hasExistingAccount = msalInstance.getAllAccounts().length > 0;
         
-        // If user completed authentication (both signup and signin), redirect to learning page
-        if (result?.account) {
+        // If user completed authentication or is already signed in, redirect to learning page
+        if (hasAuthResult || hasExistingAccount) {
+          console.log('Redirecting to learning page - Auth result:', !!hasAuthResult, 'Existing accounts:', hasExistingAccount);
           window.location.replace("/learning");
           return;
         }
-      } catch { }
+      } catch (e) {
+        console.error('Redirect logic error:', e);
+      }
       root.render(
         <ApolloProvider client={client}>
           <MsalProvider instance={msalInstance}>
