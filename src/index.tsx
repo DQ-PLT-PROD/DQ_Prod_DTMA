@@ -36,15 +36,13 @@ if (container) {
       }
       // Handle post-authentication redirects
       try {
-        // Check if user just completed authentication (has result) OR is already authenticated
+        // Check if user just completed authentication
         const hasAuthResult = result?.account;
-        const hasExistingAccount = msalInstance.getAllAccounts().length > 0;
         
-        // If user completed authentication or is already signed in, redirect to learning page
-        if (hasAuthResult || hasExistingAccount) {
-          console.log('Redirecting to learning page - Auth result:', !!hasAuthResult, 'Existing accounts:', hasExistingAccount);
-          window.location.replace("/learning");
-          return;
+        // If user just completed authentication, set a flag and let AuthContext handle the redirect
+        if (hasAuthResult) {
+          console.log('Authentication completed, setting redirect flag');
+          sessionStorage.setItem('shouldRedirectToLearning', 'true');
         }
       } catch (e) {
         console.error('Redirect logic error:', e);
