@@ -6,6 +6,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import { FEATURES } from "../../config/features";
 import DashboardLayout from "./DashboardLayout";
 import { DocumentsPage } from "./documents";
 import { Overview } from "./overview";
@@ -43,7 +44,7 @@ const DashboardRouter = () => {
       if (typeof window !== 'undefined') {
         return window.innerWidth >= 1024; // lg and up open by default
       }
-    } catch {}
+    } catch { }
     return true;
   });
   const [isLoggedIn, setIsLoggedIn] = useState(true);
@@ -136,98 +137,127 @@ const DashboardRouter = () => {
           }
         />
         <Route path="overview" element={<Overview setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
-        <Route
-          path="documents"
-          element={
-            <DocumentsPage
-              isOpen={isOpen}
-              setIsOpen={setIsOpen}
-              isLoggedIn={isLoggedIn}
-              setIsLoggedIn={setIsLoggedIn}
+
+        {/* Feature Flagged: Documents */}
+        {FEATURES.USER_DASHBOARD_CORE && FEATURES.ADVANCED_FORMS ? (
+          <Route
+            path="documents"
+            element={
+              <DocumentsPage
+                isOpen={isOpen}
+                setIsOpen={setIsOpen}
+                isLoggedIn={isLoggedIn}
+                setIsLoggedIn={setIsLoggedIn}
+              />
+            }
+          />
+        ) : (
+          <Route path="documents" element={<Navigate to="/404" replace />} />
+        )}
+
+        {/* Feature Flagged: Service Requests */}
+        {FEATURES.ADVANCED_FORMS ? (
+          <Route
+            path="requests"
+            element={
+              <ServiceRequestsPage
+                setIsOpen={setIsOpen}
+                isLoggedIn={isLoggedIn}
+              />
+            }
+          />
+        ) : (
+          <Route path="requests" element={<Navigate to="/404" replace />} />
+        )}
+
+        {/* Feature Flagged: Reporting Obligations */}
+        {FEATURES.ADVANCED_FORMS ? (
+          <>
+            <Route
+              path="reporting"
+              element={<Navigate to="reporting-obligations" replace />}
             />
-          }
-        />
-        <Route
-          path="requests"
-          element={
-            <ServiceRequestsPage
-              setIsOpen={setIsOpen}
-              isLoggedIn={isLoggedIn}
+            <Route path="reporting-obligations" element={<ReportsPage setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
+            <Route
+              path="reporting-obligations/obligations"
+              element={<AllUpcomingObligationsPage />}
             />
-          }
-        />
-        <Route
-          path="reporting"
-          element={<Navigate to="reporting-obligations" replace />}
-        />
-        <Route path="reporting-obligations" element={<ReportsPage setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
-        <Route
-          path="reporting-obligations/obligations"
-          element={<AllUpcomingObligationsPage />}
-        />
-        <Route
-          path="reporting-obligations/submitted"
-          element={<AllSubmittedReportsPage />}
-        />
-        <Route
-          path="reporting-obligations/received"
-          element={<AllReceivedReportsPage />}
-        />
+            <Route
+              path="reporting-obligations/submitted"
+              element={<AllSubmittedReportsPage />}
+            />
+            <Route
+              path="reporting-obligations/received"
+              element={<AllReceivedReportsPage />}
+            />
+          </>
+        ) : (
+          <Route path="reporting*" element={<Navigate to="/404" replace />} />
+        )}
+
         <Route path="profile" element={<StudentProfilePage />} />
         <Route path="settings" element={<SettingsPage setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
         <Route path="support" element={<SupportPage setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
-        <Route path="chat-support" element={<ChatInterface setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
 
-        {/* Forms Routes */}
-        <Route
-          path="forms/book-consultation-for-entrepreneurship"
-          element={<BookConsultationForEntrepreneurship />}
-        />
-        <Route path="forms/cancel-loan" element={<CancelLoan />} />
+        {/* Support Chat - Feature Flag with fallback if AI disabled */}
+        {FEATURES.AI_CHATBOT ? (
+          <Route path="chat-support" element={<ChatInterface setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
+        ) : (
+          <Route path="chat-support" element={<SupportPage setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />} />
+        )}
 
-        <Route
-          path="forms/collateral-user-guide"
-          element={<CollateralUserGuide />}
-        />
+        {/* Forms Routes - Feature Flagged */}
+        {FEATURES.ADVANCED_FORMS ? (
+          <>
+            <Route
+              path="forms/book-consultation-for-entrepreneurship"
+              element={<BookConsultationForEntrepreneurship />}
+            />
+            <Route path="forms/cancel-loan" element={<CancelLoan />} />
+            <Route
+              path="forms/collateral-user-guide"
+              element={<CollateralUserGuide />}
+            />
+            <Route
+              path="forms/disburse-approved-loan"
+              element={<DisburseApprovedLoan />}
+            />
+            <Route
+              path="forms/facilitate-communication"
+              element={<FacilitateCommunication />}
+            />
+            <Route
+              path="forms/issue-support-letter"
+              element={<IssueSupportLetter />}
+            />
+            <Route
+              path="forms/reallocation-of-loan-disbursement"
+              element={<ReallocationOfLoanDisbursement />}
+            />
+            <Route
+              path="forms/request-for-funding"
+              element={<RequestForFunding />}
+            />
+            <Route
+              path="forms/request-for-membership"
+              element={<RequestForMembership />}
+            />
+            <Route
+              path="forms/request-to-amend-existing-loan-details"
+              element={<RequestToAmendExistingLoanDetails />}
+            />
+            <Route
+              path="forms/training-in-entrepreneurship"
+              element={<TrainingInEntrepreneurship />}
+            />
+          </>
+        ) : null}
 
-        <Route
-          path="forms/disburse-approved-loan"
-          element={<DisburseApprovedLoan />}
-        />
-        <Route
-          path="forms/facilitate-communication"
-          element={<FacilitateCommunication />}
-        />
-        <Route
-          path="forms/issue-support-letter"
-          element={<IssueSupportLetter />}
-        />
+        {/* Allow Needs Assessment globally or per feature config */}
         <Route
           path="forms/needs-assessment-form"
           element={<NeedsAssessmentForm />}
         />
-        <Route
-          path="forms/reallocation-of-loan-disbursement"
-          element={<ReallocationOfLoanDisbursement />}
-        />
-        <Route
-          path="forms/request-for-funding"
-          element={<RequestForFunding />}
-        />
-        <Route
-          path="forms/request-for-membership"
-          element={<RequestForMembership />}
-        />
-        <Route
-          path="forms/request-to-amend-existing-loan-details"
-          element={<RequestToAmendExistingLoanDetails />}
-        />
-        <Route
-          path="forms/training-in-entrepreneurship"
-          element={<TrainingInEntrepreneurship />}
-        />
-
-
 
         <Route path="*" element={<Navigate to="overview" replace />} />
       </Routes>

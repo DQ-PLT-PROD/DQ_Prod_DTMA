@@ -10,6 +10,7 @@ import { UserIcon, ArrowRight } from "lucide-react";
 import { ExploreDropdown } from "./components/ExploreDropdown";
 import { BRAND_BACKDROP_BLUR } from "../../constants/branding";
 import { AzureAuthModal } from "../auth/AzureAuthModal";
+import { FEATURES } from "../../config/features";
 
 const HEADER_GRADIENT =
   "linear-gradient(90deg, #0a32a0 0%, #2a4090 40%, #4e5a8b 70%, #8b90a3 100%)";
@@ -147,7 +148,7 @@ export function Header({
 
           {/* Primary navigation */}
           <nav className="hidden md:flex items-center gap-8 ml-8">
-            <ExploreDropdown />
+            {FEATURES.COURSE_MARKETPLACE && <ExploreDropdown />}
           </nav>
 
           {/* Right side actions */}

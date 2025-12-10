@@ -180,6 +180,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
             muted
             loop
             playsInline
+            preload="none"
           />
         )}
 
