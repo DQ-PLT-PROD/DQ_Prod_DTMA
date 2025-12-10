@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState, createContext, useContext, useCall
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { EventType, AuthenticationResult } from '@azure/msal-browser';
 import { defaultLoginRequest, signupRequest } from '../../../services/auth/msal';
+import { AzureAuthModal } from '../../auth/AzureAuthModal';
 
 interface UserProfile {
   id: string;
@@ -18,6 +19,8 @@ interface AuthContextType {
   login: () => void;
   signup: () => void;
   logout: () => void;
+  openAuthModal: (mode?: 'signin' | 'signup') => void;
+  closeAuthModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +34,11 @@ export function AuthProvider({
   const isAuthenticated = useIsAuthenticated();
   const [isLoading, setIsLoading] = useState(true);
   const [emailOverride, setEmailOverride] = useState<string | undefined>(undefined);
+
+  // Global Auth Modal State
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
+
   const viteEnv = (import.meta as any).env as Record<string, string | undefined>;
   const enableGraphFallback = (viteEnv?.VITE_MSAL_ENABLE_GRAPH_FALLBACK || viteEnv?.NEXT_PUBLIC_MSAL_ENABLE_GRAPH_FALLBACK) === 'true';
 
@@ -137,13 +145,13 @@ export function AuthProvider({
 
   const login = useCallback(() => {
     console.log('Login button clicked - initiating MSAL redirect...');
-    
+
     if (!instance) {
       console.error('MSAL instance is not available!');
       alert('Authentication system not initialized. Please refresh the page.');
       return;
     }
-    
+
     try {
       console.log('Calling loginRedirect with request:', defaultLoginRequest);
       instance.loginRedirect(defaultLoginRequest);
@@ -167,16 +175,34 @@ export function AuthProvider({
     instance.logoutRedirect({ account: account });
   }, [instance, accounts]);
 
+  const openAuthModal = useCallback((mode: 'signin' | 'signup' = 'signin') => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
+  }, []);
+
+  const closeAuthModal = useCallback(() => {
+    setIsAuthModalOpen(false);
+  }, []);
+
   const contextValue = useMemo<AuthContextType>(() => ({
     user,
     isLoading,
     login,
     signup,
-    logout
-  }), [user, isLoading, login, signup, logout]);
+    logout,
+    openAuthModal,
+    closeAuthModal
+  }), [user, isLoading, login, signup, logout, openAuthModal, closeAuthModal]);
 
   return <AuthContext.Provider value={contextValue}>
     {children}
+    <AzureAuthModal
+      isOpen={isAuthModalOpen}
+      onClose={closeAuthModal}
+      defaultMode={authModalMode}
+      onLogin={login}
+      onSignup={signup}
+    />
   </AuthContext.Provider>;
 }
 
