@@ -30,6 +30,7 @@ import ReallocationOfLoanDisbursement from "./pages/forms/ReallocationOfLoanDisb
 import RequestToAmendExistingLoanDetails from "./pages/forms/RequestToAmendExistingLoanDetails";
 import TrainingInEntrepreneurship from "./pages/forms/TrainingInEntrepreneurship";
 import IssueSupportLetter from "./pages/forms/IssueSupportLetter";
+import LearningScreen from "./pages/LearningScreen";
 import GrowthAreasMarketplace from "./pages/GrowthAreasMarketplace";
 import GrowthAreasPage from "./pages/GrowthAreasPage";
 import BusinessDirectoryMarketplace from "./pages/BusinessDirectoryMarketplace";
@@ -76,6 +77,7 @@ export function AppRouter() {
             }
           />
           <Route path="/discover-abudhabi" element={<DiscoverAbuDhabi />} />
+          <Route path="/learning" element={<LearningScreen />} />
 
           {/* Feature Flagged: Growth Areas */}
           {FEATURES.GROWTH_AREAS ? (
