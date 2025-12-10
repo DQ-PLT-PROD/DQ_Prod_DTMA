@@ -1,6 +1,6 @@
-import { getSupabase } from "./supabaseClient";
+import { getSupabase } from "../../lib/supabase/client";
 import { v4 as uuidv4 } from "uuid";
-import type { Database } from "./database.types";
+import type { Database } from "../../lib/supabase/types";
 
 export interface MediaItem {
   id: string;
@@ -11,14 +11,14 @@ export interface MediaItem {
   bodyHtml?: string | null;
   bodyJson?: any | null;
   type:
-    | "Article"
-    | "Report"
-    | "Announcement"
-    | "Event"
-    | "Podcast"
-    | "Video"
-    | "Tool"
-    | "Image";
+  | "Article"
+  | "Report"
+  | "Announcement"
+  | "Event"
+  | "Podcast"
+  | "Video"
+  | "Tool"
+  | "Image";
   category?: string | null;
   status: "Draft" | "InReview" | "Scheduled" | "Published" | "Archived";
   visibility: "Public" | "Private";
@@ -399,23 +399,23 @@ export const mediaService = {
 
   async updateMediaItem(id: string, data: Partial<MediaItem>) {
     const updatePayload: Database["public"]["Tables"]["media_items"]["Update"] =
-      {
-        title: data.title,
-        slug: data.slug,
-        summary: data.summary,
-        body: data.bodyHtml || data.body,
-        body_html: data.bodyHtml,
-        body_json: data.bodyJson,
-        type: (data.type as MediaItem['type']),
-        category: data.category,
-        status: (data.status as MediaItem['status']),
-        visibility: (data.visibility as MediaItem['visibility']),
-        language: data.language,
-        published_at: data.publishedAt,
-        updated_at: new Date().toISOString(),
-        seo_title: data.seoTitle,
-        seo_description: data.seoDescription,
-        canonical_url: data.canonicalUrl,
+    {
+      title: data.title,
+      slug: data.slug,
+      summary: data.summary,
+      body: data.bodyHtml || data.body,
+      body_html: data.bodyHtml,
+      body_json: data.bodyJson,
+      type: (data.type as MediaItem['type']),
+      category: data.category,
+      status: (data.status as MediaItem['status']),
+      visibility: (data.visibility as MediaItem['visibility']),
+      language: data.language,
+      published_at: data.publishedAt,
+      updated_at: new Date().toISOString(),
+      seo_title: data.seoTitle,
+      seo_description: data.seoDescription,
+      canonical_url: data.canonicalUrl,
       thumbnail_url: (data as any).thumbnailUrl,
       video_url: (data as any).videoUrl,
       podcast_url: (data as any).podcastUrl,
@@ -428,12 +428,12 @@ export const mediaService = {
       event_location_details: data.eventLocationDetails,
       event_registration_info: data.eventRegistrationInfo,
       event_agenda: data.eventAgenda,
-        tags: Array.from(
-          new Set(
-            [...(data.tags || []), data.type, data.category].filter(Boolean),
-          ),
-        ) as string[],
-      };
+      tags: Array.from(
+        new Set(
+          [...(data.tags || []), data.type, data.category].filter(Boolean),
+        ),
+      ) as string[],
+    };
     try {
       const { data: updated, error } = await getSupabase()
         .from("media_items")

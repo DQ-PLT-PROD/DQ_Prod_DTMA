@@ -1,4 +1,4 @@
-import { getSupabase, isSupabaseConfigured } from "../admin-ui/utils/supabaseClient";
+import { getSupabase, isSupabaseConfigured } from "../lib/supabase/client";
 import { Course, CourseCatalogFilters } from "../types/dtma-lms";
 import { getCourses as getLocalCourses, getCourseBySlug as getLocalCourseBySlug, toMarketplaceItem } from "../lib/api/dtmaCourses";
 

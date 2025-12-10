@@ -10,7 +10,7 @@ import { getMarketplaceConfig } from "../../utils/marketplaceConfig";
 import { Header } from "../Header";
 import { Footer } from "../Footer";
 import { getFallbackKnowledgeHubItems } from "../../utils/fallbackData";
-import { isSupabaseConfigured, getSupabase } from "../../admin-ui/utils/supabaseClient";
+import { isSupabaseConfigured, getSupabase } from "../../lib/supabase/client";
 import { getCategories as getDtmaCategories } from "../../lib/api/dtmaCourses";
 import { fetchCourses } from "../../services/courseService";
 import { useQuery } from "@apollo/client/react";

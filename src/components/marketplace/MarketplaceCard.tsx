@@ -25,6 +25,10 @@ export interface MarketplaceItemProps {
 
   isPointerFine?: boolean;
   onTagClick?: (type: string, value: string) => void;
+  onQuickViewOpen?: (rect: any) => void;
+  onQuickViewClose?: () => void;
+  onQuickViewHover?: () => void;
+  isQuickViewActive?: boolean;
 }
 
 

@@ -27,10 +27,10 @@ export const initializeLocalMedia = async (
       },
       video: video
         ? {
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            facingMode: "user",
-          }
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user",
+        }
         : false,
     });
     console.log("Media access granted:", stream);
@@ -66,8 +66,7 @@ export const initializeLocalMedia = async (
       );
     } else {
       throw new Error(
-        `Could not access ${
-          video ? "camera and microphone" : "microphone"
+        `Could not access ${video ? "camera and microphone" : "microphone"
         }. Error: ${error.message || error.name || "Unknown error"}`
       );
     }
@@ -452,7 +451,7 @@ export const createDummyRemoteStream = async (): Promise<MediaStream> => {
  * @param peerConnection WebRTC peer connection
  */
 export const handleIncomingOffer = async (
-  offer: RTCSessionDescription,
+  offer: RTCSessionDescriptionInit,
   peerConnection: RTCPeerConnection
 ) => {
   // Set remote description (received offer)
@@ -472,7 +471,7 @@ export const handleIncomingOffer = async (
  * @param peerConnection WebRTC peer connection
  */
 export const handleIncomingAnswer = async (
-  answer: RTCSessionDescription,
+  answer: RTCSessionDescriptionInit,
   peerConnection: RTCPeerConnection
 ) => {
   // Set remote description (received answer)
@@ -493,7 +492,7 @@ export const sendIceCandidate = (candidate: RTCIceCandidate) => {
  * Send the offer to the remote peer
  * @param offer The SDP offer
  */
-export const sendOffer = (offer: RTCSessionDescription) => {
+export const sendOffer = (offer: RTCSessionDescriptionInit) => {
   // Send the offer via signaling server
   // signalingChannel.send({ type: 'offer', offer });
   console.log("Sending offer:", offer);
@@ -503,7 +502,7 @@ export const sendOffer = (offer: RTCSessionDescription) => {
  * Send the answer to the remote peer
  * @param answer The SDP answer
  */
-export const sendAnswer = (answer: RTCSessionDescription) => {
+export const sendAnswer = (answer: RTCSessionDescriptionInit) => {
   // Send the answer via signaling server
   // signalingChannel.send({ type: 'answer', answer });
   console.log("Sending answer:", answer);
