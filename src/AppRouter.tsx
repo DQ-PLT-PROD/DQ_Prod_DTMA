@@ -30,7 +30,6 @@ import ReallocationOfLoanDisbursement from "./pages/forms/ReallocationOfLoanDisb
 import RequestToAmendExistingLoanDetails from "./pages/forms/RequestToAmendExistingLoanDetails";
 import TrainingInEntrepreneurship from "./pages/forms/TrainingInEntrepreneurship";
 import IssueSupportLetter from "./pages/forms/IssueSupportLetter";
-import LearningScreen from "./pages/LearningScreen";
 import GrowthAreasMarketplace from "./pages/GrowthAreasMarketplace";
 import GrowthAreasPage from "./pages/GrowthAreasPage";
 import BusinessDirectoryMarketplace from "./pages/BusinessDirectoryMarketplace";
@@ -101,7 +100,6 @@ export function AppRouter() {
 
           <Route path="/coming-soon" element={<ComingSoon />} />
           <Route path="/coming-soon/:feature" element={<ComingSoon />} />
-          <Route path="/learning" element={<LearningScreen />} />
 
           {/* Documentation routes - redirect to coming soon */}
           <Route path="/documentation" element={<Navigate to="/coming-soon/documentation" replace />} />
