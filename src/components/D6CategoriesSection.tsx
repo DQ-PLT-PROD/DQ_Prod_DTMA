@@ -5,39 +5,39 @@ import { BRAND_PRIMARY } from "../constants/branding";
 
 const categories = [
   {
-    title: "Economy 4.0",
+    title: "Mastering Economy 4.0",
     description:
-      "Understand the new economic paradigm shaping competitive advantage, value creation, and growth.",
+      "Navigating the opportunities and challenges in the new economy",
     image: "/Economy 4.0 thumnail.png",
   },
   {
-    title: "Digital Cognitive Organisations",
+    title: "Building Tomorrow’s Organisations",
     description:
-      "Design adaptive, learning organisations that move from survival to leadership in Economy 4.0.",
+      "Where organizations are headed in the age of digital transformation",
     image: "/2nd category Thumbnail.jpg",
   },
   {
-    title: "Digital Business Platforms (DBPs)",
+    title: "Mastering Digital Transformation",
     description:
-      "Master platform thinking and operating models that build connected ecosystems and new revenue.",
+      "What legacy value or orchestration engine powers the future?",
     image: "/tl.jpg",
   },
   {
-    title: "Digital Transformation 2.0 (DT2.0)",
+    title: "Designing for the Future",
     description:
-      "Apply architectures and methods that make transformation measurable, repeatable, and effective.",
+      "How to design and deploy next-generation transformation frameworks",
     image: "/thm4.jpg",
   },
   {
-    title: "Digital Worker & Digital Workspace",
+    title: "Architecting Change",
     description:
-      "Build resilient, AI-enabled teams and workflows; redesign how work actually gets done.",
+      "Who are the orchestrators of the new digital workspace?",
     image: "/thumb 3.jpg",
   },
   {
-    title: "Digital Accelerators (Tools)",
+    title: "Empowering Change",
     description:
-      "Leverage data, automation, and intelligent tooling to execute transformation efficiently.",
+      "When will we get there? Exploring tools to accelerate transformation",
     image: "/Thumb6.jpg",
   },
 ];
@@ -51,10 +51,10 @@ const D6CategoriesSection: React.FC = () => {
             className="text-3xl md:text-4xl font-bold text-gray-900"
             style={{ textShadow: "0 8px 20px rgba(3, 12, 43, 0.1)" }}
           >
-            Discover Our D6 Course Categories
+            Discover Our Course Categories
           </h2>
           <p className="text-lg text-gray-600">
-            Each category opens a pathway into the AI era. Choose the dimension aligned to your goals and explore guided courses that translate directly to your role.
+            Each category helps you step into the AI era. Pick the area that fits your goals and follow the guided courses built for your role.
           </p>
         </FadeInUpOnScroll>
 

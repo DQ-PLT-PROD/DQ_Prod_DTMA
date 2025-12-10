@@ -235,9 +235,9 @@ const CTACard: React.FC<CTACardProps> = ({
               >
                 {buttonColor === "blue" ? "Get Started" : buttonText}
                 <ArrowRight
-                  size={16}
-                  className={`ml-2 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""
-                    }`}
+                    size={16}
+                    className={`ml-1 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""
+                      }`}
                 />
                 <span
                   ref={rippleRef}

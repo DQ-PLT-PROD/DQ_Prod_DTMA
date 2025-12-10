@@ -383,9 +383,9 @@ const LearningScreen: React.FC = () => {
                     </button>
                   )}
                   {/* Title Overlay - transparent strip over video */}
-                  <div
-                    className={`absolute top-0 left-0 right-0 z-10 px-4 py-3 bg-black/35 backdrop-blur-sm transition-opacity duration-300 ${isPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
-                  >
+                    <div
+                      className={`absolute top-3 left-3 right-3 z-10 px-4 py-3 bg-black/40 backdrop-blur-sm rounded-lg transition-opacity duration-300 ${isPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
+                    >
                     <p className="text-white/90 text-lg font-semibold">
                       {courseTitle}
                     </p>

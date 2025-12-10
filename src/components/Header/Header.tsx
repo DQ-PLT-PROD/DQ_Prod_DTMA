@@ -134,25 +134,28 @@ export function Header({
         }}
       >
         <div
-          className={`flex w-full items-center text-white transition-all duration-300 ${isSticky ? "px-5 py-2.5" : "px-8 py-4"
-            }`}
+          className={`flex w-full items-center justify-between text-white transition-all duration-300 ${
+            isSticky ? "px-5 py-2.5" : "px-8 py-4"
+          }`}
         >
-          {/* Logo */}
-          <Link to="/" className="flex items-center transition-all duration-300">
-            <img
-              src="/DTMA%20LOGO%20WHITE.svg"
-              alt="DTMA Logo"
-              className="object-contain w-[130px] h-[36px]"
-            />
-          </Link>
+          <div className="flex items-center gap-6">
+            {/* Logo */}
+            <Link to="/" className="flex items-center transition-all duration-300">
+              <img
+                src="/DTMA%20LOGO%20WHITE.svg"
+                alt="DTMA Logo"
+                className="object-contain w-[130px] h-[36px]"
+              />
+            </Link>
 
-          {/* Primary navigation */}
-          <nav className="hidden md:flex items-center gap-8 ml-8">
-            {FEATURES.COURSE_MARKETPLACE && <ExploreDropdown />}
-          </nav>
+            {/* Primary navigation */}
+            <nav className="hidden md:flex items-center gap-8">
+              {FEATURES.COURSE_MARKETPLACE && <ExploreDropdown />}
+            </nav>
+          </div>
 
           {/* Right side actions */}
-          <div className="flex items-center gap-4 ml-auto relative">
+          <div className="flex items-center gap-4 relative">
             {user ? (
               <ProfileDropdown
                 onViewNotifications={toggleNotificationsMenu}
@@ -166,13 +169,6 @@ export function Header({
                 >
                   <UserIcon size={18} className="text-[#1839AD]" />
                   <span>Sign In</span>
-                </button>
-                <button
-                  className="flex items-center gap-2 rounded-full px-5 py-2.5 h-11 text-white font-medium bg-[#1839AD] hover:opacity-90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/40"
-                  onClick={scrollToFinalCTA}
-                >
-                  <span>Get Started</span>
-                  <ArrowRight size={16} className="text-white" />
                 </button>
               </div>
             )}

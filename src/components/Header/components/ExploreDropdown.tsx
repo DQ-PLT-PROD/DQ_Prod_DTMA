@@ -21,43 +21,48 @@ interface CourseCategory {
 const courseCategories: CourseCategory[] = [
   {
     id: "d1",
-    name: "D1 - Digital Economy 4.0 (E4.0)",
-    description: "Why should organisations change?",
+    name: "Mastering Economy 4.0",
+    description: "Navigating the opportunities and challenges in the new economy",
     icon: BuildingIcon,
     href: "/marketplace/courses?category=economy-4-0",
   },
   {
     id: "d2",
-    name: "D2 - Digital Cognitive Organisation (DCO)",
-    description: "Where are organisations headed?",
+    name: "Building Tommorrow’s Organisations",
+    description:
+      "Where organizations are headed in the age of digital transformation",
     icon: UsersIcon,
     href: "/marketplace/courses?category=digital-cognitive-organization",
   },
   {
     id: "d3",
-    name: "D3 - Digital Business Platform (DBP)",
-    description: "What legacy value or orchestration engine?",
+    name: "Mastering Digital Transformation",
+    description:
+      "What legacy value or orchestration engine powers the future?",
     icon: CreditCardIcon,
     href: "/marketplace/courses?category=digital-business-platform",
   },
   {
     id: "d4",
-    name: "D4 - Digital Transformation 2.0 (DT2.0)",
-    description: "How to design and deploy the target.",
+    name: "Designing for the Future",
+    description:
+      "How to design and deploy next-generation transformation frameworks",
     icon: TrendingUpIcon,
     href: "/marketplace/courses?category=digital-transformation-2-0",
   },
   {
     id: "d5",
-    name: "D5 - Digital Worker & Digital Workspace",
-    description: "Who are the orchestrators?",
+    name: "Architecting Change",
+    description:
+      "Who are the orchestrators of the new digital workspace?",
     icon: GraduationCapIcon,
     href: "/marketplace/courses?category=digital-worker-workspace",
   },
   {
     id: "d6",
-    name: "D6 - Digital Accelerators (Tools)",
-    description: "When will we get there?",
+    name: "Empowering Change",
+    description:
+      "When will we get there? Exploring tools to accelerate transformation",
     icon: TrendingUpIcon,
     href: "/marketplace/courses?category=digital-accelerators-tools",
   },
@@ -164,21 +169,18 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
 
       {isOpen && (
         <div
-          className="absolute top-full left-0 mt-2 w-[24rem] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 py-4 px-3"
+          className="absolute top-full left-0 mt-2 w-[32rem] max-w-[95vw] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 py-5 px-4"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="explore-menu"
         >
           <div className="px-4 py-2 border-b border-gray-100">
             <h3 className="text-sm font-semibold text-gray-900">
-              D6 Course Categories
+              Discover Course Categories
             </h3>
-            <p className="text-xs text-gray-500 mt-1">
-              The Digital Qatalyst 6XD curriculum tracks
-            </p>
           </div>
 
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-[28rem] overflow-y-auto">
             {courseCategories.map((category, index) => {
               const Icon = category.icon;
               const external = isExternal(category.href);

@@ -4,10 +4,6 @@ import { FadeInUpOnScroll, StaggeredFadeIn } from "./AnimationUtils";
 
 const steps = [
   {
-    title: "Orientation",
-    description: "Set your goals and pick a D6 category to start.",
-  },
-  {
     title: "Learn",
     description: "Short, practical lessons with examples and quick checks.",
   },
@@ -36,23 +32,33 @@ const EnterpriseStages: React.FC = () => {
           <div className="relative z-10 bg-[#1839AD] text-white grid lg:grid-cols-[3fr,2fr] overflow-hidden">
             <div className="relative z-10 h-full pl-[9.5rem] pr-10 sm:pr-16 sm:pl-[13rem] py-6 md:py-8 flex flex-col justify-center space-y-4 overflow-visible">
               <div
-                className="absolute border border-[#FFFFFF] rounded-full pointer-events-none z-20"
-                style={{ width: "18rem", height: "18rem", left: "-9rem", top: "-6rem" }}
+                className="absolute rounded-full pointer-events-none z-20"
+                style={{
+                  width: "18rem",
+                  height: "18rem",
+                  left: "-9rem",
+                  top: "-6rem",
+                  border: "1.5px solid #FFFFFF",
+                }}
               ></div>
               <div
-                className="absolute hidden md:block border border-[#FFFFFF] rounded-full pointer-events-none z-20"
-                style={{ width: "250px", height: "250px", left: "4px", bottom: "-202px" }}
+                className="absolute hidden md:block rounded-full pointer-events-none z-20"
+                style={{
+                  width: "250px",
+                  height: "250px",
+                  left: "4px",
+                  bottom: "-202px",
+                  border: "1.5px solid #FFFFFF",
+                }}
               ></div>
               <div
                 className="absolute bg-black/30 pointer-events-none z-0"
                 style={{ top: "-12rem", bottom: "-12rem", left: "-12rem", right: 0 }}
               ></div>
               <div className="relative space-y-4 z-30 ml-4">
-                <h2 className="text-3xl md:text-4xl font-bold">How You Learn</h2>
-                <p className="text-base md:text-lg text-white/90 max-w-md">
-                  DTMA takes learners from fundamentals to applied mastery
-                  through a clear learning path that builds proven, confident
-                  capability in the AI era.
+                <h2 className="text-3xl md:text-4xl font-semibold">How You Learn</h2>
+                <p className="text-base md:text-lg text-white/90 max-w-2xl">
+                  DTMA guides learners from basic concepts to advanced skills, building confidence in the AI era.
                 </p>
               </div>
             </div>
