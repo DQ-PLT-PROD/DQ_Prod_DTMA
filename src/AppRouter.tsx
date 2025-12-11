@@ -36,6 +36,7 @@ import BusinessDirectoryMarketplace from "./pages/BusinessDirectoryMarketplace";
 import { ComingSoon } from "./pages/ComingSoon";
 import { Course } from "./types/dtma-lms";
 import LearningScreen from "./pages/LearningScreen";
+import { AuthCallback } from "./components/AuthCallback";
 
 export function AppRouter() {
   const [bookmarkedCourses, setBookmarkedCourses] = useState<string[]>([]);

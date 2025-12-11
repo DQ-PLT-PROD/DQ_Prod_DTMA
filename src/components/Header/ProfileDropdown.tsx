@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
-import { LogOutIcon, BellIcon, ChevronDownIcon, UserIcon } from 'lucide-react';
+import { LogOutIcon, ChevronDownIcon, UserIcon } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 interface ProfileDropdownProps {
-  onViewNotifications: () => void;
-  unreadNotifications: number;
+  // Simplified for MVP - removed notifications
+  // onViewNotifications: () => void;
+  // unreadNotifications: number;
 }
-export function ProfileDropdown({
-  onViewNotifications,
-  unreadNotifications = 0
-}: ProfileDropdownProps) {
+export function ProfileDropdown({}: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const {
@@ -17,7 +14,6 @@ export function ProfileDropdown({
     logout,
     isLoading
   } = useAuth();
-  const navigate = useNavigate();
   // Generate initials from user name if no avatar is available
   const getInitials = () => {
     if (!user || !user.name) return '?';
@@ -57,11 +53,11 @@ export function ProfileDropdown({
     setShowLogoutConfirmation(false);
     logout();
   };
-  // Navigate to user profile
-  const navigateToUserProfile = (e: React.MouseEvent) => {
-    e.preventDefault();
-    closeDropdown();
-  };
+  // MVP: Profile navigation disabled for now
+  // const navigateToUserProfile = (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   closeDropdown();
+  // };
   // If still loading user data, show loading state
   if (isLoading) {
     return <div className="flex items-center">
@@ -77,7 +73,7 @@ export function ProfileDropdown({
     <button className="flex items-center" onClick={toggleDropdown} aria-label="User menu">
       <div className="relative w-10 h-10 rounded-full bg-white text-purple-700 flex items-center justify-center font-bold">
         {user.picture ? <img src={user.picture} alt={user.name} className="w-full h-full rounded-full object-cover" /> : getInitials()}
-        {unreadNotifications > 0 && <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>}
+        {/* MVP: Removed notification indicator */}
       </div>
       <div className="flex items-center ml-2">
         <span className="hidden sm:inline text-white">
@@ -89,17 +85,21 @@ export function ProfileDropdown({
     {isOpen && <>
       <div className="fixed inset-0 z-30" onClick={closeDropdown}></div>
       <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-40">
+        {/* MVP: User info display only (no navigation) */}
         <div className="p-3 border-b border-gray-200">
-          <button className="flex items-center w-full text-left hover:bg-gray-50 rounded-md transition-colors" onClick={navigateToUserProfile}>
+          <div className="flex items-center">
             <UserIcon size={18} className="text-gray-500 mr-2" />
-            <div className="ml-1" onClick={() => navigate('/dashboard')}>
+            <div className="ml-1">
               <p className="text-sm font-medium text-gray-800">
                 {user.name}
               </p>
               <p className="text-xs text-gray-500">{user.email}</p>
             </div>
-          </button>
+          </div>
         </div>
+        
+        {/* MVP: Notifications section commented out */}
+        {/* 
         <div className="py-1">
           <button className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={e => {
             e.preventDefault();
@@ -113,6 +113,9 @@ export function ProfileDropdown({
             </span>}
           </button>
         </div>
+        */}
+        
+        {/* Essential: Logout functionality */}
         <div className="py-1 border-t border-gray-200">
           <button className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={e => {
             e.preventDefault();

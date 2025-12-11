@@ -6,6 +6,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import { useAuth } from "../../components/Header";
 import { FEATURES } from "../../config/features";
 import DashboardLayout from "./DashboardLayout";
 import { DocumentsPage } from "./documents";
@@ -47,7 +48,12 @@ const DashboardRouter = () => {
     } catch { }
     return true;
   });
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  
+  // Get actual authentication state from AuthContext
+  const { user } = useAuth();
+  const isLoggedIn = !!user; // Convert user object to boolean
+  const setIsLoggedIn = () => {}; // Dummy setter since auth state is managed by AuthContext
+  
   const location = useLocation();
   const navigate = useNavigate();
 

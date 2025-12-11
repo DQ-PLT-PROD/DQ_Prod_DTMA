@@ -18,35 +18,43 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
-const container = document.getElementById("root");
-if (container) {
+async function initializeApp() {
+  console.log('🚀 App initialization starting...');
+  
+  const container = document.getElementById("root");
+  if (!container) {
+    console.error('❌ Root container not found!');
+    return;
+  }
+
   const root = createRoot(container);
-  // Ensure MSAL is initialized and redirect response handled before using any APIs
-  msalInstance
-    .initialize()
-    .then(() => msalInstance.handleRedirectPromise())
-    .then((result) => {
-      if (result?.account) {
-        msalInstance.setActiveAccount(result.account);
-      } else {
-        const accounts = msalInstance.getAllAccounts();
-        if (accounts.length === 1) {
-          msalInstance.setActiveAccount(accounts[0]);
-        }
+
+  try {
+    console.log('🔐 Initializing MSAL...');
+    // Initialize MSAL
+    await msalInstance.initialize();
+    
+    console.log('✅ MSAL initialized successfully');
+    
+    // Handle redirect response
+    const response = await msalInstance.handleRedirectPromise();
+    console.log('🔄 MSAL redirect response:', response);
+    
+    if (response?.account) {
+      console.log('Setting active account from redirect:', response.account);
+      msalInstance.setActiveAccount(response.account);
+    } else {
+      // Check for existing accounts
+      const accounts = msalInstance.getAllAccounts();
+      console.log('Existing accounts:', accounts);
+      if (accounts.length > 0) {
+        console.log('Setting active account from existing:', accounts[0]);
+        msalInstance.setActiveAccount(accounts[0]);
       }
-      // Handle post-authentication redirects
-      try {
-        // Check if user just completed authentication
-        const hasAuthResult = result?.account;
-        
-        // If user just completed authentication, set a flag and let AuthContext handle the redirect
-        if (hasAuthResult) {
-          console.log('Authentication completed, setting redirect flag');
-          sessionStorage.setItem('shouldRedirectToLearning', 'true');
-        }
-      } catch (e) {
-        console.error('Redirect logic error:', e);
-      }
+    }
+    
+    // Small delay to ensure MSAL state is updated
+    setTimeout(() => {
       root.render(
         <ApolloProvider client={client}>
           <MsalProvider instance={msalInstance}>
@@ -54,35 +62,20 @@ if (container) {
           </MsalProvider>
         </ApolloProvider>
       );
-    })
-    .catch((e) => {
-      console.error("MSAL initialization failed:", e);
-      root.render(
-        <div style={{
-          padding: '40px',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          maxWidth: '600px',
-          margin: '0 auto',
-          textAlign: 'center'
-        }}>
-          <h1 style={{ color: '#ef4444', marginBottom: '16px' }}>Application Initialization Failed</h1>
-          <p style={{ color: '#374151', marginBottom: '24px', lineHeight: '1.5' }}>
-            The authentication service could not be initialized. This is likely due to missing or incorrect environment variables.
-          </p>
-          <div style={{
-            background: '#f3f4f6',
-            padding: '16px',
-            borderRadius: '8px',
-            textAlign: 'left',
-            overflowX: 'auto',
-            marginBottom: '24px'
-          }}>
-            <code style={{ fontSize: '14px', color: '#dc2626' }}>{e.toString()}</code>
-          </div>
-          <p style={{ fontSize: '14px', color: '#6b7280' }}>
-            Please check your <code>.env</code> file and ensure <code>VITE_AZURE_CLIENT_ID</code>, <code>VITE_B2C_TENANT_NAME</code>, and other required variables are set correctly.
-          </p>
-        </div>
-      );
-    });
+    }, 100);
+  } catch (error) {
+    console.error("❌ MSAL initialization failed:", error);
+    console.error("Error details:", error.message, error.stack);
+    // Render app anyway
+    root.render(
+      <ApolloProvider client={client}>
+        <MsalProvider instance={msalInstance}>
+          <AppRouter />
+        </MsalProvider>
+      </ApolloProvider>
+    );
+  }
 }
+
+console.log('🎯 Starting app initialization...');
+initializeApp();

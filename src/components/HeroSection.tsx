@@ -18,7 +18,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Handle sign in / hero action
-  const { user, login, openAuthModal } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [hasStarted, setHasStarted] = useState(false);
@@ -34,7 +34,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     if (user) {
       navigate('/learning');
     } else {
-      openAuthModal('signin');
+      login(); // Direct Microsoft auth
     }
   };
 
