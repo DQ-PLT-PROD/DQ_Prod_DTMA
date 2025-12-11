@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -7,11 +7,15 @@ import {
   ChevronLeft,
   Menu,
   X,
+  Loader2,
+  Download,
 } from "lucide-react";
 import CourseAssessment from "./CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../components/CourseOutline";
-import { Lesson } from "../types/course";
+import { Lesson, toUILesson } from "../types/course";
+import { fetchCourseLessons, fetchCourseResources, CourseResource } from "../services/courseService";
+import { Lesson as DBLesson } from "../types/dtma-lms";
 
 const initialLessons: Lesson[] = [
   {
@@ -79,6 +83,9 @@ const initialLessons: Lesson[] = [
   },
 ];
 
+// Course slug for fetching data - this would typically come from route params
+const COURSE_SLUG = 'perfecting-life-transactions';
+
 const LearningScreen: React.FC = () => {
   const [lessons, setLessons] = useState<Lesson[]>(() => {
     if (typeof window !== 'undefined') {
@@ -87,8 +94,11 @@ const LearningScreen: React.FC = () => {
     }
     return initialLessons;
   });
+  const [dbLessons, setDbLessons] = useState<DBLesson[]>([]);
+  const [resources, setResources] = useState<CourseResource[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [currentLessonIndex, setCurrentLessonIndex] = useState(2);
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [playbackRate, setPlaybackRate] = useState(1);
@@ -104,6 +114,45 @@ const LearningScreen: React.FC = () => {
 
   const navigate = useNavigate();
 
+  // Fetch lessons and resources from Supabase on mount
+  useEffect(() => {
+    const loadCourseData = async () => {
+      try {
+        setIsLoading(true);
+        const [fetchedLessons, fetchedResources] = await Promise.all([
+          fetchCourseLessons(COURSE_SLUG),
+          fetchCourseResources(COURSE_SLUG),
+        ]);
+
+        if (fetchedLessons.length > 0) {
+          setDbLessons(fetchedLessons);
+          // Get completed lesson IDs from localStorage
+          const saved = localStorage.getItem('courseProgress');
+          const savedLessons: Lesson[] = saved ? JSON.parse(saved) : [];
+          const completedIds = new Set(
+            savedLessons.filter(l => l.completed).map(l => String(l.id))
+          );
+
+          // Convert DB lessons to UI lessons
+          const uiLessons = fetchedLessons.map((lesson, idx) =>
+            toUILesson(lesson, idx, completedIds)
+          );
+          setLessons(uiLessons);
+        }
+        // If no lessons from DB, keep the initialLessons fallback
+
+        setResources(fetchedResources);
+      } catch (error) {
+        console.warn('Failed to load course data, using fallback:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCourseData();
+  }, []);
+
+  // Persist progress to localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('courseProgress', JSON.stringify(lessons));
@@ -256,7 +305,7 @@ const LearningScreen: React.FC = () => {
       </header>
 
       {/* Content Area Below Header */}
-    <div className={`flex-1 flex ${isTheater ? "h-[calc(100vh-140px)] max-h-[calc(100vh-140px)] w-full" : ""}`}>
+      <div className={`flex-1 flex ${isTheater ? "h-[calc(100vh-140px)] max-h-[calc(100vh-140px)] w-full" : ""}`}>
         {/* Minimal Side Navigation - Learning Page with collapse toggle (hidden in theater) */}
         {!isTheater && (
           <aside
@@ -361,12 +410,12 @@ const LearningScreen: React.FC = () => {
           </div>
 
           {/* Main Content */}
-        <main className={`flex-1 min-w-0 ${isTheater ? "p-0 h-full" : "p-4 md:p-6"} overflow-y-auto`}>
-          {showQuiz ? (
-            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-8">
-              <CourseAssessment
-                variant="inline"
-                allLessonsCompleted={allLessonsCompleted}
+          <main className={`flex-1 min-w-0 ${isTheater ? "p-0 h-full" : "p-4 md:p-6"} overflow-y-auto`}>
+            {showQuiz ? (
+              <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-8">
+                <CourseAssessment
+                  variant="inline"
+                  allLessonsCompleted={allLessonsCompleted}
                   onBack={handleBackFromQuiz}
                 />
               </div>
@@ -383,9 +432,9 @@ const LearningScreen: React.FC = () => {
                     </button>
                   )}
                   {/* Title Overlay - transparent strip over video */}
-                    <div
-                      className={`absolute top-3 left-3 right-3 z-10 px-4 py-3 bg-black/40 backdrop-blur-sm rounded-lg transition-opacity duration-300 ${isPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
-                    >
+                  <div
+                    className={`absolute top-3 left-3 right-3 z-10 px-4 py-3 bg-black/40 backdrop-blur-sm rounded-lg transition-opacity duration-300 ${isPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
+                  >
                     <p className="text-white/90 text-lg font-semibold">
                       {courseTitle}
                     </p>
@@ -396,7 +445,7 @@ const LearningScreen: React.FC = () => {
 
                   {/* Video Player */}
                   <VideoPlayer
-                    src="/videos/C2-INTRO.mp4"
+                    src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
                     poster="/Economy%204.0%20thumnail.png"
                     isPlaying={isPlaying}
                     volume={volume}

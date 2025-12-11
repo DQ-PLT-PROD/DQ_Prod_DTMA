@@ -139,8 +139,17 @@ export const getIntroVideoForCourse = (
 ): { videoUrl?: string; posterUrl?: string } => {
   const course = getCourseBySlug(courseIdOrSlug);
   if (!course) return { videoUrl: undefined, posterUrl: undefined };
+
+  // If the course object already has the URL (e.g. from Supabase), use it
+  if (course.introVideoUrl) {
+    return {
+      videoUrl: course.introVideoUrl,
+      posterUrl: course.introVideoPosterUrl || course.heroImageUrl || course.provider?.logoUrl
+    };
+  }
+
   const introLesson = getIntroLessonForCourse(courseIdOrSlug);
-  const videoUrl = course.introVideoUrl || introLesson?.videoUrl;
+  const videoUrl = introLesson?.videoUrl;
   const posterUrl =
     course.introVideoPosterUrl || course.heroImageUrl || course.provider?.logoUrl;
   return { videoUrl, posterUrl };
@@ -178,8 +187,8 @@ export const toMarketplaceItem = (course: Course) => {
     },
     heroImageUrl: course.heroImageUrl,
     introLessonId: course.introLessonId || introLesson?.id,
-    introVideoUrl: introVideo.videoUrl,
-    introVideoPosterUrl: introVideo.posterUrl,
+    introVideoUrl: course.introVideoUrl || introVideo.videoUrl,
+    introVideoPosterUrl: course.introVideoPosterUrl || introVideo.posterUrl,
     rating: course.rating ?? 4.6,
     reviewCount: course.reviewCount ?? 24,
     formUrl: course.enrollmentUrl,

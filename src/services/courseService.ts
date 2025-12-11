@@ -1,6 +1,29 @@
 import { getSupabase, isSupabaseConfigured } from "../lib/supabase/client";
-import { Course, CourseCatalogFilters } from "../types/dtma-lms";
+import { Course, CourseCatalogFilters, Lesson } from "../types/dtma-lms";
 import { getCourses as getLocalCourses, getCourseBySlug as getLocalCourseBySlug, toMarketplaceItem } from "../lib/api/dtmaCourses";
+
+// Types for quiz and resource data
+export interface Quiz {
+    id: string;
+    courseSlug: string;
+    title: string;
+    orderIndex: number;
+    question: string;
+    options: { id: string; text: string }[];
+    correctAnswer: string;
+    explanation?: string;
+}
+
+export interface CourseResource {
+    id: string;
+    courseSlug: string;
+    title: string;
+    type: 'whitepaper' | 'pdf' | 'template' | 'tool' | 'worksheet' | 'other';
+    description?: string;
+    resourceUrl: string;
+    fileSizeBytes?: number;
+    orderIndex: number;
+}
 
 // Helper to map Supabase row to Course type
 const mapRowToCourse = (row: any): Course => {
@@ -147,4 +170,153 @@ export const fetchFullCourse = async (slug: string): Promise<Course | null> => {
         console.warn("Unexpected error fetching full course, falling back to local data:", err);
         return getLocalCourseBySlug(slug) || null;
     }
+};
+
+// Helper to map Supabase lesson row to Lesson type
+const mapRowToLesson = (row: any): Lesson => {
+    return {
+        id: row.id,
+        courseId: row.course_slug,
+        title: row.title,
+        type: row.type as 'intro' | 'standard' | 'outro' | 'quiz',
+        orderIndex: row.order_index,
+        estimatedDurationMinutes: row.estimated_duration_minutes || 0,
+        videoUrl: row.video_url || undefined,
+        resourceUrl: row.resource_url || undefined,
+        content: row.content || undefined,
+    };
+};
+
+// Helper to map Supabase quiz row to Quiz type
+const mapRowToQuiz = (row: any): Quiz => {
+    return {
+        id: row.id,
+        courseSlug: row.course_slug,
+        title: row.title,
+        orderIndex: row.order_index,
+        question: row.question,
+        options: row.options || [],
+        correctAnswer: row.correct_answer,
+        explanation: row.explanation || undefined,
+    };
+};
+
+// Helper to map Supabase resource row to CourseResource type
+const mapRowToResource = (row: any): CourseResource => {
+    return {
+        id: row.id,
+        courseSlug: row.course_slug,
+        title: row.title,
+        type: row.type,
+        description: row.description || undefined,
+        resourceUrl: row.resource_url,
+        fileSizeBytes: row.file_size_bytes || undefined,
+        orderIndex: row.order_index || 0,
+    };
+};
+
+/**
+ * Fetch all lessons for a course by slug
+ */
+export const fetchCourseLessons = async (courseSlug: string): Promise<Lesson[]> => {
+    if (!isSupabaseConfigured()) {
+        console.warn("Supabase not configured, returning empty lessons array");
+        return [];
+    }
+
+    try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+            .from("lessons")
+            .select("*")
+            .eq("course_slug", courseSlug)
+            .order("order_index", { ascending: true });
+
+        if (error) {
+            console.warn("Error fetching lessons:", error.message);
+            return [];
+        }
+
+        return (data || []).map(mapRowToLesson);
+    } catch (err) {
+        console.warn("Unexpected error fetching lessons:", err);
+        return [];
+    }
+};
+
+/**
+ * Fetch all quizzes for a course by slug
+ */
+export const fetchCourseQuizzes = async (courseSlug: string): Promise<Quiz[]> => {
+    if (!isSupabaseConfigured()) {
+        console.warn("Supabase not configured, returning empty quizzes array");
+        return [];
+    }
+
+    try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+            .from("quizzes")
+            .select("*")
+            .eq("course_slug", courseSlug)
+            .order("order_index", { ascending: true });
+
+        if (error) {
+            console.warn("Error fetching quizzes:", error.message);
+            return [];
+        }
+
+        return (data || []).map(mapRowToQuiz);
+    } catch (err) {
+        console.warn("Unexpected error fetching quizzes:", err);
+        return [];
+    }
+};
+
+/**
+ * Fetch all resources for a course by slug
+ */
+export const fetchCourseResources = async (courseSlug: string): Promise<CourseResource[]> => {
+    if (!isSupabaseConfigured()) {
+        console.warn("Supabase not configured, returning empty resources array");
+        return [];
+    }
+
+    try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+            .from("course_resources")
+            .select("*")
+            .eq("course_slug", courseSlug)
+            .order("order_index", { ascending: true });
+
+        if (error) {
+            console.warn("Error fetching resources:", error.message);
+            return [];
+        }
+
+        return (data || []).map(mapRowToResource);
+    } catch (err) {
+        console.warn("Unexpected error fetching resources:", err);
+        return [];
+    }
+};
+
+/**
+ * Fetch complete course data with lessons, quizzes, and resources
+ */
+export const fetchCourseWithContent = async (slug: string): Promise<{
+    course: Course | null;
+    lessons: Lesson[];
+    quizzes: Quiz[];
+    resources: CourseResource[];
+}> => {
+    const [course, lessons, quizzes, resources] = await Promise.all([
+        fetchFullCourse(slug),
+        fetchCourseLessons(slug),
+        fetchCourseQuizzes(slug),
+        fetchCourseResources(slug),
+    ]);
+
+    return { course, lessons, quizzes, resources };
 };
