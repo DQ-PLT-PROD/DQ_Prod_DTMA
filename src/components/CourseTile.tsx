@@ -52,7 +52,8 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   isBookmarked,
   isHovered = false,
 }) => {
-  const heroSrc = thumbnailUrl || providerLogoUrl || "/mzn_logo.png";
+  // Prioritize thumbnailUrl, fallback to heroImageUrl, finally global placeholder
+  const heroSrc = thumbnailUrl || "/images/placeholders/course-fallback.png";
   const displayRating = rating ?? 4.6;
   const displayReviews = reviewCount ?? 24;
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -167,7 +168,9 @@ export const CourseTile: React.FC<CourseTileProps> = ({
           style={{ contain: 'layout' }}
           onError={(e) => {
             const target = e.target as HTMLImageElement;
-            target.src = providerLogoUrl || "/mzn_logo.png";
+            // Prevent infinite loop if fallback fails
+            if (target.src.includes('course-fallback.png')) return;
+            target.src = "/images/placeholders/course-fallback.png";
           }}
         />
 
@@ -254,13 +257,6 @@ export const CourseTile: React.FC<CourseTileProps> = ({
 
         <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
           <CourseMeta duration={duration} lessonCount={lessonCount} />
-          {/* Provider Logo (Small) */}
-          <img
-            src={providerLogoUrl}
-            alt={providerName}
-            className="h-6 w-6 object-contain opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-200"
-            title={providerName}
-          />
         </div>
       </div>
     </div>

@@ -119,7 +119,7 @@ export const MarketplaceCard: React.FC<MarketplaceItemProps> = ({
           title={item.title}
           description={item.description}
           providerName={item.provider?.name || "Provider"}
-          providerLogoUrl={item.provider?.logoUrl || "/mzn_logo.png"}
+          providerLogoUrl={item.provider?.logoUrl || "/images/placeholders/course-fallback.png"}
           variant={marketplaceType === "courses" ? "course" : "classic"}
           thumbnailUrl={thumbnailUrl}
           videoUrl={item.introVideoUrl} // Pass videoUrl

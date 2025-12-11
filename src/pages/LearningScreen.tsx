@@ -16,6 +16,8 @@ import { CourseOutline } from "../components/CourseOutline";
 import { Lesson, toUILesson } from "../types/course";
 import { fetchCourseLessons, fetchCourseResources, CourseResource } from "../services/courseService";
 import { Lesson as DBLesson } from "../types/dtma-lms";
+import { ExploreDropdown } from "../components/Header/components/ExploreDropdown";
+import { FEATURES } from "../config/features";
 
 const initialLessons: Lesson[] = [
   {
@@ -276,14 +278,19 @@ const LearningScreen: React.FC = () => {
           background: "linear-gradient(90deg, #092893 0%, #1A3592 16.12%, #2D4492 29.33%, #33478E 39.99%, #3C4E8F 48.46%, #495995 55.11%, #4C5A8E 60.28%, #525F91 64.34%, #556293 67.66%, #566293 70.58%, #596594 73.46%, #5E6996 76.68%, #677195 80.58%, #737A96 85.53%, #7E8398 91.88%, #868B9E 100%)"
         }}
       >
-        <div className="px-6 py-3 flex items-center justify-between">
+        <div className="px-6 py-3 flex items-center gap-6">
           {/* Logo */}
           <a href="/" className="flex items-center">
             <img src="/DTMA LOGO WHITE.svg" alt="DTMA" className="h-8 w-auto" />
           </a>
 
+          {/* Navigation */}
+          <div className="hidden md:flex items-center">
+            {FEATURES.COURSE_MARKETPLACE && <ExploreDropdown />}
+          </div>
+
           {/* Profile Icon */}
-          <div className="relative">
+          <div className="relative ml-auto">
             <button
               onClick={() => setShowProfileMenu((prev) => !prev)}
               className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/30 transition border border-white/30"

@@ -30,7 +30,7 @@ import { useProductDetails } from "../../hooks/useProductDetails";
 import { CourseMeta } from "../../components/ui/CourseMeta";
 import { Tag } from "../../components/ui/Tag";
 import { AudienceFitIndicator } from "../../components/marketplace/details/AudienceFitIndicator";
-import { MarketplaceCard } from "../../components/marketplace/MarketplaceCard";
+import { CourseTile } from "../../components/CourseTile";
 
 
 interface MarketplaceDetailsPageProps {
@@ -703,13 +703,27 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedItems.slice(0, 4).map((relatedItem) => (
                 <div key={relatedItem.id} className="h-full">
-                  <MarketplaceCard
-                    item={relatedItem}
-                    marketplaceType={marketplaceType}
+                  <CourseTile
+                    title={relatedItem.title}
+                    description={relatedItem.description}
+                    providerName={relatedItem.provider?.name || "Provider"}
+                    providerLogoUrl={relatedItem.provider?.logoUrl || "/images/placeholders/course-fallback.png"}
+                    thumbnailUrl={relatedItem.heroImageUrl || relatedItem.thumbnailUrl}
+                    videoUrl={relatedItem.introVideoUrl}
+                    category={relatedItem.category}
+                    levelTag={relatedItem.levelTag}
+                    audienceLevel={relatedItem.audienceLevel}
+                    duration={relatedItem.duration}
+                    lessonCount={relatedItem.lessonCount}
+                    rating={relatedItem.rating}
+                    reviewCount={relatedItem.reviewCount}
                     isBookmarked={bookmarkedItems.includes(relatedItem.id)}
                     onToggleBookmark={() => onToggleBookmark(relatedItem.id)}
-
-                    isPointerFine={isPointerFine}
+                    onCardClick={() => {
+                      const basePath = marketplaceType === "courses" ? "/marketplace/courses" : config.route;
+                      navigate(`${basePath}/${relatedItem.id}`);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
                   />
                 </div>
               ))}

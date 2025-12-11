@@ -205,12 +205,12 @@ const ProviderTab: React.FC<ProviderTabProps> = ({
       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
         <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
           <img
-            src={provider.logoUrl || "/mzn_logo.png"}
+            src={provider.logoUrl || "/images/placeholders/course-fallback.png"}
             alt={displayName}
             className="h-16 w-16 object-contain rounded-lg bg-gray-50 p-2"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = "/mzn_logo.png";
+              target.src = "/images/placeholders/course-fallback.png";
             }}
           />
           <div>
@@ -222,7 +222,7 @@ const ProviderTab: React.FC<ProviderTabProps> = ({
           <div className="md:ml-auto flex flex-col md:items-end">
             <div className="text-sm text-gray-500">Established</div>
             <div className="font-medium text-blue-600">
-              {mockData.established} {mockData.location.split()[1]?.trim() || 'UAE'}
+              {mockData.established} {mockData.location.split(',')[1]?.trim() || 'UAE'}
             </div>
           </div>
         </div>

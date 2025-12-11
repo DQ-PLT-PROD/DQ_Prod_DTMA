@@ -16,7 +16,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -44,7 +44,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -70,7 +70,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -96,7 +96,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -122,7 +122,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -148,7 +148,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -174,7 +174,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -200,7 +200,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -226,7 +226,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -252,7 +252,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -278,7 +278,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -304,7 +304,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -330,7 +330,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -356,7 +356,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -382,7 +382,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -408,7 +408,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -434,7 +434,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -460,7 +460,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -486,7 +486,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -512,7 +512,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -538,7 +538,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -564,7 +564,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -590,7 +590,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -616,7 +616,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -642,7 +642,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -668,7 +668,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -694,7 +694,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -720,7 +720,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -746,7 +746,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -772,7 +772,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -798,7 +798,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },
@@ -824,7 +824,7 @@ export const courses: Course[] = [
     status: "published",
     provider: {
       name: "DTMA Academy",
-      logoUrl: "/mzn_logo.png",
+      logoUrl: "/images/placeholders/course-fallback.png",
       description: "Digital Qatalyst’s academy for digital transformation leaders and workers.",
       url: "https://dtma.example.com",
     },

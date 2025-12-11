@@ -10,8 +10,8 @@ export function App() {
   // Redirect authenticated users to learning page
   useEffect(() => {
     if (!isLoading && user) {
-      console.log('User is authenticated, redirecting to learning page');
-      navigate('/learning', { replace: true });
+      // Allow authenticated users to view the landing page
+      // Only redirect if explicitly requested via logic elsewhere (e.g. login flow)
     } else if (!isLoading && !user) {
       // Check if we should redirect after authentication
       const shouldRedirect = sessionStorage.getItem('shouldRedirectToLearning');

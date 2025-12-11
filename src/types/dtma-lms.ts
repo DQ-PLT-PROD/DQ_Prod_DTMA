@@ -31,6 +31,7 @@ export interface Course {
   estimatedDurationMinutes: number;
   lessonCount: number;
   heroImageUrl?: string;
+  thumbnailUrl?: string; // New field for card thumbnail
   introLessonId?: string;
   introVideoUrl?: string;
   introVideoPosterUrl?: string;

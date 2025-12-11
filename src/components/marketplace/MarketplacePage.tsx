@@ -394,7 +394,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                   mediaType: mapType(row.type),
                   provider: {
                     name: row.provider_name || 'Knowledge Hub',
-                    logoUrl: row.provider_logo_url || '/mzn_logo.png',
+                    logoUrl: row.provider_logo_url || '/images/placeholders/course-fallback.png',
                   },
                   imageUrl: row.thumbnail_url || row.image_url || undefined,
                   tags: tags,
@@ -605,7 +605,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           }
 
           const fallbackLogos = [
-            "/mzn_logo.png",
+            "/images/placeholders/course-fallback.png",
           ];
 
           // Map product data to match expected MarketplaceItem structure

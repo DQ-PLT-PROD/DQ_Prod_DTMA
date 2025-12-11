@@ -5,8 +5,8 @@ import {
   getFallbackItemDetails,
   getFallbackItems,
 } from "../utils/fallbackData";
-import { getLessonsByCourse, getRelatedCourses, toMarketplaceItem, formatDuration, getIntroVideoForCourse } from "../lib/api/dtmaCourses";
-import { fetchFullCourse, fetchCourseWithContent } from "../services/courseService";
+import { getLessonsByCourse, getRelatedCourses, toMarketplaceItem, formatDuration, getCourses } from "../lib/api/dtmaCourses";
+import { fetchFullCourse, fetchCourseWithContent, fetchRelatedCourses } from "../services/courseService";
 import { categories } from "../data/dtma/categories";
 import { Course } from "../types/dtma-lms";
 
@@ -97,7 +97,7 @@ export function useProductDetails({
       toAbsolute(logoFromCustomFields) ||
       toAbsolute(logoFromCFArray) ||
       toAbsolute(logoFromCFObject) ||
-      "/mzn_logo.png";
+      "/images/placeholders/course-fallback.png";
 
     return {
       id: product.id,
@@ -249,7 +249,7 @@ export function useProductDetails({
     };
 
     const providerName = course.provider?.name || "Khalifa Fund";
-    const providerLogo = toAbsolute(course.provider?.logoUrl) || "/mzn_logo.png";
+    const providerLogo = toAbsolute(course.provider?.logoUrl) || "/images/placeholders/course-fallback.png";
 
     const toArray = (val: any): string[] => {
       if (Array.isArray(val)) return val.filter((s) => typeof s === "string" && s.trim() !== "").map((s) => s.trim());
@@ -270,7 +270,7 @@ export function useProductDetails({
       }));
     }
 
-    const introVideo = getIntroVideoForCourse(course.id);
+    // const introVideo = getIntroVideoForCourse(course.id); // Removed to avoid local data fallback
     const introLesson =
       course.introLessonId &&
       lessonList.find((lesson) => lesson.id === course.introLessonId);
@@ -279,6 +279,8 @@ export function useProductDetails({
     const highlights = course.learningOutcomes && course.learningOutcomes.length > 0
       ? course.learningOutcomes
       : course.skillsGained || [];
+
+    const posterUrl = course.introVideoPosterUrl || course.heroImageUrl || course.provider?.logoUrl;
 
     return {
       id: course.slug,
@@ -308,8 +310,8 @@ export function useProductDetails({
       audienceLevel: course.audienceLevel,
       heroImageUrl: course.heroImageUrl,
       introLessonId: course.introLessonId || firstIntro?.id,
-      introVideoUrl: course.introVideoUrl || introVideo.videoUrl,
-      introVideoPosterUrl: course.introVideoPosterUrl || introVideo.posterUrl,
+      introVideoUrl: course.introVideoUrl || firstIntro?.videoUrl,
+      introVideoPosterUrl: posterUrl,
     } as any;
   };
 
@@ -339,10 +341,19 @@ export function useProductDetails({
         setItem(mapped);
       }
 
-      const related = getRelatedCourses(course.slug, 4)
+      // Get related courses, fallback to any courses if not enough
+      let relatedRaw = getRelatedCourses(course.slug, 3);
+      if (relatedRaw.length < 3) {
+        const allCourses = getCourses();
+        const additional = allCourses
+          .filter(c => c.slug !== course.slug && !relatedRaw.find(r => r.slug === c.slug))
+          .slice(0, 3 - relatedRaw.length);
+        relatedRaw = [...relatedRaw, ...additional];
+      }
+
+      const related = relatedRaw
         .map((relatedCourse) => toMarketplaceItem(relatedCourse))
-        .filter((relatedCourse) => relatedCourse.id !== course.slug)
-        .slice(0, 4);
+        .slice(0, 3);
       setRelatedItems(related);
 
       if (shouldTakeAction) {
@@ -413,7 +424,7 @@ export function useProductDetails({
         description: x.description || "",
         provider: {
           name: merged.provider?.name,
-          logoUrl: merged.provider?.logoUrl || "/mzn_logo.png",
+          logoUrl: merged.provider?.logoUrl || "/images/placeholders/course-fallback.png",
         },
         tags: [],
       }))
@@ -432,7 +443,7 @@ export function useProductDetails({
         provider: {
           name: x.provider?.name || merged.provider?.name || "Service Provider",
           logoUrl:
-            x.provider?.logoUrl || merged.provider?.logoUrl || "/mzn_logo.png",
+            x.provider?.logoUrl || merged.provider?.logoUrl || "/images/placeholders/course-fallback.png",
         },
         tags: Array.isArray(x.tags) ? x.tags : [],
       }));

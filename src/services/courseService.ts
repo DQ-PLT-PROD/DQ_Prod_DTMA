@@ -1,6 +1,6 @@
 import { getSupabase, isSupabaseConfigured } from "../lib/supabase/client";
 import { Course, CourseCatalogFilters, Lesson } from "../types/dtma-lms";
-import { getCourses as getLocalCourses, getCourseBySlug as getLocalCourseBySlug, toMarketplaceItem } from "../lib/api/dtmaCourses";
+import { getCourses as getLocalCourses, getCourseBySlug as getLocalCourseBySlug, toMarketplaceItem, getRelatedCourses } from "../lib/api/dtmaCourses";
 
 // Types for quiz and resource data
 export interface Quiz {
@@ -40,6 +40,7 @@ const mapRowToCourse = (row: any): Course => {
         estimatedDurationMinutes: row.estimated_duration_minutes || 0,
         lessonCount: row.lesson_count || 0,
         heroImageUrl: row.hero_image_url || undefined,
+        thumbnailUrl: row.thumbnail_url || undefined,
         introVideoUrl: row.intro_video_url || undefined,
         introVideoPosterUrl: row.intro_video_poster_url || undefined,
         isFeatured: row.is_featured || false,
@@ -319,4 +320,38 @@ export const fetchCourseWithContent = async (slug: string): Promise<{
     ]);
 
     return { course, lessons, quizzes, resources };
+};
+
+/**
+ * Fetch related courses based on category or audience level
+ */
+export const fetchRelatedCourses = async (slug: string, limit: number = 3): Promise<Course[]> => {
+    if (!isSupabaseConfigured()) {
+        const localCourses = getRelatedCourses(slug, limit);
+        return localCourses;
+    }
+
+    try {
+        const currentCourse = await fetchFullCourse(slug);
+        if (!currentCourse) return [];
+
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+            .from("courses")
+            .select("*")
+            .neq('slug', slug)
+            .or(`category_id.eq.${currentCourse.categoryId},audience_level.eq.${currentCourse.audienceLevel}`)
+            .eq('status', 'published')
+            .limit(limit);
+
+        if (error) {
+            console.warn("Error fetching related courses:", error.message);
+            return getRelatedCourses(slug, limit);
+        }
+
+        return (data || []).map(mapRowToCourse);
+    } catch (err) {
+        console.warn("Unexpected error fetching related courses:", err);
+        return getRelatedCourses(slug, limit);
+    }
 };
