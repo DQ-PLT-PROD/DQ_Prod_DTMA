@@ -7,8 +7,8 @@ const rawKey = (import.meta as any)?.env?.VITE_SUPABASE_ANON_KEY
 
 // Provide defaults or read from env.
 // Note: In production, these should be properly injected.
-const SUPABASE_URL = typeof rawUrl === 'string' ? rawUrl.trim() : 'https://faqystypjlxqvgkhnbyq.supabase.co'
-const SUPABASE_ANON_KEY = typeof rawKey === 'string' ? rawKey.trim() : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhcXlzdHlwamx4cXZna2huYnlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzMTIxMjIsImV4cCI6MjA3NDg4ODEyMn0.F6oqxmEQOIfWpqX9R3syTn6ysHrtzKuZAwA7K8SErtE'
+const SUPABASE_URL = typeof rawUrl === 'string' ? rawUrl.trim() : 'https://ugmybskacomcdgdngolz.supabase.co'
+const SUPABASE_ANON_KEY = typeof rawKey === 'string' ? rawKey.trim() : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnbXlic2thY29tY2RnZG5nb2x6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2NTM0MDEsImV4cCI6MjA4MDIyOTQwMX0.iwNLBgOsE1k8Eb3noMhJ4kCZX6b5oLdq-0B5S7CcPpo'
 
 let _client: SupabaseClient<Database> | null = null
 
