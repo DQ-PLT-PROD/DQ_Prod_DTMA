@@ -360,6 +360,133 @@ export interface Database {
                     created_at?: string | null
                 }
                 Relationships: []
+            },
+            course_categories: {
+                Row: {
+                    id: string
+                    slug: string
+                    name: string
+                    description: string | null
+                    display_order: number | null
+                    is_active: boolean | null
+                    created_at: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    slug: string
+                    name: string
+                    description?: string | null
+                    display_order?: number | null
+                    is_active?: boolean | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    slug?: string
+                    name?: string
+                    description?: string | null
+                    display_order?: number | null
+                    is_active?: boolean | null
+                    updated_at?: string | null
+                }
+                Relationships: []
+            },
+            industries: {
+                Row: {
+                    id: string
+                    slug: string
+                    name: string
+                    description: string | null
+                    icon: string | null
+                    display_order: number | null
+                    is_active: boolean | null
+                    created_at: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    slug: string
+                    name: string
+                    description?: string | null
+                    icon?: string | null
+                    display_order?: number | null
+                    is_active?: boolean | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    slug?: string
+                    name?: string
+                    description?: string | null
+                    icon?: string | null
+                    display_order?: number | null
+                    is_active?: boolean | null
+                    updated_at?: string | null
+                }
+                Relationships: []
+            },
+            audience_levels: {
+                Row: {
+                    id: string
+                    slug: string
+                    name: string
+                    description: string | null
+                    display_order: number | null
+                    is_active: boolean | null
+                    created_at: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    slug: string
+                    name: string
+                    description?: string | null
+                    display_order?: number | null
+                    is_active?: boolean | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    slug?: string
+                    name?: string
+                    description?: string | null
+                    display_order?: number | null
+                    is_active?: boolean | null
+                    updated_at?: string | null
+                }
+                Relationships: []
+            },
+            difficulty_levels: {
+                Row: {
+                    id: string
+                    slug: string
+                    name: string
+                    description: string | null
+                    display_order: number | null
+                    is_active: boolean | null
+                    created_at: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    slug: string
+                    name: string
+                    description?: string | null
+                    display_order?: number | null
+                    is_active?: boolean | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    slug?: string
+                    name?: string
+                    description?: string | null
+                    display_order?: number | null
+                    is_active?: boolean | null
+                    updated_at?: string | null
+                }
+                Relationships: []
             }
         }
         Views: {}

@@ -1,5 +1,4 @@
 import React from "react";
-import { StarIcon, ScaleIcon } from "lucide-react";
 import { Tag } from "./ui/Tag";
 import { CourseMeta } from "./ui/CourseMeta";
 
@@ -9,7 +8,7 @@ export interface CourseTileProps {
   providerName: string;
   providerLogoUrl: string;
   thumbnailUrl?: string;
-  videoUrl?: string; // Added videoUrl prop
+  videoUrl?: string;
   category?: string;
   levelTag?: string;
   audienceLevel?: string;
@@ -24,18 +23,13 @@ export interface CourseTileProps {
   onSecondaryClick?: (e: React.MouseEvent) => void;
   showActions?: boolean;
   variant?: "course" | "classic";
-  onAddToComparison?: () => void;
   onCardClick?: (e: React.MouseEvent) => void;
-  onToggleBookmark?: () => void;
-  isBookmarked?: boolean;
   isHovered?: boolean;
 }
 
 export const CourseTile: React.FC<CourseTileProps> = ({
   title,
   description,
-  providerName,
-  providerLogoUrl,
   thumbnailUrl,
   videoUrl,
   category,
@@ -43,19 +37,12 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   audienceLevel,
   duration,
   lessonCount,
-  rating,
-  reviewCount,
   variant = "course",
-  onAddToComparison,
   onCardClick,
-  onToggleBookmark,
-  isBookmarked,
   isHovered = false,
 }) => {
   // Prioritize thumbnailUrl, fallback to heroImageUrl, finally global placeholder
   const heroSrc = thumbnailUrl || "/images/placeholders/course-fallback.png";
-  const displayRating = rating ?? 4.6;
-  const displayReviews = reviewCount ?? 24;
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   React.useEffect(() => {
@@ -89,18 +76,6 @@ export const CourseTile: React.FC<CourseTileProps> = ({
               <h3 className="font-semibold text-gray-900 leading-snug line-clamp-2 text-base">
                 {title}
               </h3>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                {rating && (
-                  <>
-                    <span className="text-gray-300">•</span>
-                    <div className="flex items-center gap-1">
-                      <StarIcon size={12} className="fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{displayRating.toFixed(1)}</span>
-                      <span className="text-gray-400">({displayReviews})</span>
-                    </div>
-                  </>
-                )}
-              </div>
             </div>
           </div>
 
@@ -111,38 +86,6 @@ export const CourseTile: React.FC<CourseTileProps> = ({
           <div className="mt-auto pt-2 flex items-center justify-between">
             <div className="flex gap-2">
               {/* Placeholder for extra meta if needed */}
-            </div>
-            <div className="flex items-center gap-2">
-              {onToggleBookmark && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleBookmark();
-                  }}
-                  className={`p-2 rounded-full transition-colors ${isBookmarked
-                    ? "bg-yellow-50 text-yellow-600"
-                    : "bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                    }`}
-                  aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
-                >
-                  <StarIcon
-                    size={16}
-                    className={isBookmarked ? "fill-yellow-500" : ""}
-                  />
-                </button>
-              )}
-              {onAddToComparison && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddToComparison();
-                  }}
-                  className="p-2 rounded-full bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                  aria-label="Add to comparison"
-                >
-                  <ScaleIcon size={16} />
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -193,32 +136,6 @@ export const CourseTile: React.FC<CourseTileProps> = ({
             <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-purple-700 text-[10px] font-bold uppercase tracking-wider rounded-md shadow-sm border border-purple-100">
               {audienceLevel}
             </span>
-          )}
-        </div>
-
-        {/* Bookmark / Compare Overlay Actions (Visible on Hover) */}
-        <div className={`absolute top-3 right-3 flex flex-col gap-2 transition-opacity duration-200 z-10 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-          {onToggleBookmark && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleBookmark();
-              }}
-              className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white text-gray-500 hover:text-yellow-500 transition-colors"
-            >
-              <StarIcon size={16} className={isBookmarked ? "fill-yellow-500 text-yellow-500" : ""} />
-            </button>
-          )}
-          {onAddToComparison && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToComparison();
-              }}
-              className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white text-gray-500 hover:text-blue-600 transition-colors"
-            >
-              <ScaleIcon size={16} />
-            </button>
           )}
         </div>
       </div>

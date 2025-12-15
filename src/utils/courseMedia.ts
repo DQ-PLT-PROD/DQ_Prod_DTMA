@@ -7,7 +7,7 @@ export const getCourseMedia = (item: any) => {
     item?.imageUrl ||
     item?.thumbnailUrl ||
     item?.provider?.logoUrl ||
-    "/images/placeholders/course-fallback.png";
+    "/mzn_logo.png";
 
   return { videoUrl, poster };
 };

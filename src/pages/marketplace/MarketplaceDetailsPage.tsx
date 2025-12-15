@@ -1,14 +1,12 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import {
-  BookmarkIcon,
   ChevronRightIcon,
   HomeIcon,
   Share2Icon,
   Volume2,
   VolumeX,
   Maximize,
-  Play,
   ChevronDown,
 } from "lucide-react";
 import { Header } from "../../components/Header";
@@ -35,16 +33,10 @@ import { CourseTile } from "../../components/CourseTile";
 
 interface MarketplaceDetailsPageProps {
   marketplaceType: "courses" | "financial" | "non-financial" | "knowledge-hub";
-  bookmarkedItems?: string[];
-  onToggleBookmark?: (itemId: string) => void;
-
 }
 
 const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   marketplaceType,
-  bookmarkedItems = [],
-  onToggleBookmark = (_: string) => { },
-
 }) => {
   const { itemId } = useParams<{
     itemId: string;
@@ -53,7 +45,6 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
   const [searchParams] = useSearchParams();
   const shouldTakeAction = searchParams.get("action") === "true";
   const config = getMarketplaceConfig(marketplaceType);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTabsMenu, setShowTabsMenu] = useState(false);
   const [showStickyBottomCTA, setShowStickyBottomCTA] = useState(false);
@@ -110,12 +101,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
     return qs ? `${config.route}?${qs}` : config.route;
   }, [item, config.route, marketplaceType]);
 
-  // Sync bookmark state when item or bookmarks change
-  useEffect(() => {
-    if (item?.id) {
-      setIsBookmarked(bookmarkedItems.includes(item.id));
-    }
-  }, [item?.id, bookmarkedItems]);
+
 
 
 
@@ -211,12 +197,7 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
 
 
 
-  const handleToggleBookmark = () => {
-    if (item) {
-      onToggleBookmark(item.id);
-      setIsBookmarked(!isBookmarked);
-    }
-  };
+
 
 
 
@@ -513,6 +494,14 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
             </div>
           )}
 
+          {/* Diagonal Scrim Gradient - Bottom Left */}
+          <div
+            className="absolute inset-0 z-[5] pointer-events-none"
+            style={{
+              background: 'linear-gradient(to top right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0) 70%)'
+            }}
+          />
+
           {/* Content Overlay Layer */}
           <div className="container mx-auto px-4 absolute inset-0 flex flex-col pt-20 pointer-events-none z-10">
             {/* Breadcrumbs - Fixed at top */}
@@ -597,7 +586,9 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
                 onMouseEnter={() => setShowDescription(true)}
               >
                 <p className="text-white text-base leading-relaxed max-w-2xl font-light drop-shadow-md">
-                  {itemDescription}
+                  {itemDescription && itemDescription.split(' ').length > 25
+                    ? itemDescription.split(' ').slice(0, 25).join(' ') + '...'
+                    : itemDescription}
                 </p>
               </div>
 
@@ -608,12 +599,6 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
                   className="flex-1 sm:flex-none px-6 py-3 bg-white text-blue-700 font-bold text-base rounded-xl shadow-xl hover:bg-blue-50 transition-all transform hover:-translate-y-1"
                 >
                   {primaryAction}
-                </button>
-                <button
-                  onClick={handleToggleBookmark}
-                  className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
-                >
-                  <BookmarkIcon size={20} className={isBookmarked ? "fill-white" : ""} />
                 </button>
                 <button
                   className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
@@ -717,8 +702,6 @@ const MarketplaceDetailsPage: React.FC<MarketplaceDetailsPageProps> = ({
                     lessonCount={relatedItem.lessonCount}
                     rating={relatedItem.rating}
                     reviewCount={relatedItem.reviewCount}
-                    isBookmarked={bookmarkedItems.includes(relatedItem.id)}
-                    onToggleBookmark={() => onToggleBookmark(relatedItem.id)}
                     onCardClick={() => {
                       const basePath = marketplaceType === "courses" ? "/marketplace/courses" : config.route;
                       navigate(`${basePath}/${relatedItem.id}`);

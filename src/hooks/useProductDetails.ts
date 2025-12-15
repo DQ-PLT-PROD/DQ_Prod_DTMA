@@ -1,45 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-import { useQuery } from "@apollo/client/react";
-import { GET_PRODUCT } from "../services/marketplaceQueries";
 import {
   getFallbackItemDetails,
   getFallbackItems,
 } from "../utils/fallbackData";
 import { getLessonsByCourse, getRelatedCourses, toMarketplaceItem, formatDuration, getCourses } from "../lib/api/dtmaCourses";
-import { fetchFullCourse, fetchCourseWithContent, fetchRelatedCourses } from "../services/courseService";
+import { fetchCourseWithContent } from "../services/courseService";
 import { categories } from "../data/dtma/categories";
 import { Course } from "../types/dtma-lms";
 
-// Normalize eligibility display to the first non-empty segment before a semicolon
-const normalizeEligibility = (val: any): string | undefined => {
-  if (Array.isArray(val)) {
-    const first = val.find((e: any) => typeof e === "string" && e.trim() !== "");
-    return first ? String(first).split(";")[0].trim() : undefined;
-  }
-  if (typeof val === "string") {
-    return val.split(";")[0].trim();
-  }
-  return undefined;
-};
-
-// Extract a human-readable document name without extension
-const normalizeDocumentName = (raw: string): string => {
-  if (!raw) return "";
-  // Remove query/hash
-  let s = raw.split("#")[0].split("?")[0];
-  // Extract basename from URL or path
-  const parts = s.split(/[/\\]/);
-  s = parts[parts.length - 1] || s;
-  // If there's no dot or it's a hidden file like ".env", just return trimmed
-  if (!/\./.test(s.replace(/^\.+/, ""))) return s.trim();
-  // Strip last extension
-  s = s.replace(/\.[^.\/\\]+$/, "");
-  return s.trim();
-};
-
 export interface UseProductDetailsArgs {
   itemId?: string;
-  marketplaceType: "courses" | "financial" | "non-financial" | "knowledge-hub";
+  marketplaceType: "courses" | "knowledge-hub";
   shouldTakeAction?: boolean;
 }
 
@@ -57,148 +28,14 @@ export function useProductDetails({
 }: UseProductDetailsArgs) {
   const [item, setItem] = useState<ProductItem | null>(null);
   const [relatedItems, setRelatedItems] = useState<any[]>([]);
-  const [courseLoading, setCourseLoading] = useState(false);
-  const [courseError, setCourseError] = useState<Error | null>(null);
-  const isCourseMarketplace = marketplaceType === "courses";
-  // Query product details (non-courses)
-  const {
-    data: productData,
-    error: productError,
-    loading: productLoading,
-    refetch: refetchProduct,
-  } = useQuery(GET_PRODUCT, {
-    variables: { id: itemId || "" },
-    skip: !itemId || isCourseMarketplace,
-  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const mapProductToItem = (product: any): ProductItem | null => {
-    if (!product) return null;
-    const cf = (product as any).customFields || {};
-    // Resolve provider logo strictly from CustomFields.Logo.source
-    const logoFromCFArray = Array.isArray(cf.Logo)
-      ? (cf.Logo[0] as any)?.source
-      : undefined;
-    const logoFromCFObject = !Array.isArray(cf.Logo)
-      ? (cf.Logo as any)?.source
-      : undefined;
-    const toAbsolute = (url?: string) => {
-      if (!url) return undefined;
-      if (/^https?:\/\//i.test(url)) return url;
-      const base = (import.meta as any)?.env?.VITE_ASSETS_BASE_URL || "";
-      if (base) {
-        const trimmedBase = String(base).replace(/\/$/, "");
-        return `${trimmedBase}${url}`;
-      }
-      return url; // fallback: hope it's valid as-is
-    };
-    const logoFromCustomFields = cf.logoUrl;
-
-    const resolvedLogo =
-      toAbsolute(logoFromCustomFields) ||
-      toAbsolute(logoFromCFArray) ||
-      toAbsolute(logoFromCFObject) ||
-      "/images/placeholders/course-fallback.png";
-
-    return {
-      id: product.id,
-      title: product.name,
-      description: product.description,
-      category: cf.Industry,
-      businessStage: cf.BusinessStage,
-      serviceType: cf.CustomerType,
-      price: cf.Cost,
-      processingTime: cf.ProcessingTime,
-      amount: cf.Cost,
-      interestRate: cf.InterestRate,
-      serviceApplication: cf.ServiceApplication,
-      // URL/path to the application form
-      formUrl: typeof cf.formUrl === "string" ? cf.formUrl.trim() : undefined,
-      // Eligibility mapping for EligibilityTermsTab
-      eligibilityCriteria: Array.isArray(cf.Eligibility)
-        ? cf.Eligibility.filter((e: any) => typeof e === "string" && e.trim() !== "")
-        : undefined,
-      eligibility: normalizeEligibility(cf.Eligibility),
-      // Highlights/details mapping
-      // Prefer KeyHighlights when present; otherwise fall back to Steps or TermsOfService
-      details: Array.isArray(cf.KeyHighlights)
-        ? cf.KeyHighlights
-        : typeof cf.KeyHighlights === "string" && cf.KeyHighlights.trim() !== ""
-          ? [cf.KeyHighlights]
-          : Array.isArray(cf.Steps)
-            ? cf.Steps
-            : typeof cf.Steps === "string" && cf.Steps.trim() !== ""
-              ? [cf.Steps]
-              : typeof cf.TermsOfService === "string" && cf.TermsOfService.trim() !== ""
-                ? [cf.TermsOfService]
-                : [],
-      // Expose learning outcomes specifically for course views
-      learningOutcomes: Array.isArray(cf.KeyHighlights)
-        ? cf.KeyHighlights
-        : typeof cf.KeyHighlights === "string" && cf.KeyHighlights.trim() !== ""
-          ? [cf.KeyHighlights]
-          : [],
-      requiredDocuments: Array.isArray(cf.RequiredDocuments)
-        ? cf.RequiredDocuments
-          .map((d: any) => {
-            if (typeof d === "string") return normalizeDocumentName(d);
-            const raw = d?.name || d?.source || "";
-            return normalizeDocumentName(raw);
-          })
-          .filter((s: string) => !!s)
-        : [],
-      // Normalize application process steps from CustomFields.Steps
-      applicationProcess: Array.isArray(cf.Steps)
-        ? cf.Steps
-          .map((s: any) => {
-            if (typeof s === "string") {
-              return { title: s, description: "" };
-            }
-            if (s && typeof s === "object") {
-              const title =
-                typeof s.title === "string" && s.title.trim() !== ""
-                  ? s.title.trim()
-                  : typeof s.name === "string" && s.name.trim() !== ""
-                    ? s.name.trim()
-                    : "";
-              const description =
-                typeof s.description === "string" ? s.description : "";
-              return { title, description };
-            }
-            return { title: "", description: "" };
-          })
-          .filter((x: any) => x.title !== "")
-        : undefined,
-      // Prefer new fields for terms when available
-      keyTerms:
-        (Array.isArray(cf.KeyTermsOfService)
-          ? cf.KeyTermsOfService.join(", ")
-          : cf.KeyTermsOfService) ||
-        (Array.isArray(cf.TermsOfService)
-          ? cf.TermsOfService.join(", ")
-          : cf.TermsOfService),
-      additionalTerms: Array.isArray(cf.AdditionalTermsOfService)
-        ? cf.AdditionalTermsOfService
-        : cf.AdditionalTermsOfService
-          ? [cf.AdditionalTermsOfService]
-          : undefined,
-      tags: [cf.Industry, cf.CustomerType, cf.BusinessStage].filter(Boolean),
-      provider: {
-        // Prefer explicit Partner field from customFields, otherwise fallback to Khalifa Fund
-        name:
-          (typeof cf.Partner === "string" && cf.Partner.trim() !== ""
-            ? cf.Partner.trim()
-            : undefined) || "Khalifa Fund",
-        logoUrl: resolvedLogo,
-      },
-      providerLocation: "UAE",
-    } as any;
-  };
-
-  // Map DTMA mock course to the unified item shape used by details page
+  // Map DTMA course to the unified item shape used by details page
   const mapCourseToItem = (course: Course, courseLessons: any[] = []): ProductItem | null => {
     if (!course) return null;
 
-    // Attempt to parse timeline JSON string into steps (robust to messy strings)
+    // Attempt to parse timeline JSON string into steps
     let applicationProcess: { title: string; description: string; week?: number; cost?: string | number }[] | undefined;
     const parseCourseTimeline = (val: any) => {
       if (!val) return undefined;
@@ -206,7 +43,6 @@ export function useProductDetails({
       if (typeof text !== "string") {
         try { text = JSON.stringify(text); } catch { return undefined; }
       }
-      // Unescape common jumbled patterns and try multiple parsing strategies
       const candidates: any[] = [];
       candidates.push(text);
       candidates.push(text.replace(/\\"/g, '"'));
@@ -225,6 +61,7 @@ export function useProductDetails({
       }
       return undefined;
     };
+
     const parsedTimeline = parseCourseTimeline(course.courseTimeline);
     if (parsedTimeline && Array.isArray(parsedTimeline.weeks)) {
       applicationProcess = parsedTimeline.weeks
@@ -247,17 +84,10 @@ export function useProductDetails({
       }
       return url;
     };
-
-    const providerName = course.provider?.name || "Khalifa Fund";
-    const providerLogo = toAbsolute(course.provider?.logoUrl) || "/images/placeholders/course-fallback.png";
-
-    const toArray = (val: any): string[] => {
-      if (Array.isArray(val)) return val.filter((s) => typeof s === "string" && s.trim() !== "").map((s) => s.trim());
-      if (typeof val === "string") {
-        return val.split(/\r?\n|[,;]+/).map((s) => s.trim()).filter((s) => s);
-      }
-      return [];
-    };
+    // Provider info may come from DB or be undefined - use fallback
+    const courseAny = course as any;
+    const providerName = courseAny.provider?.name || "DTMA Academy";
+    const providerLogo = toAbsolute(courseAny.provider?.logoUrl) || "/images/placeholders/course-fallback.png";
 
     const category = categories.find((c) => c.id === course.categoryId);
     const lessonList = courseLessons.length ? courseLessons : getLessonsByCourse(course.id);
@@ -270,7 +100,6 @@ export function useProductDetails({
       }));
     }
 
-    // const introVideo = getIntroVideoForCourse(course.id); // Removed to avoid local data fallback
     const introLesson =
       course.introLessonId &&
       lessonList.find((lesson) => lesson.id === course.introLessonId);
@@ -280,7 +109,7 @@ export function useProductDetails({
       ? course.learningOutcomes
       : course.skillsGained || [];
 
-    const posterUrl = course.introVideoPosterUrl || course.heroImageUrl || course.provider?.logoUrl;
+    const posterUrl = course.introVideoPosterUrl || course.heroImageUrl || courseAny.provider?.logoUrl;
 
     return {
       id: course.slug,
@@ -288,7 +117,6 @@ export function useProductDetails({
       description: course.longDescription || course.shortDescription,
       category: category?.name,
       categorySlug: category?.slug,
-      deliveryMode: course.deliveryMode || "Online",
       duration: formatDuration(course.estimatedDurationMinutes),
       lessonCount: course.lessonCount,
       learningOutcomes: course.learningOutcomes || [],
@@ -299,7 +127,7 @@ export function useProductDetails({
       serviceApplication: course.uponCompletion,
       uponCompletion: course.uponCompletion,
       tags: [category?.name, course.levelTag, course.audienceLevel, ...course.topicTags].filter(Boolean),
-      provider: course.provider || { name: providerName, logoUrl: providerLogo },
+      provider: courseAny.provider || { name: providerName, logoUrl: providerLogo },
       providerLocation: course.location || "UAE",
       rating: course.rating ?? 4.7,
       reviewCount: course.reviewCount ?? 30,
@@ -317,8 +145,8 @@ export function useProductDetails({
 
   const loadCourse = useCallback(async () => {
     if (!itemId) return;
-    setCourseLoading(true);
-    setCourseError(null);
+    setLoading(true);
+    setError(null);
     try {
       const { course, lessons } = await fetchCourseWithContent(itemId);
       if (!course) {
@@ -326,22 +154,21 @@ export function useProductDetails({
         if (fallback) {
           setItem(fallback);
           setRelatedItems(getFallbackItems("courses").slice(0, 4));
-          setCourseError(null);
+          setError(null);
         } else {
           setItem(null);
-          setCourseError(new Error("Course not found"));
+          setError(new Error("Course not found"));
         }
         return;
       }
 
-      // Use fetched lessons if available, otherwise fallback to local
       const courseLessons = lessons && lessons.length > 0 ? lessons : getLessonsByCourse(course.id);
       const mapped = mapCourseToItem(course, courseLessons);
       if (mapped) {
         setItem(mapped);
       }
 
-      // Get related courses, fallback to any courses if not enough
+      // Get related courses
       let relatedRaw = getRelatedCourses(course.slug, 3);
       if (relatedRaw.length < 3) {
         const allCourses = getCourses();
@@ -364,108 +191,44 @@ export function useProductDetails({
         }, 100);
       }
     } catch (err) {
-      setCourseError(err as Error);
+      setError(err as Error);
     } finally {
-      setCourseLoading(false);
+      setLoading(false);
     }
   }, [itemId, shouldTakeAction]);
 
-  useEffect(() => {
-    if (!itemId || isCourseMarketplace) return;
-    const product = (productData as any)?.product;
-
-    if (!product) {
-      const fallback = getFallbackItemDetails(
-        marketplaceType,
-        itemId || "fallback-1"
-      );
+  const loadKnowledgeHubItem = useCallback(async () => {
+    if (!itemId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      // For knowledge-hub, use fallback data for now
+      const fallback = getFallbackItemDetails("knowledge-hub", itemId);
       if (fallback) {
         setItem(fallback);
-        setRelatedItems(getFallbackItems(marketplaceType));
+        setRelatedItems(getFallbackItems("knowledge-hub").slice(0, 4));
+      } else {
+        setItem(null);
+        setError(new Error("Item not found"));
       }
-      return;
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
     }
-
-    const mapped = mapProductToItem(product);
-    if (!mapped) return;
-
-    const fallbackForItem = getFallbackItemDetails(
-      marketplaceType,
-      itemId || "fallback-1"
-    );
-    const merged: any = { ...mapped };
-    if (fallbackForItem) {
-      for (const key of Object.keys(fallbackForItem)) {
-        if (key === 'provider') continue;
-
-        const val = merged[key];
-        const shouldUseFallback =
-          val === undefined ||
-          val === null ||
-          (Array.isArray(val) && val.length === 0) ||
-          (typeof val === "string" && val.trim() === "");
-        if (shouldUseFallback) {
-          merged[key] = (fallbackForItem as any)[key];
-        }
-      }
-    }
-    merged.provider = (mapped as any).provider;
-
-    merged.eligibility = normalizeEligibility(merged.eligibility) ?? merged.eligibility;
-
-    setItem(merged);
-
-    let limitedRelated: any[] = [];
-    const rs = product?.customFields?.RelatedServices;
-    const relatedFromGql = Array.isArray(rs)
-      ? rs.map((x: any) => ({
-        id: x.id,
-        title: x.name,
-        description: x.description || "",
-        provider: {
-          name: merged.provider?.name,
-          logoUrl: merged.provider?.logoUrl || "/images/placeholders/course-fallback.png",
-        },
-        tags: [],
-      }))
-      : [];
-    limitedRelated = relatedFromGql.slice(0, 4);
-
-    const fallbackLimited = getFallbackItems(marketplaceType).slice(0, 4);
-    const chosen = limitedRelated.length > 0 ? limitedRelated : fallbackLimited;
-    const normalized = chosen
-      .filter((x: any) => x?.id !== merged.id)
-      .slice(0, 4)
-      .map((x: any) => ({
-        id: x.id,
-        title: x.title || x.name || "Related Service",
-        description: x.description || "",
-        provider: {
-          name: x.provider?.name || merged.provider?.name || "Service Provider",
-          logoUrl:
-            x.provider?.logoUrl || merged.provider?.logoUrl || "/images/placeholders/course-fallback.png",
-        },
-        tags: Array.isArray(x.tags) ? x.tags : [],
-      }));
-    setRelatedItems(normalized);
-
-    if (shouldTakeAction) {
-      setTimeout(() => {
-        document
-          .getElementById("action-section")
-          ?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
-    }
-  }, [productData, itemId, marketplaceType, shouldTakeAction, isCourseMarketplace]);
+  }, [itemId]);
 
   useEffect(() => {
-    if (!itemId || !isCourseMarketplace) return;
-    loadCourse();
-  }, [itemId, isCourseMarketplace, loadCourse]);
-  // Expose a unified loading/error/refetch
-  const loading = isCourseMarketplace ? courseLoading : productLoading;
-  const error = (isCourseMarketplace ? courseError : productError) as any;
-  const refetch = isCourseMarketplace ? loadCourse : refetchProduct;
+    if (!itemId) return;
+
+    if (marketplaceType === "courses") {
+      loadCourse();
+    } else if (marketplaceType === "knowledge-hub") {
+      loadKnowledgeHubItem();
+    }
+  }, [itemId, marketplaceType, loadCourse, loadKnowledgeHubItem]);
+
+  const refetch = marketplaceType === "courses" ? loadCourse : loadKnowledgeHubItem;
 
   return {
     item,

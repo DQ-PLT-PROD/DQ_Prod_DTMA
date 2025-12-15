@@ -13,9 +13,7 @@ import { getFallbackKnowledgeHubItems } from "../../utils/fallbackData";
 import { isSupabaseConfigured, getSupabase } from "../../lib/supabase/client";
 import { getCategories as getDtmaCategories } from "../../lib/api/dtmaCourses";
 import { fetchCourses } from "../../services/courseService";
-import { useQuery } from "@apollo/client/react";
-import { GET_PRODUCTS, GET_FACETS } from "../../services/marketplaceQueries";
-
+import { fetchAllFilterOptions } from "../../services/filterService";
 
 // Mapping of Media Types to their relevant Format options (uses filter labels)
 const MEDIA_TYPE_FORMAT_MAPPING: Record<string, string[]> = {
@@ -28,95 +26,6 @@ const MEDIA_TYPE_FORMAT_MAPPING: Record<string, string[]> = {
   'Podcasts': ['Recorded Media']
 };
 
-
-
-// Types for GET_FACETS query
-interface FacetValue {
-  id: string;
-  name: string;
-  code: string;
-}
-
-interface Facet {
-  id: string;
-  name: string;
-  code: string;
-  values: FacetValue[];
-}
-
-interface GetFacetsData {
-  facets: {
-    items: Facet[];
-  };
-}
-
-// Types for GET_PRODUCTS query
-interface Asset {
-  name: string;
-}
-
-interface Logo {
-  name: string;
-  source: string;
-}
-
-interface RequiredDocument {
-  id: string;
-  customFields: any;
-}
-
-interface RelatedService {
-  id: string;
-}
-
-interface ProductCustomFields {
-  Logo?: Logo;
-  CustomerType?: string;
-  BusinessStage?: string;
-  Nationality?: string;
-  LegalStructure?: string;
-  Industry?: string;
-  Partner?: string;
-  ProcessingTime?: string;
-  RegistrationValidity?: string;
-  Cost?: number;
-  Steps?: string;
-  KeyTermsOfService?: string;
-  RequiredDocuments?: RequiredDocument[];
-  EmpowermentandLeadership?: string;
-  RelatedServices?: RelatedService[];
-  formUrl?: string;
-  logoUrl?: string;
-}
-
-interface ProductFacetValue {
-  facet: {
-    id: string;
-    name: string;
-    code: string;
-  };
-  id: string;
-  name: string;
-  code: string;
-}
-
-interface Product {
-  id: string;
-  assets: Asset[];
-  name: string;
-  slug: string;
-  description: string;
-  facetValues: ProductFacetValue[];
-  customFields: ProductCustomFields;
-}
-
-interface GetProductsData {
-  products: {
-    items: Product[];
-    totalItems: number;
-  };
-}
-
 function toArrayFilter(val: string | string[] | undefined): string[] {
   if (Array.isArray(val)) return val;
   if (!val) return [];
@@ -124,7 +33,7 @@ function toArrayFilter(val: string | string[] | undefined): string[] {
 }
 
 export interface MarketplacePageProps {
-  marketplaceType: "courses" | "financial" | "non-financial" | "knowledge-hub";
+  marketplaceType: "courses" | "knowledge-hub";
   title: string;
   description: string;
   promoCards?: any[];
@@ -142,7 +51,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     marketplaceType === "courses" ? "DTMA Courses" : config.title;
   const heroDescription =
     marketplaceType === "courses"
-      ? "Browse practical, bite-sized courses for Digital Leaders and Digital Workers, mapped to the 6XD Dimensions of Digital and the Economy 4.0 playbook."
+      ? "Browse practical, bite-sized courses on Economy 4.0, Digital Organizations, Transformation, and Future Design."
       : config.description;
   const allowPromoCards = config.showPromoCards !== false;
 
@@ -173,18 +82,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   // Loading and error states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Apollo queries for products, facets, and courses
-  // Skip GraphQL entirely for Knowledge Hub — it uses Supabase + local data
-  const skipGraph = marketplaceType === 'knowledge-hub';
-
-  const { data: productData, error: productError } = useQuery<GetProductsData>(GET_PRODUCTS, {
-    skip: skipGraph || marketplaceType === "courses",
-  });
-
-  const { data: facetData, error: facetError } = useQuery<GetFacetsData>(GET_FACETS, {
-    skip: skipGraph || marketplaceType === "courses",
-  });
 
   // Load filter configurations based on marketplace type
   useEffect(() => {
@@ -230,55 +127,55 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           return;
         }
 
-        if (facetData) {
-          // Choose facet codes based on marketplace type
-          let facetCodes: string[] = [];
-          if (marketplaceType === 'financial') {
-            facetCodes = ['service-category', 'business-stage', 'provided-by', 'pricing-model'];
-          } else if (marketplaceType === 'non-financial') {
-            facetCodes = ['sector-tag-2', 'business-stage', 'provided-by', 'pricing-model'];
-          } else if (marketplaceType === 'courses') {
-            facetCodes = ['service-category', 'business-stage', 'provided-by', 'pricing-model'];
-          } else {
-            facetCodes = ['service-category', 'business-stage', 'provided-by', 'pricing-model'];
-          }
-
-          const filterOptions: FilterConfig[] = facetData.facets.items
-            .filter((facet) => facetCodes.includes(facet.code))
-            .map((facet) => ({
-              id: facet.code,
-              title: facet.name,
-              options: facet.values.map((value) => ({
-                id: value.code,
-                name: value.name,
-              })),
-            }));
+        // For courses, fetch filter options from database
+        if (marketplaceType === 'courses') {
+          const dbFilters = await fetchAllFilterOptions();
+          console.log("🛠️ Loaded Categories for Filter:", dbFilters.categories);
+          const filterOptions: FilterConfig[] = [
+            {
+              id: 'category',
+              title: 'Category',
+              options: dbFilters.categories.map(c => ({ id: c.slug, name: c.name })),
+            },
+            {
+              id: 'industry',
+              title: 'Industry',
+              options: dbFilters.industries.map(i => ({ id: i.slug, name: i.name })),
+            },
+            {
+              id: 'audienceLevel',
+              title: 'Role',
+              options: dbFilters.audienceLevels.map(a => ({ id: a.name, name: a.name })),
+            },
+            {
+              id: 'levelTag',
+              title: 'Level',
+              options: dbFilters.difficultyLevels.map(d => ({ id: d.name, name: d.name })),
+            },
+          ];
           setFilterConfig(filterOptions);
-
-          // Initialize empty filters based on the configuration
           const initialFilters: Record<string, string | string[]> = {};
-          filterOptions.forEach((config) => {
-            initialFilters[config.id] = '';
+          filterOptions.forEach((fc) => {
+            initialFilters[fc.id] = [];
           });
+          initialFilters['topic'] = [];
           setFilters(initialFilters);
         }
       } catch (err) {
         console.error("Error fetching filter options:", err);
         // Use fallback filter config from marketplace config
-        const fallbackFilters = marketplaceType === 'courses'
-          ? config.filterCategories.filter((fc) => fc.id !== 'deliveryMode')
-          : config.filterCategories;
+        const fallbackFilters = config.filterCategories.filter((fc) => fc.id !== 'deliveryMode');
         setFilterConfig(fallbackFilters);
         // Initialize empty filters based on the configuration
         const initialFilters: Record<string, string | string[]> = {};
-        fallbackFilters.forEach((config) => {
-          initialFilters[config.id] = marketplaceType === 'courses' ? [] : "";
+        fallbackFilters.forEach((fc) => {
+          initialFilters[fc.id] = [];
         });
         setFilters(initialFilters);
       }
     };
     loadFilterOptions();
-  }, [facetData, marketplaceType, config]);
+  }, [marketplaceType, config]);
 
   // Initialize all filter categories as collapsed by default
   useEffect(() => {
@@ -585,98 +482,6 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           setLoading(false);
           return;
         }
-
-        // Handle Products (Financial & Non-Financial)
-        if (productData) {
-          let filteredServices = productData.products.items;
-
-          if (marketplaceType === "financial") {
-            filteredServices = productData.products.items.filter(
-              (product) =>
-                product.facetValues.some((fv) => fv.id === "66") &&
-                !product.facetValues.some((fv) => fv.id === "67")
-            );
-          } else if (marketplaceType === "non-financial") {
-            filteredServices = productData.products.items.filter(
-              (product) =>
-                product.facetValues.some((fv) => fv.id === "67") &&
-                !product.facetValues.some((fv) => fv.id === "66")
-            );
-          }
-
-          const fallbackLogos = [
-            "/images/placeholders/course-fallback.png",
-          ];
-
-          // Map product data to match expected MarketplaceItem structure
-          const mappedItems = filteredServices.map((product) => {
-            const randomFallbackLogo =
-              fallbackLogos[Math.floor(Math.random() * fallbackLogos.length)];
-
-            const rawFormUrl = product.customFields?.formUrl;
-            const finalFormUrl = rawFormUrl || "https://www.tamm.abudhabi/en/login";
-
-            return {
-              id: product.id,
-              title: product.name,
-              slug: product.slug,
-              description:
-                product.description ||
-                "Through this service, you can easily reallocate your approved loan funds to different areas of your business to support changing needs and enhance growth.",
-              facetValues: product.facetValues,
-              tags: [product.customFields.BusinessStage, product.customFields.BusinessStage].filter(Boolean),
-              provider: {
-                name: product.customFields?.Partner || product.customFields?.Industry || "Khalifa Fund",
-                logoUrl: product.customFields?.logoUrl || product.customFields?.Logo?.source || randomFallbackLogo,
-                description: "No provider description available",
-              },
-              formUrl: finalFormUrl,
-              ...product.customFields,
-            };
-          });
-
-          // Apply filters and search query
-          const filtered = mappedItems.filter((product: any) => {
-            const matchesAllFacets = Object.keys(filters).every((facetCode) => {
-              const selectedValue = filters[facetCode];
-              if (!selectedValue) return true;
-              return (
-                product.facetValues.some(
-                  (facetValue: any) => facetValue.code === selectedValue
-                ) ||
-                (facetCode === "pricing-model" &&
-                  selectedValue === "one-time-fee" &&
-                  product.Cost &&
-                  product.Cost > 0) ||
-                (facetCode === "business-stage" &&
-                  product.BusinessStage &&
-                  selectedValue === product.BusinessStage)
-              );
-            });
-
-            const matchesSearch =
-              searchQuery.trim() === "" ||
-              product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              product.facetValues.some((facetValue: any) =>
-                facetValue.name
-                  .toLowerCase()
-                  .includes(searchQuery.toLowerCase())
-              );
-
-            return matchesAllFacets && matchesSearch;
-          });
-
-          // Prioritize ID 133
-          const prioritized = filtered.sort((a, b) => {
-            if (a.id === "133") return -1;
-            if (b.id === "133") return 1;
-            return 0;
-          });
-
-          setItems(mappedItems);
-          setFilteredItems(prioritized);
-          setLoading(false);
-        }
       } catch (err) {
         console.error(`Error processing ${marketplaceType} items:`, err);
         setError(`Failed to load ${marketplaceType}`);
@@ -687,7 +492,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     };
 
     loadItems();
-  }, [productData, filters, searchQuery, marketplaceType, activeFilters, filterConfig, toArrayFilter]);
+  }, [filters, searchQuery, marketplaceType, activeFilters, filterConfig, toArrayFilter]);
 
 
 
@@ -1196,13 +1001,9 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
                   <CourseCardSkeleton key={idx} />
                 ))}
               </div>
-            ) : error || (!skipGraph && (facetError || productError)) ? (
+            ) : error ? (
               <ErrorDisplay
-                message={
-                  error ||
-                  (!skipGraph && (facetError?.message || productError?.message)) ||
-                  `Failed to load ${marketplaceType}`
-                }
+                message={error || `Failed to load ${marketplaceType}`}
                 onRetry={retryFetch}
               />
             ) : filteredItems.length === 0 ? (

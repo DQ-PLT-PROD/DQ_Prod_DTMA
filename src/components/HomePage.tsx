@@ -4,7 +4,7 @@ import { Footer } from '../components/Footer';
 import HeroSection from './HeroSection';
 import ProofAndTrust from './ProofAndTrust';
 import D6CategoriesSection from './D6CategoriesSection';
-import EnterpriseStages from './EnterpriseStages';
+
 import Home from './Home';
 import CallToAction from './CallToAction';
 import KhalifaFundAttribution from './KhalifaFundAttribution';
@@ -13,7 +13,7 @@ import { BRAND_GRADIENT, BRAND_BACKDROP_BLUR, BRAND_PRIMARY } from '../constants
 const HomePage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Simulate page loading
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -53,15 +53,15 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header 
-        toggleSidebar={() => setSidebarOpen(!sidebarOpen)} 
-        sidebarOpen={sidebarOpen} 
+      <Header
+        toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        sidebarOpen={sidebarOpen}
       />
       <main className="flex-grow">
         <HeroSection />
         <ProofAndTrust />
         <D6CategoriesSection />
-        <EnterpriseStages />
+
         <Home />
         <CallToAction />
       </main>

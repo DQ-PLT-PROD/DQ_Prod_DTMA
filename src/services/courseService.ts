@@ -45,14 +45,8 @@ const mapRowToCourse = (row: any): Course => {
         introVideoPosterUrl: row.intro_video_poster_url || undefined,
         isFeatured: row.is_featured || false,
         status: row.status as any,
-        provider: {
-            name: row.provider_name || "",
-            logoUrl: row.provider_logo_url || "",
-            description: row.provider_description || "",
-        },
         rating: row.rating || undefined,
         reviewCount: row.review_count || undefined,
-        deliveryMode: row.delivery_mode as any,
         enrollmentUrl: row.enrollment_url || undefined,
         learningOutcomes: row.learning_outcomes || [],
         skillsGained: row.skills_gained || [],
@@ -84,9 +78,6 @@ export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[
             }
             if (filters.levelTag) {
                 query = query.eq("level_tag", filters.levelTag);
-            }
-            if (filters.deliveryMode) {
-                query = query.eq("delivery_mode", filters.deliveryMode);
             }
             if (filters.topic) {
                 query = query.contains("topic_tags", [filters.topic]);
