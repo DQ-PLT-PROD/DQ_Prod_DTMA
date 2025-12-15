@@ -54,6 +54,11 @@ const DashboardRouter = () => {
   const isLoggedIn = !!user; // Convert user object to boolean
   const setIsLoggedIn = () => {}; // Dummy setter since auth state is managed by AuthContext
   
+  // Debug dashboard authentication state
+  useEffect(() => {
+    console.log('📊 Dashboard auth state:', { user: !!user, isLoggedIn, pathname: location.pathname });
+  }, [user, isLoggedIn, location.pathname]);
+  
   const location = useLocation();
   const navigate = useNavigate();
 
