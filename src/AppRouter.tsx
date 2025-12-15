@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import LearningScreen from "./pages/LearningScreen";
 import { ComingSoon } from "./pages/ComingSoon";
+import { AuthCallback } from "./components/AuthCallback";
 
 export function AppRouter() {
   return (

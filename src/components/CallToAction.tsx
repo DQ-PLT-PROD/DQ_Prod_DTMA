@@ -305,13 +305,13 @@ interface ToastData {
 const CallToAction: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { openAuthModal } = useAuth();
+  const { login } = useAuth();
   const [ref, isInView] = useInView({
     threshold: 0.2,
   });
 
   const handleSignIn = () => {
-    openAuthModal('signup');
+    login(); // Direct Microsoft auth
   };
 
   // State for expandable cards

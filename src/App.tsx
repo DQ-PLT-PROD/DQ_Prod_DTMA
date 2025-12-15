@@ -7,25 +7,15 @@ export function App() {
   const navigate = useNavigate();
   const { user, isLoading } = useAuth();
 
-  // Redirect authenticated users to learning page
+  // Debug logging - no automatic redirect from App.tsx
   useEffect(() => {
-    if (!isLoading && user) {
-      // Allow authenticated users to view the landing page
-      // Only redirect if explicitly requested via logic elsewhere (e.g. login flow)
-    } else if (!isLoading && !user) {
-      // Check if we should redirect after authentication
-      const shouldRedirect = sessionStorage.getItem('shouldRedirectToLearning');
-      if (shouldRedirect) {
-        sessionStorage.removeItem('shouldRedirectToLearning');
-        // Wait a bit for auth state to update, then check again
-        setTimeout(() => {
-          if (user) {
-            navigate('/learning', { replace: true });
-          }
-        }, 1000);
-      }
+    console.log('🏠 App.tsx - Auth state:', { user: !!user, isLoading, userEmail: user?.email });
+
+    // Note: Redirect logic is handled in AuthContext, not here
+    if (user) {
+      console.log('✅ User is authenticated in App.tsx - redirect handled by AuthContext');
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading]);
 
   return <HomePage />;
 }

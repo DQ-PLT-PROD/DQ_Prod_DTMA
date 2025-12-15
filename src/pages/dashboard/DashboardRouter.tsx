@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import { useAuth } from "../../components/Header";
+import { FEATURES } from "../../config/features";
 import DashboardLayout from "./DashboardLayout";
 import { Overview } from "./overview";
 
@@ -13,7 +21,19 @@ const DashboardRouter = () => {
     } catch { }
     return true;
   });
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+
+  // Get actual authentication state from AuthContext
+  const { user } = useAuth();
+  const isLoggedIn = !!user; // Convert user object to boolean
+  const setIsLoggedIn = () => { }; // Dummy setter since auth state is managed by AuthContext
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Debug dashboard authentication state
+  useEffect(() => {
+    console.log('📊 Dashboard auth state:', { user: !!user, isLoggedIn, pathname: location.pathname });
+  }, [user, isLoggedIn, location.pathname]);
 
   // Keep sidebar hidden on tablet/mobile by default; open on desktop
   useEffect(() => {
