@@ -6,15 +6,21 @@ import { mockAuthService, MockUser } from '../../../services/auth/mockAuth';
 import { validateAndLogClaims, extractUserProfile } from '../../../utils/claimsValidator';
 import { fetchUserFromGraph, mergeGraphUserData } from '../../../services/graphService';
 import { logAuthenticationState, validateTokenResponse } from '../../../utils/authTester';
+import { syncUserWithDatabase, getUserByAzureId, updateUserLastLogin, DatabaseUser } from '../../../services/userService';
 
 interface UserProfile {
   id: string;
   name: string;
   email: string;
+  customerId?: string;
+  jobTitle?: string;
+  department?: string;
+  officeLocation?: string;
 }
 
 interface AuthContextType {
   user: UserProfile | null;
+  databaseUser: DatabaseUser | null;
   isLoading: boolean;
   login: () => void;
   signup: () => void;
@@ -27,18 +33,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { instance, accounts, inProgress } = useMsal();
   const [bypassUser, setBypassUser] = useState<UserProfile | null>(null);
   const [mockUser, setMockUser] = useState<UserProfile | null>(null);
+  const [databaseUser, setDatabaseUser] = useState<DatabaseUser | null>(null);
   const [loginInProgress, setLoginInProgress] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
 
-  const useMockAuth = import.meta.env.VITE_USE_MOCK_AUTH === 'true';
-  const bypassMode = import.meta.env.VITE_BYPASS_AZURE_AUTH === 'true';
+  const useMockAuth = (import.meta as any).env.VITE_USE_MOCK_AUTH === 'true';
+  const bypassMode = (import.meta as any).env.VITE_BYPASS_AZURE_AUTH === 'true';
   
   // Debug environment variables
   console.log('🔧 Auth Environment Variables:', {
-    VITE_USE_MOCK_AUTH: import.meta.env.VITE_USE_MOCK_AUTH,
-    VITE_BYPASS_AZURE_AUTH: import.meta.env.VITE_BYPASS_AZURE_AUTH,
+    VITE_USE_MOCK_AUTH: (import.meta as any).env.VITE_USE_MOCK_AUTH,
+    VITE_BYPASS_AZURE_AUTH: (import.meta as any).env.VITE_BYPASS_AZURE_AUTH,
     useMockAuth,
     bypassMode
   });
@@ -70,8 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fix loading state - should only be loading during actual auth operations
   const isLoading = useMockAuth ? false : (inProgress === 'login' || inProgress === 'ssoSilent' || inProgress === 'acquireToken');
 
-  // Helper function to extract user information from MSAL account
-  const extractUserFromAccount = (account: any): UserProfile | null => {
+  // Helper function to extract user information from MSAL account and sync with database
+  const extractUserFromAccount = async (account: any): Promise<UserProfile | null> => {
     if (!account) return null;
 
     console.log('🔍 Extracting user info from account:', account);
@@ -103,17 +110,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     console.log('✅ Final extracted user info:', userProfile);
+
+    // Sync user with database
+    try {
+      console.log('🔄 Syncing user with database...');
+      const azureUserId = account.localAccountId || account.homeAccountId;
+      
+      // Check if user already exists
+      let dbUser = await getUserByAzureId(azureUserId);
+      
+      if (!dbUser) {
+        // Create new user in database
+        console.log('👤 Creating new user in database...');
+        dbUser = await syncUserWithDatabase(userProfile, azureUserId, account.idTokenClaims);
+      } else {
+        // Update last login
+        console.log('🔄 Updating existing user last login...');
+        await updateUserLastLogin(azureUserId);
+      }
+      
+      if (dbUser) {
+        setDatabaseUser(dbUser);
+        
+        console.log('✅ User synced with database:', {
+          customerId: dbUser.customer_id,
+          azureUserId: azureUserId
+        });
+        
+        // Enhance user profile with database info
+        const enhancedProfile: UserProfile = {
+          ...userProfile,
+          customerId: dbUser.customer_id,
+          jobTitle: dbUser.job_title || (userProfile as any).jobTitle,
+          department: dbUser.department || (userProfile as any).department,
+          officeLocation: dbUser.office_location || (userProfile as any).officeLocation
+        };
+        
+        return enhancedProfile;
+      }
+    } catch (error) {
+      console.error('❌ Error syncing user with database:', error);
+      // Continue without database sync - don't block authentication
+    }
+
     return userProfile;
   };
+
+  // State for the current user (will be set asynchronously for real Azure AD)
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   // User detection priority: mock auth > bypass mode > real Azure AD
   const user: UserProfile | null = useMockAuth 
     ? mockUser 
     : (bypassMode 
         ? bypassUser 
-        : (accounts.length > 0 
-            ? extractUserFromAccount(accounts[0]) 
-            : null));
+        : currentUser);
 
   // Debug user detection
   console.log('👤 User Detection Debug:', {
@@ -127,13 +178,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userDetails: user
   });
 
-  // Set active account when we have accounts
+  // Set active account and extract user info when we have accounts
   useEffect(() => {
-    if (accounts.length > 0 && !instance.getActiveAccount()) {
-      console.log('🔄 Setting active account from accounts array:', accounts[0]);
-      instance.setActiveAccount(accounts[0]);
+    if (!useMockAuth && !bypassMode && accounts.length > 0) {
+      if (!instance.getActiveAccount()) {
+        console.log('🔄 Setting active account from accounts array:', accounts[0]);
+        instance.setActiveAccount(accounts[0]);
+      }
+      
+      // Extract user info and sync with database
+      extractUserFromAccount(accounts[0]).then(userProfile => {
+        if (userProfile) {
+          setCurrentUser(userProfile);
+        }
+      }).catch(error => {
+        console.error('❌ Error extracting user from account:', error);
+      });
     }
-  }, [accounts, instance]);
+  }, [accounts, instance, useMockAuth, bypassMode]);
 
   // Debug authentication state changes
   useEffect(() => {
@@ -284,12 +346,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const graphUser = await fetchUserFromGraph(response.accessToken);
         if (graphUser) {
           console.log('✅ Additional user info from Graph API:', graphUser);
-          // You could update the user state here if needed
-          // For now, we'll just log the enhanced user data
-          const currentUser = extractUserFromAccount(account);
-          if (currentUser) {
-            const enhancedUser = mergeGraphUserData(currentUser, graphUser);
-            console.log('🎯 Enhanced user profile:', enhancedUser);
+          
+          // Update database with enhanced user data
+          const azureUserId = account.localAccountId || account.homeAccountId;
+          if (azureUserId && databaseUser) {
+            try {
+              await syncUserWithDatabase(
+                {
+                  id: azureUserId,
+                  name: graphUser.displayName || databaseUser.name,
+                  email: graphUser.mail || graphUser.userPrincipalName || databaseUser.email,
+                  jobTitle: graphUser.jobTitle,
+                  department: graphUser.department,
+                  officeLocation: graphUser.officeLocation
+                },
+                azureUserId,
+                { ...account.idTokenClaims, ...graphUser }
+              );
+              console.log('✅ Enhanced user data synced to database');
+            } catch (error) {
+              console.error('❌ Error syncing enhanced user data:', error);
+            }
           }
         }
       }
@@ -308,23 +385,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (activeAccount) {
         console.log('🔍 Found active account on mount:', activeAccount);
         
-        // Try to acquire additional user information
-        acquireUserInfo(activeAccount).then(tokenResponse => {
-          if (tokenResponse) {
-            console.log('✅ Additional user info acquired');
+        // Extract user info and sync with database first
+        extractUserFromAccount(activeAccount).then(userProfile => {
+          if (userProfile) {
+            setCurrentUser(userProfile);
+            
+            // Then try to acquire additional user information
+            acquireUserInfo(activeAccount).then(tokenResponse => {
+              if (tokenResponse) {
+                console.log('✅ Additional user info acquired');
+              }
+            });
           }
         });
       } else if (accounts.length > 0) {
         console.log('🔍 Setting active account from accounts array');
         instance.setActiveAccount(accounts[0]);
-        acquireUserInfo(accounts[0]);
+        
+        extractUserFromAccount(accounts[0]).then(userProfile => {
+          if (userProfile) {
+            setCurrentUser(userProfile);
+            acquireUserInfo(accounts[0]);
+          }
+        });
       }
     }
-  }, [useMockAuth, bypassMode, accounts.length, instance]);
+  }, [useMockAuth, bypassMode, instance]);
 
   return (
     <AuthContext.Provider value={{
       user,
+      databaseUser,
       isLoading,
       login,
       signup,

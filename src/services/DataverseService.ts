@@ -320,18 +320,22 @@ export const getDocumentVersions = async (documentId: string) => {
   */
 };
 
+import { linkDataverseProfile } from './businessProfileService';
+
 // Mock implementation of Dataverse API service
 // In a real implementation, this would make actual API calls to Dataverse
 // Mock cache to simulate API data
 let dataCache = null;
 // Simulate API call to fetch business profile data
-export const fetchBusinessProfileData = async () => {
+export const fetchBusinessProfileData = async (azureUserId?: string) => {
   // Simulate API latency
   await new Promise((resolve) => setTimeout(resolve, 300));
+  
   // If we have cached data, return it
   if (dataCache) {
     return dataCache;
   }
+  
   // Otherwise, simulate API response with mock data
   // In a real implementation, this would be:
   // const response = await fetch('https://your-dataverse-api-endpoint/business-profiles/current');
@@ -339,12 +343,24 @@ export const fetchBusinessProfileData = async () => {
   // For now, we'll use the mock data structure but format it as if it came from Dataverse
   const mockData = generateMockDataverseResponse();
   dataCache = mockData;
+  
+  // If we have an authenticated user, link this profile to them
+  if (azureUserId) {
+    try {
+      await linkDataverseProfile(azureUserId, mockData);
+      console.log('✅ Business profile linked to authenticated user');
+    } catch (error) {
+      console.error('❌ Error linking business profile to user:', error);
+    }
+  }
+  
   return mockData;
 };
 // Save profile data to Dataverse
-export const saveProfileData = async (profileData) => {
+export const saveProfileData = async (profileData, azureUserId?: string) => {
   // Simulate API latency
   await new Promise((resolve) => setTimeout(resolve, 800));
+  
   // In a real implementation, this would be:
   // const response = await fetch('https://your-dataverse-api-endpoint/business-profiles/current', {
   //   method: 'PUT',
@@ -354,6 +370,7 @@ export const saveProfileData = async (profileData) => {
   //   body: JSON.stringify(profileData),
   // });
   // const data = await response.json();
+  
   // For now, we'll just update our cache
   dataCache = {
     ...dataCache,
@@ -364,8 +381,20 @@ export const saveProfileData = async (profileData) => {
       ...profileData.sections,
     },
   };
+  
   // Store in localStorage for persistence across page reloads
   localStorage.setItem("profileData", JSON.stringify(dataCache));
+  
+  // If we have an authenticated user, update their business profile
+  if (azureUserId) {
+    try {
+      await linkDataverseProfile(azureUserId, dataCache);
+      console.log('✅ Updated business profile linked to authenticated user');
+    } catch (error) {
+      console.error('❌ Error updating business profile for user:', error);
+    }
+  }
+  
   return dataCache;
 };
 // Calculate completion percentage for a section based on field values

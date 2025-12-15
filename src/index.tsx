@@ -117,13 +117,18 @@ async function initializeApp() {
     }, 100);
   } catch (error) {
     console.error("❌ MSAL initialization failed:", error);
-    console.error("Error details:", error.message, error.stack);
+    if (error instanceof Error) {
+      console.error("Error details:", error.message, error.stack);
+    } else {
+      console.error("Error details:", String(error));
+    }
     
     // Check if it's a domain/tenant error
-    if (error.message && error.message.includes('AADSTS500208')) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage && errorMessage.includes('AADSTS500208')) {
       console.error("🚨 DOMAIN ERROR: The tenant configuration is incorrect.");
       console.error("💡 SOLUTION: This app may need to be registered in a different Azure AD tenant or use a different authority.");
-      console.error("🔧 Current tenant ID:", import.meta.env.VITE_AZURE_TENANT_ID);
+      console.error("🔧 Current tenant ID:", (import.meta as any).env.VITE_AZURE_TENANT_ID);
       console.error("🔧 Current authority: https://login.microsoftonline.com/common");
     }
     

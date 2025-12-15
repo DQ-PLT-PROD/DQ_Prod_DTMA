@@ -2,10 +2,10 @@ import { PublicClientApplication, Configuration } from "@azure/msal-browser";
 
 const msalConfig: Configuration = {
   auth: {
-    clientId: import.meta.env.VITE_AZURE_CLIENT_ID,
-    authority: `https://${import.meta.env.VITE_AZURE_CIAM_DOMAIN}`, // <-- CIAM domain here
-    redirectUri: import.meta.env.VITE_AZURE_REDIRECT_URI,
-    postLogoutRedirectUri: import.meta.env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI,
+    clientId: (import.meta as any).env.VITE_AZURE_CLIENT_ID,
+    authority: `https://${(import.meta as any).env.VITE_AZURE_CIAM_DOMAIN}`, // <-- CIAM domain here
+    redirectUri: (import.meta as any).env.VITE_AZURE_REDIRECT_URI,
+    postLogoutRedirectUri: (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI,
   },
   cache: {
     cacheLocation: "localStorage",
