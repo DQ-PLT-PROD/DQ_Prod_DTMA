@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 
                    SSUUMMMMAARRYY OOFF LLEESSSS CCOOMMMMAANNDDSS
 
@@ -297,25 +296,3 @@
  TAB ...................................... Complete filename & cycle.
  SHIFT-TAB ...................... ESC-TAB   Complete filename & reverse cycle.
  ctrl-L ................................... Complete filename, list all.
-=======
-  develop[m
-  develop-staging[m
-* [32mfeature/profile[m
-  main[m
-  [31mremotes/origin/HEAD[m -> origin/main
-  [31mremotes/origin/develop[m
-  [31mremotes/origin/develop-staging[m
-  [31mremotes/origin/feat/branding-and-logo[m
-  [31mremotes/origin/feat/branding-and-logo-v2[m
-  [31mremotes/origin/feature/deploy[m
-  [31mremotes/origin/feature/profile[m
-  [31mremotes/origin/learningpage[m
-  [31mremotes/origin/main[m
-  [31mremotes/origin/release[m
-  [31mremotes/origin/sanbox/coursecatalog-detailsUI[m
-  [31mremotes/origin/sandbox/DBconfig[m
-  [31mremotes/origin/sandbox/coursecatalogui[m
-  [31mremotes/origin/sandbox/hotfix[m
-  [31mremotes/origin/sandbox/stage2A[m
-  [31mremotes/origin/staging[m
->>>>>>> feature/profile
