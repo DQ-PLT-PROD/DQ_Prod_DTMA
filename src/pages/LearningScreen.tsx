@@ -19,7 +19,16 @@ import { Lesson as DBLesson } from "../types/dtma-lms";
 import { ExploreDropdown } from "../components/Header/components/ExploreDropdown";
 import { FEATURES } from "../config/features";
 
-const initialLessons: Lesson[] = [
+const SUPABASE_LESSON_BASE = "https://ugmybskacomcdgdngolz.supabase.co/storage/v1/object/public/course-content/plt-course-01/Lessons";
+const lessonVideoUrlForIndex = (idx: number) => `${SUPABASE_LESSON_BASE}/Lesson_${idx + 1}.mp4`;
+
+const withLessonVideos = (lessons: Lesson[]): Lesson[] =>
+  lessons.map((lesson, idx) => ({
+    ...lesson,
+    videoUrl: lessonVideoUrlForIndex(idx),
+  }));
+
+const initialLessons: Lesson[] = withLessonVideos([
   {
     id: 1,
     title: "Economy 4.0 & Your Role in Perfecting Life's Transactions",
@@ -83,7 +92,7 @@ const initialLessons: Lesson[] = [
     completed: false,
     description: "Apply everything to a real-world project.",
   },
-];
+]);
 
 // Course slug for fetching data - this would typically come from route params
 const COURSE_SLUG = 'perfecting-life-transactions';
@@ -92,7 +101,8 @@ const LearningScreen: React.FC = () => {
   const [lessons, setLessons] = useState<Lesson[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('courseProgress');
-      return saved ? JSON.parse(saved) : initialLessons;
+      const parsed: Lesson[] = saved ? JSON.parse(saved) : initialLessons;
+      return withLessonVideos(parsed);
     }
     return initialLessons;
   });
@@ -139,7 +149,8 @@ const LearningScreen: React.FC = () => {
           const uiLessons = fetchedLessons.map((lesson, idx) =>
             toUILesson(lesson, idx, completedIds)
           );
-          setLessons(uiLessons);
+          const uiLessonsWithFallback = withLessonVideos(uiLessons);
+          setLessons(uiLessonsWithFallback);
         }
         // If no lessons from DB, keep the initialLessons fallback
 
@@ -207,6 +218,21 @@ const LearningScreen: React.FC = () => {
   const handleLoadedMetadata = (dur: number) => {
     setDuration(dur);
     setIsNextLessonUnlocked(false);
+
+    // Update the lesson's displayed duration to reflect the actual video length
+    if (dur > 0) {
+      const minutes = Math.floor(dur / 60);
+      const seconds = Math.floor(dur % 60);
+      const formattedDuration = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+      setLessons(prevLessons =>
+        prevLessons.map((lesson, index) =>
+          index === currentLessonIndex
+            ? { ...lesson, duration: formattedDuration }
+            : lesson
+        )
+      );
+    }
   };
 
   const handlePlayPause = () => setIsPlaying(!isPlaying);
@@ -423,6 +449,7 @@ const LearningScreen: React.FC = () => {
                 <CourseAssessment
                   variant="inline"
                   allLessonsCompleted={allLessonsCompleted}
+                  courseSlug={COURSE_SLUG}
                   onBack={handleBackFromQuiz}
                 />
               </div>
