@@ -79,7 +79,8 @@ export const courses: Course[] = [
     learningOutcomes: ["Explain the Perfect Life Transactions concept.", "Map and prioritize critical transactions in your organization."],
     skillsGained: ["Transaction design", "Journey mapping"],
     uponCompletion: "You will leave with a PLT map and a shortlist of improvement opportunities.",
-    heroImageUrl: "/images/courses/course-thumb-1.png",
+    heroImageUrl: "/images/courses/chain-hero.png",
+    introVideoUrl: "https://ugmybskacomcdgdngolz.supabase.co/storage/v1/object/public/course-content/plt-course-01/intro/Intro_V2.mp4",
   },
   {
     id: "course-building-dbp-e4",
