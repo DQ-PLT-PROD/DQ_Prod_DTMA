@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { StarIcon, ScaleIcon } from "lucide-react";
 import { Tag } from "./ui/Tag";
 import { CourseMeta } from "./ui/CourseMeta";
@@ -29,6 +29,7 @@ export interface CourseTileProps {
   onToggleBookmark?: () => void;
   isBookmarked?: boolean;
   isHovered?: boolean;
+  isDisabled?: boolean;
 }
 
 export const CourseTile: React.FC<CourseTileProps> = ({
@@ -51,6 +52,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   onToggleBookmark,
   isBookmarked,
   isHovered = false,
+  isDisabled = false,
 }) => {
   // Prioritize thumbnailUrl, fallback to heroImageUrl, finally global placeholder
   const heroSrc = thumbnailUrl || "/images/placeholders/course-fallback.png";
@@ -59,6 +61,12 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
   React.useEffect(() => {
+    if (isDisabled) {
+      if (videoRef.current) {
+        videoRef.current.pause();
+      }
+      return;
+    }
     if (isHovered && videoRef.current && videoUrl) {
       videoRef.current.currentTime = 0;
       const playPromise = videoRef.current.play();
@@ -70,7 +78,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
     } else if (!isHovered && videoRef.current) {
       videoRef.current.pause();
     }
-  }, [isHovered, videoUrl]);
+  }, [isHovered, videoUrl, isDisabled]);
 
   // Classic Card (Financial/Non-Financial Services)
   if (variant === "classic") {
@@ -92,7 +100,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 {rating && (
                   <>
-                    <span className="text-gray-300">•</span>
+                    <span className="text-gray-300">G��</span>
                     <div className="flex items-center gap-1">
                       <StarIcon size={12} className="fill-yellow-400 text-yellow-400" />
                       <span className="font-medium">{displayRating.toFixed(1)}</span>
@@ -151,20 +159,24 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   }
 
   // Course Card (Modern / Airbnb-like)
+  const shouldHideImage = isDisabled ? isHovered : (isHovered && !!videoUrl);
+  const shouldShowVideo = !isDisabled && isHovered && !!videoUrl;
+
   return (
     <div
       className={`
-        group relative flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer
+        group relative flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden
+        ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
         ${isHovered ? 'shadow-xl' : ''}
       `}
       onClick={onCardClick}
     >
       {/* Thumbnail Section */}
-      <div className={`relative w-full bg-gray-100 overflow-hidden transition-all duration-300 ${isHovered ? 'aspect-video' : 'aspect-video'}`}>
+      <div className={`relative w-full bg-gray-100 overflow-hidden transition-all duration-300 rounded-2xl ${isHovered ? 'aspect-video' : 'aspect-video'}`}>
         <img
           src={heroSrc}
           alt={`${title} thumbnail`}
-          className={`h-full w-full object-cover transition-opacity duration-300 ${isHovered && videoUrl ? 'opacity-0' : 'opacity-100'}`}
+          className={`h-full w-full object-cover transition-opacity duration-300 rounded-2xl ${shouldHideImage ? 'opacity-0' : 'opacity-100'}`}
           style={{ contain: 'layout' }}
           onError={(e) => {
             const target = e.target as HTMLImageElement;
@@ -179,12 +191,19 @@ export const CourseTile: React.FC<CourseTileProps> = ({
           <video
             ref={videoRef}
             src={videoUrl}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 rounded-2xl ${shouldShowVideo ? 'opacity-100' : 'opacity-0'}`}
             muted
             loop
             playsInline
             preload="none"
           />
+        )}
+
+        {/* Coming Soon overlay for disabled cards on hover */}
+        {isDisabled && isHovered && (
+          <div className="absolute inset-0 bg-white flex items-center justify-center z-20 rounded-2xl">
+            <span className="text-sm font-semibold text-gray-900">Coming Soon!</span>
+          </div>
         )}
 
         {/* Overlay Badges */}

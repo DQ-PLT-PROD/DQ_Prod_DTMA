@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { FadeInUpOnScroll, StaggeredFadeIn } from "./AnimationUtils";
 import { CourseTile } from "./CourseTile";
 
+const INTRO_VIDEO_URL = "https://ugmybskacomcdgdngolz.supabase.co/storage/v1/object/public/course-content/plt-course-01/intro/Intro_V2.mp4";
+
 const courses = [
   {
     id: "economy-4-0",
@@ -11,11 +13,11 @@ const courses = [
     tag: "Economy 4.0",
     category: "ECONOMY 4.0",
     levelTag: "Beginner",
-    audienceLevel: "DIGITAL LEADERS",
+    audienceLevel: "DIGITAL WORKERS",
     duration: "55 mins",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
+    videoUrl: INTRO_VIDEO_URL,
     description:
       "Get a clear, practical introduction to Economy 4.0 and why it matters.",
     isHeroTile: true,
@@ -26,11 +28,11 @@ const courses = [
     tag: "Economy 4.0",
     category: "ECONOMY 4.0",
     levelTag: "Intermediate",
-    audienceLevel: "DIGITAL LEADERS",
+    audienceLevel: "DIGITAL WORKERS",
     duration: "1h",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
+    videoUrl: INTRO_VIDEO_URL,
     description:
       "Link Economy 4.0 trends to the design of Digital Cognitive Organizations.",
     isHeroTile: true,
@@ -41,11 +43,11 @@ const courses = [
     tag: "Economy 4.0",
     category: "ECONOMY 4.0",
     levelTag: "Intermediate",
-    audienceLevel: "DIGITAL LEADERS",
+    audienceLevel: "DIGITAL WORKERS",
     duration: "1h 5m",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
+    videoUrl: INTRO_VIDEO_URL,
     description:
       "Learn to design Perfect Life Transactions that create value for customers and citizens.",
     isHeroTile: true,
@@ -56,11 +58,11 @@ const courses = [
     tag: "Economy 4.0",
     category: "ECONOMY 4.0",
     levelTag: "Advanced",
-    audienceLevel: "DIGITAL LEADERS",
+    audienceLevel: "DIGITAL WORKERS",
     duration: "52 mins",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
+    videoUrl: INTRO_VIDEO_URL,
     description:
       "Go beyond AI hype and focus on competitive advantage.",
     isHeroTile: true,
@@ -71,11 +73,11 @@ const courses = [
     tag: "Economy 4.0",
     category: "ECONOMY 4.0",
     levelTag: "Advanced",
-    audienceLevel: "DIGITAL LEADERS",
+    audienceLevel: "DIGITAL WORKERS",
     duration: "1h 8m",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
+    videoUrl: INTRO_VIDEO_URL,
     description:
       "Balance cybersecurity and innovation in a hyper-connected economy.",
     isHeroTile: true,
@@ -86,11 +88,11 @@ const courses = [
     tag: "Economy 4.0",
     category: "ECONOMY 4.0",
     levelTag: "Advanced",
-    audienceLevel: "DIGITAL LEADERS",
+    audienceLevel: "DIGITAL WORKERS",
     duration: "57 mins",
     lessonCount: 4,
     thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
+    videoUrl: INTRO_VIDEO_URL,
     description:
       "Treat AI as a strategic capability, not a one-off project.",
     isHeroTile: true,
@@ -105,6 +107,7 @@ const FeaturedCoursesSection: React.FC = () => {
   const visibleCourses = courses.slice(startIndex, startIndex + 3);
   const maxStartIndex = Math.max(0, courses.length - 3);
   const totalSlides = maxStartIndex + 1;
+  const isCourseComingSoon = (courseId: string, index: number) => index > 0;
 
   const handlePrev = () => {
     setStartIndex((prev) => (prev === 0 ? Math.max(courses.length - 3, 0) : prev - 1));
@@ -137,7 +140,7 @@ const FeaturedCoursesSection: React.FC = () => {
         <StaggeredFadeIn staggerDelay={0.1} className="mt-12">
           <div className="relative">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleCourses.map((course) => {
+              {visibleCourses.map((course, idx) => {
                 const tagChips =
                   course.tag
                     ?.split(" - ")
@@ -149,6 +152,7 @@ const FeaturedCoursesSection: React.FC = () => {
                         chip.toLowerCase() !== "strategy"
                     ) ?? [];
                 const isHovered = hoveredId === course.id;
+                const isDisabled = isCourseComingSoon(course.id, startIndex + idx);
                 return course.isHeroTile ? (
                   <div
                     key={course.id}
@@ -170,8 +174,9 @@ const FeaturedCoursesSection: React.FC = () => {
                       videoUrl={course.videoUrl}
                       providerName="DTMA"
                       providerLogoUrl="/dtma_logo.png"
-                      onCardClick={() => handleViewDetails(course.id)}
+                      onCardClick={isDisabled ? undefined : () => handleViewDetails(course.id)}
                       isHovered={isHovered}
+                      isDisabled={isDisabled}
                     />
                   </div>
                 ) : (
