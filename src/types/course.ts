@@ -1,3 +1,5 @@
+import { LessonType } from "./dtma-lms";
+
 /**
  * UI-side Lesson type for the Learning Screen
  * This is separate from the database Lesson type in types/dtma-lms.ts
@@ -8,6 +10,7 @@ export interface Lesson {
     duration: string; // Display format like "08:12"
     completed: boolean;
     description: string;
+    type?: LessonType;
     videoUrl?: string;
     resourceUrl?: string;
 }
@@ -18,6 +21,7 @@ export interface Lesson {
 export const toUILesson = (dbLesson: {
     id: string;
     title: string;
+    type?: LessonType;
     estimatedDurationMinutes: number;
     videoUrl?: string;
     resourceUrl?: string;
@@ -32,6 +36,7 @@ export const toUILesson = (dbLesson: {
         duration: durationStr,
         completed: completedIds.has(dbLesson.id),
         description: dbLesson.content || '',
+        type: dbLesson.type,
         videoUrl: dbLesson.videoUrl,
         resourceUrl: dbLesson.resourceUrl,
     };

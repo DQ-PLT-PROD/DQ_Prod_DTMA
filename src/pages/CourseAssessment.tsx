@@ -11,9 +11,10 @@ import {
   AlertCircle,
 } from "lucide-react";
 import AchievementModal from "../components/AchievementModal";
+import { fetchCourseQuizzes } from "../services/courseService";
 
 type QuizQuestion = {
-  id: number;
+  id: string;
   question: string;
   options: string[];
   correctAnswer: number;
@@ -21,14 +22,14 @@ type QuizQuestion = {
 };
 
 type UserAnswer = {
-  questionId: number;
+  questionId: string;
   selectedAnswer: number;
   isCorrect: boolean;
 };
 
-const quizQuestions: QuizQuestion[] = [
+const fallbackQuizQuestions: QuizQuestion[] = [
   {
-    id: 1,
+    id: "1",
     question: "What is the primary focus of Economy 4.0 in the context of Perfect Life Transactions?",
     options: [
       "Traditional business processes",
@@ -40,7 +41,7 @@ const quizQuestions: QuizQuestion[] = [
     explanation: "Economy 4.0 focuses on digital transformation and automation to create seamless, intelligent transactions."
   },
   {
-    id: 2,
+    id: "2",
     question: "According to the course, what is the key difference between viewing work as a transaction versus a task?",
     options: [
       "Tasks are more important than transactions",
@@ -52,7 +53,7 @@ const quizQuestions: QuizQuestion[] = [
     explanation: "Transactions focus on end-to-end value creation and outcomes, while tasks are individual activities."
   },
   {
-    id: 3,
+    id: "3",
     question: "How many PLT (Perfect Life Transaction) Pillars are mentioned in the course?",
     options: [
       "3 pillars",
@@ -64,7 +65,7 @@ const quizQuestions: QuizQuestion[] = [
     explanation: "The course covers 5 PLT Pillars that serve as a design and build checklist."
   },
   {
-    id: 4,
+    id: "4",
     question: "What does the Growth Hack Lens help you understand in transaction lifecycle?",
     options: [
       "How to reduce costs",
@@ -76,7 +77,7 @@ const quizQuestions: QuizQuestion[] = [
     explanation: "The Growth Hack Lens helps identify and scale the most effective strategies in your transaction lifecycle."
   },
   {
-    id: 5,
+    id: "5",
     question: "In designing PLTs, what are the three key areas mentioned for practice?",
     options: [
       "UX, Flows & Handoffs",
@@ -88,7 +89,7 @@ const quizQuestions: QuizQuestion[] = [
     explanation: "The course emphasizes UX (User Experience), Flows, and Handoffs as critical areas for PLT design."
   },
   {
-    id: 6,
+    id: "6",
     question: "What does DBP stand for in the context of building PLTs on platforms?",
     options: [
       "Digital Business Process",
@@ -100,7 +101,7 @@ const quizQuestions: QuizQuestion[] = [
     explanation: "DBP stands for Digital Business Platform, which enables automation and reuse in PLT development."
   },
   {
-    id: 7,
+    id: "7",
     question: "What are the three key components for making transactions intelligent?",
     options: [
       "Data, Metrics & AI",
@@ -112,7 +113,7 @@ const quizQuestions: QuizQuestion[] = [
     explanation: "Data, Metrics, and AI are the three components that make transactions intelligent and adaptive."
   },
   {
-    id: 8,
+    id: "8",
     question: "Which three elements are essential for building trust in everyday design?",
     options: [
       "Speed, Efficiency & Cost",
@@ -124,7 +125,7 @@ const quizQuestions: QuizQuestion[] = [
     explanation: "Trust, Transparency, and Security are fundamental elements that must be built into every design."
   },
   {
-    id: 9,
+    id: "9",
     question: "What is the main objective of the Capstone lesson?",
     options: [
       "Learning new theory",
@@ -136,7 +137,7 @@ const quizQuestions: QuizQuestion[] = [
     explanation: "The Capstone lesson focuses on applying all learned concepts to redesign an actual transaction from your work."
   },
   {
-    id: 10,
+    id: "10",
     question: "What is the ultimate goal of implementing Perfect Life Transactions?",
     options: [
       "Reducing workforce",
@@ -152,14 +153,18 @@ const quizQuestions: QuizQuestion[] = [
 interface CourseAssessmentProps {
   allLessonsCompleted: boolean;
   onBack: () => void;
+  courseSlug: string;
   variant?: "page" | "inline";
 }
 
 const CourseAssessment: React.FC<CourseAssessmentProps> = ({ 
   allLessonsCompleted, 
   onBack,
+  courseSlug,
   variant = "page"
 }) => {
+  const [questions, setQuestions] = useState<QuizQuestion[]>(fallbackQuizQuestions);
+  const [loading, setLoading] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -168,10 +173,94 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
   const [showSummary, setShowSummary] = useState(false);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
 
-  const currentQuestion = quizQuestions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === quizQuestions.length - 1;
+  useEffect(() => {
+    const mapSupabaseQuiz = (quiz: any, idx: number): QuizQuestion => {
+      const opts = (quiz.options || []).map((opt: any, index: number) => {
+        if (typeof opt === "string") return opt;
+        if (typeof opt === "object" && opt !== null) {
+          return opt.text ?? opt.label ?? opt.id ?? `Option ${index + 1}`;
+        }
+        return `Option ${index + 1}`;
+      });
+
+      const numericCorrect =
+        typeof quiz.correctAnswer === "number"
+          ? quiz.correctAnswer
+          : Number.isFinite(Number(quiz.correctAnswer))
+            ? Number(quiz.correctAnswer)
+            : -1;
+
+      const correctIndexById = (quiz.options || []).findIndex((opt: any) => {
+        const val =
+          typeof opt === "string"
+            ? opt
+            : opt?.id ?? opt?.text ?? opt?.label;
+        return val !== undefined && String(val) === String(quiz.correctAnswer);
+      });
+
+      const finalCorrectIndex =
+        numericCorrect >= 0 && numericCorrect < opts.length
+          ? numericCorrect
+          : correctIndexById >= 0
+            ? correctIndexById
+            : 0;
+
+      return {
+        id: String(quiz.id ?? idx),
+        question: quiz.question ?? `Question ${idx + 1}`,
+        options: opts.length > 0 ? opts : ["Option 1", "Option 2"],
+        correctAnswer: finalCorrectIndex,
+        explanation: quiz.explanation,
+      };
+    };
+
+    const loadQuizzesForSlug = async (slug: string) => {
+      const quizzes = await fetchCourseQuizzes(slug);
+      if (!quizzes || quizzes.length === 0) return null;
+
+      const normalized = quizzes
+        .slice()
+        .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
+        .map(mapSupabaseQuiz);
+
+      return normalized.length > 0 ? normalized : null;
+    };
+
+    const loadQuizzes = async () => {
+      try {
+        setLoading(true);
+
+        const slugCandidates = Array.from(
+          new Set([courseSlug, "plt-course-01"])
+        );
+
+        let normalized: QuizQuestion[] | null = null;
+        for (const slug of slugCandidates) {
+          normalized = await loadQuizzesForSlug(slug);
+          if (normalized) break;
+        }
+
+        setQuestions(normalized ?? fallbackQuizQuestions);
+        setCurrentQuestionIndex(0);
+        setUserAnswers([]);
+        setSelectedAnswer(null);
+        setShowFeedback(false);
+        setShowSummary(false);
+      } catch (err) {
+        console.warn("Failed to load quizzes, using fallback", err);
+        setQuestions(fallbackQuizQuestions);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadQuizzes();
+  }, [courseSlug]);
+
+  const currentQuestion = questions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
   const correctAnswers = userAnswers.filter(answer => answer.isCorrect).length;
-  const totalQuestions = quizQuestions.length;
+  const totalQuestions = questions.length;
   const scorePercentage = Math.round((correctAnswers / totalQuestions) * 100);
 
   const isInline = variant === "inline";
@@ -191,6 +280,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
   };
 
   const handleSubmitAnswer = () => {
+    if (!currentQuestion) return;
     if (selectedAnswer === null) return;
 
     const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
@@ -249,6 +339,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
 
   // Load previous answer when navigating
   useEffect(() => {
+    if (!currentQuestion) return;
     const previousAnswer = userAnswers.find(
       answer => answer.questionId === currentQuestion.id
     );
@@ -256,7 +347,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
       setSelectedAnswer(previousAnswer.selectedAnswer);
       setShowFeedback(true);
     }
-  }, [currentQuestionIndex, userAnswers, currentQuestion.id]);
+  }, [currentQuestionIndex, userAnswers, currentQuestion?.id]);
 
   // Temporarily disabled - always allow access to see the quiz interface
   if (false && !allLessonsCompleted) {
@@ -283,6 +374,24 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
             </p>
           </div>
 
+          <button
+            onClick={onBack}
+            className="w-full px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center justify-center gap-2"
+          >
+            <ArrowLeft size={16} />
+            Back to Course
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentQuestion) {
+    return (
+      <div className={containerClass + " flex items-center justify-center"}>
+        <div className={lockedCardClass}>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">No quiz available</h2>
+          <p className="text-gray-600 mb-4">We couldn't load the quiz for this course.</p>
           <button
             onClick={onBack}
             className="w-full px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center justify-center gap-2"
