@@ -10,6 +10,7 @@ import {
   Loader2,
   Download,
 } from "lucide-react";
+import { useAuth } from "../components/Header";
 import CourseAssessment from "./CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../components/CourseOutline";
@@ -125,6 +126,7 @@ const LearningScreen: React.FC = () => {
   const [isTheater, setIsTheater] = useState(false);
 
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   // Fetch lessons and resources from Supabase on mount
   useEffect(() => {
@@ -327,7 +329,7 @@ const LearningScreen: React.FC = () => {
               <div className="absolute right-0 mt-2 w-44 bg-white text-[#030C2B] rounded-xl shadow-lg border border-gray-100 py-2 text-sm z-30">
                 <button
                   className="w-full text-left px-4 py-2 hover:bg-gray-50"
-                  onClick={() => navigate('/')}
+                  onClick={logout}
                 >
                   Sign Out
                 </button>

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { MobileDrawer } from "./components/MobileDrawer";
 import { ProfileDropdown } from "./ProfileDropdown";
-import { NotificationsMenu } from "./notifications/NotificationsMenu";
-import { NotificationCenter } from "./notifications/NotificationCenter";
-import { mockNotifications } from "./utils/mockNotifications";
+// MVP: Notifications commented out for lean release
+// import { NotificationsMenu } from "./notifications/NotificationsMenu";
+// import { NotificationCenter } from "./notifications/NotificationCenter";
+// import { mockNotifications } from "./utils/mockNotifications";
 import { useAuth } from "./context/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserIcon, ArrowRight } from "lucide-react";
@@ -27,15 +28,16 @@ export function Header({
   "data-id": dataId,
   transparent = false,
 }: HeaderProps) {
-  const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
-  const [showNotificationCenter, setShowNotificationCenter] = useState(false);
+  // MVP: Notification states commented out
+  // const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
+  // const [showNotificationCenter, setShowNotificationCenter] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const { user, openAuthModal } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Count unread notifications
-  const unreadCount = mockNotifications.filter((notif) => !notif.read).length;
+  // MVP: Notification count commented out
+  // const unreadCount = mockNotifications.filter((notif) => !notif.read).length;
 
   // Sticky header behavior
   useEffect(() => {
@@ -47,39 +49,47 @@ export function Header({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Toggle notifications menu
-  const toggleNotificationsMenu = () => {
-    setShowNotificationsMenu(!showNotificationsMenu);
-    if (showNotificationCenter) setShowNotificationCenter(false);
-  };
+  // MVP: Notification functions commented out
+  // const toggleNotificationsMenu = () => {
+  //   setShowNotificationsMenu(!showNotificationsMenu);
+  //   if (showNotificationCenter) setShowNotificationCenter(false);
+  // };
 
-  // Open notification center
-  const openNotificationCenter = () => {
-    setShowNotificationCenter(true);
-    setShowNotificationsMenu(false);
-  };
+  // const openNotificationCenter = () => {
+  //   setShowNotificationCenter(true);
+  //   setShowNotificationsMenu(false);
+  // };
 
-  // Close notification center
-  const closeNotificationCenter = () => {
-    setShowNotificationCenter(false);
-  };
+  // const closeNotificationCenter = () => {
+  //   setShowNotificationCenter(false);
+  // };
 
-  // Handle sign in
+  // Handle sign in - direct Microsoft auth
   const handleSignIn = () => {
-    openAuthModal('signin');
+    console.log('🖱️ Sign In button clicked!');
+    console.log('🔍 Current auth state before login:', { user: !!user, userEmail: user?.email });
+    
+    // Prevent multiple clicks
+    if (user) {
+      console.log('⚠️ User already logged in, ignoring click');
+      return;
+    }
+    
+    console.log('🎓 Will redirect to learning page after successful authentication');
+    login();
   };
 
   const handleBrowseCourses = () => {
     navigate("/marketplace/courses");
   };
 
-  // Reset notification states when user logs out
-  useEffect(() => {
-    if (!user) {
-      setShowNotificationsMenu(false);
-      setShowNotificationCenter(false);
-    }
-  }, [user]);
+  // MVP: Notification reset commented out
+  // useEffect(() => {
+  //   if (!user) {
+  //     setShowNotificationsMenu(false);
+  //     setShowNotificationCenter(false);
+  //   }
+  // }, [user]);
 
   // Smooth scroll to D6 categories section
   const scrollToCategories = () => {
@@ -154,10 +164,7 @@ export function Header({
           {/* Right side actions */}
           <div className="flex items-center gap-4 relative">
             {user ? (
-              <ProfileDropdown
-                onViewNotifications={toggleNotificationsMenu}
-                unreadNotifications={unreadCount}
-              />
+              <ProfileDropdown />
             ) : (
               <div className="hidden lg:flex items-center gap-2 text-sm font-medium">
                 <button
@@ -183,14 +190,14 @@ export function Header({
       {/* Spacer for sticky header */}
       {isSticky && <div className="h-16"></div>}
 
-      {/* Notifications Menu */}
+      {/* MVP: Notifications components commented out for lean release */}
+      {/* 
       {showNotificationsMenu && user && (
         <NotificationsMenu
           onViewAll={openNotificationCenter}
           onClose={() => setShowNotificationsMenu(false)}
         />
       )}
-      {/* Notification Center Modal */}
       {showNotificationCenter && user && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
           <div
@@ -202,6 +209,7 @@ export function Header({
           </div>
         </div>
       )}
+      */}
     </>
   );
 }

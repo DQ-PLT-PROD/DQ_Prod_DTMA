@@ -2,9 +2,22 @@ import * as React from 'react';
 import { ReactNode } from 'react';
 import { DollarSign, Calendar, Clock, Users, CheckCircle, BarChart, Award, FileText, Info, BookOpen, ClipboardList, Building, FileType, Bookmark, TrendingUp } from 'lucide-react';
 import { providers } from './mockData';
-import { mockFinancialServices, mockNonFinancialServices, mockKnowledgeHubItems, mockKnowledgeHubFilterOptions } from './mockMarketplaceData';
 import { categories } from '../data/dtma/categories';
 import { getCourses, toMarketplaceItem } from '../lib/api/dtmaCourses';
+
+// Empty data for removed marketplace types (financial/non-financial)
+const mockFinancialServices: any[] = [];
+const mockNonFinancialServices: any[] = [];
+
+// Knowledge Hub mock data  
+const mockKnowledgeHubItems: any[] = [];
+const mockKnowledgeHubFilterOptions = {
+  mediaTypes: [],
+  businessStages: [],
+  categories: [],
+  formats: [],
+  popularity: []
+};
 
 // Canonical marketplace configuration used by MarketplaceRouter/MarketplacePage.
 // Legacy duplicate: src/utils/marketplaceConfiguration.tsx (kept for reference only).
@@ -232,10 +245,28 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
     filterCategories: [{
       id: 'category',
       title: 'Category',
-      options: categories.map((category) => ({
-        id: category.slug,
-        name: category.name
-      }))
+      options: [
+        { id: 'economy-4-0', name: 'Mastering Economy 4.0' },
+        { id: 'digital-cognitive-organization', name: 'Building Tomorrow\'s Organisations' },
+        { id: 'digital-business-platform', name: 'Mastering Digital Transformation' },
+        { id: 'digital-transformation-2-0', name: 'Designing for the Future' },
+        { id: 'digital-worker-workspace', name: 'Architecting Change' },
+        { id: 'digital-accelerators-tools', name: 'Empowering Change' },
+      ]
+    }, {
+      id: 'industry',
+      title: 'Industry',
+      options: [
+        { id: 'farming-4-0', name: 'Farming 4.0' },
+        { id: 'government-4-0', name: 'Government 4.0' },
+        { id: 'hospitality-4-0', name: 'Hospitality 4.0' },
+        { id: 'infrastructure-4-0', name: 'Infrastructure 4.0' },
+        { id: 'logistics-4-0', name: 'Logistics 4.0' },
+        { id: 'plant-4-0', name: 'Plant 4.0' },
+        { id: 'retail-4-0', name: 'Retail 4.0' },
+        { id: 'service-4-0', name: 'Service 4.0' },
+        { id: 'wellness-4-0', name: 'Wellness 4.0' },
+      ]
     }, {
       id: 'audienceLevel',
       title: 'Role',
@@ -258,19 +289,6 @@ export const marketplaceConfig: Record<string, MarketplaceConfig> = {
       }, {
         id: 'Advanced',
         name: 'Advanced'
-      }]
-    }, {
-      id: 'deliveryMode',
-      title: 'Delivery Mode',
-      options: [{
-        id: 'Online',
-        name: 'Online'
-      }, {
-        id: 'In-person',
-        name: 'In-person'
-      }, {
-        id: 'Hybrid',
-        name: 'Hybrid'
       }]
     }],
     // Data mapping functions

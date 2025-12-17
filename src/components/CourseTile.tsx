@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { StarIcon, ScaleIcon } from "lucide-react";
 import { Tag } from "./ui/Tag";
 import { CourseMeta } from "./ui/CourseMeta";
@@ -9,7 +9,7 @@ export interface CourseTileProps {
   providerName: string;
   providerLogoUrl: string;
   thumbnailUrl?: string;
-  videoUrl?: string; // Added videoUrl prop
+  videoUrl?: string;
   category?: string;
   levelTag?: string;
   audienceLevel?: string;
@@ -54,7 +54,6 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   isHovered = false,
   isDisabled = false,
 }) => {
-  // Prioritize thumbnailUrl, fallback to heroImageUrl, finally global placeholder
   const heroSrc = thumbnailUrl || "/images/placeholders/course-fallback.png";
   const displayRating = rating ?? 4.6;
   const displayReviews = reviewCount ?? 24;
@@ -71,16 +70,13 @@ export const CourseTile: React.FC<CourseTileProps> = ({
       videoRef.current.currentTime = 0;
       const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Auto-play was prevented
-        });
+        playPromise.catch(() => {});
       }
     } else if (!isHovered && videoRef.current) {
       videoRef.current.pause();
     }
   }, [isHovered, videoUrl, isDisabled]);
 
-  // Classic Card (Financial/Non-Financial Services)
   if (variant === "classic") {
     return (
       <div
@@ -100,12 +96,9 @@ export const CourseTile: React.FC<CourseTileProps> = ({
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 {rating && (
                   <>
-                    <span className="text-gray-300">G��</span>
-                    <div className="flex items-center gap-1">
-                      <StarIcon size={12} className="fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{displayRating.toFixed(1)}</span>
-                      <span className="text-gray-400">({displayReviews})</span>
-                    </div>
+                    <StarIcon size={12} className="fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium">{displayRating.toFixed(1)}</span>
+                    <span className="text-gray-400">({displayReviews})</span>
                   </>
                 )}
               </div>
@@ -117,9 +110,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
           </p>
 
           <div className="mt-auto pt-2 flex items-center justify-between">
-            <div className="flex gap-2">
-              {/* Placeholder for extra meta if needed */}
-            </div>
+            <div className="flex gap-2" />
             <div className="flex items-center gap-2">
               {onToggleBookmark && (
                 <button
@@ -127,16 +118,14 @@ export const CourseTile: React.FC<CourseTileProps> = ({
                     e.stopPropagation();
                     onToggleBookmark();
                   }}
-                  className={`p-2 rounded-full transition-colors ${isBookmarked
-                    ? "bg-yellow-50 text-yellow-600"
-                    : "bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                    }`}
+                  className={`p-2 rounded-full transition-colors ${
+                    isBookmarked
+                      ? "bg-yellow-50 text-yellow-600"
+                      : "bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  }`}
                   aria-label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
                 >
-                  <StarIcon
-                    size={16}
-                    className={isBookmarked ? "fill-yellow-500" : ""}
-                  />
+                  <StarIcon size={16} className={isBookmarked ? "fill-yellow-500" : ""} />
                 </button>
               )}
               {onAddToComparison && (
@@ -158,40 +147,44 @@ export const CourseTile: React.FC<CourseTileProps> = ({
     );
   }
 
-  // Course Card (Modern / Airbnb-like)
-  const shouldHideImage = isDisabled ? isHovered : (isHovered && !!videoUrl);
+  const shouldHideImage = isDisabled ? isHovered : isHovered && !!videoUrl;
   const shouldShowVideo = !isDisabled && isHovered && !!videoUrl;
 
   return (
     <div
       className={`
         group relative flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden
-        ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
-        ${isHovered ? 'shadow-xl' : ''}
+        ${isDisabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}
+        ${isHovered ? "shadow-xl" : ""}
       `}
       onClick={onCardClick}
     >
-      {/* Thumbnail Section */}
-      <div className={`relative w-full bg-gray-100 overflow-hidden transition-all duration-300 rounded-2xl ${isHovered ? 'aspect-video' : 'aspect-video'}`}>
+      <div
+        className={`relative w-full bg-gray-100 overflow-hidden transition-all duration-300 rounded-2xl ${
+          isHovered ? "aspect-video" : "aspect-video"
+        }`}
+      >
         <img
           src={heroSrc}
           alt={`${title} thumbnail`}
-          className={`h-full w-full object-cover transition-opacity duration-300 rounded-2xl ${shouldHideImage ? 'opacity-0' : 'opacity-100'}`}
-          style={{ contain: 'layout' }}
+          className={`h-full w-full object-cover transition-opacity duration-300 rounded-2xl ${
+            shouldHideImage ? "opacity-0" : "opacity-100"
+          }`}
+          style={{ contain: "layout" }}
           onError={(e) => {
             const target = e.target as HTMLImageElement;
-            // Prevent infinite loop if fallback fails
-            if (target.src.includes('course-fallback.png')) return;
+            if (target.src.includes("course-fallback.png")) return;
             target.src = "/images/placeholders/course-fallback.png";
           }}
         />
 
-        {/* Video Player on Hover */}
         {videoUrl && (
           <video
             ref={videoRef}
             src={videoUrl}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 rounded-2xl ${shouldShowVideo ? 'opacity-100' : 'opacity-0'}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 rounded-2xl ${
+              shouldShowVideo ? "opacity-100" : "opacity-0"
+            }`}
             muted
             loop
             playsInline
@@ -199,14 +192,12 @@ export const CourseTile: React.FC<CourseTileProps> = ({
           />
         )}
 
-        {/* Coming Soon overlay for disabled cards on hover */}
         {isDisabled && isHovered && (
           <div className="absolute inset-0 bg-white flex items-center justify-center z-20 rounded-2xl">
             <span className="text-sm font-semibold text-gray-900">Coming Soon!</span>
           </div>
         )}
 
-        {/* Overlay Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2 items-start z-10">
           {audienceLevel && (
             <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-purple-700 text-[10px] font-bold uppercase tracking-wider rounded-md shadow-sm border border-purple-100">
@@ -215,8 +206,11 @@ export const CourseTile: React.FC<CourseTileProps> = ({
           )}
         </div>
 
-        {/* Bookmark / Compare Overlay Actions (Visible on Hover) */}
-        <div className={`absolute top-3 right-3 flex flex-col gap-2 transition-opacity duration-200 z-10 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+        <div
+          className={`absolute top-3 right-3 flex flex-col gap-2 transition-opacity duration-200 z-10 ${
+            isHovered ? "opacity-100" : "opacity-0"
+          }`}
+        >
           {onToggleBookmark && (
             <button
               onClick={(e) => {
@@ -242,7 +236,6 @@ export const CourseTile: React.FC<CourseTileProps> = ({
         </div>
       </div>
 
-      {/* Content Section */}
       <div className="p-5 flex flex-col flex-1">
         <div className="flex items-center justify-between mb-2">
           {category && (
@@ -261,16 +254,13 @@ export const CourseTile: React.FC<CourseTileProps> = ({
           {title}
         </h3>
 
-        <p className={`text-sm text-gray-600 leading-relaxed mb-4 ${isHovered ? '' : 'line-clamp-2'}`}>
+        <p className={`text-sm text-gray-600 leading-relaxed mb-4 ${isHovered ? "" : "line-clamp-2"}`}>
           {description}
         </p>
 
-        {/* Expanded Details on Hover */}
         {isHovered && (
           <div className="mb-4 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex flex-wrap gap-2 mb-3">
-              {/* Show extra tags if available */}
-            </div>
+            <div className="flex flex-wrap gap-2 mb-3" />
           </div>
         )}
 

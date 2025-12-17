@@ -32,7 +32,7 @@ const matchesSearch = (course: Course, term?: string) => {
     normalize(course.shortDescription).includes(t) ||
     normalize(course.longDescription).includes(t) ||
     normalize(categoryName).includes(t) ||
-    normalize(course.provider?.name || "").includes(t) ||
+    normalize((course as any).provider?.name || "").includes(t) ||
     course.topicTags.some((tag) => normalize(tag).includes(t)) ||
     (course.skillsGained || []).some((skill) => normalize(skill).includes(t)) ||
     (course.learningOutcomes || []).some((outcome) => normalize(outcome).includes(t))
@@ -59,10 +59,6 @@ const matchesFilters = (course: Course, filters?: CourseCatalogFilters) => {
 
   if (filters.levelTag) {
     if (normalize(course.levelTag) !== normalize(filters.levelTag)) return false;
-  }
-
-  if (filters.deliveryMode) {
-    if (normalize(course.deliveryMode) !== normalize(filters.deliveryMode)) return false;
   }
 
   return true;
@@ -144,14 +140,14 @@ export const getIntroVideoForCourse = (
   if (course.introVideoUrl) {
     return {
       videoUrl: course.introVideoUrl,
-      posterUrl: course.introVideoPosterUrl || course.heroImageUrl || course.provider?.logoUrl
+      posterUrl: course.introVideoPosterUrl || course.heroImageUrl || (course as any).provider?.logoUrl
     };
   }
 
   const introLesson = getIntroLessonForCourse(courseIdOrSlug);
   const videoUrl = introLesson?.videoUrl;
   const posterUrl =
-    course.introVideoPosterUrl || course.heroImageUrl || course.provider?.logoUrl;
+    course.introVideoPosterUrl || course.heroImageUrl || (course as any).provider?.logoUrl;
   return { videoUrl, posterUrl };
 };
 
@@ -167,7 +163,6 @@ export const toMarketplaceItem = (course: Course) => {
     description: course.shortDescription,
     category: category?.name,
     categorySlug: category?.slug,
-    deliveryMode: course.deliveryMode || "Online",
     duration: durationLabel,
     durationMinutes: course.estimatedDurationMinutes,
     lessonCount: course.lessonCount,
@@ -181,9 +176,9 @@ export const toMarketplaceItem = (course: Course) => {
       ...course.topicTags.slice(0, 2),
     ].filter(Boolean),
     provider: {
-      name: course.provider.name,
-      logoUrl: course.provider.logoUrl,
-      description: course.provider.description || "",
+      name: (course as any).provider?.name || "DTMA Academy",
+      logoUrl: (course as any).provider?.logoUrl || "/images/placeholders/course-fallback.png",
+      description: (course as any).provider?.description || "Digital Transformation & Management Academy",
     },
     heroImageUrl: course.heroImageUrl,
     introLessonId: course.introLessonId || introLesson?.id,

@@ -1,9 +1,4 @@
 import { getCourses, toMarketplaceItem } from '../lib/api/dtmaCourses'
-import {
-  mockFinancialServices,
-  mockNonFinancialServices,
-  mockKnowledgeHubItems,
-} from './mockMarketplaceData'
 
 /**
  * Get fallback items for a specific marketplace type when API calls fail
@@ -12,12 +7,8 @@ export const getFallbackItems = (marketplaceType: string): any[] => {
   switch (marketplaceType) {
     case 'courses':
       return getCourses().map(toMarketplaceItem)
-    case 'financial':
-      return mockFinancialServices
-    case 'non-financial':
-      return mockNonFinancialServices
     case 'knowledge-hub':
-      return mockKnowledgeHubItems
+      return sampleKnowledgeHubItems
     default:
       return []
   }
@@ -43,10 +34,10 @@ export const getFallbackItemDetails = (
 
 /**
  * Get Knowledge Hub items directly from the fallback dataset
- * This function always returns the mockKnowledgeHubItems without any API calls
+ * This function always returns the sampleKnowledgeHubItems without any API calls
  */
 export const getFallbackKnowledgeHubItems = () => {
-  const items = mockKnowledgeHubItems.map((item) => {
+  const items = sampleKnowledgeHubItems.map((item) => {
     // Add video URLs to video items
     if (item.mediaType.toLowerCase() === 'video') {
       return {
@@ -84,9 +75,9 @@ export const getFallbackKnowledgeHubItems = () => {
  * Get Knowledge Hub item details by ID directly from the fallback dataset
  */
 export const getFallbackKnowledgeHubItemDetails = (itemId: string): any => {
-  const item = mockKnowledgeHubItems.find((item) => item.id === itemId)
+  const item = sampleKnowledgeHubItems.find((item) => item.id === itemId)
   return (
-    item || (mockKnowledgeHubItems.length > 0 ? mockKnowledgeHubItems[0] : null)
+    item || (sampleKnowledgeHubItems.length > 0 ? sampleKnowledgeHubItems[0] : null)
   )
 }
 

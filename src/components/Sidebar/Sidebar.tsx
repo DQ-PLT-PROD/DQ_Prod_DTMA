@@ -8,10 +8,7 @@ import {
   Home,
   Users,
   Settings,
-  BarChart3,
   User,
-  FolderOpen,
-  Send,
   HelpCircle,
   ExternalLink,
   Plus,
@@ -196,39 +193,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         icon: <User size={20} />,
         href: "/dashboard/profile",
       },
-      {
-        id: "documents",
-        label: "Documents",
-        icon: <FolderOpen size={20} />,
-        href: "/dashboard/documents",
-      },
-      {
-        id: "transactions",
-        label: "TRANSACTIONS",
-        category: "category",
-      } as MenuItem,
-      {
-        id: "requests",
-        label: "Requests",
-        icon: <Send size={20} />,
-        href: "/dashboard/requests",
-      },
-      {
-        id: "reporting-obligations",
-        label: "Reporting Obligations",
-        icon: <BarChart3 size={20} />,
-        href: "/dashboard/reporting-obligations",
-      },
-      // {
-      //   id: "forms",
-      //   label: "Forms",
-      //   icon: <FolderOpen size={20} />,
-      // } as MenuItem,
+
       {
         id: "settings-support",
         label: "Settings & Support",
         category: "category",
       } as MenuItem,
+
       {
         id: "settings",
         label: "Settings",

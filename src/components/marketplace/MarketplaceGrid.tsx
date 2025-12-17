@@ -175,7 +175,7 @@ export const MarketplaceGrid: React.FC<MarketplaceGridProps> = ({
             Showing {totalItems} {itemLabel}
           </h2>
           <div className="text-sm text-gray-500 hidden sm:block">
-            Refine by 6XD dimension, role, level, or tags
+            Refine by category, industry, role, or level
           </div>
         </div>
         {/* Mobile-friendly header */}

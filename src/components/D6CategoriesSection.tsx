@@ -11,7 +11,7 @@ const categories = [
     image: "/Economy 4.0 thumnail.png",
   },
   {
-    title: "Building Tomorrow’s Organisations",
+    title: "Building Tomorrow's Organisations",
     description:
       "Where organizations are headed in the age of digital transformation",
     image: "/2nd category Thumbnail.jpg",

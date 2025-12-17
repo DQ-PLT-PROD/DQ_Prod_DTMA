@@ -1,122 +1,130 @@
-import React, { useState } from "react";
-import { ArrowRight, ArrowLeft, Layers } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { FadeInUpOnScroll, StaggeredFadeIn } from "./AnimationUtils";
 import { CourseTile } from "./CourseTile";
+import { fetchCourses } from "../services/courseService";
 
-const INTRO_VIDEO_URL = "https://ugmybskacomcdgdngolz.supabase.co/storage/v1/object/public/course-content/plt-course-01/intro/Intro_V2.mp4";
+const INTRO_VIDEO_URL =
+  "https://ugmybskacomcdgdngolz.supabase.co/storage/v1/object/public/course-content/plt-course-01/intro/Intro_V2.mp4";
 
-const courses = [
+const COMING_SOON_COURSES = [
   {
-    id: "economy-4-0",
-    title: "Understanding Economy 4.0",
-    tag: "Economy 4.0",
-    category: "ECONOMY 4.0",
-    levelTag: "Beginner",
-    audienceLevel: "DIGITAL WORKERS",
-    duration: "55 mins",
-    lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: INTRO_VIDEO_URL,
-    description:
-      "Get a clear, practical introduction to Economy 4.0 and why it matters.",
-    isHeroTile: true,
-  },
-  {
-    id: "digital-workflows",
+    id: "coming-soon-1",
     title: "Connecting Economy 4.0 and Digital Cognitive Organizations",
-    tag: "Economy 4.0",
     category: "ECONOMY 4.0",
     levelTag: "Intermediate",
     audienceLevel: "DIGITAL WORKERS",
-    duration: "1h",
+    duration: "Coming Soon",
     lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: INTRO_VIDEO_URL,
-    description:
-      "Link Economy 4.0 trends to the design of Digital Cognitive Organizations.",
-    isHeroTile: true,
+    description: "Link Economy 4.0 trends to the design of Digital Cognitive Organizations.",
+    isComingSoon: true,
   },
   {
-    id: "platform-thinking-101",
+    id: "coming-soon-2",
     title: "Designing Perfect Life Transactions in Economy 4.0",
-    tag: "Economy 4.0",
     category: "ECONOMY 4.0",
     levelTag: "Intermediate",
     audienceLevel: "DIGITAL WORKERS",
-    duration: "1h 5m",
+    duration: "Coming Soon",
     lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: INTRO_VIDEO_URL,
-    description:
-      "Learn to design Perfect Life Transactions that create value for customers and citizens.",
-    isHeroTile: true,
+    description: "Learn to design Perfect Life Transactions that create value for customers and citizens.",
+    isComingSoon: true,
   },
   {
-    id: "digital-accelerators-toolkit",
+    id: "coming-soon-3",
     title: "Using AI for Advantage in Economy 4.0",
-    tag: "Economy 4.0",
     category: "ECONOMY 4.0",
     levelTag: "Advanced",
     audienceLevel: "DIGITAL WORKERS",
-    duration: "52 mins",
+    duration: "Coming Soon",
     lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: INTRO_VIDEO_URL,
-    description:
-      "Go beyond AI hype and focus on competitive advantage.",
-    isHeroTile: true,
+    description: "Go beyond AI hype and focus on competitive advantage.",
+    isComingSoon: true,
   },
   {
-    id: "protecting-trust-security",
+    id: "coming-soon-4",
     title: "Protecting Trust and Security in Economy 4.0",
-    tag: "Economy 4.0",
     category: "ECONOMY 4.0",
     levelTag: "Advanced",
     audienceLevel: "DIGITAL WORKERS",
-    duration: "1h 8m",
+    duration: "Coming Soon",
     lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: INTRO_VIDEO_URL,
-    description:
-      "Balance cybersecurity and innovation in a hyper-connected economy.",
-    isHeroTile: true,
+    description: "Balance cybersecurity and innovation in a hyper-connected economy.",
+    isComingSoon: true,
   },
   {
-    id: "strategic-ai-advantage",
+    id: "coming-soon-5",
     title: "Applying Strategic AI for Competitive Advantage",
-    tag: "Economy 4.0",
     category: "ECONOMY 4.0",
     levelTag: "Advanced",
     audienceLevel: "DIGITAL WORKERS",
-    duration: "57 mins",
+    duration: "Coming Soon",
     lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: INTRO_VIDEO_URL,
-    description:
-      "Treat AI as a strategic capability, not a one-off project.",
-    isHeroTile: true,
+    description: "Treat AI as a strategic capability, not a one-off project.",
+    isComingSoon: true,
   },
 ];
 
 const FeaturedCoursesSection: React.FC = () => {
   const [startIndex, setStartIndex] = useState(0);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        setLoading(true);
+        const dbCourses = await fetchCourses();
+
+        const mappedCourses = dbCourses.map((course: any) => ({
+          id: course.slug || course.id,
+          title: course.title,
+          category: course.category?.toUpperCase() || "ECONOMY 4.0",
+          levelTag: course.levelTag || "Beginner",
+          audienceLevel: course.audienceLevel?.toUpperCase() || "DIGITAL WORKERS",
+          duration: course.duration || "55 mins",
+          lessonCount: course.lessonCount || 4,
+          thumbnailUrl: course.heroImageUrl || course.thumbnailUrl || "/Economy%204.0%20thumnail.png",
+          videoUrl: course.introVideoUrl || INTRO_VIDEO_URL,
+          description: course.description || "",
+          isComingSoon: false,
+        }));
+
+        const neededPlaceholders = Math.max(0, 6 - mappedCourses.length);
+        const allCourses = [...mappedCourses, ...COMING_SOON_COURSES.slice(0, neededPlaceholders)];
+        const enforcedComingSoon = allCourses.map((course, index) =>
+          index === 0 ? { ...course, isComingSoon: false } : { ...course, isComingSoon: true }
+        );
+
+        setCourses(enforcedComingSoon);
+      } catch (error) {
+        console.error("Error fetching featured courses:", error);
+        setCourses(
+          COMING_SOON_COURSES.map((course, index) =>
+            index === 0 ? { ...course, isComingSoon: false } : course
+          ).slice(0, 6)
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCourses();
+  }, []);
 
   const visibleCourses = courses.slice(startIndex, startIndex + 3);
   const maxStartIndex = Math.max(0, courses.length - 3);
   const totalSlides = maxStartIndex + 1;
-  const isCourseComingSoon = (courseId: string, index: number) => index > 0;
 
   const handlePrev = () => {
     setStartIndex((prev) => (prev === 0 ? Math.max(courses.length - 3, 0) : prev - 1));
   };
 
   const handleNext = () => {
-    setStartIndex((prev) =>
-      prev + 3 >= courses.length ? 0 : prev + 1
-    );
+    setStartIndex((prev) => (prev + 3 >= courses.length ? 0 : prev + 1));
   };
 
   const handleViewDetails = (id: string, action?: boolean) => {
@@ -124,43 +132,47 @@ const FeaturedCoursesSection: React.FC = () => {
     navigate(`/courses/${id}${search}`);
   };
 
+  if (loading) {
+    return (
+      <section className="bg-gray-50 py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#030C2B]">Featured Courses</h2>
+            <p className="text-lg text-gray-600">Loading courses...</p>
+          </div>
+          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse bg-gray-200 rounded-2xl h-80"></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-gray-50 py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeInUpOnScroll className="text-center max-w-3xl mx-auto space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#030C2B]">
-            Featured Courses
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-[#030C2B]">Featured Courses</h2>
           <p className="text-lg text-gray-600">
-            Our flagship courses translate the D6 dimensions into applied
-            learning journeys.
+            Our flagship courses translate the D6 dimensions into applied learning journeys.
           </p>
         </FadeInUpOnScroll>
 
         <StaggeredFadeIn staggerDelay={0.1} className="mt-12">
           <div className="relative">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleCourses.map((course, idx) => {
-                const tagChips =
-                  course.tag
-                    ?.split(" - ")
-                    .map((chip) => chip.trim())
-                    .filter(
-                      (chip) =>
-                        chip.toLowerCase() !== "leadership" &&
-                        chip.toLowerCase() !== "productivity" &&
-                        chip.toLowerCase() !== "strategy"
-                    ) ?? [];
-                const isHovered = hoveredId === course.id;
-                const isDisabled = isCourseComingSoon(course.id, startIndex + idx);
-                return course.isHeroTile ? (
+              {visibleCourses.map((course) => {
+                const isComingSoon = course.isComingSoon;
+                const isHovered = !isComingSoon && hoveredId === course.id;
+
+                return (
                   <div
                     key={course.id}
-                    onMouseEnter={() => setHoveredId(course.id)}
+                    onMouseEnter={() => !isComingSoon && setHoveredId(course.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    className={`transition duration-300 ease-out ${
-                      isHovered ? "scale-105 z-10" : "scale-100"
-                    }`}
+                    className={`transition duration-300 ease-out ${isHovered ? "scale-105 z-10" : "scale-100"}`}
                   >
                     <CourseTile
                       title={course.title}
@@ -174,51 +186,10 @@ const FeaturedCoursesSection: React.FC = () => {
                       videoUrl={course.videoUrl}
                       providerName="DTMA"
                       providerLogoUrl="/dtma_logo.png"
-                      onCardClick={isDisabled ? undefined : () => handleViewDetails(course.id)}
+                      onCardClick={isComingSoon ? undefined : () => handleViewDetails(course.id)}
                       isHovered={isHovered}
-                      isDisabled={isDisabled}
+                      isDisabled={isComingSoon}
                     />
-                  </div>
-                ) : (
-                  <div
-                    key={course.title}
-                    className="flex h-full flex-col rounded-3xl border border-gray-200 bg-white p-8 shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <h3 className="text-xl font-semibold text-gray-900">
-                        {course.title}
-                      </h3>
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-[#2E469E]">
-                        <Layers size={18} />
-                      </div>
-                    </div>
-                    <p className="mt-3 text-sm text-gray-600">
-                      {course.description}
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {tagChips.map((chip) => (
-                        <span
-                          key={chip}
-                          className="rounded-full border border-[#1839AD]/10 bg-[#1839AD]/5 px-3 py-1 text-xs font-semibold text-[#1839AD]"
-                        >
-                          {chip}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="mt-6 grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => handleViewDetails(course.id)}
-                        className="rounded-xl border border-[#1839AD] px-4 py-2 text-sm font-semibold text-[#1839AD] transition hover:bg-[#1839AD]/5"
-                      >
-                        View Details
-                      </button>
-                      <button
-                        onClick={() => handleViewDetails(course.id, true)}
-                        className="rounded-xl bg-[#1839AD] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#132b7c]"
-                      >
-                        Enroll Now
-                      </button>
-                    </div>
                   </div>
                 );
               })}

@@ -137,13 +137,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     onEnded={onEnded}
                     onClick={onPlayPause}
                 >
-                    <track
-                        default
-                        kind="subtitles"
-                        src="https://www.w3schools.com/tags/movie.vtt"
-                        srcLang="en"
-                        label="English"
-                    />
+                    {/* Subtitles track removed to avoid CORS issues */}
                 </video>
 
                 {/* Overlay Play Button (optional, for better UX) */}
