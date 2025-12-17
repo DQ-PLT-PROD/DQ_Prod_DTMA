@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowRight, Facebook, Instagram, Twitter } from "lucide-react";
+import { Link } from "react-router-dom";
 import { FEATURES } from "../../config/features";
 
 interface FooterProps {
@@ -16,12 +17,12 @@ const ABOUT_TEXT = [
 ];
 
 const QUICK_LINKS = [
-  { label: "Explore Courses", href: "/marketplace/courses" },
-  { label: "Help Center", href: "#" },
-  FEATURES.GROWTH_AREAS && { label: "Explore the AI Working Era", href: "/discover-abudhabi" },
-  { label: "Privacy Policy", href: "#" },
-  { label: "Terms of Service", href: "#" },
-].filter(Boolean) as { label: string; href: string }[];
+  { label: "Explore Courses", to: "/marketplace/courses" },
+  { label: "Help Center", to: "/coming-soon/help-center" },
+  FEATURES.GROWTH_AREAS && { label: "Explore the AI Working Era", to: "/discover-abudhabi" },
+  { label: "Privacy Policy", to: "/coming-soon/privacy-policy" },
+  { label: "Terms of Service", to: "/coming-soon/terms-of-service" },
+].filter(Boolean) as { label: string; to: string }[];
 
 export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
   if (isLoggedIn) {
@@ -86,13 +87,13 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
             <h3 className="font-semibold text-lg text-white">Quick Links</h3>
             <div className="text-blue-100 text-sm">
               {QUICK_LINKS.map((link) => (
-                <a
+                <Link
                   key={link.label}
-                  href={link.href}
+                  to={link.to}
                   className="flex items-center py-2 border-b border-white/30 hover:text-white transition"
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
             </div>
           </div>

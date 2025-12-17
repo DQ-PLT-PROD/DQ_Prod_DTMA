@@ -7,6 +7,7 @@ import { fetchCourses } from "../services/courseService";
 
 const INTRO_VIDEO_URL =
   "https://ugmybskacomcdgdngolz.supabase.co/storage/v1/object/public/course-content/plt-course-01/intro/Intro_V2.mp4";
+const DEFAULT_THUMBNAIL = "/Economy%204.0%20thumnail.png";
 
 const COMING_SOON_COURSES = [
   {
@@ -79,7 +80,7 @@ const FeaturedCoursesSection: React.FC = () => {
         setLoading(true);
         const dbCourses = await fetchCourses();
 
-        const mappedCourses = dbCourses.map((course: any) => ({
+        const mappedCourses = dbCourses.map((course: any, index: number) => ({
           id: course.slug || course.id,
           title: course.title,
           category: course.category?.toUpperCase() || "ECONOMY 4.0",
@@ -87,7 +88,10 @@ const FeaturedCoursesSection: React.FC = () => {
           audienceLevel: course.audienceLevel?.toUpperCase() || "DIGITAL WORKERS",
           duration: course.duration || "55 mins",
           lessonCount: course.lessonCount || 4,
-          thumbnailUrl: course.heroImageUrl || course.thumbnailUrl || "/Economy%204.0%20thumnail.png",
+          thumbnailUrl:
+            index === 0
+              ? DEFAULT_THUMBNAIL
+              : course.heroImageUrl || course.thumbnailUrl || DEFAULT_THUMBNAIL,
           videoUrl: course.introVideoUrl || INTRO_VIDEO_URL,
           description: course.description || "",
           isComingSoon: false,
@@ -165,12 +169,12 @@ const FeaturedCoursesSection: React.FC = () => {
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {visibleCourses.map((course) => {
                 const isComingSoon = course.isComingSoon;
-                const isHovered = !isComingSoon && hoveredId === course.id;
+                const isHovered = hoveredId === course.id;
 
                 return (
                   <div
                     key={course.id}
-                    onMouseEnter={() => !isComingSoon && setHoveredId(course.id)}
+                    onMouseEnter={() => setHoveredId(course.id)}
                     onMouseLeave={() => setHoveredId(null)}
                     className={`transition duration-300 ease-out ${isHovered ? "scale-105 z-10" : "scale-100"}`}
                   >

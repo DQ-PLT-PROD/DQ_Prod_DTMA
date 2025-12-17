@@ -178,7 +178,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
           }}
         />
 
-        {videoUrl && (
+        {videoUrl && !isDisabled && (
           <video
             ref={videoRef}
             src={videoUrl}
@@ -188,12 +188,12 @@ export const CourseTile: React.FC<CourseTileProps> = ({
             muted
             loop
             playsInline
-            preload="none"
+            preload="auto"
           />
         )}
 
         {isDisabled && isHovered && (
-          <div className="absolute inset-0 bg-white flex items-center justify-center z-20 rounded-2xl">
+          <div className="absolute inset-0 bg-white flex items-center justify-center z-20 rounded-2xl transition-opacity duration-200">
             <span className="text-sm font-semibold text-gray-900">Coming Soon!</span>
           </div>
         )}
