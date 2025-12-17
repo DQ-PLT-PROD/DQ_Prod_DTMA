@@ -1,33 +1,54 @@
-
-# Step 1: Use an official Node.js image from Docker Hub
-FROM node:20
-
-# Step 2: Set the working directory in the container
+##############################
+# 1. BUILD STAGE
+##############################
+FROM node:20 AS build
 WORKDIR /app
-
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-
-# Step 3: Copy package.json and package-lock.json if available
 COPY package*.json ./
-
-# Step 4: Install app dependencies
 RUN npm install
-
-# Copy the rest of the application code
 COPY . .
+RUN npm run build
 
-# Disable lint & type-check, increase Node heap
-ENV NEXT_DISABLE_ESLINT=1
-ENV NEXT_DISABLE_TYPECHECK=1
+##############################
+# 2. RUNTIME STAGE (NGINX + NON-ROOT USER)
+##############################
+FROM nginx:stable-alpine
 
-# Build the Next.js app
-RUN npm run build --no-lint
+# Install envsubst (part of gettext)
+RUN apk add --no-cache gettext
 
-# Step 6: Expose the port the app runs on
+# Create non-root user and group
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Copy built assets
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy runtime template & entrypoint
+COPY env.template.js /usr/share/nginx/html/env.template.js
+COPY entrypoint.sh /entrypoint.sh
+
+# Fix Windows line endings
+RUN sed -i 's/\r$//' /entrypoint.sh && \
+    sed -i 's/\r$//' /usr/share/nginx/html/env.template.js
+
+# Permissions: allow non-root user to read/serve files
+RUN mkdir -p /var/cache/nginx/pids && \
+    chown -R appuser:appgroup /var/cache/nginx && \
+    chown -R appuser:appgroup /usr/share/nginx/html && \
+    chown -R appuser:appgroup /var/log/nginx && \
+    chmod +x /entrypoint.sh
+
+# Change NGINX to run as non-root user
+RUN sed -i 's/user  nginx;/user appuser;/g' /etc/nginx/nginx.conf
+
+# Override NGINX default port (80 requires root)
+RUN sed -i 's/listen       80;/listen 3000;/g' /etc/nginx/conf.d/default.conf
+
+# Change pid location to one writable by non-root user
+RUN sed -i 's|pid        /run/nginx.pid;|pid        /var/cache/nginx/pids/nginx.pid;|g' /etc/nginx/nginx.conf
+
+USER appuser
+
 EXPOSE 3000
 
-# Step 7: Define the command to run the app
-
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0"]
-
-
+ENTRYPOINT ["/entrypoint.sh"]

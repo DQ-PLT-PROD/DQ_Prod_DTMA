@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dtma-ingress
+  namespace: dtma
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod   # 🔹 Reference staging ClusterIssuer
+spec:
+  tls:
+  - hosts:
+    - dtma.qatalyst.tech   # 🔹 Replace with your domain
+    secretName: dtma-tls # 🔹 Secret will be created automatically
+  rules:
+  - host: dtma.qatalyst.tech
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dtma-service
+            port:
+              number: 80
+      

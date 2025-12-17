@@ -1,0 +1,35 @@
+# Deployment configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dtma-frontend 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      imagePullSecrets:
+      - name: registrycred
+      containers:
+      - name: frontend
+        image: u4c2j2w9.c1.gra9.container-registry.ovh.net/dtma/frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        envFrom:
+          - configMapRef:
+              name: dtma-config
+          - secretRef:
+              name: dtma-secret                                                                     
+
+
+
+
+
+      
+      
