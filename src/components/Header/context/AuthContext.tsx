@@ -114,6 +114,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Sync user with database
     try {
       console.log('🔄 Syncing user with database...');
+      console.log('🔧 Supabase config check:', {
+        url: !!import.meta.env.VITE_SUPABASE_URL,
+        key: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+        urlValue: import.meta.env.VITE_SUPABASE_URL?.substring(0, 20) + '...'
+      });
+      
       const azureUserId = account.localAccountId || account.homeAccountId;
       
       // Check if user already exists
@@ -123,10 +129,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Create new user in database
         console.log('👤 Creating new user in database...');
         dbUser = await syncUserWithDatabase(userProfile, azureUserId, account.idTokenClaims);
+        
+        if (dbUser) {
+          console.log('✅ New user created successfully:', {
+            id: dbUser.id,
+            customerId: dbUser.customer_id,
+            email: dbUser.email
+          });
+        } else {
+          console.error('❌ Failed to create user in database');
+        }
       } else {
         // Update last login
         console.log('🔄 Updating existing user last login...');
-        await updateUserLastLogin(azureUserId);
+        const updateSuccess = await updateUserLastLogin(azureUserId);
+        console.log(updateSuccess ? '✅ Last login updated' : '❌ Failed to update last login');
       }
       
       if (dbUser) {
@@ -134,7 +151,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         console.log('✅ User synced with database:', {
           customerId: dbUser.customer_id,
-          azureUserId: azureUserId
+          azureUserId: azureUserId,
+          lastLogin: dbUser.last_login
         });
         
         // Enhance user profile with database info
@@ -147,9 +165,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
         
         return enhancedProfile;
+      } else {
+        console.error('❌ No database user available after sync attempt');
       }
     } catch (error) {
       console.error('❌ Error syncing user with database:', error);
+      console.error('❌ Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
       // Continue without database sync - don't block authentication
     }
 
@@ -313,16 +337,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    console.log('🚪 Logout function called with modes:', { useMockAuth, bypassMode });
+    
     if (useMockAuth) {
+      console.log('🎭 Using mock logout...');
       mockAuthService.logout();
-      return;
-    }
-    if (bypassMode) {
-      setBypassUser(null);
+      
+      // Navigate to home page after logout
+      setTimeout(() => {
+        console.log('🏠 Redirecting to home page after logout...');
+        navigate('/', { replace: true });
+      }, 100);
       return;
     }
     
-    console.log('🚪 Logging out user...');
+    if (bypassMode) {
+      console.log('🚀 Using bypass logout...');
+      setBypassUser(null);
+      
+      // Navigate to home page after logout
+      setTimeout(() => {
+        console.log('🏠 Redirecting to home page after logout...');
+        navigate('/', { replace: true });
+      }, 100);
+      return;
+    }
+    
+    console.log('🚪 Logging out user with Azure AD...');
     instance.logoutRedirect({
       postLogoutRedirectUri: window.location.origin
     });
