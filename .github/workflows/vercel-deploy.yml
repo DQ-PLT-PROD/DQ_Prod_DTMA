@@ -9,6 +9,8 @@ on:
       - "fix/**"
       - "hotfix/**"
       - "develop-staging"
+      - "staging"
+      - "release"
   pull_request:
     branches:
       - main
