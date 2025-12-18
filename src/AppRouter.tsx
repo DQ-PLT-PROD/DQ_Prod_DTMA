@@ -37,6 +37,7 @@ import { ComingSoon } from "./pages/ComingSoon";
 import { Course } from "./types/dtma-lms";
 import LearningScreen from "./pages/LearningScreen";
 import { AuthCallback } from "./components/AuthCallback";
+import { AuthDebugPanel } from "./components/AuthDebugPanel";
 
 export function AppRouter() {
   const [bookmarkedCourses, setBookmarkedCourses] = useState<string[]>([]);
@@ -78,6 +79,13 @@ export function AppRouter() {
           />
           <Route path="/discover-abudhabi" element={<DiscoverAbuDhabi />} />
           <Route path="/learning" element={<LearningScreen />} />
+          
+          {/* Auth Debug Panel - for testing authentication and user sync */}
+          <Route path="/auth-debug" element={
+            <div className="min-h-screen bg-gray-100 py-8">
+              <AuthDebugPanel />
+            </div>
+          } />
 
           {/* Feature Flagged: Growth Areas */}
           {FEATURES.GROWTH_AREAS ? (

@@ -322,7 +322,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       </div>
 
       {/* Add keyframes for gradient animation */}
-      <style jsx>{`
+      <style>{`
         @keyframes pulse-gradient {
           0% {
             opacity: 0.4;
