@@ -102,15 +102,17 @@ const FeaturedCoursesSection: React.FC = () => {
         const enforcedComingSoon = allCourses.map((course, index) =>
           index === 0 ? { ...course, isComingSoon: false } : { ...course, isComingSoon: true }
         );
-
-        setCourses(enforcedComingSoon);
+        const limitedCourses = enforcedComingSoon.slice(0, 9); // cap to 3 slides (3 cards per slide)
+        setCourses(limitedCourses);
+        setStartIndex(0);
       } catch (error) {
         console.error("Error fetching featured courses:", error);
         setCourses(
           COMING_SOON_COURSES.map((course, index) =>
             index === 0 ? { ...course, isComingSoon: false } : course
-          ).slice(0, 6)
+          ).slice(0, 9)
         );
+        setStartIndex(0);
       } finally {
         setLoading(false);
       }
@@ -120,15 +122,19 @@ const FeaturedCoursesSection: React.FC = () => {
   }, []);
 
   const visibleCourses = courses.slice(startIndex, startIndex + 3);
-  const maxStartIndex = Math.max(0, courses.length - 3);
-  const totalSlides = maxStartIndex + 1;
+  const totalSlides = Math.min(3, Math.max(1, Math.ceil(courses.length / 3)));
+  const maxStartIndex = Math.max(0, Math.min(courses.length - 3, (totalSlides - 1) * 3));
+  const clampedStartIndex = Math.min(startIndex, maxStartIndex);
+  if (clampedStartIndex !== startIndex) {
+    setStartIndex(clampedStartIndex);
+  }
 
   const handlePrev = () => {
-    setStartIndex((prev) => (prev === 0 ? Math.max(courses.length - 3, 0) : prev - 1));
+    setStartIndex((prev) => (prev === 0 ? maxStartIndex : Math.max(prev - 1, 0)));
   };
 
   const handleNext = () => {
-    setStartIndex((prev) => (prev + 3 >= courses.length ? 0 : prev + 1));
+    setStartIndex((prev) => (prev >= maxStartIndex ? 0 : prev + 1));
   };
 
   const handleViewDetails = (id: string, action?: boolean) => {
