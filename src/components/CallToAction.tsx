@@ -1,5 +1,6 @@
-
 import React, { useEffect, useState, useRef } from "react";
+import { ArrowRight } from "lucide-react";
+import { FadeInUpOnScroll, useInView } from "./AnimationUtils";
 import {
   Users,
   ChevronRight,
@@ -9,7 +10,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FadeInUpOnScroll, useInView } from "./AnimationUtils";
+import { useAuth } from "./Header/context/AuthContext";
 
 // Animated shape component
 const FloatingShape = ({ size, color, delay, duration, className = "" }) => {
@@ -214,21 +215,9 @@ const CTACard: React.FC<CTACardProps> = ({
       {/* Card content */}
       <div className="relative z-10">
         {!isExpanded ? (
-          <>
-            <div
-              className={`${buttonColor === "blue"
-                ? "bg-blue-100"
-                : buttonColor === "green"
-                  ? "bg-emerald-100"
-                  : "bg-purple-100"
-                } p-4 rounded-full inline-block mb-6 transition-transform duration-500 ${isHovered ? "scale-110" : ""
-                }`}
-            >
-              {icon}
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
+          <div className="flex flex-col items-center text-center">
             <p className="text-gray-600 mb-6">{description}</p>
-            <div className="flex justify-center">
+            <div className="flex justify-center w-full">
               <button
                 onClick={(e) => {
                   handleRippleEffect(e);
@@ -238,17 +227,17 @@ const CTACard: React.FC<CTACardProps> = ({
                     onClick();
                   }
                 }}
-                className={`relative overflow-hidden px-6 py-3 font-medium rounded-lg shadow-md transition-all duration-300 flex items-center ${buttonColor === "blue"
-                  ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800"
+                className={`relative overflow-hidden font-medium transition-all duration-300 flex items-center ${buttonColor === "blue"
+                  ? "gap-2 px-5 py-2.5 h-11 rounded-full bg-[#1839AD] text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-white/40"
                   : buttonColor === "green"
-                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700"
-                    : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
+                    ? "px-6 py-3 rounded-lg shadow-md bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700"
+                    : "px-6 py-3 rounded-lg shadow-md bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
                   } ${isHovered ? "shadow-lg" : ""}`}
               >
-                {buttonText}
-                <ChevronRight
+                {buttonColor === "blue" ? "Get Started" : buttonText}
+                <ArrowRight
                   size={16}
-                  className={`ml-2 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""
+                  className={`ml-1 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""
                     }`}
                 />
                 <span
@@ -262,7 +251,7 @@ const CTACard: React.FC<CTACardProps> = ({
                 ></span>
               </button>
             </div>
-          </>
+          </div>
         ) : (
           <>
             <div className="flex justify-between items-center mb-4">
@@ -297,7 +286,7 @@ const CTACard: React.FC<CTACardProps> = ({
       >
         <div
           className={`absolute -inset-1 rounded-xl blur-xl ${buttonColor === "blue"
-            ? "bg-blue-600/20"
+            ? "bg-[#f8f9fb]"
             : buttonColor === "green"
               ? "bg-emerald-600/20"
               : "bg-purple-600/20"
@@ -316,12 +305,13 @@ interface ToastData {
 const CallToAction: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
   const [ref, isInView] = useInView({
     threshold: 0.2,
   });
 
   const handleSignIn = () => {
-    navigate("/coming-soon");
+    login(); // Direct Microsoft auth
   };
 
   // State for expandable cards
@@ -552,337 +542,42 @@ const CallToAction: React.FC = () => {
   }, [location.hash]);
 
   return (
-    <div
-      ref={ref}
-      className="bg-gradient-to-r from-blue-700 via-indigo-800 to-teal-700 py-20 relative overflow-hidden"
+    <section
+      id="final-cta"
+      className="relative overflow-hidden py-16 md:py-20 bg-white"
     >
-      {/* Animated floating shapes */}
-      <div className="absolute inset-0 overflow-hidden">
-        <FloatingShape
-          size={120}
-          color="rgba(255, 255, 255, 0.1)"
-          delay={0}
-          duration={15}
-          className="top-[10%] left-[5%]"
-        />
-        <FloatingShape
-          size={80}
-          color="rgba(79, 209, 197, 0.2)"
-          delay={2}
-          duration={18}
-          className="top-[30%] left-[15%]"
-        />
-        <FloatingShape
-          size={150}
-          color="rgba(99, 102, 241, 0.15)"
-          delay={1}
-          duration={20}
-          className="bottom-[20%] left-[10%]"
-        />
-        <FloatingShape
-          size={100}
-          color="rgba(255, 255, 255, 0.1)"
-          delay={3}
-          duration={12}
-          className="top-[20%] right-[15%]"
-        />
-        <FloatingShape
-          size={70}
-          color="rgba(79, 209, 197, 0.2)"
-          delay={2.5}
-          duration={16}
-          className="top-[60%] right-[5%]"
-        />
-        <FloatingShape
-          size={130}
-          color="rgba(99, 102, 241, 0.15)"
-          delay={1.5}
-          duration={22}
-          className="bottom-[10%] right-[20%]"
-        />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+      >
+        <div className="absolute -top-10 -left-24 h-40 w-40 rounded-full border-4 border-white/60" />
+        <div className="absolute -top-16 -right-24 h-48 w-48 rounded-full border-4 border-white/60" />
       </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-8">
+          <FadeInUpOnScroll className="space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold leading-tight text-[#030C2B]">
+              Ready to Grow in the AI Working Era?
+            </h2>
+          </FadeInUpOnScroll>
+        </div>
 
-      <div className="container mx-auto px-4 text-center relative z-10">
-        <FadeInUpOnScroll>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Accelerate Your Journey?
-          </h2>
-        </FadeInUpOnScroll>
-        <FadeInUpOnScroll delay={0.2}>
-          <p className="text-lg text-gray-200 mb-12 max-w-3xl mx-auto">
-            One platform. Every resource you need to grow in Abu Dhabi.
-          </p>
-        </FadeInUpOnScroll>
-
-        <div
-          id="contact"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto scroll-mt-20"
-        >
-          {/* Card 1: Register Your Enterprise */}
-          <div id="cta-register" className="scroll-mt-20">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-8 items-start">
+          {/* Card 1: Register Now */}
+          <div id="cta-register">
             <CTACard
               icon={<Users size={28} className="text-blue-600" />}
-              title="Register Your Enterprise"
-              description="Get access to tailored services, funding opportunities, and resources to accelerate your business growth."
-              buttonText="Register Now"
+              title="Register Now"
+              description="Create your account and start your learning journey."
+              buttonText="Sign Up"
               buttonColor="blue"
               onClick={handleSignIn}
-              delay={0.3}
+              delay={0.1}
             />
-          </div>
-
-          {/* Card 2: List Your Services */}
-          <div id="cta-partner" className="scroll-mt-20">
-            <CTACard
-              icon={<Briefcase size={28} className="text-emerald-600" />}
-              title="List Your Services"
-              description="Join our ecosystem of service providers and help businesses thrive while expanding your own reach and impact."
-              buttonText="Become a Partner"
-              buttonColor="green"
-              isExpanded={expandedCard === "partner"}
-              onExpand={() => handleExpandCard("partner")}
-              delay={0.5}
-              isSuccess={partnerFormSuccess}
-            >
-              <form onSubmit={handlePartnerSubmit} className="mt-2">
-                {partnerSubmitError && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-sm text-red-600">{partnerSubmitError}</p>
-                  </div>
-                )}
-                <FormInput
-                  label="Name"
-                  placeholder="Your full name"
-                  value={partnerFormData.name}
-                  onChange={(e) =>
-                    setPartnerFormData({
-                      ...partnerFormData,
-                      name: e.target.value,
-                    })
-                  }
-                  required
-                />
-                <FormInput
-                  label="Email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={partnerFormData.email}
-                  onChange={(e) =>
-                    setPartnerFormData({
-                      ...partnerFormData,
-                      email: e.target.value,
-                    })
-                  }
-                  required
-                />
-                <FormSelect
-                  label="Service Category"
-                  options={serviceCategories}
-                  value={partnerFormData.serviceCategory}
-                  onChange={(e) =>
-                    setPartnerFormData({
-                      ...partnerFormData,
-                      serviceCategory: e.target.value,
-                    })
-                  }
-                  required
-                />
-                <FormTextarea
-                  label="Message"
-                  placeholder="Tell us about your services..."
-                  value={partnerFormData.message}
-                  onChange={(e) =>
-                    setPartnerFormData({
-                      ...partnerFormData,
-                      message: e.target.value,
-                    })
-                  }
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={isSubmittingPartner}
-                  className={`w-full px-6 py-3 mt-2 font-medium rounded-lg shadow-md bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 flex items-center justify-center relative overflow-hidden ${isSubmittingPartner ? "opacity-70 cursor-not-allowed" : ""
-                    }`}
-                >
-                  {isSubmittingPartner ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      Submit Application
-                      <ChevronRight size={16} className="ml-2" />
-                    </>
-                  )}
-                </button>
-              </form>
-            </CTACard>
-          </div>
-
-          {/* Card 3: Contact Us */}
-          <div id="cta-contact" className="scroll-mt-20">
-            <CTACard
-              icon={<Phone size={28} className="text-purple-600" />}
-              title="Contact Us"
-              description="Have questions or need assistance? Our team is ready to help you navigate your business journey."
-              buttonText="Get in Touch"
-              buttonColor="purple"
-              isExpanded={expandedCard === "contact"}
-              onExpand={() => handleExpandCard("contact")}
-              delay={0.7}
-              isSuccess={contactFormSuccess}
-            >
-              <form onSubmit={handleContactSubmit} className="mt-2">
-                {contactSubmitError && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-sm text-red-600">{contactSubmitError}</p>
-                  </div>
-                )}
-                <FormInput
-                  label="Name"
-                  placeholder="Your full name"
-                  value={contactFormData.name}
-                  onChange={(e) =>
-                    setContactFormData({
-                      ...contactFormData,
-                      name: e.target.value,
-                    })
-                  }
-                  required
-                />
-                <FormInput
-                  label="Email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={contactFormData.email}
-                  onChange={(e) =>
-                    setContactFormData({
-                      ...contactFormData,
-                      email: e.target.value,
-                    })
-                  }
-                  required
-                />
-                <FormTextarea
-                  label="Message"
-                  placeholder="How can we help you?"
-                  value={contactFormData.message}
-                  onChange={(e) =>
-                    setContactFormData({
-                      ...contactFormData,
-                      message: e.target.value,
-                    })
-                  }
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={isSubmittingContact}
-                  className={`w-full px-6 py-3 mt-2 font-medium rounded-lg shadow-md bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 flex items-center justify-center ${isSubmittingContact ? "opacity-70 cursor-not-allowed" : ""
-                    }`}
-                >
-                  {isSubmittingContact ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      Send Message
-                      <ChevronRight size={16} className="ml-2" />
-                    </>
-                  )}
-                </button>
-              </form>
-            </CTACard>
           </div>
         </div>
       </div>
-      {/* Toast notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-
-      {/* Add keyframes for animations */}
-      <style jsx>{`
-        @keyframes float {
-          0% {
-            transform: translateY(0) translateX(0) rotate(0);
-            opacity: 0.3;
-          }
-          33% {
-            transform: translateY(-30px) translateX(20px) rotate(5deg);
-            opacity: 0.6;
-          }
-          66% {
-            transform: translateY(20px) translateX(-15px) rotate(-3deg);
-            opacity: 0.4;
-          }
-          100% {
-            transform: translateY(0) translateX(0) rotate(0);
-            opacity: 0.3;
-          }
-        }
-        .animate-float {
-          animation: float ease-in-out infinite;
-        }
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-slide-up {
-          animation: slide-up 0.3s ease-out forwards;
-        }
-      `}</style>
-    </div>
+    </section>
   );
 };
 

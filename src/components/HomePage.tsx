@@ -3,16 +3,17 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import HeroSection from './HeroSection';
 import ProofAndTrust from './ProofAndTrust';
-import EnterpriseStages from './EnterpriseStages';
+import D6CategoriesSection from './D6CategoriesSection';
+
 import Home from './Home';
-import KnowledgeHub from './KnowledgeHub';
 import CallToAction from './CallToAction';
 import KhalifaFundAttribution from './KhalifaFundAttribution';
+import { BRAND_GRADIENT, BRAND_BACKDROP_BLUR, BRAND_PRIMARY } from '../constants/branding';
 
 const HomePage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Simulate page loading
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -23,14 +24,27 @@ const HomePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-r from-blue-900 to-indigo-900 flex items-center justify-center z-50">
+      <div
+        className="fixed inset-0 flex items-center justify-center z-50"
+        style={{
+          background: BRAND_GRADIENT,
+          backdropFilter: BRAND_BACKDROP_BLUR,
+          WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
+        }}
+      >
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div
+            className="w-16 h-16 border-4 rounded-full animate-spin mx-auto mb-4"
+            style={{
+              borderColor: BRAND_PRIMARY,
+              borderTopColor: "transparent",
+            }}
+          ></div>
           <h2 className="text-white text-xl font-bold">
-            Loading Enterprise Journey Platform
+            Loading Digital Worker Academy
           </h2>
           <p className="text-blue-200 mt-2">
-            Your gateway to business growth in Abu Dhabi
+            Your gateway to AI-era leadership and skills
           </p>
         </div>
       </div>
@@ -39,16 +53,16 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header 
-        toggleSidebar={() => setSidebarOpen(!sidebarOpen)} 
-        sidebarOpen={sidebarOpen} 
+      <Header
+        toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        sidebarOpen={sidebarOpen}
       />
       <main className="flex-grow">
         <HeroSection />
         <ProofAndTrust />
-        <EnterpriseStages />
+        <D6CategoriesSection />
+
         <Home />
-        <KnowledgeHub graphqlEndpoint={null} />
         <CallToAction />
       </main>
       <Footer isLoggedIn={false} />

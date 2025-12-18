@@ -1,3 +1,4 @@
+/* eslint-env node */
 import { buildBlobPath, getUploadSas } from '../../src/server/azure/blobSign.js'
 
 function parseBody(req) {

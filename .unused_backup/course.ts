@@ -30,6 +30,9 @@ export interface CourseType {
   price?: string;
   location?: string;
   tags?: string[];
+  lessonCount?: number;
+  levelTag?: string;
+  audienceLevel?: string;
 }
 /**
  * Filter options for the course marketplace
@@ -93,3 +96,17 @@ export interface FilterSidebarProps {
   businessStages: string[];
   providers: ProviderType[];
 }
+<<<<<<< HEAD:src/types/course.ts
+=======
+
+/**
+ * Represents a lesson in a course
+ */
+export interface Lesson {
+  id: number;
+  title: string;
+  duration: string;
+  completed: boolean;
+  description?: string;
+}
+>>>>>>> develop:.unused_backup/course.ts

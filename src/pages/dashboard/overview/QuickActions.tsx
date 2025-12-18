@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  FileUpIcon,
   FileTextIcon,
   ClipboardListIcon,
   HelpCircleIcon,
@@ -26,15 +25,7 @@ export const QuickActions: React.FC = () => {
       to: "/",
       customHandler: true,
     },
-    {
-      id: "upload-documents",
-      label: "Upload Document",
-      icon: <FileUpIcon className="h-5 w-5" />,
-      onClick: () => console.log("Upload Documents clicked"),
-      primary: false,
-      to: "/dashboard/documents",
-      customHandler: false,
-    },
+
     {
       id: "view-requests",
       label: "View Requests",
@@ -63,25 +54,22 @@ export const QuickActions: React.FC = () => {
             <button
               key={action.id}
               onClick={action.onClick}
-              className={`flex flex-col items-center justify-center p-4 rounded-lg transition-colors ${
-                action.primary
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-white border border-gray-200 hover:border-blue-300 hover:bg-gray-50"
-              }`}
+              className={`flex flex-col items-center justify-center p-4 rounded-lg transition-colors ${action.primary
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-white border border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                }`}
             >
               <div
-                className={`p-2 rounded-full mb-3 ${
-                  action.primary
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-100 text-gray-600"
-                }`}
+                className={`p-2 rounded-full mb-3 ${action.primary
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-600"
+                  }`}
               >
                 {action.icon}
               </div>
               <span
-                className={`text-sm font-medium ${
-                  action.primary ? "text-white" : "text-gray-700"
-                }`}
+                className={`text-sm font-medium ${action.primary ? "text-white" : "text-gray-700"
+                  }`}
               >
                 {action.label}
               </span>
@@ -94,25 +82,22 @@ export const QuickActions: React.FC = () => {
             to={action.to}
             key={action.id}
             onClick={action.onClick}
-            className={`flex flex-col items-center justify-center p-4 rounded-lg transition-colors ${
-              action.primary
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-white border border-gray-200 hover:border-blue-300 hover:bg-gray-50"
-            }`}
+            className={`flex flex-col items-center justify-center p-4 rounded-lg transition-colors ${action.primary
+              ? "bg-blue-600 text-white hover:bg-blue-700"
+              : "bg-white border border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+              }`}
           >
             <div
-              className={`p-2 rounded-full mb-3 ${
-                action.primary
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100 text-gray-600"
-              }`}
+              className={`p-2 rounded-full mb-3 ${action.primary
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-600"
+                }`}
             >
               {action.icon}
             </div>
             <span
-              className={`text-sm font-medium ${
-                action.primary ? "text-white" : "text-gray-700"
-              }`}
+              className={`text-sm font-medium ${action.primary ? "text-white" : "text-gray-700"
+                }`}
             >
               {action.label}
             </span>

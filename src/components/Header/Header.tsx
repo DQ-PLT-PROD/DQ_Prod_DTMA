@@ -1,36 +1,43 @@
 import React, { useEffect, useState } from "react";
-import { ExploreDropdown } from "./components/ExploreDropdown";
 import { MobileDrawer } from "./components/MobileDrawer";
 import { ProfileDropdown } from "./ProfileDropdown";
-import { NotificationsMenu } from "./notifications/NotificationsMenu";
-import { NotificationCenter } from "./notifications/NotificationCenter";
-import { mockNotifications } from "./utils/mockNotifications";
+// MVP: Notifications commented out for lean release
+// import { NotificationsMenu } from "./notifications/NotificationsMenu";
+// import { NotificationCenter } from "./notifications/NotificationCenter";
+// import { mockNotifications } from "./utils/mockNotifications";
 import { useAuth } from "./context/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu } from "lucide-react";
-import EnquiryModal from "../EnquiryModal";
+import { UserIcon, ArrowRight } from "lucide-react";
+import { ExploreDropdown } from "./components/ExploreDropdown";
+import { BRAND_BACKDROP_BLUR } from "../../constants/branding";
+import { FEATURES } from "../../config/features";
+
+const HEADER_GRADIENT =
+  "linear-gradient(90deg, #0a32a0 0%, #2a4090 40%, #4e5a8b 70%, #8b90a3 100%)";
 
 interface HeaderProps {
   toggleSidebar?: () => void;
   sidebarOpen?: boolean;
   "data-id"?: string;
+  transparent?: boolean;
 }
 
 export function Header({
   toggleSidebar,
   sidebarOpen,
   "data-id": dataId,
+  transparent = false,
 }: HeaderProps) {
-  const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
-  const [showNotificationCenter, setShowNotificationCenter] = useState(false);
+  // MVP: Notification states commented out
+  // const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
+  // const [showNotificationCenter, setShowNotificationCenter] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
   const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Count unread notifications
-  const unreadCount = mockNotifications.filter((notif) => !notif.read).length;
+  // MVP: Notification count commented out
+  // const unreadCount = mockNotifications.filter((notif) => !notif.read).length;
 
   // Sticky header behavior
   useEffect(() => {
@@ -42,192 +49,155 @@ export function Header({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Toggle notifications menu
-  const toggleNotificationsMenu = () => {
-    setShowNotificationsMenu(!showNotificationsMenu);
-    if (showNotificationCenter) setShowNotificationCenter(false);
-  };
+  // MVP: Notification functions commented out
+  // const toggleNotificationsMenu = () => {
+  //   setShowNotificationsMenu(!showNotificationsMenu);
+  //   if (showNotificationCenter) setShowNotificationCenter(false);
+  // };
 
-  // Open notification center
-  const openNotificationCenter = () => {
-    setShowNotificationCenter(true);
-    setShowNotificationsMenu(false);
-  };
+  // const openNotificationCenter = () => {
+  //   setShowNotificationCenter(true);
+  //   setShowNotificationsMenu(false);
+  // };
 
-  // Close notification center
-  const closeNotificationCenter = () => {
-    setShowNotificationCenter(false);
-  };
+  // const closeNotificationCenter = () => {
+  //   setShowNotificationCenter(false);
+  // };
 
-  // Handle sign in
+  // Handle sign in - direct Microsoft auth
   const handleSignIn = () => {
+    console.log('🖱️ Sign In button clicked!');
+    console.log('🔍 Current auth state before login:', { user: !!user, userEmail: user?.email });
+
+    // Prevent multiple clicks
+    if (user) {
+      console.log('⚠️ User already logged in, ignoring click');
+      return;
+    }
+
+    console.log('🎓 Will redirect to learning page after successful authentication');
     login();
   };
 
-  const handleSignUp = () => {
-    console.log("Sign up clicked");
+  const handleBrowseCourses = () => {
+    navigate("/courses");
   };
 
-  // Toggle enquiry modal
-  const toggleEnquiryModal = () => {
-    setIsEnquiryModalOpen(!isEnquiryModalOpen);
-  };
+  // MVP: Notification reset commented out
+  // useEffect(() => {
+  //   if (!user) {
+  //     setShowNotificationsMenu(false);
+  //     setShowNotificationCenter(false);
+  //   }
+  // }, [user]);
 
-  // Close enquiry modal
-  const closeEnquiryModal = () => {
-    setIsEnquiryModalOpen(false);
-  };
-
-  // Reset notification states when user logs out
-  useEffect(() => {
-    if (!user) {
-      setShowNotificationsMenu(false);
-      setShowNotificationCenter(false);
-    }
-  }, [user]);
-
-  // Smooth scroll to partner CTA
-  const scrollToPartner = () => {
+  // Smooth scroll to D6 categories section
+  const scrollToCategories = () => {
+    const targetHash = "#d6-categories";
     if (location.pathname !== "/") {
-      navigate({ pathname: "/", hash: "#partner" });
+      navigate({ pathname: "/", hash: targetHash });
       return;
     }
-    if (window.location.hash !== "#partner") {
-      window.location.hash = "#partner";
+    if (window.location.hash !== targetHash) {
+      window.location.hash = targetHash;
     }
-    const el =
-      document.getElementById("cta-partner") ||
-      document.getElementById("contact");
+    const el = document.getElementById("d6-categories");
     if (el && typeof el.scrollIntoView === "function") {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
+  // Smooth scroll to final CTA block
+  const scrollToFinalCTA = () => {
+    const targetHash = "#final-cta";
+    if (location.pathname !== "/") {
+      navigate({ pathname: "/", hash: targetHash });
+      return;
+    }
+    if (window.location.hash !== targetHash) {
+      window.location.hash = targetHash;
+    }
+    const el = document.getElementById("final-cta");
+    if (el && typeof el.scrollIntoView === "function") {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const isTransparent = transparent && !isSticky;
+
   return (
     <>
       <header
-        className={`flex items-center w-full transition-all duration-300 ${isSticky
-            ? "fixed top-0 left-0 right-0 z-40 shadow-lg backdrop-blur-sm bg-gradient-to-r from-teal-500/95 via-blue-500/95 to-purple-600/95"
-            : "relative bg-gradient-to-r from-teal-500 via-blue-500 to-purple-600"
+        className={`w-full transition-all duration-300 ${isSticky
+          ? "fixed top-0 left-0 right-0 z-50 shadow-lg"
+          : isTransparent
+            ? "absolute top-0 left-0 right-0 z-50"
+            : "relative z-50"
           }`}
         data-id={dataId}
+        style={{
+          background: isTransparent ? "transparent" : HEADER_GRADIENT,
+          backdropFilter: isTransparent ? "none" : BRAND_BACKDROP_BLUR,
+          WebkitBackdropFilter: isTransparent ? "none" : BRAND_BACKDROP_BLUR,
+        }}
       >
-        {/* Logo Section */}
-        <Link
-          to="/"
-          className={`bg-gradient-to-r from-teal-600 to-teal-500 text-white py-2 px-4 flex items-center transition-all duration-300 ${isSticky ? "h-12" : "h-16"
-            }`}
-        >
-          <img
-            src="/mzn_logo.svg"
-            alt="MZN Logo"
-            className={`transition-all duration-300 ${isSticky ? "h-8" : "h-10"
-              }`}
-          />
-        </Link>
-        {/* Main Navigation */}
         <div
-          className={`flex-1 flex justify-between items-center bg-gradient-to-r from-teal-500 via-blue-500 to-purple-600 text-white px-4 transition-all duration-300 ${isSticky ? "h-12" : "h-16"
+          className={`flex w-full items-center justify-between text-white transition-all duration-300 ${isSticky ? "px-5 py-2.5" : "px-8 py-4"
             }`}
         >
-          {/* Left side: tablet sidebar hamburger + nav */}
-          <div className="flex items-center">
-            {/* Tablet-only burger to open dashboard sidebar */}
-            {/* <button
-              type="button"
-              onClick={toggleSidebar}
-              className="hidden md:flex xl:hidden items-center justify-center p-2 mr-2 rounded-md text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
-              aria-label="Open sidebar"
-            >
-              <Menu size={20} />
-            </button> */}
-            {/* Left Navigation - Desktop and Tablet */}
-            <div className="hidden md:flex items-center space-x-8">
-              <ExploreDropdown isCompact={isSticky} />
-              <Link
-                to={"/discover-abudhabi"}
-                className={`hover:text-gray-200 transition-colors duration-200 cursor-pointer ${isSticky ? "text-sm" : ""
-                  }`}
-              >
-                Discover AbuDhabi
-              </Link>
-            </div>
-          </div>
-          {/* Right Side - Conditional based on auth state and screen size */}
-          <div className="flex items-center ml-auto relative">
-            {user ? (
-              <ProfileDropdown
-                onViewNotifications={toggleNotificationsMenu}
-                unreadNotifications={unreadCount}
+          <div className="flex items-center gap-6">
+            {/* Logo */}
+            <Link to="/" className="flex items-center transition-all duration-300">
+              <img
+                src="/DTMA%20LOGO%20WHITE.svg"
+                alt="DTMA Logo"
+                className="object-contain w-[130px] h-[36px]"
               />
+            </Link>
+
+            {/* Primary navigation */}
+            <nav className="hidden md:flex items-center gap-8">
+              {FEATURES.COURSE_MARKETPLACE && <ExploreDropdown />}
+            </nav>
+          </div>
+
+          {/* Right side actions */}
+          <div className="flex items-center gap-4 relative">
+            {user ? (
+              <ProfileDropdown />
             ) : (
-              <>
-                {/* Desktop CTAs (≥1024px) */}
-                <div className="hidden lg:flex items-center space-x-3">
-                  <button
-                    className={`px-4 py-2 text-white border border-white/30 rounded-md hover:bg-white/10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/20 ${isSticky ? "text-sm px-3 py-1.5" : ""
-                      }`}
-                    onClick={scrollToPartner}
-                  >
-                    Become a Partner
-                  </button>
-                  <button
-                    className={`px-4 py-2 bg-white text-teal-700 rounded-md hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/20 font-medium ${isSticky ? "text-sm px-3 py-1.5" : ""
-                      }`}
-                    onClick={toggleEnquiryModal}
-                  >
-                    Make an Enquiry
-                  </button>
-                  <button
-                    className={`px-4 py-2 text-white border border-white/50 rounded-md hover:bg-white hover:text-teal-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/20 ${isSticky ? "text-sm px-3 py-1.5" : ""
-                      }`}
-                    onClick={handleSignIn}
-                  >
-                    Sign In
-                  </button>
-                </div>
-                {/* Tablet Enquiry Button (768px - 1023px) */}
-                <div className="hidden md:flex lg:hidden items-center">
-                  <button
-                    className={`px-3 py-2 bg-white text-teal-700 rounded-md hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/20 font-medium ${isSticky ? "text-sm px-2 py-1.5" : "text-sm"
-                      }`}
-                    onClick={toggleEnquiryModal}
-                  >
-                    Enquiry
-                  </button>
-                </div>
-              </>
+              <div className="hidden lg:flex items-center gap-2 text-sm font-medium">
+                <button
+                  className="flex items-center gap-2 rounded-full px-5 py-2.5 h-11 bg-white text-[#1839AD] font-medium hover:bg-white/90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/40"
+                  onClick={handleSignIn}
+                >
+                  <UserIcon size={18} className="text-[#1839AD]" />
+                  <span>Sign In</span>
+                </button>
+              </div>
             )}
-            {/* Mobile and Tablet Drawer - Show for screens <1024px */}
+
             <MobileDrawer
-              isCompact={isSticky}
               onSignIn={handleSignIn}
-              onSignUp={handleSignUp}
               isSignedIn={!!user}
-              onEnquiry={toggleEnquiryModal}
-              onPartner={scrollToPartner}
+              onJoinAcademy={scrollToFinalCTA}
+              onBrowseCourses={handleBrowseCourses}
+              onBrowseCategories={scrollToCategories}
             />
           </div>
         </div>
       </header>
       {/* Spacer for sticky header */}
-      {isSticky && <div className="h-12"></div>}
+      {isSticky && <div className="h-16"></div>}
 
-      {/* Enquiry Modal */}
-      <EnquiryModal
-        isOpen={isEnquiryModalOpen}
-        onClose={closeEnquiryModal}
-        data-id="enquiry-modal"
-      />
-
-      {/* Notifications Menu */}
+      {/* MVP: Notifications components commented out for lean release */}
+      {/* 
       {showNotificationsMenu && user && (
         <NotificationsMenu
           onViewAll={openNotificationCenter}
           onClose={() => setShowNotificationsMenu(false)}
         />
       )}
-      {/* Notification Center Modal */}
       {showNotificationCenter && user && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
           <div
@@ -239,6 +209,7 @@ export function Header({
           </div>
         </div>
       )}
+      */}
     </>
   );
 }

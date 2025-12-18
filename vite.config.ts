@@ -11,15 +11,15 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       port: 3000,
-      strictPort: true,
+      strictPort: false,
       host: "localhost",
-    proxy: {
-      "/api": {
-        target: "http://localhost:3001",
-        changeOrigin: true,
-        secure: false,
-      },
-    }
+      proxy: {
+        "/api": {
+          target: "http://localhost:3001",
+          changeOrigin: true,
+          secure: false,
+        },
+      }
     },
     preview: {
       port: 3000,
@@ -28,9 +28,9 @@ export default defineConfig(({ mode }) => {
     },
     // Load environment variables from .env file
     envDir: ".",
-    envPrefix: ["VITE_", "STORAGE_", "CONTAINER_", "AZURE_", "SAS_"],
-    build:{
-      chunkSizeWarningLimit:3000,
+    envPrefix: ["VITE_"],
+    build: {
+      chunkSizeWarningLimit: 3000,
     }
   };
 });

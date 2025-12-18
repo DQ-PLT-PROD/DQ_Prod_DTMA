@@ -8,16 +8,14 @@ import {
   Home,
   Users,
   Settings,
-  BarChart3,
   User,
-  FolderOpen,
-  Send,
   HelpCircle,
   ExternalLink,
   Plus,
   Check,
   Menu,
   MessageCircleIcon,
+  BookOpen,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -40,7 +38,6 @@ interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
   activeSection?: string;
-  onSectionChange?: (sectionId: string) => void;
   onboardingComplete?: boolean;
   companyName?: string;
   companies?: Company[];
@@ -53,7 +50,6 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({
   isOpen = true,
   onClose,
-  onSectionChange,
   onboardingComplete = true,
   companies = [
     {
@@ -178,6 +174,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       });
     }
 
+    items.push({
+      id: "learning",
+      label: "Learning Page",
+      icon: <BookOpen size={20} />,
+      href: "/learning",
+    });
+
     items.push(
       {
         id: "essentials",
@@ -190,39 +193,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         icon: <User size={20} />,
         href: "/dashboard/profile",
       },
-      {
-        id: "documents",
-        label: "Documents",
-        icon: <FolderOpen size={20} />,
-        href: "/dashboard/documents",
-      },
-      {
-        id: "transactions",
-        label: "TRANSACTIONS",
-        category: "category",
-      } as MenuItem,
-      {
-        id: "requests",
-        label: "Requests",
-        icon: <Send size={20} />,
-        href: "/dashboard/requests",
-      },
-      {
-        id: "reporting-obligations",
-        label: "Reporting Obligations",
-        icon: <BarChart3 size={20} />,
-        href: "/dashboard/reporting-obligations",
-      },
-      // {
-      //   id: "forms",
-      //   label: "Forms",
-      //   icon: <FolderOpen size={20} />,
-      // } as MenuItem,
+
       {
         id: "settings-support",
         label: "Settings & Support",
         category: "category",
       } as MenuItem,
+
       {
         id: "settings",
         label: "Settings",
@@ -531,7 +508,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }
 
           return (
-            <div key={item.id} className={baseClasses}>
+            <div
+              key={item.id}
+              className={baseClasses}
+              onMouseEnter={() => isDisabled && setTooltipItem(item.id)}
+              onMouseLeave={() => setTooltipItem(null)}
+            >
               {content}
               {tooltipItem === item.id && (
                 <div className="absolute left-full ml-2 bg-gray-800 text-white text-xs py-2 px-3 rounded-md w-48 z-50">

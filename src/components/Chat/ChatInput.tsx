@@ -405,7 +405,7 @@ export function ChatInput({
                     className="hidden"
                     onChange={handleFileChange}
                     disabled={isDisabled || isRecording || recordingComplete}
-                    accept={ALLOWED_FILE_TYPES.join(',')}
+                    accept={ALLOWED_FILE_TYPES.join()}
                 />
                 <div className="relative flex-shrink-0">
                     <button
