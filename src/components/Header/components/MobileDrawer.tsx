@@ -65,7 +65,7 @@ export function MobileDrawer({
       if (onBrowseCourses) {
         onBrowseCourses();
       } else {
-        navigate("/marketplace/courses");
+        navigate("/courses");
       }
     }
     setIsDrawerOpen(false);

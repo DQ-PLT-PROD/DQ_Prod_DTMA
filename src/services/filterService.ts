@@ -5,8 +5,14 @@ export interface FilterOption {
     id: string;
     slug: string;
     name: string;
+    shortName?: string;
     description?: string;
     displayOrder?: number;
+    parentSlug?: string | null;
+}
+
+export interface NestedFilterOption extends FilterOption {
+    children?: NestedFilterOption[];
 }
 
 // Fallback data for when Supabase is not available
@@ -46,10 +52,53 @@ const FALLBACK_DIFFICULTY_LEVELS: FilterOption[] = [
 const mapRowToFilterOption = (row: any): FilterOption => ({
     id: row.id,
     slug: row.slug,
-    name: row.name,
+    name: row.short_name || row.name,
+    shortName: row.short_name || undefined,
     description: row.description || undefined,
     displayOrder: row.display_order || 0,
+    parentSlug: row.parent_slug ?? null,
 });
+
+const buildNestedOptions = (options: FilterOption[]): NestedFilterOption[] => {
+    const slugSet = new Set(options.map((o) => o.slug));
+    const byParent = new Map<string | null, FilterOption[]>();
+
+    for (const option of options) {
+        const rawParent = option.parentSlug ?? null;
+        const parent = rawParent && slugSet.has(rawParent) ? rawParent : null;
+        const siblings = byParent.get(parent) ?? [];
+        siblings.push(option);
+        byParent.set(parent, siblings);
+    }
+
+    const sortOptions = (a: FilterOption, b: FilterOption) => {
+        const orderDiff = (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
+        if (orderDiff !== 0) return orderDiff;
+        return a.name.localeCompare(b.name);
+    };
+
+    const build = (
+        parentSlug: string | null,
+        ancestors: Set<string>
+    ): NestedFilterOption[] => {
+        const children = (byParent.get(parentSlug) ?? []).sort(sortOptions);
+        return children.map((child) => {
+            if (ancestors.has(child.slug)) {
+                return { ...child, children: undefined };
+            }
+
+            const nextAncestors = new Set(ancestors);
+            nextAncestors.add(child.slug);
+            const nestedChildren = build(child.slug, nextAncestors);
+            return {
+                ...child,
+                children: nestedChildren.length ? nestedChildren : undefined,
+            };
+        });
+    };
+
+    return build(null, new Set());
+};
 
 /**
  * Fetch course categories from database
@@ -111,6 +160,11 @@ export const fetchIndustries = async (): Promise<FilterOption[]> => {
         console.log("🏭 Industries: Using FALLBACK data (exception)");
         return FALLBACK_INDUSTRIES;
     }
+};
+
+export const fetchIndustryTree = async (): Promise<NestedFilterOption[]> => {
+    const industries = await fetchIndustries();
+    return buildNestedOptions(industries);
 };
 
 /**

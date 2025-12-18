@@ -1,68 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { ArrowRight, ArrowLeft, Lock } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { FadeInUpOnScroll, StaggeredFadeIn } from "./AnimationUtils";
 import { CourseTile } from "./CourseTile";
 import { fetchCourses } from "../services/courseService";
 
-// Placeholder for coming soon courses
-const COMING_SOON_COURSES = [
-  {
-    id: "coming-soon-1",
-    title: "Connecting Economy 4.0 and Digital Cognitive Organizations",
-    category: "ECONOMY 4.0",
-    levelTag: "Intermediate",
-    audienceLevel: "DIGITAL LEADERS",
-    duration: "Coming Soon",
-    lessonCount: 4,
-    description: "Link Economy 4.0 trends to the design of Digital Cognitive Organizations.",
-    isComingSoon: true,
-  },
-  {
-    id: "coming-soon-2",
-    title: "Designing Perfect Life Transactions in Economy 4.0",
-    category: "ECONOMY 4.0",
-    levelTag: "Intermediate",
-    audienceLevel: "DIGITAL LEADERS",
-    duration: "Coming Soon",
-    lessonCount: 4,
-    description: "Learn to design Perfect Life Transactions that create value for customers and citizens.",
-    isComingSoon: true,
-  },
-  {
-    id: "coming-soon-3",
-    title: "Using AI for Advantage in Economy 4.0",
-    category: "ECONOMY 4.0",
-    levelTag: "Advanced",
-    audienceLevel: "DIGITAL LEADERS",
-    duration: "Coming Soon",
-    lessonCount: 4,
-    description: "Go beyond AI hype and focus on competitive advantage.",
-    isComingSoon: true,
-  },
-  {
-    id: "coming-soon-4",
-    title: "Protecting Trust and Security in Economy 4.0",
-    category: "ECONOMY 4.0",
-    levelTag: "Advanced",
-    audienceLevel: "DIGITAL LEADERS",
-    duration: "Coming Soon",
-    lessonCount: 4,
-    description: "Balance cybersecurity and innovation in a hyper-connected economy.",
-    isComingSoon: true,
-  },
-  {
-    id: "coming-soon-5",
-    title: "Applying Strategic AI for Competitive Advantage",
-    category: "ECONOMY 4.0",
-    levelTag: "Advanced",
-    audienceLevel: "DIGITAL LEADERS",
-    duration: "Coming Soon",
-    lessonCount: 4,
-    description: "Treat AI as a strategic capability, not a one-off project.",
-    isComingSoon: true,
-  },
-];
 
 const FeaturedCoursesSection: React.FC = () => {
   const [startIndex, setStartIndex] = useState(0);
@@ -71,7 +13,7 @@ const FeaturedCoursesSection: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Fetch courses from database
+  // Fetch courses from database (includes both active and coming soon courses)
   useEffect(() => {
     const loadCourses = async () => {
       try {
@@ -85,26 +27,18 @@ const FeaturedCoursesSection: React.FC = () => {
           category: course.category?.toUpperCase() || "ECONOMY 4.0",
           levelTag: course.levelTag || "Beginner",
           audienceLevel: course.audienceLevel?.toUpperCase() || "DIGITAL LEADERS",
-          duration: course.duration || "55 mins",
+          duration: course.isComingSoon ? "Coming Soon" : (course.duration || "55 mins"),
           lessonCount: course.lessonCount || 4,
-          thumbnailUrl: course.heroImageUrl || course.thumbnailUrl || "/Economy%204.0%20thumnail.png",
-          videoUrl: course.introVideoUrl || "/videos/C2-INTRO.mp4",
+          thumbnailUrl: course.heroImageUrl || course.thumbnailUrl,
+          videoUrl: course.isComingSoon ? undefined : (course.introVideoUrl || "/videos/C2-INTRO.mp4"),
           description: course.description || "",
-          isComingSoon: false,
+          isComingSoon: course.isComingSoon || false,
         }));
 
-        // Combine real courses with coming soon placeholders to always show 6
-        const neededPlaceholders = Math.max(0, 6 - mappedCourses.length);
-        const allCourses = [
-          ...mappedCourses,
-          ...COMING_SOON_COURSES.slice(0, neededPlaceholders),
-        ];
-
-        setCourses(allCourses);
+        setCourses(mappedCourses);
       } catch (error) {
         console.error("Error fetching featured courses:", error);
-        // Fallback to coming soon placeholders if fetch fails
-        setCourses(COMING_SOON_COURSES.slice(0, 6));
+        setCourses([]);
       } finally {
         setLoading(false);
       }
@@ -171,63 +105,12 @@ const FeaturedCoursesSection: React.FC = () => {
               {visibleCourses.map((course) => {
                 const isHovered = hoveredId === course.id;
 
-                // Coming Soon Card
-                if (course.isComingSoon) {
-                  return (
-                    <div
-                      key={course.id}
-                      className="relative flex h-full flex-col rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-6 shadow-sm"
-                    >
-                      {/* Coming Soon Badge */}
-                      <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">
-                        <Lock size={12} />
-                        Coming Soon
-                      </div>
-
-                      {/* Placeholder Thumbnail */}
-                      <div className="aspect-video w-full rounded-xl bg-gray-200 mb-4 flex items-center justify-center">
-                        <div className="text-gray-400 text-center">
-                          <Lock size={32} className="mx-auto mb-2 opacity-50" />
-                          <span className="text-sm">Course Preview</span>
-                        </div>
-                      </div>
-
-                      {/* Category & Level */}
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600 opacity-60">
-                          {course.category}
-                        </span>
-                        <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                          {course.levelTag}
-                        </span>
-                      </div>
-
-                      {/* Title */}
-                      <h3 className="text-lg font-bold text-gray-500 leading-tight line-clamp-2 mb-2">
-                        {course.title}
-                      </h3>
-
-                      {/* Description */}
-                      <p className="text-sm text-gray-400 leading-relaxed line-clamp-2 mb-4">
-                        {course.description}
-                      </p>
-
-                      {/* Footer */}
-                      <div className="mt-auto pt-3 border-t border-gray-200 flex items-center justify-between text-gray-400 text-sm">
-                        <span>{course.lessonCount} lessons</span>
-                        <span className="font-medium text-amber-600">Coming Soon</span>
-                      </div>
-                    </div>
-                  );
-                }
-
-                // Active Course Card
                 return (
                   <div
                     key={course.id}
-                    onMouseEnter={() => setHoveredId(course.id)}
+                    onMouseEnter={() => !course.isComingSoon && setHoveredId(course.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    className={`transition duration-300 ease-out ${isHovered ? "scale-105 z-10" : "scale-100"
+                    className={`transition duration-300 ease-out ${!course.isComingSoon && isHovered ? "scale-105 z-10" : "scale-100"
                       }`}
                   >
                     <CourseTile
@@ -240,9 +123,9 @@ const FeaturedCoursesSection: React.FC = () => {
                       lessonCount={course.lessonCount}
                       thumbnailUrl={course.thumbnailUrl}
                       videoUrl={course.videoUrl}
-                      providerName="DTMA"
-                      providerLogoUrl="/dtma_logo.png"
-                      onCardClick={() => handleViewDetails(course.id)}
+
+                      variant={course.isComingSoon ? "coming-soon" : "course"}
+                      onCardClick={course.isComingSoon ? undefined : () => handleViewDetails(course.id)}
                       isHovered={isHovered}
                     />
                   </div>

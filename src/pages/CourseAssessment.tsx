@@ -27,128 +27,6 @@ type UserAnswer = {
   isCorrect: boolean;
 };
 
-const fallbackQuizQuestions: QuizQuestion[] = [
-  {
-    id: "1",
-    question: "What is the primary focus of Economy 4.0 in the context of Perfect Life Transactions?",
-    options: [
-      "Traditional business processes",
-      "Digital transformation and automation",
-      "Manual task completion",
-      "Reducing technology usage"
-    ],
-    correctAnswer: 1,
-    explanation: "Economy 4.0 focuses on digital transformation and automation to create seamless, intelligent transactions."
-  },
-  {
-    id: "2",
-    question: "According to the course, what is the key difference between viewing work as a transaction versus a task?",
-    options: [
-      "Tasks are more important than transactions",
-      "Transactions focus on end-to-end value creation",
-      "Tasks require more automation",
-      "There is no difference"
-    ],
-    correctAnswer: 1,
-    explanation: "Transactions focus on end-to-end value creation and outcomes, while tasks are individual activities."
-  },
-  {
-    id: "3",
-    question: "How many PLT (Perfect Life Transaction) Pillars are mentioned in the course?",
-    options: [
-      "3 pillars",
-      "4 pillars", 
-      "5 pillars",
-      "6 pillars"
-    ],
-    correctAnswer: 2,
-    explanation: "The course covers 5 PLT Pillars that serve as a design and build checklist."
-  },
-  {
-    id: "4",
-    question: "What does the Growth Hack Lens help you understand in transaction lifecycle?",
-    options: [
-      "How to reduce costs",
-      "How to prioritize and scale winning moves",
-      "How to eliminate automation",
-      "How to increase manual processes"
-    ],
-    correctAnswer: 1,
-    explanation: "The Growth Hack Lens helps identify and scale the most effective strategies in your transaction lifecycle."
-  },
-  {
-    id: "5",
-    question: "In designing PLTs, what are the three key areas mentioned for practice?",
-    options: [
-      "UX, Flows & Handoffs",
-      "Cost, Time & Quality",
-      "People, Process & Technology",
-      "Design, Build & Test"
-    ],
-    correctAnswer: 0,
-    explanation: "The course emphasizes UX (User Experience), Flows, and Handoffs as critical areas for PLT design."
-  },
-  {
-    id: "6",
-    question: "What does DBP stand for in the context of building PLTs on platforms?",
-    options: [
-      "Digital Business Process",
-      "Data Business Platform",
-      "Digital Business Platform",
-      "Dynamic Business Process"
-    ],
-    correctAnswer: 2,
-    explanation: "DBP stands for Digital Business Platform, which enables automation and reuse in PLT development."
-  },
-  {
-    id: "7",
-    question: "What are the three key components for making transactions intelligent?",
-    options: [
-      "Data, Metrics & AI",
-      "Speed, Quality & Cost",
-      "People, Process & Technology",
-      "Design, Build & Deploy"
-    ],
-    correctAnswer: 0,
-    explanation: "Data, Metrics, and AI are the three components that make transactions intelligent and adaptive."
-  },
-  {
-    id: "8",
-    question: "Which three elements are essential for building trust in everyday design?",
-    options: [
-      "Speed, Efficiency & Cost",
-      "Trust, Transparency & Security",
-      "Design, Development & Testing",
-      "Planning, Execution & Review"
-    ],
-    correctAnswer: 1,
-    explanation: "Trust, Transparency, and Security are fundamental elements that must be built into every design."
-  },
-  {
-    id: "9",
-    question: "What is the main objective of the Capstone lesson?",
-    options: [
-      "Learning new theory",
-      "Reviewing all previous lessons",
-      "Redesigning a real transaction you're working on",
-      "Taking a final exam"
-    ],
-    correctAnswer: 2,
-    explanation: "The Capstone lesson focuses on applying all learned concepts to redesign an actual transaction from your work."
-  },
-  {
-    id: "10",
-    question: "What is the ultimate goal of implementing Perfect Life Transactions?",
-    options: [
-      "Reducing workforce",
-      "Increasing complexity",
-      "Creating seamless, value-driven experiences",
-      "Eliminating all technology"
-    ],
-    correctAnswer: 2,
-    explanation: "The goal is to create seamless, value-driven experiences that benefit all stakeholders in the transaction."
-  }
-];
 
 interface CourseAssessmentProps {
   allLessonsCompleted: boolean;
@@ -157,13 +35,13 @@ interface CourseAssessmentProps {
   variant?: "page" | "inline";
 }
 
-const CourseAssessment: React.FC<CourseAssessmentProps> = ({ 
-  allLessonsCompleted, 
+const CourseAssessment: React.FC<CourseAssessmentProps> = ({
+  allLessonsCompleted,
   onBack,
   courseSlug,
   variant = "page"
 }) => {
-  const [questions, setQuestions] = useState<QuizQuestion[]>(fallbackQuizQuestions);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
@@ -240,15 +118,15 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
           if (normalized) break;
         }
 
-        setQuestions(normalized ?? fallbackQuizQuestions);
+        setQuestions(normalized ?? []);
         setCurrentQuestionIndex(0);
         setUserAnswers([]);
         setSelectedAnswer(null);
         setShowFeedback(false);
         setShowSummary(false);
       } catch (err) {
-        console.warn("Failed to load quizzes, using fallback", err);
-        setQuestions(fallbackQuizQuestions);
+        console.warn("Failed to load quizzes", err);
+        setQuestions([]);
       } finally {
         setLoading(false);
       }
@@ -363,7 +241,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
               Complete all lesson videos to unlock the final assessment.
             </p>
           </div>
-          
+
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2 text-yellow-800">
               <AlertCircle size={20} />
@@ -407,7 +285,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
   // Show summary screen
   if (showSummary) {
     const passed = scorePercentage >= 70;
-    
+
     return (
       <div className={containerClass}>
         <div className={isInline ? wrapperClass : "max-w-2xl mx-auto"}>
@@ -418,13 +296,13 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
               ) : (
                 <RotateCcw size={64} className="text-orange-500 mx-auto mb-4" />
               )}
-              
+
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
                 {passed ? "Congratulations!" : "Keep Learning!"}
               </h2>
-              
+
               <p className="text-gray-600 mb-6">
-                {passed 
+                {passed
                   ? "You've successfully completed the course assessment."
                   : "You're on the right track. Review the materials and try again."
                 }
@@ -458,7 +336,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
                 <ArrowLeft size={16} />
                 Back to Course
               </button>
-              
+
               {!passed && (
                 <button
                   onClick={handleRetakeQuiz}
@@ -468,7 +346,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
                   Try Again
                 </button>
               )}
-              
+
               {passed && (
                 <a
                   href="/25.01_DQ DTMB_WP_Perfect Life Transactions_v0.0.1 (1).pdf"
@@ -500,15 +378,15 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
               <ArrowLeft size={20} />
               Back to Course
             </button>
-            
+
             <div className="text-sm text-gray-500">
               Question {currentQuestionIndex + 1} of {totalQuestions}
             </div>
           </div>
-          
+
           {/* Progress Bar */}
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
+            <div
               className="bg-[#1839AD] h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%` }}
             />
@@ -527,26 +405,24 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
                 key={index}
                 onClick={() => handleAnswerSelect(index)}
                 disabled={showFeedback}
-                className={`w-full text-left p-4 rounded-lg border-2 transition ${
-                  selectedAnswer === index
+                className={`w-full text-left p-4 rounded-lg border-2 transition ${selectedAnswer === index
                     ? showFeedback
                       ? index === currentQuestion.correctAnswer
                         ? "border-green-500 bg-green-50"
                         : "border-red-500 bg-red-50"
                       : "border-[#1839AD] bg-[#1839AD]/5"
                     : "border-gray-200 hover:border-gray-300"
-                } ${showFeedback ? "cursor-default" : "cursor-pointer"}`}
+                  } ${showFeedback ? "cursor-default" : "cursor-pointer"}`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    selectedAnswer === index
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedAnswer === index
                       ? showFeedback
                         ? index === currentQuestion.correctAnswer
                           ? "border-green-500 bg-green-500"
                           : "border-red-500 bg-red-500"
                         : "border-[#1839AD] bg-[#1839AD]"
                       : "border-gray-300"
-                  }`}>
+                    }`}>
                     {selectedAnswer === index && (
                       <div className="w-2 h-2 rounded-full bg-white" />
                     )}
@@ -568,31 +444,28 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
 
           {/* Feedback */}
           {showFeedback && (
-            <div className={`p-4 rounded-lg mb-6 ${
-              selectedAnswer === currentQuestion.correctAnswer
+            <div className={`p-4 rounded-lg mb-6 ${selectedAnswer === currentQuestion.correctAnswer
                 ? "bg-green-50 border border-green-200"
                 : "bg-red-50 border border-red-200"
-            }`}>
+              }`}>
               <div className="flex items-center gap-2 mb-2">
                 {selectedAnswer === currentQuestion.correctAnswer ? (
                   <CheckCircle2 size={20} className="text-green-600" />
                 ) : (
                   <XCircle size={20} className="text-red-600" />
                 )}
-                <span className={`font-medium ${
-                  selectedAnswer === currentQuestion.correctAnswer
+                <span className={`font-medium ${selectedAnswer === currentQuestion.correctAnswer
                     ? "text-green-800"
                     : "text-red-800"
-                }`}>
+                  }`}>
                   {selectedAnswer === currentQuestion.correctAnswer ? "Correct!" : "Incorrect"}
                 </span>
               </div>
               {currentQuestion.explanation && (
-                <p className={`text-sm ${
-                  selectedAnswer === currentQuestion.correctAnswer
+                <p className={`text-sm ${selectedAnswer === currentQuestion.correctAnswer
                     ? "text-green-700"
                     : "text-red-700"
-                }`}>
+                  }`}>
                   {currentQuestion.explanation}
                 </p>
               )}

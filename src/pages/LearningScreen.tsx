@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   BookOpen,
   User,
@@ -15,98 +15,20 @@ import CourseAssessment from "./CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../components/CourseOutline";
 import { Lesson, toUILesson } from "../types/course";
-import { fetchCourseLessons, fetchCourseResources, CourseResource } from "../services/courseService";
-import { Lesson as DBLesson } from "../types/dtma-lms";
+import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../services/courseService";
+import { Lesson as DBLesson, Course } from "../types/dtma-lms";
 import { ExploreDropdown } from "../components/Header/components/ExploreDropdown";
 import { FEATURES } from "../config/features";
 
-const SUPABASE_LESSON_BASE = "https://ugmybskacomcdgdngolz.supabase.co/storage/v1/object/public/course-content/plt-course-01/Lessons";
-const lessonVideoUrlForIndex = (idx: number) => `${SUPABASE_LESSON_BASE}/Lesson_${idx + 1}.mp4`;
-
-const withLessonVideos = (lessons: Lesson[]): Lesson[] =>
-  lessons.map((lesson, idx) => ({
-    ...lesson,
-    videoUrl: lessonVideoUrlForIndex(idx),
-  }));
-
-const initialLessons: Lesson[] = withLessonVideos([
-  {
-    id: 1,
-    title: "Economy 4.0 & Your Role in Perfecting Life's Transactions",
-    duration: "08:12",
-    completed: true,
-    description: "Ground yourself in the core ideas behind Economy 4.0.",
-  },
-  {
-    id: 2,
-    title: "Seeing Your Work as a Transaction, Not a Task",
-    duration: "12:45",
-    completed: true,
-    description: "See how DBPs unlock orchestration across teams.",
-  },
-  {
-    id: 3,
-    title: "Applying the 5 PLT Pillars as a Design & Build Checklist",
-    duration: "10:34",
-    completed: false,
-    description: "Map where automation and AI add momentum.",
-  },
-  {
-    id: 4,
-    title: "The Transaction Lifecycle: Using the Growth Hack Lens",
-    duration: "09:58",
-    completed: false,
-    description: "Use 6XD to prioritize and scale winning moves.",
-  },
-  {
-    id: 5,
-    title: "Designing PLTs in Practice (UX, Flows & Handoffs)",
-    duration: "07:20",
-    completed: false,
-    description: "Turn lessons into a 30-day execution plan.",
-  },
-  {
-    id: 6,
-    title: "Building PLTs on Platforms: DBPs, Automation & Reuse",
-    duration: "11:15",
-    completed: false,
-    description: "Learn to build on platforms for scalability.",
-  },
-  {
-    id: 7,
-    title: "Making Transactions Intelligent: Data, Metrics & AI",
-    duration: "13:30",
-    completed: false,
-    description: "Integrate intelligence into your transactions.",
-  },
-  {
-    id: 8,
-    title: "Trust, Transparency & Security in Everyday Design",
-    duration: "09:45",
-    completed: false,
-    description: "Build trust and security into your designs.",
-  },
-  {
-    id: 9,
-    title: "Capstone: Redesigning a Real Transaction You're Working On",
-    duration: "15:20",
-    completed: false,
-    description: "Apply everything to a real-world project.",
-  },
-]);
-
-// Course slug for fetching data - this would typically come from route params
-const COURSE_SLUG = 'perfecting-life-transactions';
+// Default fallback course slug if none provided in URL
+const DEFAULT_COURSE_SLUG = 'perfecting-life-transactions';
 
 const LearningScreen: React.FC = () => {
-  const [lessons, setLessons] = useState<Lesson[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('courseProgress');
-      const parsed: Lesson[] = saved ? JSON.parse(saved) : initialLessons;
-      return withLessonVideos(parsed);
-    }
-    return initialLessons;
-  });
+  const [searchParams] = useSearchParams();
+  const courseId = searchParams.get('courseId') || DEFAULT_COURSE_SLUG;
+
+  const [course, setCourse] = useState<Course | null>(null);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [dbLessons, setDbLessons] = useState<DBLesson[]>([]);
   const [resources, setResources] = useState<CourseResource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -128,51 +50,56 @@ const LearningScreen: React.FC = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
-  // Fetch lessons and resources from Supabase on mount
+  // Fetch course, lessons, and resources from Supabase on mount or when courseId changes
   useEffect(() => {
     const loadCourseData = async () => {
       try {
         setIsLoading(true);
-        const [fetchedLessons, fetchedResources] = await Promise.all([
-          fetchCourseLessons(COURSE_SLUG),
-          fetchCourseResources(COURSE_SLUG),
+        const [fetchedCourse, fetchedLessons, fetchedResources] = await Promise.all([
+          fetchFullCourse(courseId),
+          fetchCourseLessons(courseId),
+          fetchCourseResources(courseId),
         ]);
+
+        setCourse(fetchedCourse);
 
         if (fetchedLessons.length > 0) {
           setDbLessons(fetchedLessons);
-          // Get completed lesson IDs from localStorage
-          const saved = localStorage.getItem('courseProgress');
+          // Get completed lesson IDs from localStorage (scoped to courseId)
+          const storageKey = `courseProgress_${courseId}`;
+          const saved = localStorage.getItem(storageKey);
           const savedLessons: Lesson[] = saved ? JSON.parse(saved) : [];
           const completedIds = new Set(
             savedLessons.filter(l => l.completed).map(l => String(l.id))
           );
 
-          // Convert DB lessons to UI lessons
+          // Convert DB lessons to UI lessons - video URLs come from DB
           const uiLessons = fetchedLessons.map((lesson, idx) =>
             toUILesson(lesson, idx, completedIds)
           );
-          const uiLessonsWithFallback = withLessonVideos(uiLessons);
-          setLessons(uiLessonsWithFallback);
+          setLessons(uiLessons);
+        } else {
+          setLessons([]);
         }
-        // If no lessons from DB, keep the initialLessons fallback
 
         setResources(fetchedResources);
       } catch (error) {
-        console.warn('Failed to load course data, using fallback:', error);
+        console.warn('Failed to load course data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadCourseData();
-  }, []);
+  }, [courseId]);
 
-  // Persist progress to localStorage
+  // Persist progress to localStorage (scoped to courseId)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('courseProgress', JSON.stringify(lessons));
+    if (typeof window !== 'undefined' && lessons.length > 0) {
+      const storageKey = `courseProgress_${courseId}`;
+      localStorage.setItem(storageKey, JSON.stringify(lessons));
     }
-  }, [lessons]);
+  }, [lessons, courseId]);
 
   const activeLesson = useMemo(
     () => lessons[currentLessonIndex],
@@ -293,7 +220,7 @@ const LearningScreen: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const courseTitle = "Perfecting Life Transactions: A Digital Builder's Blueprint";
+  const courseTitle = course?.title || "Loading...";
   const atFirstLesson = currentLessonIndex === 0;
   const atLastLesson = currentLessonIndex === lessons.length - 1;
 
@@ -446,12 +373,23 @@ const LearningScreen: React.FC = () => {
 
           {/* Main Content */}
           <main className={`flex-1 min-w-0 ${isTheater ? "p-0 h-full" : "p-4 md:p-6"} overflow-y-auto`}>
-            {showQuiz ? (
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <Loader2 className="animate-spin text-blue-600" size={48} />
+              </div>
+            ) : !activeLesson ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-center">
+                  <h3 className="text-xl font-medium text-gray-900">No lessons found</h3>
+                  <p className="text-gray-500 mt-2">This course doesn't have any content yet.</p>
+                </div>
+              </div>
+            ) : showQuiz ? (
               <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-8">
                 <CourseAssessment
                   variant="inline"
                   allLessonsCompleted={allLessonsCompleted}
-                  courseSlug={COURSE_SLUG}
+                  courseSlug={courseId}
                   onBack={handleBackFromQuiz}
                 />
               </div>
@@ -475,14 +413,14 @@ const LearningScreen: React.FC = () => {
                       {courseTitle}
                     </p>
                     <h1 className="text-white text-sm md:text-base font-normal mt-0.5">
-                      {activeLesson.title}
+                      {activeLesson?.title}
                     </h1>
                   </div>
 
                   {/* Video Player */}
                   <VideoPlayer
                     src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
-                    poster="/Economy%204.0%20thumnail.png"
+                    poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
                     isPlaying={isPlaying}
                     volume={volume}
                     playbackRate={playbackRate}

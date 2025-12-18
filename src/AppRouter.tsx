@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./components/Header";
-import { MarketplaceRouter } from "./pages/marketplace/MarketplaceRouter";
 import { App } from "./App";
-import MarketplaceDetailsPage from "./pages/marketplace/MarketplaceDetailsPage";
+import { CourseCatalogPage } from "./pages/courses/CourseCatalogPage";
+import CourseDetailsPage from "./pages/courses/CourseDetailsPage";
 import DashboardRouter from "./pages/dashboard/DashboardRouter";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
@@ -16,12 +16,16 @@ export function AppRouter() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<App />} />
-          <Route path="/courses" element={<App />} />
-          <Route
-            path="/courses/:itemId"
-            element={<MarketplaceDetailsPage marketplaceType="courses" />}
-          />
-          <Route path="/marketplace/*" element={<MarketplaceRouter />} />
+
+          {/* Course routes */}
+          <Route path="/courses" element={<CourseCatalogPage />} />
+          <Route path="/courses/:itemId" element={<CourseDetailsPage />} />
+
+          {/* Legacy marketplace routes - redirect to new course routes */}
+          <Route path="/marketplace/courses" element={<Navigate to="/courses" replace />} />
+          <Route path="/marketplace/courses/:itemId" element={<Navigate to="/courses/:itemId" replace />} />
+
+          {/* Dashboard */}
           <Route
             path="/dashboard/*"
             element={
@@ -30,6 +34,8 @@ export function AppRouter() {
               </ProtectedRoute>
             }
           />
+
+          {/* Learning */}
           <Route path="/learning" element={<LearningScreen />} />
 
           {/* Coming Soon pages */}
@@ -44,6 +50,7 @@ export function AppRouter() {
           <Route path="/forms/*" element={<Navigate to="/404" replace />} />
           <Route path="/documentation" element={<Navigate to="/coming-soon/documentation" replace />} />
           <Route path="/documentation/*" element={<Navigate to="/coming-soon/documentation" replace />} />
+          <Route path="/marketplace/*" element={<Navigate to="/courses" replace />} />
 
           <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<Navigate to="/404" replace />} />

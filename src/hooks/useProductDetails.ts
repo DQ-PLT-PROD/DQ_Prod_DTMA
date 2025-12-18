@@ -1,16 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  getFallbackItemDetails,
-  getFallbackItems,
-} from "../utils/fallbackData";
-import { getLessonsByCourse, getRelatedCourses, toMarketplaceItem, formatDuration, getCourses } from "../lib/api/dtmaCourses";
-import { fetchCourseWithContent } from "../services/courseService";
-import { categories } from "../data/dtma/categories";
-import { Course } from "../types/dtma-lms";
+import { fetchCourseWithContent, fetchRelatedCourses, fetchCourseLessons, fetchCategories } from "../services/courseService";
+import { Course, Category } from "../types/dtma-lms";
 
 export interface UseProductDetailsArgs {
   itemId?: string;
-  marketplaceType: "courses" | "knowledge-hub";
   shouldTakeAction?: boolean;
 }
 
@@ -21,18 +14,33 @@ export interface ProductItem {
   [key: string]: any;
 }
 
+// Helper to format duration
+const formatDuration = (minutes: number): string => {
+  if (!minutes) return "";
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins} min`;
+  if (mins === 0) return `${hours} hr`;
+  return `${hours} hr ${mins} min`;
+};
+
 export function useProductDetails({
   itemId,
-  marketplaceType,
   shouldTakeAction,
 }: UseProductDetailsArgs) {
   const [item, setItem] = useState<ProductItem | null>(null);
   const [relatedItems, setRelatedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  // Load categories on mount
+  useEffect(() => {
+    fetchCategories().then(setCategories);
+  }, []);
 
   // Map DTMA course to the unified item shape used by details page
-  const mapCourseToItem = (course: Course, courseLessons: any[] = []): ProductItem | null => {
+  const mapCourseToItem = (course: Course, courseLessons: any[] = [], courseResources: any[] = []): ProductItem | null => {
     if (!course) return null;
 
     // Attempt to parse timeline JSON string into steps
@@ -84,13 +92,11 @@ export function useProductDetails({
       }
       return url;
     };
-    // Provider info may come from DB or be undefined - use fallback
-    const courseAny = course as any;
-    const providerName = courseAny.provider?.name || "DTMA Academy";
-    const providerLogo = toAbsolute(courseAny.provider?.logoUrl) || "/images/placeholders/course-fallback.png";
+    // Provider info removed
 
-    const category = categories.find((c) => c.id === course.categoryId);
-    const lessonList = courseLessons.length ? courseLessons : getLessonsByCourse(course.id);
+    const category = categories.find((c) => c.id === course.categoryId || c.slug === course.categoryId);
+    // Use lessons passed in, fallback to empty if not provided
+    const lessonList = courseLessons.length ? courseLessons : [];
 
     if (!applicationProcess) {
       applicationProcess = lessonList.map((lesson) => ({
@@ -109,7 +115,7 @@ export function useProductDetails({
       ? course.learningOutcomes
       : course.skillsGained || [];
 
-    const posterUrl = course.introVideoPosterUrl || course.heroImageUrl || courseAny.provider?.logoUrl;
+    const posterUrl = course.introVideoPosterUrl || course.heroImageUrl;
 
     return {
       id: course.slug,
@@ -127,7 +133,7 @@ export function useProductDetails({
       serviceApplication: course.uponCompletion,
       uponCompletion: course.uponCompletion,
       tags: [category?.name, course.levelTag, course.audienceLevel, ...course.topicTags].filter(Boolean),
-      provider: courseAny.provider || { name: providerName, logoUrl: providerLogo },
+      // provider: { name: providerName, logoUrl: providerLogo, description: course.providerDescription },
       providerLocation: course.location || "UAE",
       rating: course.rating ?? 4.7,
       reviewCount: course.reviewCount ?? 30,
@@ -140,6 +146,7 @@ export function useProductDetails({
       introLessonId: course.introLessonId || firstIntro?.id,
       introVideoUrl: course.introVideoUrl || firstIntro?.videoUrl,
       introVideoPosterUrl: posterUrl,
+      resources: courseResources,
     } as any;
   };
 
@@ -148,40 +155,41 @@ export function useProductDetails({
     setLoading(true);
     setError(null);
     try {
-      const { course, lessons } = await fetchCourseWithContent(itemId);
+      const { course, lessons, resources } = await fetchCourseWithContent(itemId);
       if (!course) {
-        const fallback = getFallbackItemDetails("courses", itemId);
-        if (fallback) {
-          setItem(fallback);
-          setRelatedItems(getFallbackItems("courses").slice(0, 4));
-          setError(null);
-        } else {
-          setItem(null);
-          setError(new Error("Course not found"));
-        }
+        // No fallback - show error state
+        setItem(null);
+        setRelatedItems([]);
+        setError(new Error("Course not found"));
         return;
       }
 
-      const courseLessons = lessons && lessons.length > 0 ? lessons : getLessonsByCourse(course.id);
-      const mapped = mapCourseToItem(course, courseLessons);
+      // Use lessons from DB, or empty if not available
+      const courseLessons = lessons && lessons.length > 0 ? lessons : [];
+      const courseResources = resources || [];
+      const mapped = mapCourseToItem(course, courseLessons, courseResources);
       if (mapped) {
         setItem(mapped);
       }
 
-      // Get related courses
-      let relatedRaw = getRelatedCourses(course.slug, 3);
-      if (relatedRaw.length < 3) {
-        const allCourses = getCourses();
-        const additional = allCourses
-          .filter(c => c.slug !== course.slug && !relatedRaw.find(r => r.slug === c.slug))
-          .slice(0, 3 - relatedRaw.length);
-        relatedRaw = [...relatedRaw, ...additional];
-      }
-
-      const related = relatedRaw
-        .map((relatedCourse) => toMarketplaceItem(relatedCourse))
-        .slice(0, 3);
-      setRelatedItems(related);
+      // Get related courses from database (max 4)
+      const relatedCourses = await fetchRelatedCourses(course.slug, 4);
+      setRelatedItems(relatedCourses.map(c => ({
+        id: c.slug,
+        slug: c.slug,
+        title: c.title,
+        description: c.shortDescription,
+        category: (c as any).categoryName || c.categoryId,
+        duration: formatDuration(c.estimatedDurationMinutes),
+        lessonCount: c.lessonCount,
+        levelTag: c.levelTag,
+        audienceLevel: c.audienceLevel,
+        heroImageUrl: c.heroImageUrl,
+        introVideoUrl: c.introVideoUrl,
+        rating: c.rating ?? 4.6,
+        reviewCount: c.reviewCount ?? 24,
+        isComingSoon: (c as any).isComingSoon || false,
+      })));
 
       if (shouldTakeAction) {
         setTimeout(() => {
@@ -197,44 +205,17 @@ export function useProductDetails({
     }
   }, [itemId, shouldTakeAction]);
 
-  const loadKnowledgeHubItem = useCallback(async () => {
-    if (!itemId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      // For knowledge-hub, use fallback data for now
-      const fallback = getFallbackItemDetails("knowledge-hub", itemId);
-      if (fallback) {
-        setItem(fallback);
-        setRelatedItems(getFallbackItems("knowledge-hub").slice(0, 4));
-      } else {
-        setItem(null);
-        setError(new Error("Item not found"));
-      }
-    } catch (err) {
-      setError(err as Error);
-    } finally {
-      setLoading(false);
-    }
-  }, [itemId]);
-
   useEffect(() => {
     if (!itemId) return;
-
-    if (marketplaceType === "courses") {
-      loadCourse();
-    } else if (marketplaceType === "knowledge-hub") {
-      loadKnowledgeHubItem();
-    }
-  }, [itemId, marketplaceType, loadCourse, loadKnowledgeHubItem]);
-
-  const refetch = marketplaceType === "courses" ? loadCourse : loadKnowledgeHubItem;
+    loadCourse();
+  }, [itemId, loadCourse]);
 
   return {
     item,
     relatedItems,
     loading,
     error,
-    refetch,
+    refetch: loadCourse,
   } as const;
 }
+

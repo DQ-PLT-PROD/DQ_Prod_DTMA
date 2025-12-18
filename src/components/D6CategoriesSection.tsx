@@ -74,8 +74,8 @@ const D6CategoriesSection: React.FC = () => {
                       decoding="async"
                       fetchPriority="low"
                       className={`h-full w-full object-cover ${category.title === "Digital Transformation 2.0 (DT2.0)"
-                          ? "object-top"
-                          : ""
+                        ? "object-top"
+                        : ""
                         }`}
                     />
                     <div className="absolute inset-0 bg-[#030C2B]/20"></div>
@@ -90,7 +90,7 @@ const D6CategoriesSection: React.FC = () => {
                   {category.description}
                 </p>
                 <a
-                  href="/marketplace/courses"
+                  href="/courses"
                   className="mt-6 inline-flex items-center text-sm font-semibold hover:underline"
                   style={{ color: BRAND_PRIMARY }}
                 >

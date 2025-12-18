@@ -6,8 +6,7 @@ export const getCourseMedia = (item: any) => {
     item?.heroImage ||
     item?.imageUrl ||
     item?.thumbnailUrl ||
-    item?.provider?.logoUrl ||
-    "/mzn_logo.png";
+    item?.thumbnailUrl;
 
   return { videoUrl, poster };
 };
