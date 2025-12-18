@@ -8,6 +8,7 @@ on:
       - develop
       - "fix/**"
       - "hotfix/**"
+      - "develop-staging"
   pull_request:
     branches:
       - main
