@@ -28,6 +28,7 @@ export interface Course {
   introVideoUrl?: string;
   introVideoPosterUrl?: string;
   isFeatured?: boolean;
+  isComingSoon?: boolean;
   status?: "draft" | "published";
   rating?: number;
   reviewCount?: number;
@@ -56,9 +57,9 @@ export interface Lesson {
 
 export interface CourseCatalogFilters {
   search?: string;
-  categorySlug?: string;
-  audienceLevel?: AudienceLevel;
-  topic?: string;
-  levelTag?: string;
-  industry?: string;
+  categories?: string[];
+  audienceLevels?: AudienceLevel[];
+  topics?: string[];
+  levelTags?: string[];
+  industries?: string[];
 }

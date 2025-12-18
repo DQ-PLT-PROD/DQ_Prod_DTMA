@@ -68,19 +68,19 @@ export function Header({
   const handleSignIn = () => {
     console.log('🖱️ Sign In button clicked!');
     console.log('🔍 Current auth state before login:', { user: !!user, userEmail: user?.email });
-    
+
     // Prevent multiple clicks
     if (user) {
       console.log('⚠️ User already logged in, ignoring click');
       return;
     }
-    
+
     console.log('🎓 Will redirect to learning page after successful authentication');
     login();
   };
 
   const handleBrowseCourses = () => {
-    navigate("/marketplace/courses");
+    navigate("/courses");
   };
 
   // MVP: Notification reset commented out

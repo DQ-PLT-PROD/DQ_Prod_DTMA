@@ -59,51 +59,47 @@ const D6CategoriesSection: React.FC = () => {
         </FadeInUpOnScroll>
 
         <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category, idx) => {
-            const isAboveFold = idx < 3;
-            return (
-              <div
-                key={category.title}
-                className="flex flex-col rounded-3xl overflow-hidden bg-white shadow-lg transition-transform duration-200 hover:-translate-y-1 h-full relative z-20"
-              >
-                <div className="relative h-36 bg-gray-100">
-                  {category.image && (
-                    <>
-                      <img
-                        src={category.image}
-                        alt={category.title}
-                        loading={isAboveFold ? "eager" : "lazy"}
-                        decoding="async"
-                        fetchPriority={isAboveFold ? "high" : "auto"}
-                        className={`h-full w-full object-cover ${
-                          category.title === "Digital Transformation 2.0 (DT2.0)"
-                            ? "object-top"
-                            : ""
+          {categories.map((category) => (
+            <div
+              key={category.title}
+              className="flex flex-col rounded-3xl overflow-hidden bg-white shadow-lg transition-transform duration-200 hover:-translate-y-1 h-full relative z-20"
+            >
+              <div className="relative h-36 bg-gray-100">
+                {category.image && (
+                  <>
+                    <img
+                      src={category.image}
+                      alt={category.title}
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
+                      className={`h-full w-full object-cover ${category.title === "Digital Transformation 2.0 (DT2.0)"
+                        ? "object-top"
+                        : ""
                         }`}
-                      />
-                      <div className="absolute inset-0 bg-[#030C2B]/20"></div>
-                    </>
-                  )}
-                </div>
-                <div className="flex flex-col flex-1 p-6">
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    {category.title}
-                  </h3>
-                  <p className="mt-3 text-sm text-gray-600">
-                    {category.description}
-                  </p>
-                  <a
-                    href="/marketplace/courses"
-                    className="mt-6 inline-flex items-center text-sm font-semibold hover:underline"
-                    style={{ color: BRAND_PRIMARY }}
-                  >
-                    Explore Courses
-                    <ArrowRight size={16} className="ml-1" />
-                  </a>
-                </div>
+                    />
+                    <div className="absolute inset-0 bg-[#030C2B]/20"></div>
+                  </>
+                )}
               </div>
-            );
-          })}
+              <div className="flex flex-col flex-1 p-6">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {category.title}
+                </h3>
+                <p className="mt-3 text-sm text-gray-600">
+                  {category.description}
+                </p>
+                <a
+                  href="/courses"
+                  className="mt-6 inline-flex items-center text-sm font-semibold hover:underline"
+                  style={{ color: BRAND_PRIMARY }}
+                >
+                  Explore Courses
+                  <ArrowRight size={16} className="ml-1" />
+                </a>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

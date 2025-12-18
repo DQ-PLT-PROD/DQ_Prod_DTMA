@@ -396,6 +396,7 @@ export interface Database {
                 Row: {
                     id: string
                     slug: string
+                    parent_slug: string | null
                     name: string
                     description: string | null
                     icon: string | null
@@ -407,6 +408,7 @@ export interface Database {
                 Insert: {
                     id?: string
                     slug: string
+                    parent_slug?: string | null
                     name: string
                     description?: string | null
                     icon?: string | null
@@ -417,6 +419,7 @@ export interface Database {
                 }
                 Update: {
                     slug?: string
+                    parent_slug?: string | null
                     name?: string
                     description?: string | null
                     icon?: string | null
@@ -485,6 +488,28 @@ export interface Database {
                     display_order?: number | null
                     is_active?: boolean | null
                     updated_at?: string | null
+                }
+                Relationships: []
+            },
+            related_courses: {
+                Row: {
+                    id: string
+                    course_slug: string
+                    related_course_slug: string
+                    display_order: number | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    course_slug: string
+                    related_course_slug: string
+                    display_order?: number | null
+                    created_at?: string | null
+                }
+                Update: {
+                    course_slug?: string
+                    related_course_slug?: string
+                    display_order?: number | null
                 }
                 Relationships: []
             }

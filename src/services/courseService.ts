@@ -1,6 +1,5 @@
 import { getSupabase, isSupabaseConfigured } from "../lib/supabase/client";
-import { Course, CourseCatalogFilters, Lesson } from "../types/dtma-lms";
-import { getCourses as getLocalCourses, getCourseBySlug as getLocalCourseBySlug, toMarketplaceItem, getRelatedCourses } from "../lib/api/dtmaCourses";
+import { Course, CourseCatalogFilters, Lesson, Category } from "../types/dtma-lms";
 
 // Types for quiz and resource data
 export interface Quiz {
@@ -26,7 +25,7 @@ export interface CourseResource {
 }
 
 // Helper to map Supabase row to Course type
-const mapRowToCourse = (row: any): Course => {
+const mapRowToCourse = (row: any): Course & { isComingSoon?: boolean; categoryName?: string } => {
     return {
         id: row.id,
         slug: row.slug,
@@ -34,6 +33,7 @@ const mapRowToCourse = (row: any): Course => {
         shortDescription: row.short_description || "",
         longDescription: row.long_description || "",
         categoryId: row.category_id || "",
+        categoryName: row.course_categories?.name || row.category_id || "",
         audienceLevel: row.audience_level as any,
         topicTags: row.topic_tags || [],
         levelTag: row.level_tag || "",
@@ -44,6 +44,7 @@ const mapRowToCourse = (row: any): Course => {
         introVideoUrl: row.intro_video_url || undefined,
         introVideoPosterUrl: row.intro_video_poster_url || undefined,
         isFeatured: row.is_featured || false,
+        isComingSoon: row.is_coming_soon || false,
         status: row.status as any,
         rating: row.rating || undefined,
         reviewCount: row.review_count || undefined,
@@ -52,61 +53,124 @@ const mapRowToCourse = (row: any): Course => {
         skillsGained: row.skills_gained || [],
         uponCompletion: row.upon_completion || undefined,
         startDate: row.start_date || undefined,
+        industry: row.industry || undefined,
+    };
+};
+
+// Helper to format duration
+const formatDuration = (minutes: number): string => {
+    if (!minutes) return "";
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins} min`;
+    if (mins === 0) return `${hours} hr`;
+    return `${hours} hr ${mins} min`;
+};
+
+// Helper to convert Course to marketplace item format
+const toMarketplaceItem = (course: Course): any => {
+    return {
+        id: course.slug,
+        slug: course.slug,
+        title: course.title,
+        description: course.shortDescription,
+        category: (course as any).categoryName || course.categoryId,
+        categorySlug: course.categoryId,
+        industry: course.industry,
+        duration: formatDuration(course.estimatedDurationMinutes),
+        durationMinutes: course.estimatedDurationMinutes,
+        lessonCount: course.lessonCount,
+        levelTag: course.levelTag,
+        audienceLevel: course.audienceLevel,
+        topicTags: course.topicTags,
+        tags: [course.levelTag, course.audienceLevel, ...course.topicTags.slice(0, 2)].filter(Boolean),
+        // provider removed
+        heroImageUrl: course.heroImageUrl,
+        introVideoUrl: course.introVideoUrl,
+        introVideoPosterUrl: course.introVideoPosterUrl,
+        rating: course.rating ?? 4.6,
+        reviewCount: course.reviewCount ?? 24,
+        formUrl: course.enrollmentUrl,
+        learningOutcomes: course.learningOutcomes,
+        startDate: course.startDate,
     };
 };
 
 export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[]> => {
-    // If Supabase is not configured, fallback to local data
+    // If Supabase is not configured, return empty
     if (!isSupabaseConfigured()) {
-        const localCourses = getLocalCourses(filters);
-        return localCourses.map(toMarketplaceItem);
+        console.warn("Supabase not configured, returning empty courses list");
+        return [];
     }
 
     try {
         const supabase = getSupabase();
         let query = supabase
             .from("courses")
-            .select("*")
+            .select("*, is_coming_soon, course_categories(name)")
             .eq("status", "published");
 
         if (filters) {
-            if (filters.categorySlug) {
-                query = query.eq("category_id", filters.categorySlug);
+            // Category filter (multi-select)
+            if (filters.categories && filters.categories.length > 0) {
+                query = query.in("category_id", filters.categories);
             }
-            if (filters.audienceLevel) {
-                query = query.eq("audience_level", filters.audienceLevel);
+
+            // Audience level filter (multi-select)
+            if (filters.audienceLevels && filters.audienceLevels.length > 0) {
+                query = query.in("audience_level", filters.audienceLevels);
             }
-            if (filters.levelTag) {
-                query = query.eq("level_tag", filters.levelTag);
+
+            // Level tag filter (multi-select)
+            if (filters.levelTags && filters.levelTags.length > 0) {
+                query = query.in("level_tag", filters.levelTags);
             }
-            if (filters.topic) {
-                query = query.contains("topic_tags", [filters.topic]);
+
+            // Industry filter (multi-select)
+            if (filters.industries && filters.industries.length > 0) {
+                query = query.in("industry", filters.industries);
             }
-            if (filters.search) {
-                query = query.or(`title.ilike.%${filters.search}%,short_description.ilike.%${filters.search}%`);
+
+            // Topic filter - uses array contains for topic_tags array field
+            if (filters.topics && filters.topics.length > 0) {
+                // For topics, we use overlaps to check if any of the selected topics match
+                query = query.overlaps("topic_tags", filters.topics);
+            }
+
+            // Search filter (text search across title and description)
+            if (filters.search && filters.search.trim()) {
+                const searchTerm = filters.search.trim();
+                query = query.or(`title.ilike.%${searchTerm}%,short_description.ilike.%${searchTerm}%`);
             }
         }
+
+        // Order: available courses first (is_coming_soon = false), then by most recent
+        query = query
+            .order('is_coming_soon', { ascending: true })
+            .order('created_at', { ascending: false });
 
         const { data, error } = await query;
 
         if (error) {
-            console.warn("Supabase fetch failed, falling back to local data:", error.message);
-            const localCourses = getLocalCourses(filters);
-            return localCourses.map(toMarketplaceItem);
+            console.error("Supabase fetch failed:", error.message);
+            return [];
         }
 
-        return (data || []).map((row) => toMarketplaceItem(mapRowToCourse(row)));
+        return (data || []).map((row) => {
+            const course = mapRowToCourse(row);
+            const item = toMarketplaceItem(course);
+            return { ...item, isComingSoon: course.isComingSoon };
+        });
     } catch (err) {
-        console.warn("Unexpected error fetching courses, falling back to local data:", err);
-        const localCourses = getLocalCourses(filters);
-        return localCourses.map(toMarketplaceItem);
+        console.error("Unexpected error fetching courses:", err);
+        return [];
     }
 };
 
 export const fetchCourseBySlug = async (slug: string): Promise<any | null> => {
     if (!isSupabaseConfigured()) {
-        const localCourse = getLocalCourseBySlug(slug);
-        return localCourse ? toMarketplaceItem(localCourse) : null;
+        console.warn("Supabase not configured, returning null");
+        return null;
     }
 
     try {
@@ -118,27 +182,21 @@ export const fetchCourseBySlug = async (slug: string): Promise<any | null> => {
             .single();
 
         if (error) {
-            if (error.code === 'PGRST116') {
-                // Try local if not found in Supabase (maybe local-only content?)
-                const localCourse = getLocalCourseBySlug(slug);
-                return localCourse ? toMarketplaceItem(localCourse) : null;
-            }
-            console.warn("Supabase fetch failed, falling back to local data:", error.message);
-            const localCourse = getLocalCourseBySlug(slug);
-            return localCourse ? toMarketplaceItem(localCourse) : null;
+            console.error("Error fetching course by slug:", error.message);
+            return null;
         }
 
         return data ? toMarketplaceItem(mapRowToCourse(data)) : null;
     } catch (err) {
-        console.warn("Unexpected error fetching course, falling back to local data:", err);
-        const localCourse = getLocalCourseBySlug(slug);
-        return localCourse ? toMarketplaceItem(localCourse) : null;
+        console.error("Unexpected error fetching course:", err);
+        return null;
     }
 };
 
 export const fetchFullCourse = async (slug: string): Promise<Course | null> => {
     if (!isSupabaseConfigured()) {
-        return getLocalCourseBySlug(slug) || null;
+        console.warn("Supabase not configured, returning null");
+        return null;
     }
 
     try {
@@ -150,17 +208,14 @@ export const fetchFullCourse = async (slug: string): Promise<Course | null> => {
             .single();
 
         if (error) {
-            if (error.code === 'PGRST116') {
-                return getLocalCourseBySlug(slug) || null;
-            }
-            console.warn("Supabase fetch failed, falling back to local data:", error.message);
-            return getLocalCourseBySlug(slug) || null;
+            console.error("Error fetching full course:", error.message);
+            return null;
         }
 
         return data ? mapRowToCourse(data) : null;
     } catch (err) {
-        console.warn("Unexpected error fetching full course, falling back to local data:", err);
-        return getLocalCourseBySlug(slug) || null;
+        console.error("Unexpected error fetching full course:", err);
+        return null;
     }
 };
 
@@ -314,35 +369,98 @@ export const fetchCourseWithContent = async (slug: string): Promise<{
 };
 
 /**
- * Fetch related courses based on category or audience level
+ * Fetch related courses from the related_courses table
+ * Returns between 1-4 related courses based on explicit database relationships
  */
-export const fetchRelatedCourses = async (slug: string, limit: number = 3): Promise<Course[]> => {
+export const fetchRelatedCourses = async (slug: string, limit: number = 4): Promise<Course[]> => {
     if (!isSupabaseConfigured()) {
-        const localCourses = getRelatedCourses(slug, limit);
-        return localCourses;
+        console.warn("Supabase not configured, returning empty related courses");
+        return [];
+    }
+
+    // Enforce limit between 1 and 4
+    const safeLimit = Math.max(1, Math.min(4, limit));
+
+    try {
+        const supabase = getSupabase();
+
+        // Query the related_courses table to get explicit relationships
+        const { data: relatedData, error: relatedError } = await supabase
+            .from("related_courses")
+            .select("related_course_slug")
+            .eq("course_slug", slug)
+            .order("display_order", { ascending: true })
+            .limit(safeLimit);
+
+        if (relatedError) {
+            console.error("Error fetching related course relationships:", relatedError.message);
+            return [];
+        }
+
+        if (!relatedData || relatedData.length === 0) {
+            // Fallback: return empty array if no explicit relationships exist
+            console.log("No explicit related courses found for:", slug);
+            return [];
+        }
+
+        // Extract the related course slugs
+        const relatedSlugs = relatedData.map(r => r.related_course_slug);
+
+        // Fetch the full course data for the related courses with category names
+        const { data: coursesData, error: coursesError } = await supabase
+            .from("courses")
+            .select("*, course_categories(name)")
+            .in("slug", relatedSlugs)
+            .eq("status", "published");
+
+        if (coursesError) {
+            console.error("Error fetching related courses data:", coursesError.message);
+            return [];
+        }
+
+        // Maintain the display order from related_courses table
+        const coursesMap = new Map((coursesData || []).map(c => [c.slug, c]));
+        const orderedCourses = relatedSlugs
+            .map(slug => coursesMap.get(slug))
+            .filter(Boolean)
+            .map(mapRowToCourse);
+
+        return orderedCourses;
+    } catch (err) {
+        console.error("Unexpected error fetching related courses:", err);
+        return [];
+    }
+};
+
+/**
+ * Fetch all categories from database
+ */
+export const fetchCategories = async (): Promise<Category[]> => {
+    if (!isSupabaseConfigured()) {
+        console.warn("Supabase not configured, returning empty categories");
+        return [];
     }
 
     try {
-        const currentCourse = await fetchFullCourse(slug);
-        if (!currentCourse) return [];
-
         const supabase = getSupabase();
         const { data, error } = await supabase
-            .from("courses")
+            .from("course_categories")
             .select("*")
-            .neq('slug', slug)
-            .or(`category_id.eq.${currentCourse.categoryId},audience_level.eq.${currentCourse.audienceLevel}`)
-            .eq('status', 'published')
-            .limit(limit);
+            .order('display_order', { ascending: true });
 
         if (error) {
-            console.warn("Error fetching related courses:", error.message);
-            return getRelatedCourses(slug, limit);
+            console.error("Error fetching categories:", error.message);
+            return [];
         }
 
-        return (data || []).map(mapRowToCourse);
+        return (data || []).map((row: any) => ({
+            id: row.id || row.slug,
+            slug: row.slug,
+            name: row.name,
+            description: row.description || "",
+        }));
     } catch (err) {
-        console.warn("Unexpected error fetching related courses:", err);
-        return getRelatedCourses(slug, limit);
+        console.error("Unexpected error fetching categories:", err);
+        return [];
     }
 };
