@@ -28,9 +28,9 @@ export default defineConfig(({ mode }) => {
     },
     // Load environment variables from .env file
     envDir: ".",
-    envPrefix: ["VITE_", "STORAGE_", "CONTAINER_", "AZURE_", "SAS_"],
-    build:{
-      chunkSizeWarningLimit:3000,
+    envPrefix: ["VITE_"],
+    build: {
+      chunkSizeWarningLimit: 3000,
     }
   };
 });

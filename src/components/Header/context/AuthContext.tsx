@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const useMockAuth = (import.meta as any).env.VITE_USE_MOCK_AUTH === 'true';
   const bypassMode = (import.meta as any).env.VITE_BYPASS_AZURE_AUTH === 'true';
-  
+
   // Debug environment variables
   console.log('🔧 Auth Environment Variables:', {
     VITE_USE_MOCK_AUTH: (import.meta as any).env.VITE_USE_MOCK_AUTH,
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useMockAuth,
     bypassMode
   });
-  
+
   // Initialize mock auth if enabled
   useEffect(() => {
     if (useMockAuth) {
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return unsubscribe;
     }
   }, [useMockAuth]);
-  
+
   // Fix loading state - should only be loading during actual auth operations
   const isLoading = useMockAuth ? false : (inProgress === 'login' || inProgress === 'ssoSilent' || inProgress === 'acquireToken');
 
@@ -92,19 +92,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Validate and process ID token claims
     const idTokenClaims = account.idTokenClaims || {};
     const validatedClaims = validateAndLogClaims(idTokenClaims);
-    
+
     // Extract user profile from validated claims
     const userProfile = extractUserProfile(validatedClaims);
-    
+
     // Fallback to account properties if claims are insufficient
     if (!userProfile.id || userProfile.id === 'unknown-user') {
       userProfile.id = account.localAccountId || account.homeAccountId || 'user-' + Date.now();
     }
-    
+
     if (!userProfile.name || userProfile.name === 'User') {
       userProfile.name = account.name || account.username || 'User';
     }
-    
+
     if (!userProfile.email || userProfile.email === 'user@domain.com') {
       userProfile.email = account.username || 'user@domain.com';
     }
@@ -115,10 +115,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('🔄 Syncing user with database...');
       const azureUserId = account.localAccountId || account.homeAccountId;
-      
+
       // Check if user already exists
       let dbUser = await getUserByAzureId(azureUserId);
-      
+
       if (!dbUser) {
         // Create new user in database
         console.log('👤 Creating new user in database...');
@@ -128,15 +128,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('🔄 Updating existing user last login...');
         await updateUserLastLogin(azureUserId);
       }
-      
+
       if (dbUser) {
         setDatabaseUser(dbUser);
-        
+
         console.log('✅ User synced with database:', {
           customerId: dbUser.customer_id,
           azureUserId: azureUserId
         });
-        
+
         // Enhance user profile with database info
         const enhancedProfile: UserProfile = {
           ...userProfile,
@@ -145,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           department: dbUser.department || (userProfile as any).department,
           officeLocation: dbUser.office_location || (userProfile as any).officeLocation
         };
-        
+
         return enhancedProfile;
       }
     } catch (error) {
@@ -160,11 +160,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   // User detection priority: mock auth > bypass mode > real Azure AD
-  const user: UserProfile | null = useMockAuth 
-    ? mockUser 
-    : (bypassMode 
-        ? bypassUser 
-        : currentUser);
+  const user: UserProfile | null = useMockAuth
+    ? mockUser
+    : (bypassMode
+      ? bypassUser
+      : currentUser);
 
   // Debug user detection
   console.log('👤 User Detection Debug:', {
@@ -185,7 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('🔄 Setting active account from accounts array:', accounts[0]);
         instance.setActiveAccount(accounts[0]);
       }
-      
+
       // Extract user info and sync with database
       extractUserFromAccount(accounts[0]).then(userProfile => {
         if (userProfile) {
@@ -208,7 +208,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       useMockAuth,
       bypassMode
     });
-    
+
     // Log detailed authentication state for debugging
     if (!useMockAuth && !bypassMode) {
       logAuthenticationState(accounts, instance.getActiveAccount());
@@ -219,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user && !isLoading) {
       const currentPath = location.pathname;
-      
+
       // Redirect to learning page just like the test account does
       if (currentPath === '/' || currentPath.includes('auth') || currentPath.includes('signin')) {
         console.log('🎓 Real account authenticated! Redirecting to learning page from:', currentPath);
@@ -234,14 +234,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async () => {
     console.log('🔐 Login function called with modes:', { useMockAuth, bypassMode });
-  console.log('🎯 Using REAL Azure AD authentication (not test account)');
-    
+    console.log('🎯 Using REAL Azure AD authentication (not test account)');
+
     // If mock auth is enabled, use mock authentication
     if (useMockAuth) {
       console.log('🎭 Using mock authentication...');
       try {
         await mockAuthService.login();
-        
+
         // Redirect to learning page after mock login
         setTimeout(() => {
           const currentPath = window.location.pathname;
@@ -255,7 +255,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return;
     }
-    
+
     // If bypass mode is enabled, create a mock user and skip Azure entirely
     if (bypassMode) {
       console.log('🚀 Using bypass mode - creating test user...');
@@ -264,10 +264,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: 'Test User',
         email: 'test@example.com'
       };
-      
+
       console.log('👤 Setting bypass user:', testUser);
       setBypassUser(testUser);
-      
+
       // Redirect to learning page after bypass login
       setTimeout(() => {
         const currentPath = window.location.pathname;
@@ -276,35 +276,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           navigate('/learning', { replace: true });
         }
       }, 100);
-      
+
       return;
     }
-    
-    // Prevent multiple login attempts (simplified)
+
+    // Prevent multiple login attempts
     if (loginInProgress) {
-      console.log('Login already in progress, skipping...');
+      console.log('⚠️ Login already in progress, skipping...');
       return;
     }
-    
+
     setLoginInProgress(true);
-    
-    setLoginInProgress(true);
-    
+
     try {
-      console.log('🔐 Starting real Azure AD login (like working test account)...');
-      
+      console.log('🔐 Starting real Azure AD login...');
+      console.log('🔄 Redirecting to Microsoft Entra login page...');
+
       // Use redirect login for External Identities
-      console.log('🔄 Redirecting to Microsoft login...');
       await instance.loginRedirect(interactiveLoginRequest);
-      
+
       // loginRedirect will redirect the page, so execution stops here
       console.log('🔄 Redirect initiated successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Login redirect error:', error);
+      console.error('❌ Error details:', {
+        name: error?.name,
+        message: error?.message,
+        errorCode: error?.errorCode,
+        errorMessage: error?.errorMessage
+      });
       setLoginInProgress(false);
-      
-      // Show user-friendly error
-      console.error('Login failed. Please try again.');
+
+      // Re-throw to allow caller to handle if needed
+      throw error;
     }
   };
 
@@ -321,7 +325,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setBypassUser(null);
       return;
     }
-    
+
     console.log('🚪 Logging out user...');
     instance.logoutRedirect({
       postLogoutRedirectUri: window.location.origin
@@ -332,7 +336,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const acquireUserInfo = async (account: any) => {
     try {
       console.log('🔍 Attempting to acquire additional user info...');
-      
+
       const tokenRequest = {
         scopes: ["User.Read"],
         account: account,
@@ -340,13 +344,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const response = await instance.acquireTokenSilent(tokenRequest);
       console.log('✅ Token acquired successfully:', response);
-      
+
       // Fetch additional user information from Microsoft Graph
       if (response.accessToken) {
         const graphUser = await fetchUserFromGraph(response.accessToken);
         if (graphUser) {
           console.log('✅ Additional user info from Graph API:', graphUser);
-          
+
           // Update database with enhanced user data
           const azureUserId = account.localAccountId || account.homeAccountId;
           if (azureUserId && databaseUser) {
@@ -370,7 +374,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       }
-      
+
       return response;
     } catch (error) {
       console.log('⚠️ Could not acquire additional user info:', error);
@@ -384,12 +388,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const activeAccount = instance.getActiveAccount();
       if (activeAccount) {
         console.log('🔍 Found active account on mount:', activeAccount);
-        
+
         // Extract user info and sync with database first
         extractUserFromAccount(activeAccount).then(userProfile => {
           if (userProfile) {
             setCurrentUser(userProfile);
-            
+
             // Then try to acquire additional user information
             acquireUserInfo(activeAccount).then(tokenResponse => {
               if (tokenResponse) {
@@ -401,7 +405,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else if (accounts.length > 0) {
         console.log('🔍 Setting active account from accounts array');
         instance.setActiveAccount(accounts[0]);
-        
+
         extractUserFromAccount(accounts[0]).then(userProfile => {
           if (userProfile) {
             setCurrentUser(userProfile);

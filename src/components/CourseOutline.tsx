@@ -39,6 +39,12 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
     completedCount,
     progressPct,
 }) => {
+    const firstLessonTitle = (lessons[0]?.title || "").toLowerCase();
+    const hasIntroLesson =
+        lessons[0]?.type === "intro" ||
+        firstLessonTitle.includes("introduction");
+    const shouldOffsetNumbering = hasIntroLesson || lessons.length >= 11;
+
     return (
         <aside className="bg-white border border-gray-200 rounded-none overflow-hidden flex flex-col h-full sticky top-4">
             <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50 rounded-none">
@@ -71,6 +77,20 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
                         const isActive = idx === currentLessonIndex && !showQuiz;
                         const isCompleted = lesson.completed;
                         const isLocked = !isCompleted && idx > currentLessonIndex && !lessons[idx - 1]?.completed;
+                        const isIntroLesson = shouldOffsetNumbering && idx === 0;
+                        const isConclusionLesson =
+                            lesson.type === "outro" ||
+                            /conclusion/i.test(lesson.title || "") ||
+                            (lessons.length >= 11 && idx === lessons.length - 1);
+
+                        const displayNumber =
+                            !isIntroLesson && !isConclusionLesson
+                                ? (shouldOffsetNumbering ? idx : idx + 1)
+                                : null;
+
+                        const badgeContent = isCompleted
+                            ? <CheckCircle2 size={12} />
+                            : (displayNumber ?? "");
 
                         // Allow navigation to any completed lesson or the current one
                         // Or the next immediate one if the previous is completed
@@ -98,7 +118,7 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
                                             : "bg-gray-200 text-[#030C2B]"
                                         }`}
                                 >
-                                    {isCompleted ? <CheckCircle2 size={12} /> : idx + 1}
+                                    {badgeContent}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
@@ -112,6 +132,16 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
                                         >
                                             {lesson.title}
                                         </p>
+                                        {isIntroLesson && (
+                                            <span className="text-[10px] text-gray-600 font-semibold uppercase bg-gray-100 px-1.5 py-0.5 rounded">
+                                                Course Introduction
+                                            </span>
+                                        )}
+                                        {isConclusionLesson && (
+                                            <span className="text-[10px] text-[#2E469E] font-semibold uppercase bg-blue-100 px-1.5 py-0.5 rounded">
+                                                Course Conclusion
+                                            </span>
+                                        )}
                                         {isCompleted && (
                                             <span className="text-[10px] text-green-600 font-semibold uppercase bg-green-100 px-1.5 py-0.5 rounded">
                                                 Completed

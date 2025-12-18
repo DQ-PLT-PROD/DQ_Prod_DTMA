@@ -11,7 +11,7 @@ const categories = [
     image: "/Economy 4.0 thumnail.png",
   },
   {
-    title: "Building Tomorrow’s Organisations",
+    title: "Building Tomorrow's Organisations",
     description:
       "Where organizations are headed in the age of digital transformation",
     image: "/2nd category Thumbnail.jpg",
@@ -73,11 +73,10 @@ const D6CategoriesSection: React.FC = () => {
                       loading="lazy"
                       decoding="async"
                       fetchPriority="low"
-                      className={`h-full w-full object-cover ${
-                        category.title === "Digital Transformation 2.0 (DT2.0)"
-                          ? "object-top"
-                          : ""
-                      }`}
+                      className={`h-full w-full object-cover ${category.title === "Digital Transformation 2.0 (DT2.0)"
+                        ? "object-top"
+                        : ""
+                        }`}
                     />
                     <div className="absolute inset-0 bg-[#030C2B]/20"></div>
                   </>
@@ -91,7 +90,7 @@ const D6CategoriesSection: React.FC = () => {
                   {category.description}
                 </p>
                 <a
-                  href="/marketplace/courses"
+                  href="/courses"
                   className="mt-6 inline-flex items-center text-sm font-semibold hover:underline"
                   style={{ color: BRAND_PRIMARY }}
                 >

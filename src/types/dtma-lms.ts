@@ -2,14 +2,6 @@ export type AudienceLevel = "Digital Leaders" | "Digital Workers";
 
 export type LessonType = "intro" | "standard" | "outro" | "quiz";
 
-export interface CourseProvider {
-  id?: string;
-  name: string;
-  logoUrl: string;
-  description?: string;
-  url?: string;
-}
-
 export interface Category {
   id: string;
   slug: string;
@@ -31,15 +23,15 @@ export interface Course {
   estimatedDurationMinutes: number;
   lessonCount: number;
   heroImageUrl?: string;
+  thumbnailUrl?: string;
   introLessonId?: string;
   introVideoUrl?: string;
   introVideoPosterUrl?: string;
   isFeatured?: boolean;
+  isComingSoon?: boolean;
   status?: "draft" | "published";
-  provider: CourseProvider;
   rating?: number;
   reviewCount?: number;
-  deliveryMode?: "Online" | "Hybrid" | "In-person";
   enrollmentUrl?: string;
   learningOutcomes?: string[];
   skillsGained?: string[];
@@ -48,6 +40,7 @@ export interface Course {
   location?: string;
   courseTimeline?: any;
   keyHighlights?: string[] | string;
+  industry?: string;
 }
 
 export interface Lesson {
@@ -64,9 +57,9 @@ export interface Lesson {
 
 export interface CourseCatalogFilters {
   search?: string;
-  categorySlug?: string;
-  audienceLevel?: AudienceLevel;
-  topic?: string;
-  levelTag?: string;
-  deliveryMode?: string;
+  categories?: string[];
+  audienceLevels?: AudienceLevel[];
+  topics?: string[];
+  levelTags?: string[];
+  industries?: string[];
 }

@@ -1,106 +1,51 @@
-import React, { useState } from "react";
-import { ArrowRight, ArrowLeft, Layers } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { FadeInUpOnScroll, StaggeredFadeIn } from "./AnimationUtils";
 import { CourseTile } from "./CourseTile";
+import { fetchCourses } from "../services/courseService";
 
-const courses = [
-  {
-    id: "economy-4-0",
-    title: "Understanding Economy 4.0",
-    tag: "Economy 4.0",
-    category: "ECONOMY 4.0",
-    levelTag: "Beginner",
-    audienceLevel: "DIGITAL LEADERS",
-    duration: "55 mins",
-    lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
-    description:
-      "Get a clear, practical introduction to Economy 4.0 and why it matters.",
-    isHeroTile: true,
-  },
-  {
-    id: "digital-workflows",
-    title: "Connecting Economy 4.0 and Digital Cognitive Organizations",
-    tag: "Economy 4.0",
-    category: "ECONOMY 4.0",
-    levelTag: "Intermediate",
-    audienceLevel: "DIGITAL LEADERS",
-    duration: "1h",
-    lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
-    description:
-      "Link Economy 4.0 trends to the design of Digital Cognitive Organizations.",
-    isHeroTile: true,
-  },
-  {
-    id: "platform-thinking-101",
-    title: "Designing Perfect Life Transactions in Economy 4.0",
-    tag: "Economy 4.0",
-    category: "ECONOMY 4.0",
-    levelTag: "Intermediate",
-    audienceLevel: "DIGITAL LEADERS",
-    duration: "1h 5m",
-    lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
-    description:
-      "Learn to design Perfect Life Transactions that create value for customers and citizens.",
-    isHeroTile: true,
-  },
-  {
-    id: "digital-accelerators-toolkit",
-    title: "Using AI for Advantage in Economy 4.0",
-    tag: "Economy 4.0",
-    category: "ECONOMY 4.0",
-    levelTag: "Advanced",
-    audienceLevel: "DIGITAL LEADERS",
-    duration: "52 mins",
-    lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
-    description:
-      "Go beyond AI hype and focus on competitive advantage.",
-    isHeroTile: true,
-  },
-  {
-    id: "protecting-trust-security",
-    title: "Protecting Trust and Security in Economy 4.0",
-    tag: "Economy 4.0",
-    category: "ECONOMY 4.0",
-    levelTag: "Advanced",
-    audienceLevel: "DIGITAL LEADERS",
-    duration: "1h 8m",
-    lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
-    description:
-      "Balance cybersecurity and innovation in a hyper-connected economy.",
-    isHeroTile: true,
-  },
-  {
-    id: "strategic-ai-advantage",
-    title: "Applying Strategic AI for Competitive Advantage",
-    tag: "Economy 4.0",
-    category: "ECONOMY 4.0",
-    levelTag: "Advanced",
-    audienceLevel: "DIGITAL LEADERS",
-    duration: "57 mins",
-    lessonCount: 4,
-    thumbnailUrl: "/Economy%204.0%20thumnail.png",
-    videoUrl: "/videos/C2-INTRO.mp4",
-    description:
-      "Treat AI as a strategic capability, not a one-off project.",
-    isHeroTile: true,
-  },
-];
 
 const FeaturedCoursesSection: React.FC = () => {
   const [startIndex, setStartIndex] = useState(0);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Fetch courses from database (includes both active and coming soon courses)
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        setLoading(true);
+        const dbCourses = await fetchCourses();
+
+        // Map DB courses to our display format
+        const mappedCourses = dbCourses.map((course: any) => ({
+          id: course.slug || course.id,
+          title: course.title,
+          category: course.category?.toUpperCase() || "ECONOMY 4.0",
+          levelTag: course.levelTag || "Beginner",
+          audienceLevel: course.audienceLevel?.toUpperCase() || "DIGITAL LEADERS",
+          duration: course.isComingSoon ? "Coming Soon" : (course.duration || "55 mins"),
+          lessonCount: course.lessonCount || 4,
+          thumbnailUrl: course.heroImageUrl || course.thumbnailUrl,
+          videoUrl: course.isComingSoon ? undefined : (course.introVideoUrl || "/videos/C2-INTRO.mp4"),
+          description: course.description || "",
+          isComingSoon: course.isComingSoon || false,
+        }));
+
+        setCourses(mappedCourses);
+      } catch (error) {
+        console.error("Error fetching featured courses:", error);
+        setCourses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCourses();
+  }, []);
 
   const visibleCourses = courses.slice(startIndex, startIndex + 3);
   const maxStartIndex = Math.max(0, courses.length - 3);
@@ -121,6 +66,26 @@ const FeaturedCoursesSection: React.FC = () => {
     navigate(`/courses/${id}${search}`);
   };
 
+  if (loading) {
+    return (
+      <section className="bg-gray-50 py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#030C2B]">
+              Featured Courses
+            </h2>
+            <p className="text-lg text-gray-600">Loading courses...</p>
+          </div>
+          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse bg-gray-200 rounded-2xl h-80"></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-gray-50 py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -138,25 +103,15 @@ const FeaturedCoursesSection: React.FC = () => {
           <div className="relative">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {visibleCourses.map((course) => {
-                const tagChips =
-                  course.tag
-                    ?.split(" - ")
-                    .map((chip) => chip.trim())
-                    .filter(
-                      (chip) =>
-                        chip.toLowerCase() !== "leadership" &&
-                        chip.toLowerCase() !== "productivity" &&
-                        chip.toLowerCase() !== "strategy"
-                    ) ?? [];
                 const isHovered = hoveredId === course.id;
-                return course.isHeroTile ? (
+
+                return (
                   <div
                     key={course.id}
-                    onMouseEnter={() => setHoveredId(course.id)}
+                    onMouseEnter={() => !course.isComingSoon && setHoveredId(course.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    className={`transition duration-300 ease-out ${
-                      isHovered ? "scale-105 z-10" : "scale-100"
-                    }`}
+                    className={`transition duration-300 ease-out ${!course.isComingSoon && isHovered ? "scale-105 z-10" : "scale-100"
+                      }`}
                   >
                     <CourseTile
                       title={course.title}
@@ -168,52 +123,11 @@ const FeaturedCoursesSection: React.FC = () => {
                       lessonCount={course.lessonCount}
                       thumbnailUrl={course.thumbnailUrl}
                       videoUrl={course.videoUrl}
-                      providerName="DTMA"
-                      providerLogoUrl="/dtma_logo.png"
-                      onCardClick={() => handleViewDetails(course.id)}
+
+                      variant={course.isComingSoon ? "coming-soon" : "course"}
+                      onCardClick={course.isComingSoon ? undefined : () => handleViewDetails(course.id)}
                       isHovered={isHovered}
                     />
-                  </div>
-                ) : (
-                  <div
-                    key={course.title}
-                    className="flex h-full flex-col rounded-3xl border border-gray-200 bg-white p-8 shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <h3 className="text-xl font-semibold text-gray-900">
-                        {course.title}
-                      </h3>
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-[#2E469E]">
-                        <Layers size={18} />
-                      </div>
-                    </div>
-                    <p className="mt-3 text-sm text-gray-600">
-                      {course.description}
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {tagChips.map((chip) => (
-                        <span
-                          key={chip}
-                          className="rounded-full border border-[#1839AD]/10 bg-[#1839AD]/5 px-3 py-1 text-xs font-semibold text-[#1839AD]"
-                        >
-                          {chip}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="mt-6 grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => handleViewDetails(course.id)}
-                        className="rounded-xl border border-[#1839AD] px-4 py-2 text-sm font-semibold text-[#1839AD] transition hover:bg-[#1839AD]/5"
-                      >
-                        View Details
-                      </button>
-                      <button
-                        onClick={() => handleViewDetails(course.id, true)}
-                        className="rounded-xl bg-[#1839AD] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#132b7c]"
-                      >
-                        Enroll Now
-                      </button>
-                    </div>
                   </div>
                 );
               })}
@@ -241,9 +155,8 @@ const FeaturedCoursesSection: React.FC = () => {
                   key={idx}
                   onClick={() => setStartIndex(Math.min(idx, maxStartIndex))}
                   aria-label={`Go to slide ${idx + 1}`}
-                  className={`h-2 rounded-full transition-all duration-200 ${
-                    isActive ? "w-8 bg-[#1839AD]/30" : "w-2 bg-gray-300"
-                  }`}
+                  className={`h-2 rounded-full transition-all duration-200 ${isActive ? "w-8 bg-[#1839AD]/30" : "w-2 bg-gray-300"
+                    }`}
                 ></button>
               );
             })}

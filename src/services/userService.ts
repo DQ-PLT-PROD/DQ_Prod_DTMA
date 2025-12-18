@@ -1,12 +1,20 @@
 /**
  * User Service for managing user data synchronization between Azure AD and database
  */
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase, isSupabaseConfigured } from "../lib/supabase/client";
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Initialize Supabase client with validation/guard to avoid runtime errors when env vars are missing/invalid
+let supabase: ReturnType<typeof getSupabase> | null = null;
+try {
+  if (isSupabaseConfigured()) {
+    supabase = getSupabase();
+  } else {
+    console.warn("Supabase not configured; skipping user service client initialization.");
+  }
+} catch (err) {
+  console.warn("Failed to initialize Supabase client (check VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY):", err);
+  supabase = null;
+}
 
 export interface DatabaseUser {
   id: string;
@@ -42,6 +50,10 @@ export async function syncUserWithDatabase(
   azureUserId: string,
   additionalData?: any
 ): Promise<DatabaseUser | null> {
+  if (!supabase) {
+    console.warn("Supabase not configured; skipping user sync.");
+    return null;
+  }
   try {
     console.log('🔄 Syncing user with database:', { azureUserId, email: azureUserProfile.email });
 
@@ -93,6 +105,10 @@ export async function syncUserWithDatabase(
  * Gets a user from the database by Azure user ID
  */
 export async function getUserByAzureId(azureUserId: string): Promise<DatabaseUser | null> {
+  if (!supabase) {
+    console.warn("Supabase not configured; cannot fetch user by Azure ID.");
+    return null;
+  }
   try {
     const { data, error } = await supabase
       .from('users')
@@ -120,6 +136,10 @@ export async function getUserByAzureId(azureUserId: string): Promise<DatabaseUse
  * Gets a user from the database by customer ID
  */
 export async function getUserByCustomerId(customerId: string): Promise<DatabaseUser | null> {
+  if (!supabase) {
+    console.warn("Supabase not configured; cannot fetch user by customer ID.");
+    return null;
+  }
   try {
     const { data, error } = await supabase
       .from('users')
@@ -146,6 +166,10 @@ export async function getUserByCustomerId(customerId: string): Promise<DatabaseU
  * Updates user's last login timestamp
  */
 export async function updateUserLastLogin(azureUserId: string): Promise<boolean> {
+  if (!supabase) {
+    console.warn("Supabase not configured; cannot update user last login.");
+    return false;
+  }
   try {
     const { error } = await supabase
       .from('users')

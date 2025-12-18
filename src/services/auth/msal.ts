@@ -1,11 +1,25 @@
 import { PublicClientApplication, Configuration } from "@azure/msal-browser";
 
+// Azure External ID / CIAM configuration
+const subdomain = (import.meta as any).env.VITE_AZURE_SUBDOMAIN;
+const tenantId = (import.meta as any).env.VITE_AZURE_TENANT_ID;
+
+// Debug: Log the configuration
+console.log('🔧 MSAL Config:', {
+  subdomain,
+  tenantId,
+  clientId: (import.meta as any).env.VITE_AZURE_CLIENT_ID,
+});
+
+// For Azure External ID (CIAM), authority format is:
+// https://{subdomain}.ciamlogin.com/{tenant-id}
 const msalConfig: Configuration = {
   auth: {
     clientId: (import.meta as any).env.VITE_AZURE_CLIENT_ID,
-    authority: `https://${(import.meta as any).env.VITE_AZURE_CIAM_DOMAIN}`, // <-- CIAM domain here
-    redirectUri: (import.meta as any).env.VITE_AZURE_REDIRECT_URI,
-    postLogoutRedirectUri: (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI,
+    authority: `https://${subdomain}.ciamlogin.com/${tenantId}`,
+    redirectUri: (import.meta as any).env.VITE_AZURE_REDIRECT_URI || window.location.origin,
+    postLogoutRedirectUri: (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI || window.location.origin,
+    knownAuthorities: [`${subdomain}.ciamlogin.com`],
   },
   cache: {
     cacheLocation: "localStorage",
@@ -16,9 +30,9 @@ const msalConfig: Configuration = {
 export const msalInstance = new PublicClientApplication(msalConfig);
 
 export const loginRequest = {
-  scopes: ["User.Read"]
+  scopes: ["openid", "profile", "email"]
 };
 
 export const interactiveLoginRequest = {
-  scopes: ["User.Read"]
+  scopes: ["openid", "profile", "email"]
 };
