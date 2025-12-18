@@ -1,12 +1,23 @@
 import { PublicClientApplication, Configuration } from "@azure/msal-browser";
 
-<<<<<<< HEAD
-// Helper function to get the correct redirect URI - always use Vercel production URL
+// Helper function to get the correct redirect URI based on environment
 const getRedirectUri = () => {
+  // If we're on localhost, use localhost
+  if (typeof window !== 'undefined' && window.location.origin.includes('localhost')) {
+    return 'http://localhost:3000';
+  }
+  
+  // Otherwise use the configured URI or Vercel production URL
   return (import.meta as any).env.VITE_AZURE_REDIRECT_URI || 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
 };
 
 const getPostLogoutRedirectUri = () => {
+  // If we're on localhost, use localhost
+  if (typeof window !== 'undefined' && window.location.origin.includes('localhost')) {
+    return 'http://localhost:3000';
+  }
+  
+  // Otherwise use the configured URI or Vercel production URL
   return (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI || 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
 };
 
@@ -30,28 +41,6 @@ const msalConfig: Configuration = {
     authority: getAuthority(),
     redirectUri: getRedirectUri(),
     postLogoutRedirectUri: getPostLogoutRedirectUri(),
-=======
-// Azure External ID / CIAM configuration
-const subdomain = (import.meta as any).env.VITE_AZURE_SUBDOMAIN;
-const tenantId = (import.meta as any).env.VITE_AZURE_TENANT_ID;
-
-// Debug: Log the configuration
-console.log('🔧 MSAL Config:', {
-  subdomain,
-  tenantId,
-  clientId: (import.meta as any).env.VITE_AZURE_CLIENT_ID,
-});
-
-// For Azure External ID (CIAM), authority format is:
-// https://{subdomain}.ciamlogin.com/{tenant-id}
-const msalConfig: Configuration = {
-  auth: {
-    clientId: (import.meta as any).env.VITE_AZURE_CLIENT_ID,
-    authority: `https://${subdomain}.ciamlogin.com/${tenantId}`,
-    redirectUri: (import.meta as any).env.VITE_AZURE_REDIRECT_URI || window.location.origin,
-    postLogoutRedirectUri: (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI || window.location.origin,
-    knownAuthorities: [`${subdomain}.ciamlogin.com`],
->>>>>>> 69acc313b762872972bd0ce23cc708c7d02c2cc9
   },
   cache: {
     cacheLocation: "localStorage",

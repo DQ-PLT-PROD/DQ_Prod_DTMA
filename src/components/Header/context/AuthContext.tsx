@@ -354,7 +354,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, 100);
       return;
     }
-<<<<<<< HEAD
     
     if (bypassMode) {
       console.log('🚀 Using bypass logout...');
@@ -369,10 +368,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     console.log('🚪 Logging out user with Azure AD...');
-=======
-
-    console.log('🚪 Logging out user...');
->>>>>>> 69acc313b762872972bd0ce23cc708c7d02c2cc9
     instance.logoutRedirect({
       postLogoutRedirectUri: window.location.origin
     });
