@@ -27,7 +27,7 @@ export interface CourseResource {
 
 // Helper to map Supabase row to Course type
 const mapRowToCourse = (row: any): Course => {
-    return {
+    const course: Course = {
         id: row.id,
         slug: row.slug,
         title: row.title,
@@ -53,6 +53,13 @@ const mapRowToCourse = (row: any): Course => {
         uponCompletion: row.upon_completion || undefined,
         startDate: row.start_date || undefined,
     };
+
+    // Override audience level for the first featured course to match the landing page badge
+    if (course.slug === "understanding-economy-4-0") {
+        course.audienceLevel = "Digital Workers";
+    }
+
+    return course;
 };
 
 export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[]> => {
