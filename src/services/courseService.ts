@@ -54,8 +54,18 @@ const mapRowToCourse = (row: any): Course => {
         startDate: row.start_date || undefined,
     };
 
-    // Override audience level for the first featured course to match the landing page badge
-    if (course.slug === "understanding-economy-4-0") {
+    // Override audience level badges to “Digital Workers” for selected featured cards
+    const workersSlugs = new Set([
+        "understanding-economy-4-0",                         // card 1
+        "connecting-economy-4-0-and-dco",                    // card 2
+        "building-digital-business-platforms-economy-4-0",   // card 4
+        "accelerating-digital-transformation-economy-4-0",   // card 6
+        "protecting-trust-and-security-economy-4-0",         // card 8
+        "applying-strategic-ai-for-competitive-advantage",   // card 9
+        "building-a-culture-of-innovation-economy-4-0",      // card 10
+        "measuring-success-in-economy-4-0",                  // card 11
+    ]);
+    if (workersSlugs.has(course.slug)) {
         course.audienceLevel = "Digital Workers";
     }
 
