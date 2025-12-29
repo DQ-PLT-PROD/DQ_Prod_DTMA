@@ -1,13 +1,33 @@
 import { PublicClientApplication, Configuration } from "@azure/msal-browser";
 
-// Helper function to get the correct redirect URI - always use localhost
+// Helper function to get the correct redirect URI based on environment
 const getRedirectUri = () => {
-  // Always use localhost for all environments since Azure Portal only accepts one redirect URI
+  // For localhost development
+  if (typeof window !== 'undefined' && window.location.origin.includes('localhost')) {
+    return 'http://localhost:3000';
+  }
+  
+  // For production deployment, use current origin
+  if (typeof window !== 'undefined') {
+    return window.location.origin + '/';
+  }
+  
+  // Fallback
   return 'http://localhost:3000';
 };
 
 const getPostLogoutRedirectUri = () => {
-  // Always use localhost for all environments
+  // For localhost development
+  if (typeof window !== 'undefined' && window.location.origin.includes('localhost')) {
+    return 'http://localhost:3000';
+  }
+  
+  // For production deployment, use current origin
+  if (typeof window !== 'undefined') {
+    return window.location.origin + '/';
+  }
+  
+  // Fallback
   return 'http://localhost:3000';
 };
 
