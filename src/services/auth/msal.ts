@@ -7,12 +7,15 @@ const getRedirectUri = () => {
     return 'http://localhost:3000';
   }
   
-  // For production deployment, use current origin
-  if (typeof window !== 'undefined') {
-    return window.location.origin + '/';
+  // For production, use environment variable or fallback to localhost
+  // This allows you to set VITE_AZURE_REDIRECT_URI in Vercel environment variables
+  const prodRedirectUri = (import.meta as any).env.VITE_AZURE_REDIRECT_URI;
+  if (prodRedirectUri) {
+    return prodRedirectUri;
   }
   
-  // Fallback
+  // If no environment variable is set, redirect to localhost (will cause error but is safer)
+  console.warn('⚠️ No VITE_AZURE_REDIRECT_URI set for production. Authentication will redirect to localhost.');
   return 'http://localhost:3000';
 };
 
@@ -22,12 +25,13 @@ const getPostLogoutRedirectUri = () => {
     return 'http://localhost:3000';
   }
   
-  // For production deployment, use current origin
-  if (typeof window !== 'undefined') {
-    return window.location.origin + '/';
+  // For production, use environment variable or fallback to localhost
+  const prodLogoutUri = (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI;
+  if (prodLogoutUri) {
+    return prodLogoutUri;
   }
   
-  // Fallback
+  // Fallback to localhost
   return 'http://localhost:3000';
 };
 
