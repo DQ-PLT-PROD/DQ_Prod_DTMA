@@ -7,13 +7,15 @@ const getRedirectUri = () => {
     return 'http://localhost:3000';
   }
   
-  // For any Vercel deployment, use the current origin
+  // For Vercel deployments, use a consistent production domain
+  // This avoids the issue with random Vercel preview URLs
   if (typeof window !== 'undefined' && window.location.origin.includes('vercel.app')) {
-    return window.location.origin + '/';
+    // Use the main production domain instead of random preview URLs
+    return 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
   }
   
-  // Fallback to environment variable or current origin
-  return (import.meta as any).env.VITE_AZURE_REDIRECT_URI || (typeof window !== 'undefined' ? window.location.origin : 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/');
+  // Fallback to environment variable
+  return (import.meta as any).env.VITE_AZURE_REDIRECT_URI || 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
 };
 
 const getPostLogoutRedirectUri = () => {
@@ -22,13 +24,14 @@ const getPostLogoutRedirectUri = () => {
     return 'http://localhost:3000';
   }
   
-  // For any Vercel deployment, use the current origin
+  // For Vercel deployments, use a consistent production domain
   if (typeof window !== 'undefined' && window.location.origin.includes('vercel.app')) {
-    return window.location.origin + '/';
+    // Use the main production domain instead of random preview URLs
+    return 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
   }
   
-  // Fallback to environment variable or current origin
-  return (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI || (typeof window !== 'undefined' ? window.location.origin : 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/');
+  // Fallback to environment variable
+  return (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI || 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
 };
 
 // Build the authority URL for Azure External ID (CIAM)
