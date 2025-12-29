@@ -2,55 +2,57 @@ import { PublicClientApplication, Configuration } from "@azure/msal-browser";
 
 // Helper function to get the correct redirect URI based on environment
 const getRedirectUri = () => {
-  // For localhost development
+  // For localhost development - always use localhost regardless of env var
   if (typeof window !== 'undefined' && window.location.origin.includes('localhost')) {
-    console.log('🏠 Using localhost redirect URI');
-    return 'http://localhost:3000';
+    const currentOrigin = `${window.location.origin}/`;
+    console.log('🏠 Using localhost redirect URI:', currentOrigin);
+    return currentOrigin;
   }
   
-  // For production, use environment variable or fallback to current origin
+  // For production, use environment variable first, then fallback to current origin
   const prodRedirectUri = (import.meta as any).env.VITE_AZURE_REDIRECT_URI;
-  if (prodRedirectUri) {
-    console.log('🌐 Using production redirect URI:', prodRedirectUri);
+  if (prodRedirectUri && !prodRedirectUri.includes('localhost')) {
+    console.log('🌐 Using production redirect URI from env:', prodRedirectUri);
     return prodRedirectUri;
   }
   
-  // Fallback to current origin if available
+  // Fallback to current origin if available (for production without env var)
   if (typeof window !== 'undefined') {
     const currentOrigin = `${window.location.origin}/`;
     console.log('🔄 Using current origin as redirect URI:', currentOrigin);
     return currentOrigin;
   }
   
-  // Final fallback to localhost
-  console.warn('⚠️ No VITE_AZURE_REDIRECT_URI set and no window available. Using localhost.');
-  return 'http://localhost:3000';
+  // Final fallback
+  console.warn('⚠️ No redirect URI available, using localhost fallback.');
+  return 'http://localhost:3000/';
 };
 
 const getPostLogoutRedirectUri = () => {
-  // For localhost development
+  // For localhost development - always use localhost regardless of env var
   if (typeof window !== 'undefined' && window.location.origin.includes('localhost')) {
-    console.log('🏠 Using localhost post-logout URI');
-    return 'http://localhost:3000';
+    const currentOrigin = `${window.location.origin}/`;
+    console.log('🏠 Using localhost post-logout URI:', currentOrigin);
+    return currentOrigin;
   }
   
-  // For production, use environment variable or fallback to current origin
+  // For production, use environment variable first, then fallback to current origin
   const prodLogoutUri = (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI;
-  if (prodLogoutUri) {
-    console.log('🌐 Using production post-logout URI:', prodLogoutUri);
+  if (prodLogoutUri && !prodLogoutUri.includes('localhost')) {
+    console.log('🌐 Using production post-logout URI from env:', prodLogoutUri);
     return prodLogoutUri;
   }
   
-  // Fallback to current origin if available
+  // Fallback to current origin if available (for production without env var)
   if (typeof window !== 'undefined') {
     const currentOrigin = `${window.location.origin}/`;
     console.log('🔄 Using current origin as post-logout URI:', currentOrigin);
     return currentOrigin;
   }
   
-  // Final fallback to localhost
-  console.warn('⚠️ No VITE_AZURE_POST_LOGOUT_REDIRECT_URI set and no window available.');
-  return 'http://localhost:3000';
+  // Final fallback
+  console.warn('⚠️ No post-logout URI available, using localhost fallback.');
+  return 'http://localhost:3000/';
 };
 
 // Build the authority URL for Azure External ID (CIAM)
@@ -58,7 +60,14 @@ const getAuthority = () => {
   const tenantId = (import.meta as any).env.VITE_AZURE_TENANT_ID || '2d664c1c-c510-4764-af80-fe7c49c1e192';
   const subdomain = (import.meta as any).env.VITE_AZURE_SUBDOMAIN || 'dqproddev';
   
-  console.log('🔧 Authority Debug:', { tenantId, subdomain });
+  console.log('🔧 Authority Debug:', { 
+    tenantId: tenantId ? `${tenantId.substring(0, 8)}...` : 'undefined',
+    subdomain,
+    envVars: {
+      VITE_AZURE_TENANT_ID: (import.meta as any).env.VITE_AZURE_TENANT_ID ? 'set' : 'missing',
+      VITE_AZURE_SUBDOMAIN: (import.meta as any).env.VITE_AZURE_SUBDOMAIN ? 'set' : 'missing'
+    }
+  });
   
   // Validate required values
   if (!tenantId) {

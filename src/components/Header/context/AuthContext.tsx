@@ -46,6 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   console.log('🔧 Auth Environment Variables:', {
     VITE_USE_MOCK_AUTH: (import.meta as any).env.VITE_USE_MOCK_AUTH,
     VITE_BYPASS_AZURE_AUTH: (import.meta as any).env.VITE_BYPASS_AZURE_AUTH,
+    VITE_AZURE_CLIENT_ID: (import.meta as any).env.VITE_AZURE_CLIENT_ID,
+    VITE_AZURE_TENANT_ID: (import.meta as any).env.VITE_AZURE_TENANT_ID,
+    VITE_AZURE_SUBDOMAIN: (import.meta as any).env.VITE_AZURE_SUBDOMAIN,
+    VITE_AZURE_REDIRECT_URI: (import.meta as any).env.VITE_AZURE_REDIRECT_URI,
     useMockAuth,
     bypassMode
   });
