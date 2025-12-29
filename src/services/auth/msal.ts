@@ -1,37 +1,14 @@
 import { PublicClientApplication, Configuration } from "@azure/msal-browser";
 
-// Helper function to get the correct redirect URI based on environment
+// Helper function to get the correct redirect URI - always use localhost
 const getRedirectUri = () => {
-  // If we're on localhost, use localhost
-  if (typeof window !== 'undefined' && window.location.origin.includes('localhost')) {
-    return 'http://localhost:3000';
-  }
-  
-  // For Vercel deployments, use a consistent production domain
-  // This avoids the issue with random Vercel preview URLs
-  if (typeof window !== 'undefined' && window.location.origin.includes('vercel.app')) {
-    // Use the main production domain instead of random preview URLs
-    return 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
-  }
-  
-  // Fallback to environment variable
-  return (import.meta as any).env.VITE_AZURE_REDIRECT_URI || 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
+  // Always use localhost for all environments since Azure Portal only accepts one redirect URI
+  return 'http://localhost:3000';
 };
 
 const getPostLogoutRedirectUri = () => {
-  // If we're on localhost, use localhost
-  if (typeof window !== 'undefined' && window.location.origin.includes('localhost')) {
-    return 'http://localhost:3000';
-  }
-  
-  // For Vercel deployments, use a consistent production domain
-  if (typeof window !== 'undefined' && window.location.origin.includes('vercel.app')) {
-    // Use the main production domain instead of random preview URLs
-    return 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
-  }
-  
-  // Fallback to environment variable
-  return (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI || 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
+  // Always use localhost for all environments
+  return 'http://localhost:3000';
 };
 
 // Build the authority URL for Azure External ID (CIAM)
