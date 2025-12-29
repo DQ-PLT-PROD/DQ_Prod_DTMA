@@ -9,23 +9,10 @@ const getRedirectUri = () => {
     return currentOrigin;
   }
   
-  // For production, use environment variable first, then fallback to current origin
-  const prodRedirectUri = (import.meta as any).env.VITE_AZURE_REDIRECT_URI;
-  if (prodRedirectUri && !prodRedirectUri.includes('localhost')) {
-    console.log('🌐 Using production redirect URI from env:', prodRedirectUri);
-    return prodRedirectUri;
-  }
-  
-  // Fallback to current origin if available (for production without env var)
-  if (typeof window !== 'undefined') {
-    const currentOrigin = `${window.location.origin}/`;
-    console.log('🔄 Using current origin as redirect URI:', currentOrigin);
-    return currentOrigin;
-  }
-  
-  // Final fallback
-  console.warn('⚠️ No redirect URI available, using localhost fallback.');
-  return 'http://localhost:3000/';
+  // For production, always use the custom domain
+  const customDomain = 'https://dq-prod-dtma.vercel.app/';
+  console.log('🌐 Using custom domain redirect URI:', customDomain);
+  return customDomain;
 };
 
 const getPostLogoutRedirectUri = () => {
@@ -36,23 +23,10 @@ const getPostLogoutRedirectUri = () => {
     return currentOrigin;
   }
   
-  // For production, use environment variable first, then fallback to current origin
-  const prodLogoutUri = (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI;
-  if (prodLogoutUri && !prodLogoutUri.includes('localhost')) {
-    console.log('🌐 Using production post-logout URI from env:', prodLogoutUri);
-    return prodLogoutUri;
-  }
-  
-  // Fallback to current origin if available (for production without env var)
-  if (typeof window !== 'undefined') {
-    const currentOrigin = `${window.location.origin}/`;
-    console.log('🔄 Using current origin as post-logout URI:', currentOrigin);
-    return currentOrigin;
-  }
-  
-  // Final fallback
-  console.warn('⚠️ No post-logout URI available, using localhost fallback.');
-  return 'http://localhost:3000/';
+  // For production, always use the custom domain
+  const customDomain = 'https://dq-prod-dtma.vercel.app/';
+  console.log('🌐 Using custom domain post-logout URI:', customDomain);
+  return customDomain;
 };
 
 // Build the authority URL for Azure External ID (CIAM)
