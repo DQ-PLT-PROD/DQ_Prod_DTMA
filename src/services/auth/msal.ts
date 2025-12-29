@@ -7,8 +7,13 @@ const getRedirectUri = () => {
     return 'http://localhost:3000';
   }
   
-  // Otherwise use the configured URI or Vercel production URL
-  return (import.meta as any).env.VITE_AZURE_REDIRECT_URI || 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
+  // For any Vercel deployment, use the current origin
+  if (typeof window !== 'undefined' && window.location.origin.includes('vercel.app')) {
+    return window.location.origin + '/';
+  }
+  
+  // Fallback to environment variable or current origin
+  return (import.meta as any).env.VITE_AZURE_REDIRECT_URI || (typeof window !== 'undefined' ? window.location.origin : 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/');
 };
 
 const getPostLogoutRedirectUri = () => {
@@ -17,8 +22,13 @@ const getPostLogoutRedirectUri = () => {
     return 'http://localhost:3000';
   }
   
-  // Otherwise use the configured URI or Vercel production URL
-  return (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI || 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/';
+  // For any Vercel deployment, use the current origin
+  if (typeof window !== 'undefined' && window.location.origin.includes('vercel.app')) {
+    return window.location.origin + '/';
+  }
+  
+  // Fallback to environment variable or current origin
+  return (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI || (typeof window !== 'undefined' ? window.location.origin : 'https://dq-prod-dtma-git-develop-digitalqatalysts-projects.vercel.app/');
 };
 
 // Build the authority URL for Azure External ID (CIAM)
