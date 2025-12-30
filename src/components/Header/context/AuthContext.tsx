@@ -125,38 +125,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       const azureUserId = account.localAccountId || account.homeAccountId;
+      console.log('🆔 Azure User ID:', azureUserId);
 
-      // Check if user already exists
-      let dbUser = await getUserByAzureId(azureUserId);
+      // Enhanced claims processing
+      const enhancedClaims = {
+        ...account.idTokenClaims,
+        givenName: account.idTokenClaims?.given_name || account.idTokenClaims?.givenName,
+        surname: account.idTokenClaims?.family_name || account.idTokenClaims?.surname,
+        jobTitle: account.idTokenClaims?.jobTitle || account.idTokenClaims?.job_title,
+        department: account.idTokenClaims?.department,
+        officeLocation: account.idTokenClaims?.officeLocation || account.idTokenClaims?.office_location
+      };
 
-      if (!dbUser) {
-        // Create new user in database
-        console.log('👤 Creating new user in database...');
-        dbUser = await syncUserWithDatabase(userProfile, azureUserId, account.idTokenClaims);
-        
-        if (dbUser) {
-          console.log('✅ New user created successfully:', {
-            id: dbUser.id,
-            customerId: dbUser.customer_id,
-            email: dbUser.email
-          });
-        } else {
-          console.error('❌ Failed to create user in database');
-        }
-      } else {
-        // Update last login
-        console.log('🔄 Updating existing user last login...');
-        const updateSuccess = await updateUserLastLogin(azureUserId);
-        console.log(updateSuccess ? '✅ Last login updated' : '❌ Failed to update last login');
-      }
+      console.log('📋 Enhanced claims for sync:', {
+        givenName: enhancedClaims.givenName,
+        surname: enhancedClaims.surname,
+        jobTitle: enhancedClaims.jobTitle,
+        department: enhancedClaims.department,
+        officeLocation: enhancedClaims.officeLocation
+      });
 
+      // Always try to sync user (handles both create and update)
+      console.log('🔄 Attempting user sync...');
+      const dbUser = await syncUserWithDatabase(userProfile, azureUserId, enhancedClaims);
+      
       if (dbUser) {
         setDatabaseUser(dbUser);
 
         console.log('✅ User synced with database:', {
+          id: dbUser.id,
           customerId: dbUser.customer_id,
+          email: dbUser.email,
           azureUserId: azureUserId,
-          lastLogin: dbUser.last_login
+          lastLogin: dbUser.last_login,
+          isNewUser: !dbUser.updated_at || dbUser.created_at === dbUser.updated_at
         });
 
         // Enhance user profile with database info
@@ -170,15 +172,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         return enhancedProfile;
       } else {
-        console.error('❌ No database user available after sync attempt');
+        console.error('❌ User sync failed - no database user returned');
+        console.error('🔍 This could be due to:');
+        console.error('   - RLS policies blocking user creation');
+        console.error('   - Database connection issues');
+        console.error('   - Missing environment variables');
+        console.error('   - Table permissions');
+        
+        // Continue with basic profile even if database sync fails
+        console.log('⚠️ Continuing with basic user profile (no database sync)');
       }
     } catch (error) {
       console.error('❌ Error syncing user with database:', error);
       console.error('❌ Error details:', {
         message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined
       });
+      
+      // Log specific error types
+      if (error instanceof Error) {
+        if (error.message.includes('policy')) {
+          console.error('🔒 RLS Policy Error: Database policies are blocking user operations');
+          console.error('💡 Run the migration: supabase/migrations/026_fix_user_rls_policies.sql');
+        } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
+          console.error('📋 Table Missing: Users table does not exist');
+          console.error('💡 Run the migration: supabase migration up');
+        } else if (error.message.includes('connection')) {
+          console.error('🌐 Connection Error: Cannot connect to Supabase');
+          console.error('💡 Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
+        }
+      }
+      
       // Continue without database sync - don't block authentication
+      console.log('⚠️ Continuing with basic authentication (database sync failed)');
     }
 
     return userProfile;
