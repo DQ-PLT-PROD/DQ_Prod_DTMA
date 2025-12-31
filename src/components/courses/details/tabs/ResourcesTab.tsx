@@ -16,9 +16,15 @@ interface ResourcesTabProps {
 }
 
 const ResourcesTab: React.FC<ResourcesTabProps> = ({ resources = [] }) => {
-    const handleDownload = (resource: Resource) => {
-        if (resource.resourceUrl) {
-            window.open(resource.resourceUrl, '_blank');
+    // Extract filename from URL for download attribute
+    const getDownloadName = (resource: Resource): string => {
+        try {
+            const url = new URL(resource.resourceUrl);
+            const pathParts = url.pathname.split('/');
+            const filename = decodeURIComponent(pathParts[pathParts.length - 1]);
+            return filename || `${resource.title}.${resource.type}`;
+        } catch {
+            return `${resource.title}.${resource.type}`;
         }
     };
 
@@ -66,17 +72,26 @@ const ResourcesTab: React.FC<ResourcesTabProps> = ({ resources = [] }) => {
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={() => handleDownload(resource)}
-                                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                        aria-label={`Download ${resource.title}`}
-                                    >
-                                        {resource.type === "link" || resource.type === "url" ? (
+                                    {resource.type === "link" || resource.type === "url" ? (
+                                        <a
+                                            href={resource.resourceUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            aria-label={`Open ${resource.title}`}
+                                        >
                                             <ExternalLink size={20} />
-                                        ) : (
+                                        </a>
+                                    ) : (
+                                        <a
+                                            href={resource.resourceUrl}
+                                            download={getDownloadName(resource)}
+                                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            aria-label={`Download ${resource.title}`}
+                                        >
                                             <Download size={20} />
-                                        )}
-                                    </button>
+                                        </a>
+                                    )}
                                 </div>
                             ))}
                         </div>
