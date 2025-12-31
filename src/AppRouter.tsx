@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import LearningScreen from "./pages/LearningScreen";
 import { ComingSoon } from "./pages/ComingSoon";
 import { AuthCallback } from "./components/AuthCallback";
+import { AuthDebugPanel } from "./components/AuthDebugPanel";
 
 export function AppRouter() {
   return (
@@ -37,6 +38,13 @@ export function AppRouter() {
 
           {/* Learning */}
           <Route path="/learning" element={<LearningScreen />} />
+          
+          {/* Auth Debug Panel - for testing authentication and user sync */}
+          <Route path="/auth-debug" element={
+            <div className="min-h-screen bg-gray-100 py-8">
+              <AuthDebugPanel />
+            </div>
+          } />
 
           {/* Coming Soon pages */}
           <Route path="/coming-soon" element={<ComingSoon />} />
