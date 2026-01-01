@@ -27,7 +27,7 @@ export const HowYouLearn: React.FC = () => {
   return (
     <section className="bg-white py-0 sm:py-4">
       <div className="w-full">
-        <div className="grid md:grid-cols-2 w-full min-h-[300px] sm:min-h-[320px] shadow-lg sm:shadow-xl">
+        <div className="grid md:grid-cols-2 w-full min-h-[280px] sm:min-h-[300px] shadow-lg sm:shadow-xl">
           <div
             className="relative px-8 sm:px-12 py-10 sm:py-12 text-white overflow-hidden"
             style={{
@@ -37,22 +37,22 @@ export const HowYouLearn: React.FC = () => {
           >
             <div
               className="absolute rounded-full border border-white/12"
-              style={{ width: "20rem", height: "20rem", left: "-8rem", top: "-6rem" }}
+              style={{ width: "30rem", height: "30rem", left: "-14rem", top: "-12rem" }}
               aria-hidden
             />
             <div
               className="absolute rounded-full border border-white/12 hidden sm:block"
-              style={{ width: "18rem", height: "18rem", left: "-10rem", bottom: "-6rem" }}
+              style={{ width: "26rem", height: "26rem", left: "-10rem", bottom: "-18rem" }}
               aria-hidden
             />
             <div
               className="absolute rounded-full border border-white/12 sm:hidden"
-              style={{ width: "15rem", height: "15rem", left: "-6rem", bottom: "-8rem" }}
+              style={{ width: "18rem", height: "18rem", left: "-8rem", bottom: "-10rem" }}
               aria-hidden
             />
             <div
               className="absolute rounded-full border border-white/10 hidden lg:block"
-              style={{ width: "22rem", height: "22rem", right: "-14rem", bottom: "-10rem" }}
+              style={{ width: "22rem", height: "22rem", right: "-14rem", bottom: "-8rem" }}
               aria-hidden
             />
             <div className="relative space-y-4 max-w-xl">
@@ -73,7 +73,7 @@ export const HowYouLearn: React.FC = () => {
         </div>
 
         <div className="relative px-4 sm:px-8 lg:px-12 py-10 sm:py-12">
-          <div className="hidden md:block absolute left-8 right-8 top-10 border-t border-dashed border-gray-200" aria-hidden />
+          <div className="hidden md:block absolute left-8 right-8 top-11 border-t border-dashed border-gray-200" aria-hidden />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10">
             {steps.map((step, index) => (
               <div key={step.title} className="flex flex-col items-center text-center space-y-3">
