@@ -3,7 +3,7 @@ import React from "react";
 const steps = [
   {
     title: "Learn",
-    description: "Short, practical lessons with examples and quick checks.",
+    description: "Short, practical lessons with examples.",
   },
   {
     title: "Practice",
