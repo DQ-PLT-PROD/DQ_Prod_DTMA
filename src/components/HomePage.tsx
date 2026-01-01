@@ -61,8 +61,8 @@ const HomePage: React.FC = () => {
       <main className="flex-grow">
         <HeroSection />
         <ProofAndTrust />
-        <HowYouLearn />
         <D6CategoriesSection />
+        <HowYouLearn />
 
         <Home />
         <CallToAction />
