@@ -7,7 +7,7 @@ const steps = [
   },
   {
     title: "Practice",
-    description: "Guided exercises and templates that mirror real work scenarios.",
+    description: "Guided exercises that mirror real work.",
   },
   {
     title: "Apply",
