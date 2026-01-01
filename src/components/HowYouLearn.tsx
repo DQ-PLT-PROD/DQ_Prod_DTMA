@@ -23,9 +23,9 @@ export const HowYouLearn: React.FC = () => {
   return (
     <section className="bg-white py-0 sm:py-4">
       <div className="w-full">
-        <div className="grid md:grid-cols-2 w-full min-h-[196px] sm:min-h-[216px] shadow-lg sm:shadow-xl">
+        <div className="grid md:grid-cols-2 w-full min-h-[170px] sm:min-h-[190px] shadow-lg sm:shadow-xl">
           <div
-            className="relative px-8 sm:px-14 py-12 sm:py-16 text-white overflow-hidden flex items-center"
+            className="relative px-8 sm:px-14 py-8 sm:py-10 text-white overflow-hidden flex items-center"
             style={{
               background:
                 "linear-gradient(145deg, #0e2f7a 0%, #0c2a6a 45%, #0a275f 100%)",
@@ -54,7 +54,7 @@ export const HowYouLearn: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative h-full min-h-[196px] sm:min-h-[216px]">
+          <div className="relative h-full min-h-[170px] sm:min-h-[190px]">
             <img
               src="/Leader%202.jpg"
               alt="Learner engaged with coursework"
