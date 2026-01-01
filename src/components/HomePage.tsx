@@ -4,6 +4,7 @@ import { Footer } from '../components/Footer';
 import HeroSection from './HeroSection';
 import ProofAndTrust from './ProofAndTrust';
 import D6CategoriesSection from './D6CategoriesSection';
+import HowYouLearn from './HowYouLearn';
 
 import Home from './Home';
 import CallToAction from './CallToAction';
@@ -60,6 +61,7 @@ const HomePage: React.FC = () => {
       <main className="flex-grow">
         <HeroSection />
         <ProofAndTrust />
+        <HowYouLearn />
         <D6CategoriesSection />
 
         <Home />
