@@ -67,13 +67,12 @@ export const HowYouLearn: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative px-4 sm:px-8 lg:px-12 py-10 sm:py-12">
-          <div className="hidden md:block absolute left-8 right-8 top-1/2 border-t border-dashed border-gray-200" aria-hidden />
+        <div className="relative px-4 sm:px-8 lg:px-12 py-10 sm:py-12 how-you-learn-steps">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10">
             {steps.map((step, index) => (
               <div key={step.title} className="flex flex-col items-center text-center space-y-3">
                 <div className="relative flex items-center justify-center">
-                  <div className="h-14 w-14 rounded-full bg-[#1839AD] text-white flex items-center justify-center text-base font-semibold shadow-md">
+                  <div className="h-14 w-14 rounded-full bg-[#1839AD] text-white flex items-center justify-center text-base font-semibold shadow-md relative z-10">
                     {String(index + 1).padStart(2, "0")}
                   </div>
                 </div>
