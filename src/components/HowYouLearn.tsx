@@ -15,7 +15,7 @@ const steps = [
   },
   {
     title: "Recognition",
-    description: "Earn your Digital Qatalyst Badge to showcase AI-era skills.",
+    description: "Earn your badge to showcase AI-era skills.",
   },
 ];
 
