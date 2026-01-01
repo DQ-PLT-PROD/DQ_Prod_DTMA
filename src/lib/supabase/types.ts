@@ -512,6 +512,27 @@ export interface Database {
                     display_order?: number | null
                 }
                 Relationships: []
+            },
+            newsletter_subscriptions: {
+                Row: {
+                    id: string
+                    email: string
+                    source: string | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    email: string
+                    source?: string | null
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    email?: string
+                    source?: string | null
+                    created_at?: string | null
+                }
+                Relationships: []
             }
         }
         Views: {}
