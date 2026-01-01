@@ -11,7 +11,7 @@ const steps = [
   },
   {
     title: "Apply",
-    description: "Bring a small project or use case from your team.",
+    description: "Bring a small project from your team.",
   },
   {
     title: "Recognition",
