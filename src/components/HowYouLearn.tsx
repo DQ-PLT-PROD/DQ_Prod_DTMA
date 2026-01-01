@@ -23,7 +23,7 @@ export const HowYouLearn: React.FC = () => {
   return (
     <section className="bg-white py-0 sm:py-4">
       <div className="w-full">
-        <div className="grid md:grid-cols-2 w-full min-h-[260px] sm:min-h-[280px] shadow-lg sm:shadow-xl">
+        <div className="grid md:grid-cols-2 w-full min-h-[196px] sm:min-h-[216px] shadow-lg sm:shadow-xl">
           <div
             className="relative px-8 sm:px-14 py-12 sm:py-16 text-white overflow-hidden flex items-center"
             style={{
@@ -54,7 +54,7 @@ export const HowYouLearn: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative h-full min-h-[260px] sm:min-h-[280px]">
+          <div className="relative h-full min-h-[196px] sm:min-h-[216px]">
             <img
               src="/Leader%202.jpg"
               alt="Learner engaged with coursework"
