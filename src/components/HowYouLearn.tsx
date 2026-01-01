@@ -38,12 +38,12 @@ export const HowYouLearn: React.FC = () => {
             />
             <div
               className="absolute rounded-full border border-white/12 hidden sm:block"
-              style={{ width: "26rem", height: "26rem", left: "-16rem", bottom: "-24rem" }}
+              style={{ width: "26rem", height: "26rem", left: "-14.5rem", bottom: "-22rem" }}
               aria-hidden
             />
             <div
               className="absolute rounded-full border border-white/12 sm:hidden"
-              style={{ width: "18rem", height: "18rem", left: "-10rem", bottom: "-14rem" }}
+              style={{ width: "18rem", height: "18rem", left: "-9rem", bottom: "-12.5rem" }}
               aria-hidden
             />
             <div
