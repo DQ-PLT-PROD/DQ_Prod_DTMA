@@ -25,7 +25,7 @@ export const HowYouLearn: React.FC = () => {
       <div className="w-full">
         <div className="grid md:grid-cols-2 w-full min-h-[150px] sm:min-h-[170px] shadow-lg sm:shadow-xl">
           <div
-            className="relative px-8 sm:px-12 py-10 sm:py-12 text-white overflow-hidden"
+            className="relative px-8 sm:px-12 py-10 sm:py-12 text-white overflow-hidden flex items-center"
             style={{
               background:
                 "linear-gradient(145deg, #0e2f7a 0%, #0c2a6a 45%, #0a275f 100%)",
@@ -51,7 +51,7 @@ export const HowYouLearn: React.FC = () => {
               style={{ width: "22rem", height: "22rem", right: "-14rem", bottom: "-8rem" }}
               aria-hidden
             />
-            <div className="relative space-y-4 max-w-xl">
+            <div className="relative space-y-4 max-w-xl mx-auto text-center">
               <h2 className="text-3xl font-bold">How You Learn</h2>
               <p className="text-blue-100 text-base leading-relaxed max-w-xl">
                 DTMA takes learners from fundamentals to applied mastery through a clear learning path that builds proven, confident capability in the AI era.
