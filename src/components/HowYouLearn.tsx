@@ -25,11 +25,11 @@ const steps = [
 
 export const HowYouLearn: React.FC = () => {
   return (
-    <section className="bg-white py-12 sm:py-16">
-      <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 space-y-12">
-        <div className="grid md:grid-cols-2 rounded-2xl overflow-hidden shadow-lg border border-gray-100 min-h-[320px]">
+    <section className="bg-white py-0 sm:py-4">
+      <div className="w-full">
+        <div className="grid md:grid-cols-2 w-full min-h-[360px] shadow-lg sm:shadow-xl">
           <div
-            className="relative px-8 sm:px-10 py-10 sm:py-12 text-white"
+            className="relative px-8 sm:px-12 py-10 sm:py-14 text-white"
             style={{
               background:
                 "linear-gradient(145deg, #0e2f7a 0%, #0c2a6a 45%, #0a275f 100%)",
@@ -46,7 +46,7 @@ export const HowYouLearn: React.FC = () => {
             <div className="absolute -left-24 top-6 w-56 h-56 border border-white/15 rounded-full" aria-hidden />
             <div className="absolute -left-10 -bottom-14 w-60 h-60 border border-white/10 rounded-full" aria-hidden />
             <div className="absolute -right-32 -bottom-12 w-64 h-64 border border-white/10 rounded-full" aria-hidden />
-            <div className="relative space-y-4">
+            <div className="relative space-y-4 max-w-xl">
               <h2 className="text-3xl font-bold">How You Learn</h2>
               <p className="text-blue-100 text-base leading-relaxed max-w-xl">
                 DTMA takes learners from fundamentals to applied mastery through a clear learning path that builds proven, confident capability in the AI era.
@@ -54,7 +54,7 @@ export const HowYouLearn: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative h-full min-h-[260px]">
+          <div className="relative h-full min-h-[320px]">
             <img
               src="/Leader%202.jpg"
               alt="Learner engaged with coursework"
@@ -63,8 +63,8 @@ export const HowYouLearn: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative">
-          <div className="hidden md:block absolute left-0 right-0 top-10 border-t border-dashed border-gray-200" aria-hidden />
+        <div className="relative px-4 sm:px-8 lg:px-12 py-10 sm:py-12">
+          <div className="hidden md:block absolute left-8 right-8 top-10 border-t border-dashed border-gray-200" aria-hidden />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10">
             {steps.map((step, index) => (
               <div key={step.title} className="flex flex-col items-center text-center space-y-3">
