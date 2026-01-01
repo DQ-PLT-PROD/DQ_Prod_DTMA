@@ -2,6 +2,10 @@ import React from "react";
 
 const steps = [
   {
+    title: "Orientation",
+    description: "Set your goals and pick a D6 category to start.",
+  },
+  {
     title: "Learn",
     description: "Short, practical lessons with examples and quick checks.",
   },
@@ -22,8 +26,8 @@ const steps = [
 export const HowYouLearn: React.FC = () => {
   return (
     <section className="bg-white py-12 sm:py-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        <div className="grid md:grid-cols-2 rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+      <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 space-y-12">
+        <div className="grid md:grid-cols-2 rounded-2xl overflow-hidden shadow-lg border border-gray-100 min-h-[320px]">
           <div
             className="relative px-8 sm:px-10 py-10 sm:py-12 text-white"
             style={{
@@ -39,12 +43,13 @@ export const HowYouLearn: React.FC = () => {
               }}
               aria-hidden
             />
-            <div className="absolute -left-20 top-8 w-48 h-48 border border-white/15 rounded-full" aria-hidden />
-            <div className="absolute -right-28 -bottom-10 w-64 h-64 border border-white/10 rounded-full" aria-hidden />
+            <div className="absolute -left-24 top-6 w-56 h-56 border border-white/15 rounded-full" aria-hidden />
+            <div className="absolute -left-10 -bottom-14 w-60 h-60 border border-white/10 rounded-full" aria-hidden />
+            <div className="absolute -right-32 -bottom-12 w-64 h-64 border border-white/10 rounded-full" aria-hidden />
             <div className="relative space-y-4">
               <h2 className="text-3xl font-bold">How You Learn</h2>
               <p className="text-blue-100 text-base leading-relaxed max-w-xl">
-                DTMA guides learners from basic concepts to advanced skills, building confidence in the AI era.
+                DTMA takes learners from fundamentals to applied mastery through a clear learning path that builds proven, confident capability in the AI era.
               </p>
             </div>
           </div>
@@ -59,8 +64,8 @@ export const HowYouLearn: React.FC = () => {
         </div>
 
         <div className="relative">
-          <div className="hidden md:block absolute left-4 right-4 top-10 border-t border-dashed border-gray-200" aria-hidden />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+          <div className="hidden md:block absolute left-0 right-0 top-10 border-t border-dashed border-gray-200" aria-hidden />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-10">
             {steps.map((step, index) => (
               <div key={step.title} className="flex flex-col items-center text-center space-y-3">
                 <div className="relative flex items-center justify-center">
