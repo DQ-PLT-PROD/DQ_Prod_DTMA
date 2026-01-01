@@ -27,25 +27,34 @@ export const HowYouLearn: React.FC = () => {
   return (
     <section className="bg-white py-0 sm:py-4">
       <div className="w-full">
-        <div className="grid md:grid-cols-2 w-full min-h-[360px] shadow-lg sm:shadow-xl">
+        <div className="grid md:grid-cols-2 w-full min-h-[300px] sm:min-h-[320px] shadow-lg sm:shadow-xl">
           <div
-            className="relative px-8 sm:px-12 py-10 sm:py-14 text-white"
+            className="relative px-8 sm:px-12 py-10 sm:py-12 text-white overflow-hidden"
             style={{
               background:
                 "linear-gradient(145deg, #0e2f7a 0%, #0c2a6a 45%, #0a275f 100%)",
             }}
           >
             <div
-              className="absolute inset-0 opacity-60"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at 10% 15%, rgba(255,255,255,0.12) 0, transparent 38%), radial-gradient(circle at 85% 20%, rgba(255,255,255,0.08) 0, transparent 32%), radial-gradient(circle at 20% 80%, rgba(255,255,255,0.08) 0, transparent 34%), radial-gradient(circle at 90% 82%, rgba(255,255,255,0.05) 0, transparent 28%)",
-              }}
+              className="absolute rounded-full border border-white/12"
+              style={{ width: "20rem", height: "20rem", left: "-8rem", top: "-6rem" }}
               aria-hidden
             />
-            <div className="absolute -left-24 top-6 w-56 h-56 border border-white/15 rounded-full" aria-hidden />
-            <div className="absolute -left-10 -bottom-14 w-60 h-60 border border-white/10 rounded-full" aria-hidden />
-            <div className="absolute -right-32 -bottom-12 w-64 h-64 border border-white/10 rounded-full" aria-hidden />
+            <div
+              className="absolute rounded-full border border-white/12 hidden sm:block"
+              style={{ width: "18rem", height: "18rem", left: "-10rem", bottom: "-6rem" }}
+              aria-hidden
+            />
+            <div
+              className="absolute rounded-full border border-white/12 sm:hidden"
+              style={{ width: "15rem", height: "15rem", left: "-6rem", bottom: "-8rem" }}
+              aria-hidden
+            />
+            <div
+              className="absolute rounded-full border border-white/10 hidden lg:block"
+              style={{ width: "22rem", height: "22rem", right: "-14rem", bottom: "-10rem" }}
+              aria-hidden
+            />
             <div className="relative space-y-4 max-w-xl">
               <h2 className="text-3xl font-bold">How You Learn</h2>
               <p className="text-blue-100 text-base leading-relaxed max-w-xl">
