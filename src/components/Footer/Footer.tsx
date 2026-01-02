@@ -96,7 +96,20 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
               aria-label="X (Twitter)"
               className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
             >
-              <img src="/icons/x-logo.svg" alt="X (Twitter)" className="h-5 w-5" />
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M4 4l16 16" />
+                <path d="M20 4L4 20" />
+              </svg>
             </a>
           </div>
         </div>
