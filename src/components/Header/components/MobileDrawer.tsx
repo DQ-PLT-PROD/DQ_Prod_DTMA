@@ -141,29 +141,28 @@ export function MobileDrawer({
               {/* Drawer content - scrollable area */}
               <div className={`flex-1 overflow-y-auto ${!isSignedIn ? "pb-20" : ""}`}>
                 {/* Navigation Section - Show for Mobile only, Tablet has these in header */}
-                <div className="px-4 py-3 md:hidden">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 md:text-[11px] sm:text-[10px]">
+                <div className="px-4 py-3">
+                  <h3 className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 md:text-[11px] sm:text-[10px]">
                     Navigation
                   </h3>
                   <div className="space-y-1">
                     {/* Feature Flagged: Growth Areas (Categories map to courses for MVP) */}
                     {FEATURES.COURSE_MARKETPLACE && (
                       <button
-                        className="w-full flex items-center justify-between px-3 py-2.5 text-left text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium tracking-tight md:text-[13px] sm:text-xs md:py-2 sm:py-1.5"
+                        className="w-full flex items-center justify-between px-3 py-2.5 text-left text-white hover:bg-white/10 rounded-lg transition-colors text-sm font-medium tracking-tight md:text-[13px] sm:text-xs md:py-2 sm:py-1.5"
                         onClick={handleBrowseCategories}
                       >
                         <span>Browse D6 Categories</span>
                         <ChevronRightIcon
                           size={14}
-                          className="text-gray-400 md:w-3 md:h-3 sm:w-3 sm:h-3"
+                          className="text-white/70 md:w-3 md:h-3 sm:w-3 sm:h-3"
                         />
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Divider - Only show for mobile */}
-                <div className="border-t border-gray-200 mx-4 my-2 md:hidden"></div>
+                <div className="border-t border-white/20 mx-4 my-2"></div>
 
                 {/* Get Started Section - Always visible, contains both CTAs */}
                 <div className="px-4 py-3">
