@@ -85,7 +85,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
               <Linkedin size={18} />
             </a>
             <a
-              href="#"
+              href="https://www.instagram.com/digitalqatalyst/"
               aria-label="Instagram"
               className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
             >
