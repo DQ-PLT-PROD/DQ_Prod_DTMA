@@ -180,14 +180,14 @@ const ProofAndTrust: React.FC = () => {
 
             <button
               onClick={handlePrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-14 hidden md:flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow hover:bg-gray-50"
+              className="absolute left-2 top-1/2 -translate-y-1/2 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow hover:bg-gray-50 md:-translate-x-14 md:left-0"
               aria-label="Previous story"
             >
               <ArrowLeft size={20} />
             </button>
             <button
               onClick={handleNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-14 hidden md:flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow hover:bg-gray-50"
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow hover:bg-gray-50 md:translate-x-14 md:right-0"
               aria-label="Next story"
             >
               <ArrowRight size={20} />
