@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowRight, Instagram, Linkedin, Twitter as XIcon } from "lucide-react";
+import { ArrowRight, Instagram, Linkedin, X as XIcon } from "lucide-react";
 import { FEATURES } from "../../config/features";
 import { subscribeToNewsletter } from "../../services/newsletterService";
 
@@ -93,7 +93,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
             </a>
             <a
               href="#"
-              aria-label="Twitter/X"
+              aria-label="X (Twitter)"
               className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
             >
               <XIcon size={18} />
