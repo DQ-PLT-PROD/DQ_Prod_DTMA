@@ -150,13 +150,16 @@ export function MobileDrawer({
                     {/* Feature Flagged: Growth Areas (Categories map to courses for MVP) */}
                     {FEATURES.COURSE_MARKETPLACE && (
                       <button
-                        className="w-full flex items-center justify-between px-3 py-2.5 text-left text-white hover:bg-white/10 rounded-lg transition-colors text-sm font-medium tracking-tight md:text-[13px] sm:text-xs md:py-2 sm:py-1.5"
-                        onClick={handleBrowseCategories}
+                        className="w-full flex items-center justify-between px-4 py-3 text-left text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs md:py-2.5 sm:py-2 border border-white/20"
+                        onClick={() => {
+                          navigate("/courses");
+                          setIsDrawerOpen(false);
+                        }}
                       >
-                        <span>Browse D6 Categories</span>
+                        <span>Browse Course Categories</span>
                         <ChevronRightIcon
                           size={14}
-                          className="text-white/70 md:w-3 md:h-3 sm:w-3 sm:h-3"
+                          className="text-white md:w-3 md:h-3 sm:w-3 sm:h-3"
                         />
                       </button>
                     )}
