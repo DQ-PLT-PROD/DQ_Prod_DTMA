@@ -78,7 +78,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
           <img src="/DTMA%20LOGO%20WHITE.svg" alt="DTMA" className="h-10 w-auto" />
           <div className="flex items-center gap-4 text-white">
             <a
-              href="#"
+              href="https://www.linkedin.com/company/digitalqatalyst/posts/?feedView=all"
               aria-label="LinkedIn"
               className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
             >
