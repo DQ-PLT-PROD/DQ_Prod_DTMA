@@ -92,7 +92,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
               <Instagram size={18} />
             </a>
             <a
-              href="#"
+              href="https://x.com/drstephane_"
               aria-label="X (Twitter)"
               className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
             >
