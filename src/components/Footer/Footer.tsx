@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowRight, Instagram, Linkedin, Twitter } from "lucide-react";
+import { ArrowRight, Instagram, Linkedin, X } from "lucide-react";
 import { FEATURES } from "../../config/features";
 import { subscribeToNewsletter } from "../../services/newsletterService";
 
@@ -93,10 +93,10 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
             </a>
             <a
               href="https://x.com/drstephane_"
-              aria-label="Twitter"
+              aria-label="X (Twitter)"
               className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
             >
-              <Twitter size={18} />
+              <X size={18} strokeWidth={2} />
             </a>
           </div>
         </div>
