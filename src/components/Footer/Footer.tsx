@@ -29,8 +29,11 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
 
-  const handleSubscribe = async (event: React.FormEvent) => {
+  const handleSubscribe = async (
+    event: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
+    event.stopPropagation();
 
     if (!email.trim()) {
       setMessage("Please enter your email.");
