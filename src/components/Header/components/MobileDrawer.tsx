@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MenuIcon, XIcon, ChevronRightIcon, User, LogOut } from "lucide-react";
+import { MenuIcon, XIcon, ChevronRightIcon, User, LogOut, ChevronDownIcon } from "lucide-react";
 import {
   BRAND_GRADIENT,
   BRAND_BACKDROP_BLUR,
   BRAND_PRIMARY,
 } from "../../../constants/branding";
 import { useAuth } from "../context/AuthContext";
-import { FEATURES } from "../../../config/features";
 
 interface MobileDrawerProps {
   onSignIn: () => void;
@@ -16,6 +15,15 @@ interface MobileDrawerProps {
   onBrowseCourses?: () => void;
   onBrowseCategories?: () => void;
 }
+
+const COURSE_CATEGORIES = [
+  { id: "d1", name: "Mastering Economy 4.0", href: "/courses?category=economy-4-0" },
+  { id: "d2", name: "Building Tomorrow’s Organisations", href: "/courses?category=digital-cognitive-organization" },
+  { id: "d3", name: "Mastering Digital Transformation", href: "/courses?category=digital-business-platform" },
+  { id: "d4", name: "Designing for the Future", href: "/courses?category=digital-transformation-2-0" },
+  { id: "d5", name: "Architecting Change", href: "/courses?category=digital-worker-workspace" },
+  { id: "d6", name: "Empowering Change", href: "/courses?category=digital-accelerators-tools" },
+];
 
 export function MobileDrawer({
   onSignIn,
@@ -26,6 +34,7 @@ export function MobileDrawer({
 }: MobileDrawerProps) {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
   const { user, login, logout } = useAuth();
 
   useEffect(() => {
@@ -71,15 +80,6 @@ export function MobileDrawer({
     setIsDrawerOpen(false);
   };
 
-  const handleBrowseCategories = () => {
-    if (onBrowseCategories) {
-      onBrowseCategories();
-    } else {
-      navigate("/marketplace/courses");
-    }
-    setIsDrawerOpen(false);
-  };
-
   return (
     <>
       {/* Always visible primary CTA + hamburger menu for Mobile (<768px) */}
@@ -111,12 +111,12 @@ export function MobileDrawer({
       {isDrawerOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black bg-opacity-40 z-40 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-30 z-40 lg:hidden"
             onClick={() => setIsDrawerOpen(false)}
           />
           {/* Mobile and Tablet drawer */}
           <div
-            className="fixed top-0 right-0 h-full w-80 max-w-[90vw] shadow-lg z-50 lg:hidden transform transition-transform duration-300 ease-in-out bg-[#f8f9fb] text-gray-900"
+            className="fixed top-0 right-0 h-full w-80 max-w-[90vw] shadow-lg z-50 lg:hidden transform transition-transform duration-300 ease-in-out bg-[#f9f9fb] text-gray-900"
           >
             <div className="flex flex-col h-full">
               {/* Drawer header */}
@@ -130,82 +130,48 @@ export function MobileDrawer({
                 </button>
               </div>
 
-              {/* Drawer content - scrollable area */}
+              {/* Drawer content */}
               <div className="flex-1 overflow-y-auto pb-4">
-                {/* Navigation Section - Show for Mobile only, Tablet has these in header */}
-                <div className="px-4 py-4 space-y-3">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider md:text-[11px] sm:text-[10px]">
-                    Navigation
-                  </h3>
-                  <div className="space-y-2">
-                    <button
-                      className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
-                      onClick={() => {
-                        navigate("/courses");
-                        setIsDrawerOpen(false);
-                      }}
-                    >
-                      <span>Explore Courses</span>
-                      <ChevronRightIcon
-                        size={14}
-                        className="text-gray-500 md:w-3 md:h-3 sm:w-3 sm:h-3"
-                      />
-                    </button>
+                <div className="px-4 py-4 space-y-2">
+                  <button
+                    className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
+                    onClick={() => setShowCategories((v) => !v)}
+                    aria-expanded={showCategories}
+                    aria-controls="drawer-course-categories"
+                  >
+                    <span>Explore Courses</span>
+                    <ChevronDownIcon
+                      size={16}
+                      className={`text-gray-500 transition-transform ${showCategories ? "rotate-180" : ""}`}
+                    />
+                  </button>
 
-                    <button
-                      className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
-                      onClick={() => {
-                        navigate("/courses");
-                        setIsDrawerOpen(false);
-                      }}
+                  {showCategories && (
+                    <div
+                      id="drawer-course-categories"
+                      className="mt-2 space-y-1 rounded-lg border border-gray-200 bg-white"
                     >
-                      <span>Browse Course Categories</span>
-                      <ChevronRightIcon
-                        size={14}
-                        className="text-gray-500 md:w-3 md:h-3 sm:w-3 sm:h-3"
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-200 mx-4 my-3"></div>
-
-                {/* Get Started Section - Always visible, contains both CTAs */}
-                <div className="px-4 py-4 space-y-3">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider md:text-[11px] sm:text-[10px]">
-                    Get Started
-                  </h3>
-                  <div className="space-y-2">
-                    {/* Join the Academy CTA */}
-                    <button
-                      className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
-                      onClick={() => handleCTAClick("Join the Academy")}
-                    >
-                      <span>Join the Academy</span>
-                      <ChevronRightIcon
-                        size={14}
-                        className="text-gray-500 md:w-3 md:h-3 sm:w-3 sm:h-3"
-                      />
-                    </button>
-
-                    <button
-                      className="w-full flex items-center justify-between px-4 py-3 text-left text-[#1839AD] bg-white border border-gray-200 rounded-lg transition-all text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs hover:bg-gray-50"
-                      onClick={() => handleCTAClick("Browse Courses")}
-                    >
-                      <span>Browse Courses</span>
-                      <ChevronRightIcon
-                        size={14}
-                        className="text-[#1839AD] md:w-3 md:h-3 sm:w-3 sm:h-3"
-                      />
-                    </button>
-                  </div>
+                      {COURSE_CATEGORIES.map((cat) => (
+                        <button
+                          key={cat.id}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 flex items-center justify-between"
+                          onClick={() => {
+                            navigate(cat.href);
+                            setIsDrawerOpen(false);
+                          }}
+                        >
+                          <span className="truncate">{cat.name}</span>
+                          <ChevronRightIcon size={14} className="text-gray-400" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* User Profile or Sign In at bottom */}
+              {/* Sign In at bottom */}
               <div className="sticky bottom-0 left-0 right-0 px-4 py-4 border-t border-gray-200 bg-[#f8f9fb]">
                 {user ? (
-                  // Signed in - show profile
                   <div>
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -226,7 +192,6 @@ export function MobileDrawer({
                     </button>
                   </div>
                 ) : (
-                  // Not signed in - show sign in button
                   <div>
                     <button
                       className="w-full px-4 py-3 text-[#1839AD] rounded-lg transition-all duration-200 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#1839AD]/20 font-semibold text-sm tracking-tight border border-gray-200 bg-white"
