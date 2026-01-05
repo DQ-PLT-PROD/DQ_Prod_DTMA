@@ -134,14 +134,14 @@ const FeaturedCoursesSection: React.FC = () => {
             </div>
             <button
               onClick={handlePrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 hidden md:flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow hover:bg-gray-50"
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow hover:bg-gray-50"
               aria-label="Previous courses"
             >
               <ArrowLeft size={18} />
             </button>
             <button
               onClick={handleNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 hidden md:flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow hover:bg-gray-50"
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow hover:bg-gray-50"
               aria-label="Next courses"
             >
               <ArrowRight size={18} />
