@@ -257,9 +257,10 @@ export const CourseTile: React.FC<CourseTileProps> = ({
         ${isHovered ? 'shadow-xl' : ''}
       `}
       onClick={handleClick}
-    >
-      {/* Thumbnail Section */}
-      <div className="relative w-full aspect-video bg-gray-100 overflow-hidden">
+      >
+        {/* Thumbnail Section */}
+      <div className="relative w-full aspect-[5/3] sm:aspect-[16/9] bg-gray-100 overflow-hidden">
+        <div className="absolute inset-0 z-10 bg-[#1839AD]/15 mix-blend-multiply pointer-events-none" />
         {heroSrc && (
           <img
             src={heroSrc}
@@ -307,7 +308,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
           )}
         </div>
 
-        <h3 className="text-lg font-bold text-gray-900 leading-tight line-clamp-2 mb-2 group-hover:text-blue-700 transition-colors">
+        <h3 className="text-xl font-bold text-gray-900 leading-tight line-clamp-2 mb-2 group-hover:text-blue-700 transition-colors">
           {title}
         </h3>
 
