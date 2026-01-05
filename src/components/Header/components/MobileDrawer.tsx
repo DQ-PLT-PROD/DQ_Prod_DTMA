@@ -138,22 +138,19 @@ export function MobileDrawer({
                     Navigation
                   </h3>
                   <div className="space-y-2">
-                    {/* Feature Flagged: Growth Areas (Categories map to courses for MVP) */}
-                    {FEATURES.COURSE_MARKETPLACE && (
-                      <button
-                        className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
-                        onClick={() => {
-                          navigate("/courses");
-                          setIsDrawerOpen(false);
-                        }}
-                      >
-                        <span>Browse Course Categories</span>
-                        <ChevronRightIcon
-                          size={14}
-                          className="text-gray-500 md:w-3 md:h-3 sm:w-3 sm:h-3"
-                        />
-                      </button>
-                    )}
+                    <button
+                      className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
+                      onClick={() => {
+                        navigate("/courses");
+                        setIsDrawerOpen(false);
+                      }}
+                    >
+                      <span>Browse Course Categories</span>
+                      <ChevronRightIcon
+                        size={14}
+                        className="text-gray-500 md:w-3 md:h-3 sm:w-3 sm:h-3"
+                      />
+                    </button>
                   </div>
                 </div>
 
