@@ -131,8 +131,8 @@ export function MobileDrawer({
               </div>
 
               {/* Drawer content */}
-              <div className="flex-1 overflow-y-auto pb-4">
-                <div className="px-4 py-4 space-y-2">
+              <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
+                <div className="space-y-2">
                   <button
                     className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
                     onClick={() => setShowCategories((v) => !v)}
@@ -170,7 +170,7 @@ export function MobileDrawer({
               </div>
 
               {/* Sign In at bottom */}
-              <div className="sticky bottom-0 left-0 right-0 px-4 py-4 border-t border-gray-200 bg-[#f8f9fb]">
+              <div className="px-4 py-4 border-t border-gray-200 bg-[#f9f9fb]">
                 {user ? (
                   <div>
                     <div className="flex items-center gap-3 mb-3">
