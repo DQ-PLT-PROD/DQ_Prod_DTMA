@@ -46,7 +46,6 @@ export function MobileDrawer({
   const handleSignIn = () => {
     onSignIn();
     setIsDrawerOpen(false);
-    navigate("/auth/login");
   };
 
   const handleSignOut = async () => {
