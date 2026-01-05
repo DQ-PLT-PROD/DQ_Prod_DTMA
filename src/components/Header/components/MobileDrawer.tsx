@@ -116,14 +116,11 @@ export function MobileDrawer({
           />
           {/* Mobile and Tablet drawer */}
           <div
-            className="fixed top-0 right-0 h-full w-80 max-w-[90vw] shadow-xl z-50 lg:hidden transform transition-transform duration-300 ease-in-out bg-[#f7f8fb] text-gray-900"
+            className="fixed top-0 right-0 h-full w-80 max-w-[90vw] shadow-lg z-50 lg:hidden transform transition-transform duration-300 ease-in-out bg-[#f8f9fb] text-gray-900"
           >
             <div className="flex flex-col h-full">
               {/* Drawer header */}
-              <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 bg-white/90 backdrop-blur">
-                <h2 className="text-lg font-semibold text-gray-900 md:text-base sm:text-sm">
-                  Menu
-                </h2>
+              <div className="flex items-center justify-end px-3 py-3 border-b border-gray-200 bg-white/80 backdrop-blur">
                 <button
                   onClick={() => setIsDrawerOpen(false)}
                   className="p-2 hover:bg-gray-100 rounded-md border border-gray-200 transition-colors"
@@ -134,9 +131,9 @@ export function MobileDrawer({
               </div>
 
               {/* Drawer content - scrollable area */}
-              <div className={`flex-1 overflow-y-auto ${!isSignedIn ? "pb-20" : ""}`}>
+              <div className="flex-1 overflow-y-auto pb-4">
                 {/* Navigation Section - Show for Mobile only, Tablet has these in header */}
-                <div className="px-4 py-5 space-y-3">
+                <div className="px-4 py-4 space-y-3">
                   <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider md:text-[11px] sm:text-[10px]">
                     Navigation
                   </h3>
@@ -160,7 +157,7 @@ export function MobileDrawer({
                   </div>
                 </div>
 
-                <div className="border-t border-gray-200 mx-4 my-2"></div>
+                <div className="border-t border-gray-200 mx-4 my-3"></div>
 
                 {/* Get Started Section - Always visible, contains both CTAs */}
                 <div className="px-4 py-4 space-y-3">
@@ -181,14 +178,13 @@ export function MobileDrawer({
                     </button>
 
                     <button
-                      className="w-full flex items-center justify-between px-4 py-3 text-left text-white rounded-lg transition-all text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs hover:opacity-90 shadow-sm"
-                      style={{ backgroundColor: BRAND_PRIMARY }}
+                      className="w-full flex items-center justify-between px-4 py-3 text-left text-[#1839AD] bg-white border border-gray-200 rounded-lg transition-all text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs hover:bg-gray-50"
                       onClick={() => handleCTAClick("Browse Courses")}
                     >
                       <span>Browse Courses</span>
                       <ChevronRightIcon
                         size={14}
-                        className="text-white md:w-3 md:h-3 sm:w-3 sm:h-3"
+                        className="text-[#1839AD] md:w-3 md:h-3 sm:w-3 sm:h-3"
                       />
                     </button>
                   </div>
@@ -196,7 +192,7 @@ export function MobileDrawer({
               </div>
 
               {/* User Profile or Sign In at bottom */}
-              <div className="sticky bottom-0 left-0 right-0 px-4 py-4 border-t border-gray-200 bg-white shadow-md">
+              <div className="sticky bottom-0 left-0 right-0 px-4 py-4 border-t border-gray-200 bg-[#f8f9fb]">
                 {user ? (
                   // Signed in - show profile
                   <div>
@@ -222,8 +218,7 @@ export function MobileDrawer({
                   // Not signed in - show sign in button
                   <div>
                     <button
-                      className="w-full px-4 py-3 text-white rounded-lg transition-all duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-white/30 font-bold text-base tracking-tight shadow-md md:text-[15px] sm:text-sm"
-                      style={{ backgroundColor: BRAND_PRIMARY }}
+                      className="w-full px-4 py-3 text-[#1839AD] rounded-lg transition-all duration-200 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#1839AD]/20 font-semibold text-sm tracking-tight border border-gray-200 bg-white"
                       onClick={handleSignIn}
                     >
                       Sign In to Get Started
