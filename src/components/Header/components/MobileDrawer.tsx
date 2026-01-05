@@ -111,45 +111,40 @@ export function MobileDrawer({
       {isDrawerOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-40 z-40 lg:hidden"
             onClick={() => setIsDrawerOpen(false)}
           />
           {/* Mobile and Tablet drawer */}
           <div
-            className="fixed top-0 right-0 h-full w-80 shadow-xl z-50 lg:hidden transform transition-transform duration-300 ease-in-out"
-            style={{
-              background: BRAND_GRADIENT,
-              backdropFilter: BRAND_BACKDROP_BLUR,
-              WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
-            }}
+            className="fixed top-0 right-0 h-full w-80 max-w-[90vw] shadow-xl z-50 lg:hidden transform transition-transform duration-300 ease-in-out bg-[#f7f8fb] text-gray-900"
           >
             <div className="flex flex-col h-full">
               {/* Drawer header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
-                <h2 className="text-lg font-semibold text-gray-800 md:text-base sm:text-sm">
+              <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 bg-white/90 backdrop-blur">
+                <h2 className="text-lg font-semibold text-gray-900 md:text-base sm:text-sm">
                   Menu
                 </h2>
                 <button
                   onClick={() => setIsDrawerOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-md border border-gray-200 transition-colors"
                   aria-label="Close menu"
                 >
-                  <XIcon size={18} className="text-gray-600" />
+                  <XIcon size={18} className="text-gray-700" />
                 </button>
               </div>
 
               {/* Drawer content - scrollable area */}
               <div className={`flex-1 overflow-y-auto ${!isSignedIn ? "pb-20" : ""}`}>
                 {/* Navigation Section - Show for Mobile only, Tablet has these in header */}
-                <div className="px-4 py-3">
-                  <h3 className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2 md:text-[11px] sm:text-[10px]">
+                <div className="px-4 py-5 space-y-3">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider md:text-[11px] sm:text-[10px]">
                     Navigation
                   </h3>
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     {/* Feature Flagged: Growth Areas (Categories map to courses for MVP) */}
                     {FEATURES.COURSE_MARKETPLACE && (
                       <button
-                        className="w-full flex items-center justify-between px-4 py-3 text-left text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs md:py-2.5 sm:py-2 border border-white/20"
+                        className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
                         onClick={() => {
                           navigate("/courses");
                           setIsDrawerOpen(false);
@@ -158,35 +153,35 @@ export function MobileDrawer({
                         <span>Browse Course Categories</span>
                         <ChevronRightIcon
                           size={14}
-                          className="text-white md:w-3 md:h-3 sm:w-3 sm:h-3"
+                          className="text-gray-500 md:w-3 md:h-3 sm:w-3 sm:h-3"
                         />
                       </button>
                     )}
                   </div>
                 </div>
 
-                <div className="border-t border-white/20 mx-4 my-2"></div>
+                <div className="border-t border-gray-200 mx-4 my-2"></div>
 
                 {/* Get Started Section - Always visible, contains both CTAs */}
-                <div className="px-4 py-3">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 md:text-[11px] sm:text-[10px]">
+                <div className="px-4 py-4 space-y-3">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider md:text-[11px] sm:text-[10px]">
                     Get Started
                   </h3>
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     {/* Join the Academy CTA */}
                     <button
-                      className="w-full flex items-center justify-between px-3 py-2.5 text-left text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium tracking-tight md:text-[13px] sm:text-xs md:py-2 sm:py-1.5"
+                      className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
                       onClick={() => handleCTAClick("Join the Academy")}
                     >
                       <span>Join the Academy</span>
                       <ChevronRightIcon
                         size={14}
-                        className="text-gray-400 md:w-3 md:h-3 sm:w-3 sm:h-3"
+                        className="text-gray-500 md:w-3 md:h-3 sm:w-3 sm:h-3"
                       />
                     </button>
 
                     <button
-                      className="w-full flex items-center justify-between px-3 py-2.5 text-left text-white rounded-lg transition-all text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs md:py-2 sm:py-1.5 hover:opacity-90"
+                      className="w-full flex items-center justify-between px-4 py-3 text-left text-white rounded-lg transition-all text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs hover:opacity-90 shadow-sm"
                       style={{ backgroundColor: BRAND_PRIMARY }}
                       onClick={() => handleCTAClick("Browse Courses")}
                     >
@@ -201,7 +196,7 @@ export function MobileDrawer({
               </div>
 
               {/* User Profile or Sign In at bottom */}
-              <div className="sticky bottom-0 left-0 right-0 px-4 py-4 border-t border-gray-200 bg-white shadow-lg">
+              <div className="sticky bottom-0 left-0 right-0 px-4 py-4 border-t border-gray-200 bg-white shadow-md">
                 {user ? (
                   // Signed in - show profile
                   <div>
