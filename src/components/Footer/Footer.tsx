@@ -73,7 +73,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
   return (
     <footer
       data-id={dataId}
-      className="text-white w-full mt-12 sm:mt-16 lg:mt-20"
+      className="text-white w-full"
       style={{ background: FOOTER_GRADIENT }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-6">
