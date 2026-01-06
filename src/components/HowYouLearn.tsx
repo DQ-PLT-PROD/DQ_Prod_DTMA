@@ -21,11 +21,11 @@ const steps = [
 
 export const HowYouLearn: React.FC = () => {
   return (
-    <section className="bg-white py-0 sm:py-4">
-      <div className="w-full">
-        <div className="grid md:grid-cols-2 w-full min-h-[170px] sm:min-h-[190px] shadow-lg sm:shadow-xl">
+    <section className="bg-[#f7f9fc] py-0 sm:py-6">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col md:flex-row w-full min-h-[170px] sm:min-h-[200px] shadow-lg sm:shadow-xl overflow-hidden rounded-2xl bg-white">
           <div
-            className="relative px-8 sm:px-14 py-8 sm:py-10 text-white overflow-hidden flex items-center"
+            className="relative px-8 sm:px-12 md:px-14 py-8 sm:py-10 text-white overflow-hidden flex items-center md:w-7/12"
             style={{
               background:
                 "linear-gradient(145deg, #0e2f7a 0%, #0c2a6a 45%, #0a275f 100%)",
@@ -54,21 +54,23 @@ export const HowYouLearn: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative h-full min-h-[170px] sm:min-h-[190px]">
+          <div className="relative h-full min-h-[170px] sm:min-h-[200px] md:w-5/12">
+            <div className="absolute inset-0 bg-black/10 z-10" />
             <img
               src="/Leader%202.jpg"
               alt="Learner engaged with coursework"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover object-center"
             />
           </div>
         </div>
 
-        <div className="relative px-4 sm:px-8 lg:px-12 py-10 sm:py-12 how-you-learn-steps">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+        <div className="relative py-10 sm:py-12 how-you-learn-steps">
+          <div className="absolute left-4 sm:left-6 lg:left-8 right-4 top-8 border-t border-dashed border-gray-200" aria-hidden />
+          <div className="max-w-4xl md:max-w-3xl lg:max-w-4xl ml-0 md:ml-2 lg:ml-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 relative z-10">
             {steps.map((step, index) => (
               <div key={step.title} className="flex flex-col items-center text-center space-y-3">
                 <div className="relative flex items-center justify-center">
-                  <div className="h-14 w-14 rounded-full bg-[#1839AD] text-white flex items-center justify-center text-base font-semibold shadow-md relative z-10">
+                  <div className="h-12 w-12 rounded-full bg-white text-[#1839AD] border border-[#1839AD]/60 flex items-center justify-center text-sm font-semibold shadow-sm relative z-10">
                     {String(index + 1).padStart(2, "0")}
                   </div>
                 </div>
