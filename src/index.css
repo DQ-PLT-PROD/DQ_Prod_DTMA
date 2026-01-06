@@ -124,6 +124,10 @@ html, body, #root {
 /* Tables stretch but stay contained */
 .app-clamp table { width: 100%; max-width: 100%; border-collapse: collapse; }
 
+.card-container {
+  margin-bottom: 56px;
+}
+
 /* How You Learn stepper line behind circles */
 .how-you-learn-steps {
   position: relative;
