@@ -65,8 +65,7 @@ export const HowYouLearn: React.FC = () => {
         </div>
 
         <div className="relative py-10 sm:py-12 how-you-learn-steps">
-          <div className="absolute left-4 sm:left-6 lg:left-8 right-4 top-8 border-t border-dashed border-gray-200" aria-hidden />
-          <div className="max-w-4xl md:max-w-3xl lg:max-w-4xl ml-0 md:ml-2 lg:ml-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 relative z-10">
+          <div className="max-w-4xl md:max-w-3xl lg:max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 relative z-10">
             {steps.map((step, index) => (
               <div key={step.title} className="flex flex-col items-center text-center space-y-3">
                 <div className="relative flex items-center justify-center">
