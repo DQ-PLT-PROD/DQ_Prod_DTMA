@@ -544,7 +544,7 @@ const CallToAction: React.FC = () => {
   return (
     <section
       id="final-cta"
-      className="relative overflow-hidden pt-16 md:pt-20 pb-0 bg-white"
+      className="relative overflow-hidden pt-16 md:pt-20 pb-16 md:pb-20 bg-white"
     >
       <div
         aria-hidden="true"
