@@ -116,9 +116,9 @@ export function MobileDrawer({
           />
           {/* Mobile and Tablet drawer */}
           <div
-            className="fixed top-0 right-0 h-full w-80 max-w-[90vw] shadow-lg z-50 lg:hidden transform transition-transform duration-300 ease-in-out bg-white text-gray-900"
+            className="fixed top-0 right-0 max-h-screen w-80 max-w-[90vw] shadow-lg z-50 lg:hidden transform transition-transform duration-300 ease-in-out bg-white text-gray-900 overflow-hidden"
           >
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col">
               {/* Header with close button */}
               <div className="flex items-center justify-end px-4 py-4 border-b border-gray-200">
                 <button
@@ -131,7 +131,7 @@ export function MobileDrawer({
               </div>
 
               {/* Single card containing nav + CTA */}
-              <div className="flex-1 overflow-y-auto px-4 py-6">
+              <div className="flex-1 px-4 py-6 space-y-5">
                 <div className="flex flex-col space-y-5 bg-[#f9f9fb] border border-gray-200 rounded-xl shadow-sm p-4">
                   <div className="space-y-3">
                     <button
