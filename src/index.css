@@ -143,12 +143,12 @@ html, body, #root {
   align-items: flex-start;
   position: relative;
   gap: 16px;
-  padding-top: 24px;
+  padding-top: 16px;
 }
 .steps-flow::before {
   content: "";
   position: absolute;
-  top: 24px;
+  top: 40px;
   left: 0;
   right: 0;
   height: 1px;
@@ -170,7 +170,7 @@ html, body, #root {
   background: #fff;
   color: #1839AD;
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 .step-text {
   text-align: center;
