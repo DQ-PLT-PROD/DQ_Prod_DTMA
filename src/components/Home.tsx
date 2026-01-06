@@ -87,7 +87,7 @@ const FeaturedCoursesSection: React.FC = () => {
   }
 
   return (
-    <section className="bg-gray-50 pt-14 pb-12 sm:pb-16">
+    <section className="bg-gray-50 pt-14 pb-12 sm:pb-16" style={{ paddingBottom: "56px" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeInUpOnScroll className="text-center max-w-3xl mx-auto space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold text-[#030C2B]">
