@@ -50,6 +50,7 @@ const FeaturedCoursesSection: React.FC = () => {
   const visibleCourses = courses.slice(startIndex, startIndex + 3);
   const maxStartIndex = Math.max(0, courses.length - 3);
   const totalSlides = maxStartIndex + 1;
+  const featuredFirstId = visibleCourses[0]?.id;
 
   const handlePrev = () => {
     setStartIndex((prev) => (prev === 0 ? Math.max(courses.length - 3, 0) : prev - 1));
@@ -124,9 +125,10 @@ const FeaturedCoursesSection: React.FC = () => {
                       thumbnailUrl={course.thumbnailUrl}
                       videoUrl={course.videoUrl}
 
+                      enableHoverEffects
+                      isHovered={course.id === featuredFirstId || isHovered}
                       variant={course.isComingSoon ? "coming-soon" : "course"}
                       onCardClick={course.isComingSoon ? undefined : () => handleViewDetails(course.id)}
-                      isHovered={isHovered}
                     />
                   </div>
                 );
