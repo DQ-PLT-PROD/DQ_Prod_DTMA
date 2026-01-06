@@ -120,7 +120,7 @@ export function MobileDrawer({
           >
             <div className="flex flex-col h-full">
               {/* Drawer header */}
-              <div className="flex items-center justify-end px-3 py-3 border-b border-gray-200 bg-white/80 backdrop-blur">
+              <div className="flex items-center justify-end px-4 py-4 border-b border-gray-200 bg-white/90 backdrop-blur">
                 <button
                   onClick={() => setIsDrawerOpen(false)}
                   className="p-2 hover:bg-gray-100 rounded-md border border-gray-200 transition-colors"
@@ -131,8 +131,8 @@ export function MobileDrawer({
               </div>
 
               {/* Drawer content */}
-              <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
-                <div className="space-y-2">
+              <div className="flex-1 overflow-y-auto px-4 py-6 space-y-5">
+                <div className="space-y-3">
                   <button
                     className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
                     onClick={() => setShowCategories((v) => !v)}
@@ -170,10 +170,10 @@ export function MobileDrawer({
               </div>
 
               {/* Sign In at bottom */}
-              <div className="px-4 py-4 border-t border-gray-200 bg-[#f9f9fb]">
+              <div className="px-4 py-6 border-t border-gray-200 bg-[#f9f9fb]">
                 {user ? (
                   <div>
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                         <User size={20} className="text-blue-600" />
                       </div>
@@ -192,14 +192,14 @@ export function MobileDrawer({
                     </button>
                   </div>
                 ) : (
-                  <div>
+                  <div className="flex flex-col items-center text-center space-y-2">
                     <button
                       className="w-full px-4 py-3 text-[#1839AD] rounded-lg transition-all duration-200 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#1839AD]/20 font-semibold text-sm tracking-tight border border-gray-200 bg-white"
                       onClick={handleSignIn}
                     >
                       Sign In to Get Started
                     </button>
-                    <p className="text-xs text-gray-500 text-center mt-2 md:text-[11px] sm:text-[10px]">
+                    <p className="text-xs text-gray-500 md:text-[11px] sm:text-[10px]">
                       Access your personalized dashboard
                     </p>
                   </div>
