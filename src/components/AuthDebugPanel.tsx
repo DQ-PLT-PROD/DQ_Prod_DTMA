@@ -155,7 +155,7 @@ export function AuthDebugPanel() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
             <p><span className="font-medium">Azure Client ID:</span> {(import.meta as any).env.VITE_AZURE_CLIENT_ID ? '✅ Set' : '❌ Missing'}</p>
-            <p><span className="font-medium">Azure Domain:</span> {(import.meta as any).env.VITE_AZURE_CIAM_DOMAIN ? '✅ Set' : '❌ Missing'}</p>
+            <p><span className="font-medium">Azure Domain:</span> {(import.meta as any).env.VITE_AZURE_SUBDOMAIN ? '✅ Set' : '❌ Missing'}</p>
             <p><span className="font-medium">Current Origin:</span> {typeof window !== 'undefined' ? window.location.origin : 'Unknown'}</p>
           </div>
           <div>
