@@ -32,18 +32,25 @@ export const HowYouLearn: React.FC = () => {
             }}
           >
             <div
-              className="absolute rounded-full border border-white/12"
-              style={{ width: "30rem", height: "30rem", left: "-18rem", top: "-30rem" }}
+              className="absolute rounded-full border border-white/75 hidden sm:block"
+              style={{
+                width: "22rem",
+                height: "22rem",
+                left: "-8rem",
+                bottom: "-16rem",
+                borderWidth: "1.5px",
+              }}
               aria-hidden
             />
             <div
-              className="absolute rounded-full border border-white/12 hidden sm:block"
-              style={{ width: "26rem", height: "26rem", left: "-16rem", bottom: "-26rem" }}
-              aria-hidden
-            />
-            <div
-              className="absolute rounded-full border border-white/12 sm:hidden"
-              style={{ width: "18rem", height: "18rem", left: "-10rem", bottom: "-14rem" }}
+              className="absolute rounded-full border border-white/70 sm:hidden"
+              style={{
+                width: "16rem",
+                height: "16rem",
+                left: "-8rem",
+                bottom: "-14rem",
+                borderWidth: "1.5px",
+              }}
               aria-hidden
             />
             <div className="relative space-y-4 max-w-md pl-24 sm:pl-28">
