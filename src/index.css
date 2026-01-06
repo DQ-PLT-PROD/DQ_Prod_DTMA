@@ -133,12 +133,52 @@ html, body, #root {
   position: relative;
 }
 .how-you-learn-steps::before {
+  display: none;
+}
+
+/* How You Learn steps flow */
+.steps-flow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  gap: 16px;
+}
+.steps-flow::before {
   content: "";
   position: absolute;
+  top: 50%;
   left: 0;
   right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  border-top: 1px dashed #d4d4d4;
+  height: 1px;
+  background-color: #d4d4d4;
   z-index: 0;
+}
+.step-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #1839AD;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  background: #fff;
+  color: #1839AD;
+  font-weight: 600;
+}
+.step-text {
+  text-align: center;
+  margin-top: 4px;
+}
+@media (max-width: 640px) {
+  .steps-flow {
+    flex-direction: column;
+    align-items: center;
+  }
+  .steps-flow::before {
+    display: none;
+  }
 }
