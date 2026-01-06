@@ -46,7 +46,7 @@ export const HowYouLearn: React.FC = () => {
               style={{ width: "18rem", height: "18rem", left: "-10rem", bottom: "-14rem" }}
               aria-hidden
             />
-            <div className="relative space-y-4 max-w-md pl-16 sm:pl-20">
+            <div className="relative space-y-4 max-w-md pl-24 sm:pl-28">
               <h2 className="text-3xl font-bold">How You Learn</h2>
               <p className="text-blue-100 text-base leading-relaxed max-w-lg">
                 DTMA guides learners from fundamentals to real-world mastery in the AI era.
