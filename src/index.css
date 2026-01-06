@@ -140,18 +140,20 @@ html, body, #root {
 .steps-flow {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   position: relative;
   gap: 16px;
+  padding-top: 24px;
 }
 .steps-flow::before {
   content: "";
   position: absolute;
-  top: 50%;
+  top: 24px;
   left: 0;
   right: 0;
   height: 1px;
-  background-color: #d4d4d4;
+  background-image: linear-gradient(to right, #d4d4d4 50%, transparent 50%);
+  background-size: 8px 1px;
   z-index: 0;
 }
 .step-circle {
@@ -168,6 +170,7 @@ html, body, #root {
   background: #fff;
   color: #1839AD;
   font-weight: 600;
+  margin-bottom: 10px;
 }
 .step-text {
   text-align: center;
