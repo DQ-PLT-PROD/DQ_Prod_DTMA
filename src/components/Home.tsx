@@ -11,6 +11,7 @@ const FeaturedCoursesSection: React.FC = () => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cardsPerView, setCardsPerView] = useState(3);
   const navigate = useNavigate();
 
   // Fetch courses from database (includes both active and coming soon courses)
@@ -47,17 +48,35 @@ const FeaturedCoursesSection: React.FC = () => {
     loadCourses();
   }, []);
 
-  const visibleCourses = courses.slice(startIndex, startIndex + 3);
-  const maxStartIndex = Math.max(0, courses.length - 3);
+  useEffect(() => {
+    const updateCardsPerView = () => {
+      const w = window.innerWidth;
+      if (w < 640) {
+        setCardsPerView(1);
+      } else if (w < 1024) {
+        setCardsPerView(2);
+      } else {
+        setCardsPerView(3);
+      }
+    };
+    updateCardsPerView();
+    window.addEventListener("resize", updateCardsPerView);
+    return () => window.removeEventListener("resize", updateCardsPerView);
+  }, []);
+
+  const visibleCourses = courses.slice(startIndex, startIndex + cardsPerView);
+  const maxStartIndex = Math.max(0, courses.length - cardsPerView);
   const totalSlides = maxStartIndex + 1;
 
   const handlePrev = () => {
-    setStartIndex((prev) => (prev === 0 ? Math.max(courses.length - 3, 0) : prev - 1));
+    setStartIndex((prev) =>
+      prev === 0 ? Math.max(courses.length - cardsPerView, 0) : Math.max(prev - cardsPerView, 0)
+    );
   };
 
   const handleNext = () => {
     setStartIndex((prev) =>
-      prev + 3 >= courses.length ? 0 : prev + 1
+      prev + cardsPerView >= courses.length ? 0 : prev + cardsPerView
     );
   };
 
