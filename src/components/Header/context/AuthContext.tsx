@@ -250,11 +250,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const currentPath = location.pathname;
 
       // Redirect to learning page just like the test account does
-      if (currentPath === '/' || currentPath.includes('auth') || currentPath.includes('signin')) {
+      // But exclude the debug panel from redirects
+      if ((currentPath === '/' || currentPath.includes('signin')) && !currentPath.includes('auth-debug')) {
         console.log('🎓 Real account authenticated! Redirecting to learning page from:', currentPath);
         navigate('/learning', { replace: true });
       } else if (currentPath === '/learning') {
         console.log('✅ Real account user is already on learning page');
+      } else if (currentPath.includes('auth-debug')) {
+        console.log('🔧 User accessing debug panel - no redirect needed');
       } else {
         console.log('ℹ️ Real account authenticated on page:', currentPath);
       }
