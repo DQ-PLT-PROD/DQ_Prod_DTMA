@@ -9,6 +9,7 @@ import {
   Maximize,
   ChevronDown,
 } from "lucide-react";
+import { Breadcrumb } from "../../components/ui/Breadcrumb";
 import { Header, useAuth } from "../../components/Header";
 import { Footer } from "../../components/Footer";
 import RequiredDocumentsTab from "../../components/courses/details/tabs/RequiredDocumentsTab";
@@ -469,6 +470,14 @@ const CourseDetailsPage: React.FC = () => {
             </div>
           )}
 
+          {/* Top Scrim Gradient - For breadcrumb visibility */}
+          <div
+            className="absolute inset-x-0 top-0 h-32 z-[5] pointer-events-none"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0) 100%)'
+            }}
+          />
+
           {/* Diagonal Scrim Gradient - Bottom Left */}
           <div
             className="absolute inset-0 z-[5] pointer-events-none"
@@ -480,41 +489,16 @@ const CourseDetailsPage: React.FC = () => {
           {/* Content Overlay Layer */}
           <div className="container mx-auto px-4 absolute inset-0 flex flex-col pt-20 pointer-events-none z-10">
             {/* Breadcrumbs - Fixed at top */}
-            <nav
-              className="flex pb-4 pointer-events-auto opacity-60 hover:opacity-100 transition-opacity duration-300 flex-none"
-              aria-label="Breadcrumb"
-            >
-              <ol className="inline-flex items-center space-x-1 md:space-x-2 text-sm">
-                <li className="inline-flex items-center">
-                  <Link
-                    to="/"
-                    className="text-white hover:text-blue-200 inline-flex items-center transition-colors shadow-sm"
-                  >
-                    <HomeIcon size={14} className="mr-1.5 drop-shadow-md" />
-                    <span className="drop-shadow-md">Home</span>
-                  </Link>
-                </li>
-                <li>
-                  <div className="flex items-center">
-                    <ChevronRightIcon size={14} className="text-white/80 drop-shadow-md" />
-                    <Link
-                      to={config.route as string}
-                      className="ml-1 text-white hover:text-blue-200 md:ml-2 transition-colors drop-shadow-md"
-                    >
-                      {config.itemNamePlural}
-                    </Link>
-                  </div>
-                </li>
-                <li aria-current="page">
-                  <div className="flex items-center">
-                    <ChevronRightIcon size={14} className="text-white/80 drop-shadow-md" />
-                    <span className="ml-1 text-white font-medium md:ml-2 line-clamp-1 max-w-[200px] sm:max-w-none drop-shadow-md">
-                      {itemTitle}
-                    </span>
-                  </div>
-                </li>
-              </ol>
-            </nav>
+            <div className="pb-4 pointer-events-auto flex-none">
+              <Breadcrumb
+                variant="overlay"
+                items={[
+                  { label: 'Home', href: '/' },
+                  { label: config.itemNamePlural, href: config.route as string },
+                  { label: itemTitle, current: true },
+                ]}
+              />
+            </div>
 
             {/* Centered Content */}
             <div className="flex-1 flex flex-col justify-end items-start max-w-3xl pointer-events-auto pb-8">

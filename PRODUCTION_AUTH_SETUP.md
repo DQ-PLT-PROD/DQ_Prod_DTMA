@@ -5,12 +5,16 @@ This guide covers setting up authentication for production deployment with prope
 ## Issues Fixed
 
 ### 1. Dynamic Redirect URLs ✅
-- **Problem**: Hardcoded `localhost:3000` redirect URLs won't work in production
-- **Solution**: Auto-detection of production URLs with localhost fallback for development
+- **Problem**: Hardcoded redirect URLs won't work across different environments
+- **Solution**: Auto-detection of production URLs with environment variable support
 
 ### 2. Supabase User Sync ✅
 - **Problem**: Users need to be saved to Supabase database with customer IDs
 - **Solution**: Automatic user synchronization on login with enhanced error handling
+
+### 3. No Hardcoded Values ✅
+- **Problem**: Hardcoded Azure credentials and URLs in code
+- **Solution**: All values now come from environment variables with proper validation
 
 ## Production Deployment Checklist
 
@@ -19,12 +23,12 @@ This guide covers setting up authentication for production deployment with prope
 Update your Azure AD app registration with production URLs:
 
 **Redirect URIs to add:**
-- `https://your-domain.com` (replace with your actual domain)
-- `https://your-domain.vercel.app` (if using Vercel)
+- `https://your-domain.com/` (replace with your actual domain)
+- `https://your-domain.vercel.app/` (if using Vercel)
 
 **Logout URLs to add:**
-- `https://your-domain.com`
-- `https://your-domain.vercel.app`
+- `https://your-domain.com/`
+- `https://your-domain.vercel.app/`
 
 ### 2. Environment Variables
 
@@ -34,12 +38,11 @@ Set these environment variables in your production environment:
 # Required - Azure AD Configuration
 VITE_AZURE_CLIENT_ID=your-client-id-here
 VITE_AZURE_TENANT_ID=your-tenant-id-here
-VITE_AZURE_CIAM_DOMAIN=your-domain.ciamlogin.com
+VITE_AZURE_SUBDOMAIN=your-subdomain
 
-# Optional - Only needed for localhost development
-# These will be auto-detected in production
-VITE_AZURE_REDIRECT_URI=http://localhost:3000
-VITE_AZURE_POST_LOGOUT_REDIRECT_URI=http://localhost:3000
+# Optional - Redirect URIs (will auto-detect if not provided)
+VITE_AZURE_REDIRECT_URI=https://your-domain.com/
+VITE_AZURE_POST_LOGOUT_REDIRECT_URI=https://your-domain.com/
 
 # Required - Supabase Configuration
 VITE_SUPABASE_URL=your-supabase-url
@@ -52,41 +55,18 @@ VITE_BYPASS_AZURE_AUTH=false
 
 ### 3. Supabase Database Setup
 
-Ensure your Supabase database has the required tables:
+Run the complete SQL setup script in your Supabase SQL Editor:
 
-```sql
--- Run this migration if not already applied
--- File: supabase/migrations/006_add_users_table.sql
+**File:** `supabase_auth_setup.sql`
 
--- Users table for Azure AD user synchronization
-CREATE TABLE IF NOT EXISTS public.users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    azure_user_id TEXT NOT NULL UNIQUE,
-    customer_id TEXT NOT NULL UNIQUE,
-    email TEXT NOT NULL,
-    name TEXT NOT NULL,
-    given_name TEXT,
-    surname TEXT,
-    job_title TEXT,
-    department TEXT,
-    office_location TEXT,
-    profile_data JSONB,
-    last_login TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- Business profiles table
-CREATE TABLE IF NOT EXISTS public.user_business_profiles (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    profile_name TEXT NOT NULL,
-    profile_data JSONB NOT NULL,
-    is_primary BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-```
+This script will create:
+- ✅ `users` table with proper indexes and constraints
+- ✅ `user_business_profiles` table for business profile management
+- ✅ `user_sessions` table for session tracking
+- ✅ Row Level Security (RLS) policies for all tables
+- ✅ Automatic timestamp update triggers
+- ✅ Helper functions for user management
+- ✅ Verification queries to confirm setup
 
 ### 4. Testing Production Setup
 
@@ -110,25 +90,35 @@ CREATE TABLE IF NOT EXISTS public.user_business_profiles (
 
 ## How It Works
 
-### Dynamic Redirect URL Detection
+### Dynamic Configuration
 
-The authentication system now automatically detects the correct redirect URLs:
+The authentication system now uses environment variables for all configuration:
 
 ```typescript
-// Development: Uses localhost URLs from environment variables
-// Production: Auto-detects current domain
+// No hardcoded values - all from environment
+const clientId = process.env.VITE_AZURE_CLIENT_ID; // Required
+const tenantId = process.env.VITE_AZURE_TENANT_ID; // Required
+const subdomain = process.env.VITE_AZURE_SUBDOMAIN; // Required
+const redirectUri = process.env.VITE_AZURE_REDIRECT_URI; // Optional - auto-detects
+```
+
+### Redirect URL Detection
+
+```typescript
+// Development: Uses localhost URLs automatically
+// Production: Uses environment variable or auto-detects current domain
 const getRedirectUri = () => {
-  if (typeof window !== 'undefined') {
-    const currentOrigin = window.location.origin;
-    
-    // If not localhost, use current origin
-    if (!currentOrigin.includes('localhost')) {
-      return currentOrigin;
-    }
+  if (window.location.origin.includes('localhost')) {
+    return `${window.location.origin}/`;
   }
   
-  // Fallback to environment variable for localhost
-  return process.env.VITE_AZURE_REDIRECT_URI || 'http://localhost:3000';
+  // Use environment variable if set
+  if (process.env.VITE_AZURE_REDIRECT_URI) {
+    return process.env.VITE_AZURE_REDIRECT_URI;
+  }
+  
+  // Auto-detect current origin
+  return `${window.location.origin}/`;
 };
 ```
 
@@ -151,16 +141,22 @@ Example: `CUST_1703123456789_A1B2C3D4E`
 
 ### Common Issues
 
-1. **"Redirect URI mismatch" error**
+1. **"Environment variable missing" error**
+   - Ensure all required environment variables are set
+   - Check that variable names match exactly (case-sensitive)
+
+2. **"Redirect URI mismatch" error**
    - Add your production domain to Azure AD app registration
    - Ensure HTTPS is used in production
+   - Check that redirect URIs end with `/`
 
-2. **User not syncing with database**
+3. **User not syncing with database**
+   - Run the `supabase_auth_setup.sql` script
    - Check Supabase environment variables
-   - Verify database tables exist
+   - Verify database tables exist with correct schema
    - Check browser console for detailed error logs
 
-3. **Customer ID not generated**
+4. **Customer ID not generated**
    - Ensure Supabase connection is working
    - Check database permissions and RLS policies
    - Verify user service is properly imported
@@ -183,10 +179,12 @@ If you encounter issues:
 2. Review browser console logs for detailed error information
 3. Verify all environment variables are set correctly
 4. Ensure Azure AD app registration includes production URLs
-5. Confirm Supabase database schema is up to date
+5. Confirm Supabase database schema is up to date using the SQL script
 
 ## Security Notes
 
+- All configuration values come from environment variables
+- No hardcoded credentials or URLs in the codebase
 - All user data is isolated by Azure user ID
 - Row Level Security (RLS) is enabled on all user tables
 - Tokens are validated and claims are processed securely

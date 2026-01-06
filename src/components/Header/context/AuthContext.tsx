@@ -1,5 +1,6 @@
-import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useState, useCallback } from 'react';
 import { useMsal } from '@azure/msal-react';
+import { EventType, EventMessage, AuthenticationResult } from '@azure/msal-browser';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { loginRequest, interactiveLoginRequest } from '../../../services/auth/msal';
 import { mockAuthService, MockUser } from '../../../services/auth/mockAuth';
@@ -123,42 +124,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         key: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
         urlValue: import.meta.env.VITE_SUPABASE_URL?.substring(0, 20) + '...'
       });
-      
+
       const azureUserId = account.localAccountId || account.homeAccountId;
-      console.log('🆔 Azure User ID:', azureUserId);
 
-      // Enhanced claims processing
-      const enhancedClaims = {
-        ...account.idTokenClaims,
-        givenName: account.idTokenClaims?.given_name || account.idTokenClaims?.givenName,
-        surname: account.idTokenClaims?.family_name || account.idTokenClaims?.surname,
-        jobTitle: account.idTokenClaims?.jobTitle || account.idTokenClaims?.job_title,
-        department: account.idTokenClaims?.department,
-        officeLocation: account.idTokenClaims?.officeLocation || account.idTokenClaims?.office_location
-      };
+      // Check if user already exists
+      let dbUser = await getUserByAzureId(azureUserId);
 
-      console.log('📋 Enhanced claims for sync:', {
-        givenName: enhancedClaims.givenName,
-        surname: enhancedClaims.surname,
-        jobTitle: enhancedClaims.jobTitle,
-        department: enhancedClaims.department,
-        officeLocation: enhancedClaims.officeLocation
-      });
+      if (!dbUser) {
+        // Create new user in database
+        console.log('👤 Creating new user in database...');
+        dbUser = await syncUserWithDatabase(userProfile, azureUserId, account.idTokenClaims);
 
-      // Always try to sync user (handles both create and update)
-      console.log('🔄 Attempting user sync...');
-      const dbUser = await syncUserWithDatabase(userProfile, azureUserId, enhancedClaims);
-      
+        if (dbUser) {
+          console.log('✅ New user created successfully:', {
+            id: dbUser.id,
+            customerId: dbUser.customer_id,
+            email: dbUser.email
+          });
+        } else {
+          console.error('❌ Failed to create user in database');
+        }
+      } else {
+        // Update last login
+        console.log('🔄 Updating existing user last login...');
+        const updateSuccess = await updateUserLastLogin(azureUserId);
+        console.log(updateSuccess ? '✅ Last login updated' : '❌ Failed to update last login');
+      }
+
       if (dbUser) {
         setDatabaseUser(dbUser);
 
         console.log('✅ User synced with database:', {
-          id: dbUser.id,
           customerId: dbUser.customer_id,
-          email: dbUser.email,
           azureUserId: azureUserId,
-          lastLogin: dbUser.last_login,
-          isNewUser: !dbUser.updated_at || dbUser.created_at === dbUser.updated_at
+          lastLogin: dbUser.last_login
         });
 
         // Enhance user profile with database info
@@ -172,40 +171,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         return enhancedProfile;
       } else {
-        console.error('❌ User sync failed - no database user returned');
-        console.error('🔍 This could be due to:');
-        console.error('   - RLS policies blocking user creation');
-        console.error('   - Database connection issues');
-        console.error('   - Missing environment variables');
-        console.error('   - Table permissions');
-        
-        // Continue with basic profile even if database sync fails
-        console.log('⚠️ Continuing with basic user profile (no database sync)');
+        console.error('❌ No database user available after sync attempt');
       }
     } catch (error) {
       console.error('❌ Error syncing user with database:', error);
       console.error('❌ Error details:', {
         message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        name: error instanceof Error ? error.name : undefined
+        stack: error instanceof Error ? error.stack : undefined
       });
-      
-      // Log specific error types
-      if (error instanceof Error) {
-        if (error.message.includes('policy')) {
-          console.error('🔒 RLS Policy Error: Database policies are blocking user operations');
-          console.error('💡 Run the migration: supabase/migrations/026_fix_user_rls_policies.sql');
-        } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
-          console.error('📋 Table Missing: Users table does not exist');
-          console.error('💡 Run the migration: supabase migration up');
-        } else if (error.message.includes('connection')) {
-          console.error('🌐 Connection Error: Cannot connect to Supabase');
-          console.error('💡 Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
-        }
-      }
-      
       // Continue without database sync - don't block authentication
-      console.log('⚠️ Continuing with basic authentication (database sync failed)');
     }
 
     return userProfile;
@@ -286,6 +260,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
   }, [user, isLoading, location.pathname, navigate]);
+
+  // MSAL Event Listener - Listen for login success events to immediately update state
+  // This fixes the issue where users need to refresh the page after sign-in
+  useEffect(() => {
+    if (useMockAuth || bypassMode) return;
+
+    const callbackId = instance.addEventCallback((event: EventMessage) => {
+      console.log('🎯 MSAL Event received:', event.eventType);
+
+      if (event.eventType === EventType.LOGIN_SUCCESS) {
+        console.log('✅ LOGIN_SUCCESS event detected!');
+        const result = event.payload as AuthenticationResult;
+
+        if (result?.account) {
+          console.log('👤 Setting active account from LOGIN_SUCCESS event:', result.account.username);
+          instance.setActiveAccount(result.account);
+
+          // Immediately extract user info and update state
+          extractUserFromAccount(result.account).then(userProfile => {
+            if (userProfile) {
+              console.log('✅ User state updated from LOGIN_SUCCESS event:', userProfile.email);
+              setCurrentUser(userProfile);
+              setLoginInProgress(false);
+            }
+          }).catch(error => {
+            console.error('❌ Error processing LOGIN_SUCCESS event:', error);
+            setLoginInProgress(false);
+          });
+        }
+      }
+
+      if (event.eventType === EventType.LOGIN_FAILURE) {
+        console.error('❌ LOGIN_FAILURE event:', event.error);
+        setLoginInProgress(false);
+      }
+
+      if (event.eventType === EventType.LOGOUT_SUCCESS) {
+        console.log('👋 LOGOUT_SUCCESS event - clearing user state');
+        setCurrentUser(null);
+        setDatabaseUser(null);
+      }
+    });
+
+    console.log('🔔 MSAL event callback registered:', callbackId);
+
+    return () => {
+      if (callbackId) {
+        console.log('🔕 Removing MSAL event callback:', callbackId);
+        instance.removeEventCallback(callbackId);
+      }
+    };
+  }, [instance, useMockAuth, bypassMode]);
 
   const login = async () => {
     console.log('🔐 Login function called with modes:', { useMockAuth, bypassMode });
@@ -373,11 +399,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     console.log('🚪 Logout function called with modes:', { useMockAuth, bypassMode });
-    
+
     if (useMockAuth) {
       console.log('🎭 Using mock logout...');
       mockAuthService.logout();
-      
+
       // Navigate to home page after logout
       setTimeout(() => {
         console.log('🏠 Redirecting to home page after logout...');
@@ -385,11 +411,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, 100);
       return;
     }
-    
+
     if (bypassMode) {
       console.log('🚀 Using bypass logout...');
       setBypassUser(null);
-      
+
       // Navigate to home page after logout
       setTimeout(() => {
         console.log('🏠 Redirecting to home page after logout...');
@@ -397,7 +423,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, 100);
       return;
     }
-    
+
     console.log('🚪 Logging out user with Azure AD...');
     instance.logoutRedirect({
       postLogoutRedirectUri: window.location.origin

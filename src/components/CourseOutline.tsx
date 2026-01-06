@@ -221,8 +221,10 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
                             <span className="text-sm font-semibold text-gray-700">Resources</span>
                         </div>
                         <a
-                            href="/25.01_DQ DTMB_WP_Perfect Life Transactions_v0.0.1 (1).pdf"
-                            download="Perfect Life Transactions.pdf"
+                            href="https://ugmybskacomcdgdngolz.supabase.co/storage/v1/object/public/course-content/plt-course-01/resources/25.01_DQ%20DTMB_WP_Perfect_Life_Transactions_The_Cornerstone_of_Economy_4.0.pdf"
+                            download="25.01_DQ DTMB_WP_Perfect_Life_Transactions_The_Cornerstone_of_Economy_4.0.pdf"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center gap-2 text-xs text-[#1839AD] hover:underline p-2 rounded hover:bg-blue-50 transition"
                         >
                             <Download size={14} />

@@ -9,10 +9,17 @@ const getRedirectUri = () => {
     return currentOrigin;
   }
   
-  // For production, always use the custom domain
-  const customDomain = 'https://dq-prod-dtma.vercel.app/';
-  console.log('🌐 Using custom domain redirect URI:', customDomain);
-  return customDomain;
+  // For production, use environment variable or auto-detect current origin
+  const envRedirectUri = (import.meta as any).env.VITE_AZURE_REDIRECT_URI;
+  if (envRedirectUri) {
+    console.log('🌐 Using environment redirect URI:', envRedirectUri);
+    return envRedirectUri;
+  }
+  
+  // Fallback to current origin if no environment variable is set
+  const currentOrigin = typeof window !== 'undefined' ? `${window.location.origin}/` : '/';
+  console.log('🌐 Using auto-detected redirect URI:', currentOrigin);
+  return currentOrigin;
 };
 
 const getPostLogoutRedirectUri = () => {
@@ -23,16 +30,23 @@ const getPostLogoutRedirectUri = () => {
     return currentOrigin;
   }
   
-  // For production, always use the custom domain
-  const customDomain = 'https://dq-prod-dtma.vercel.app/';
-  console.log('🌐 Using custom domain post-logout URI:', customDomain);
-  return customDomain;
+  // For production, use environment variable or auto-detect current origin
+  const envPostLogoutUri = (import.meta as any).env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI;
+  if (envPostLogoutUri) {
+    console.log('🌐 Using environment post-logout URI:', envPostLogoutUri);
+    return envPostLogoutUri;
+  }
+  
+  // Fallback to current origin if no environment variable is set
+  const currentOrigin = typeof window !== 'undefined' ? `${window.location.origin}/` : '/';
+  console.log('🌐 Using auto-detected post-logout URI:', currentOrigin);
+  return currentOrigin;
 };
 
 // Build the authority URL for Azure External ID (CIAM)
 const getAuthority = () => {
-  const tenantId = (import.meta as any).env.VITE_AZURE_TENANT_ID || '2d664c1c-c510-4764-af80-fe7c49c1e192';
-  const subdomain = (import.meta as any).env.VITE_AZURE_SUBDOMAIN || 'dqproddev';
+  const tenantId = (import.meta as any).env.VITE_AZURE_TENANT_ID;
+  const subdomain = (import.meta as any).env.VITE_AZURE_SUBDOMAIN;
   
   console.log('🔧 Authority Debug:', { 
     tenantId: tenantId ? `${tenantId.substring(0, 8)}...` : 'undefined',
@@ -64,7 +78,10 @@ const getAuthority = () => {
 
 const msalConfig: Configuration = {
   auth: {
-    clientId: (import.meta as any).env.VITE_AZURE_CLIENT_ID || '66ab04e3-a85d-48f1-b7a9-db7fdedd5e9d',
+    clientId: (import.meta as any).env.VITE_AZURE_CLIENT_ID || (() => {
+      console.error('❌ VITE_AZURE_CLIENT_ID is missing!');
+      throw new Error('VITE_AZURE_CLIENT_ID environment variable is required');
+    })(),
     authority: getAuthority(),
     redirectUri: getRedirectUri(),
     postLogoutRedirectUri: getPostLogoutRedirectUri(),
