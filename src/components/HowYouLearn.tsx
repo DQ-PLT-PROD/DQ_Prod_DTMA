@@ -21,7 +21,7 @@ const steps = [
 
 export const HowYouLearn: React.FC = () => {
   return (
-    <section className="bg-[#f7f9fc] py-0 sm:py-6">
+    <section className="bg-[#f7f9fc] pt-0 pb-8 sm:pb-10">
       <div className="w-full">
         <div className="flex flex-col md:flex-row w-full min-h-[170px] sm:min-h-[200px] shadow-lg sm:shadow-xl overflow-hidden bg-white">
           <div
