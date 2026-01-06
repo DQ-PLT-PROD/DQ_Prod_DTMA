@@ -204,7 +204,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
         </div>
 
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px] z-30 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px] z-30 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl">
           <div className="p-4 bg-white rounded-full shadow-lg mb-3">
             <Lock className="w-6 h-6 text-amber-500" />
           </div>
