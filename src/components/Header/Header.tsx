@@ -136,9 +136,9 @@ export function Header({
           }`}
         data-id={dataId}
         style={{
-          background: isTransparent ? "transparent" : HEADER_GRADIENT,
-          backdropFilter: isTransparent ? "none" : BRAND_BACKDROP_BLUR,
-          WebkitBackdropFilter: isTransparent ? "none" : BRAND_BACKDROP_BLUR,
+          background: isTransparent ? "rgba(0, 0, 0, 0.3)" : HEADER_GRADIENT,
+          backdropFilter: BRAND_BACKDROP_BLUR,
+          WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
         }}
       >
         <div

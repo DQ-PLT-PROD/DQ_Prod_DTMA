@@ -349,8 +349,10 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
 
               {passed && (
                 <a
-                  href="/25.01_DQ DTMB_WP_Perfect Life Transactions_v0.0.1 (1).pdf"
-                  download="Perfect Life Transactions.pdf"
+                  href="https://ugmybskacomcdgdngolz.supabase.co/storage/v1/object/public/course-content/plt-course-01/resources/25.01_DQ%20DTMB_WP_Perfect_Life_Transactions_The_Cornerstone_of_Economy_4.0.pdf"
+                  download="25.01_DQ DTMB_WP_Perfect_Life_Transactions_The_Cornerstone_of_Economy_4.0.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex-1 px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center justify-center gap-2 text-center"
                 >
                   <BookOpen size={16} />
@@ -406,22 +408,22 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
                 onClick={() => handleAnswerSelect(index)}
                 disabled={showFeedback}
                 className={`w-full text-left p-4 rounded-lg border-2 transition ${selectedAnswer === index
-                    ? showFeedback
-                      ? index === currentQuestion.correctAnswer
-                        ? "border-green-500 bg-green-50"
-                        : "border-red-500 bg-red-50"
-                      : "border-[#1839AD] bg-[#1839AD]/5"
-                    : "border-gray-200 hover:border-gray-300"
+                  ? showFeedback
+                    ? index === currentQuestion.correctAnswer
+                      ? "border-green-500 bg-green-50"
+                      : "border-red-500 bg-red-50"
+                    : "border-[#1839AD] bg-[#1839AD]/5"
+                  : "border-gray-200 hover:border-gray-300"
                   } ${showFeedback ? "cursor-default" : "cursor-pointer"}`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedAnswer === index
-                      ? showFeedback
-                        ? index === currentQuestion.correctAnswer
-                          ? "border-green-500 bg-green-500"
-                          : "border-red-500 bg-red-500"
-                        : "border-[#1839AD] bg-[#1839AD]"
-                      : "border-gray-300"
+                    ? showFeedback
+                      ? index === currentQuestion.correctAnswer
+                        ? "border-green-500 bg-green-500"
+                        : "border-red-500 bg-red-500"
+                      : "border-[#1839AD] bg-[#1839AD]"
+                    : "border-gray-300"
                     }`}>
                     {selectedAnswer === index && (
                       <div className="w-2 h-2 rounded-full bg-white" />
@@ -445,8 +447,8 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
           {/* Feedback */}
           {showFeedback && (
             <div className={`p-4 rounded-lg mb-6 ${selectedAnswer === currentQuestion.correctAnswer
-                ? "bg-green-50 border border-green-200"
-                : "bg-red-50 border border-red-200"
+              ? "bg-green-50 border border-green-200"
+              : "bg-red-50 border border-red-200"
               }`}>
               <div className="flex items-center gap-2 mb-2">
                 {selectedAnswer === currentQuestion.correctAnswer ? (
@@ -455,16 +457,16 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
                   <XCircle size={20} className="text-red-600" />
                 )}
                 <span className={`font-medium ${selectedAnswer === currentQuestion.correctAnswer
-                    ? "text-green-800"
-                    : "text-red-800"
+                  ? "text-green-800"
+                  : "text-red-800"
                   }`}>
                   {selectedAnswer === currentQuestion.correctAnswer ? "Correct!" : "Incorrect"}
                 </span>
               </div>
               {currentQuestion.explanation && (
                 <p className={`text-sm ${selectedAnswer === currentQuestion.correctAnswer
-                    ? "text-green-700"
-                    : "text-red-700"
+                  ? "text-green-700"
+                  : "text-red-700"
                   }`}>
                   {currentQuestion.explanation}
                 </p>

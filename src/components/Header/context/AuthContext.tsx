@@ -1,5 +1,6 @@
-import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useState, useCallback } from 'react';
 import { useMsal } from '@azure/msal-react';
+import { EventType, EventMessage, AuthenticationResult } from '@azure/msal-browser';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { loginRequest, interactiveLoginRequest } from '../../../services/auth/msal';
 import { mockAuthService, MockUser } from '../../../services/auth/mockAuth';
@@ -123,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         key: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
         urlValue: import.meta.env.VITE_SUPABASE_URL?.substring(0, 20) + '...'
       });
-      
+
       const azureUserId = account.localAccountId || account.homeAccountId;
 
       // Check if user already exists
@@ -133,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Create new user in database
         console.log('👤 Creating new user in database...');
         dbUser = await syncUserWithDatabase(userProfile, azureUserId, account.idTokenClaims);
-        
+
         if (dbUser) {
           console.log('✅ New user created successfully:', {
             id: dbUser.id,
@@ -249,16 +250,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const currentPath = location.pathname;
 
       // Redirect to learning page just like the test account does
-      if (currentPath === '/' || currentPath.includes('auth') || currentPath.includes('signin')) {
+      // But exclude the debug panel from redirects
+      if ((currentPath === '/' || currentPath.includes('signin')) && !currentPath.includes('auth-debug')) {
         console.log('🎓 Real account authenticated! Redirecting to learning page from:', currentPath);
         navigate('/learning', { replace: true });
       } else if (currentPath === '/learning') {
         console.log('✅ Real account user is already on learning page');
+      } else if (currentPath.includes('auth-debug')) {
+        console.log('🔧 User accessing debug panel - no redirect needed');
       } else {
         console.log('ℹ️ Real account authenticated on page:', currentPath);
       }
     }
   }, [user, isLoading, location.pathname, navigate]);
+
+  // MSAL Event Listener - Listen for login success events to immediately update state
+  // This fixes the issue where users need to refresh the page after sign-in
+  useEffect(() => {
+    if (useMockAuth || bypassMode) return;
+
+    const callbackId = instance.addEventCallback((event: EventMessage) => {
+      console.log('🎯 MSAL Event received:', event.eventType);
+
+      if (event.eventType === EventType.LOGIN_SUCCESS) {
+        console.log('✅ LOGIN_SUCCESS event detected!');
+        const result = event.payload as AuthenticationResult;
+
+        if (result?.account) {
+          console.log('👤 Setting active account from LOGIN_SUCCESS event:', result.account.username);
+          instance.setActiveAccount(result.account);
+
+          // Immediately extract user info and update state
+          extractUserFromAccount(result.account).then(userProfile => {
+            if (userProfile) {
+              console.log('✅ User state updated from LOGIN_SUCCESS event:', userProfile.email);
+              setCurrentUser(userProfile);
+              setLoginInProgress(false);
+            }
+          }).catch(error => {
+            console.error('❌ Error processing LOGIN_SUCCESS event:', error);
+            setLoginInProgress(false);
+          });
+        }
+      }
+
+      if (event.eventType === EventType.LOGIN_FAILURE) {
+        console.error('❌ LOGIN_FAILURE event:', event.error);
+        setLoginInProgress(false);
+      }
+
+      if (event.eventType === EventType.LOGOUT_SUCCESS) {
+        console.log('👋 LOGOUT_SUCCESS event - clearing user state');
+        setCurrentUser(null);
+        setDatabaseUser(null);
+      }
+    });
+
+    console.log('🔔 MSAL event callback registered:', callbackId);
+
+    return () => {
+      if (callbackId) {
+        console.log('🔕 Removing MSAL event callback:', callbackId);
+        instance.removeEventCallback(callbackId);
+      }
+    };
+  }, [instance, useMockAuth, bypassMode]);
 
   const login = async () => {
     console.log('🔐 Login function called with modes:', { useMockAuth, bypassMode });
@@ -346,11 +402,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     console.log('🚪 Logout function called with modes:', { useMockAuth, bypassMode });
-    
+
     if (useMockAuth) {
       console.log('🎭 Using mock logout...');
       mockAuthService.logout();
-      
+
       // Navigate to home page after logout
       setTimeout(() => {
         console.log('🏠 Redirecting to home page after logout...');
@@ -358,11 +414,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, 100);
       return;
     }
-    
+
     if (bypassMode) {
       console.log('🚀 Using bypass logout...');
       setBypassUser(null);
-      
+
       // Navigate to home page after logout
       setTimeout(() => {
         console.log('🏠 Redirecting to home page after logout...');
@@ -370,7 +426,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, 100);
       return;
     }
-    
+
     console.log('🚪 Logging out user with Azure AD...');
     instance.logoutRedirect({
       postLogoutRedirectUri: window.location.origin

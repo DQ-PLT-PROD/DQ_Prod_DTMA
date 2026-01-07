@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { FilterSidebar, FilterConfig, FilterOption as SidebarFilterOption } from "../../components/courses/FilterSidebar";
 import { CourseGrid } from "../../components/courses/CourseGrid";
 import { SearchBar } from "../../components/SearchBar";
-import { FilterIcon, XIcon, HomeIcon, ChevronRightIcon } from "lucide-react";
+import { FilterIcon, XIcon } from "lucide-react";
+import { Breadcrumb } from "../../components/ui/Breadcrumb";
 import { ErrorDisplay, CourseCardSkeleton } from "../../components/SkeletonLoader";
 import { getCourseConfig } from "../../utils/courseConfig";
 import { Header } from "../../components/Header";
@@ -295,20 +296,14 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
             <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-8 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
                     {/* Breadcrumb */}
-                    <nav
-                        aria-label="Breadcrumb"
-                        className="flex items-center gap-2 text-sm text-blue-100 mb-4"
-                    >
-                        <Link
-                            to="/"
-                            className="flex items-center gap-1 hover:text-white transition-colors"
-                        >
-                            <HomeIcon size={16} />
-                            <span>Home</span>
-                        </Link>
-                        <ChevronRightIcon size={14} className="text-blue-300" />
-                        <span className="text-white font-medium">Course Catalog</span>
-                    </nav>
+                    <Breadcrumb
+                        variant="default"
+                        items={[
+                            { label: 'Home', href: '/' },
+                            { label: 'Course Catalog', current: true },
+                        ]}
+                        className="mb-4"
+                    />
 
                     <h1 className="text-2xl sm:text-3xl font-bold mb-2">{heroTitle}</h1>
                     <p className="text-blue-100 max-w-2xl">{heroDescription}</p>

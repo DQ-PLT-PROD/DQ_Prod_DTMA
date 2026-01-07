@@ -54,10 +54,33 @@ export async function syncUserWithDatabase(
     console.warn("Supabase not configured; skipping user sync.");
     return null;
   }
+  
   try {
-    console.log('🔄 Syncing user with database:', { azureUserId, email: azureUserProfile.email });
+    console.log('🔄 Syncing user with database:', { 
+      azureUserId, 
+      email: azureUserProfile.email,
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL?.substring(0, 30) + '...',
+      hasSupabaseKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY
+    });
 
-    // Generate a customer ID if this is a new user
+    // Check if user already exists first
+    const existingUser = await getUserByAzureId(azureUserId);
+    
+    if (existingUser) {
+      console.log('👤 User already exists, updating last login...');
+      const updateSuccess = await updateUserLastLogin(azureUserId);
+      if (updateSuccess) {
+        // Fetch updated user data
+        const updatedUser = await getUserByAzureId(azureUserId);
+        console.log('✅ Existing user updated:', updatedUser);
+        return updatedUser;
+      } else {
+        console.log('⚠️ Failed to update last login, returning existing user');
+        return existingUser;
+      }
+    }
+
+    // Generate a customer ID for new user
     const customerId = `CUST_${Date.now()}_${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
     const userData = {
@@ -65,8 +88,8 @@ export async function syncUserWithDatabase(
       customer_id: customerId,
       email: azureUserProfile.email,
       name: azureUserProfile.name,
-      given_name: additionalData?.givenName || null,
-      surname: additionalData?.surname || null,
+      given_name: additionalData?.givenName || additionalData?.given_name || null,
+      surname: additionalData?.surname || additionalData?.family_name || null,
       job_title: azureUserProfile.jobTitle || additionalData?.jobTitle || null,
       department: azureUserProfile.department || additionalData?.department || null,
       office_location: azureUserProfile.officeLocation || additionalData?.officeLocation || null,
@@ -75,28 +98,54 @@ export async function syncUserWithDatabase(
       updated_at: new Date().toISOString()
     };
 
-    // Try to upsert the user (insert or update if exists)
+    console.log('📝 Creating new user with data:', {
+      ...userData,
+      profile_data: userData.profile_data ? 'present' : 'null'
+    });
+
+    // Insert new user
     const { data, error } = await supabase
       .from('users')
-      .upsert(
-        userData,
-        { 
-          onConflict: 'azure_user_id',
-          ignoreDuplicates: false 
-        }
-      )
+      .insert(userData)
       .select()
       .single();
 
     if (error) {
-      console.error('❌ Error syncing user with database:', error);
+      console.error('❌ Error creating user in database:', {
+        error,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      
+      // Check for specific error types
+      if (error.code === '42501') {
+        console.error('🔒 RLS Policy Error: The database policies are blocking user creation');
+        console.error('💡 Suggestion: Check RLS policies on users table');
+      } else if (error.code === '23505') {
+        console.error('🔄 Unique Constraint Error: User might already exist');
+        // Try to fetch existing user
+        return await getUserByAzureId(azureUserId);
+      }
+      
       return null;
     }
 
-    console.log('✅ User synced successfully:', data);
+    console.log('✅ New user created successfully:', {
+      id: data.id,
+      customerId: data.customer_id,
+      email: data.email,
+      createdAt: data.created_at
+    });
+    
     return data as DatabaseUser;
   } catch (error) {
-    console.error('❌ Unexpected error syncing user:', error);
+    console.error('❌ Unexpected error syncing user:', {
+      error,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return null;
   }
 }
