@@ -533,6 +533,55 @@ export interface Database {
                     created_at?: string | null
                 }
                 Relationships: []
+            },
+            users: {
+                Row: {
+                    id: string
+                    azure_user_id: string
+                    customer_id: string
+                    email: string
+                    name: string
+                    given_name: string | null
+                    surname: string | null
+                    job_title: string | null
+                    department: string | null
+                    office_location: string | null
+                    profile_data: Json | null
+                    last_login: string
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    azure_user_id: string
+                    customer_id: string
+                    email: string
+                    name: string
+                    given_name?: string | null
+                    surname?: string | null
+                    job_title?: string | null
+                    department?: string | null
+                    office_location?: string | null
+                    profile_data?: Json | null
+                    last_login?: string
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    azure_user_id?: string
+                    customer_id?: string
+                    email?: string
+                    name?: string
+                    given_name?: string | null
+                    surname?: string | null
+                    job_title?: string | null
+                    department?: string | null
+                    office_location?: string | null
+                    profile_data?: Json | null
+                    last_login?: string
+                    updated_at?: string
+                }
+                Relationships: []
             }
         }
         Views: {}

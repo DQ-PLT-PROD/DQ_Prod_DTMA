@@ -59,6 +59,7 @@ export async function syncUserWithDatabase(
     console.log('🔄 Syncing user with database:', { 
       azureUserId, 
       email: azureUserProfile.email,
+      name: azureUserProfile.name,
       supabaseUrl: import.meta.env.VITE_SUPABASE_URL?.substring(0, 30) + '...',
       hasSupabaseKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY
     });
@@ -67,15 +68,26 @@ export async function syncUserWithDatabase(
     const existingUser = await getUserByAzureId(azureUserId);
     
     if (existingUser) {
-      console.log('👤 User already exists, updating last login...');
-      const updateSuccess = await updateUserLastLogin(azureUserId);
+      console.log('👤 User already exists:', {
+        currentEmail: existingUser.email,
+        newEmail: azureUserProfile.email,
+        emailChanged: existingUser.email !== azureUserProfile.email
+      });
+      
+      console.log('🔄 Updating profile and last login...');
+      const updateSuccess = await updateUserProfile(azureUserId, azureUserProfile, additionalData);
       if (updateSuccess) {
         // Fetch updated user data
         const updatedUser = await getUserByAzureId(azureUserId);
-        console.log('✅ Existing user updated:', updatedUser);
+        console.log('✅ Existing user profile updated:', {
+          id: updatedUser?.id,
+          oldEmail: existingUser.email,
+          newEmail: updatedUser?.email,
+          name: updatedUser?.name
+        });
         return updatedUser;
       } else {
-        console.log('⚠️ Failed to update last login, returning existing user');
+        console.log('⚠️ Failed to update user profile, returning existing user');
         return existingUser;
       }
     }
@@ -212,7 +224,7 @@ export async function getUserByCustomerId(customerId: string): Promise<DatabaseU
 }
 
 /**
- * Updates user's last login timestamp
+ * Updates user's last login timestamp and profile data
  */
 export async function updateUserLastLogin(azureUserId: string): Promise<boolean> {
   if (!supabase) {
@@ -241,14 +253,68 @@ export async function updateUserLastLogin(azureUserId: string): Promise<boolean>
 }
 
 /**
+ * Updates existing user's profile data including email
+ */
+export async function updateUserProfile(
+  azureUserId: string, 
+  userProfile: UserProfile,
+  additionalData?: any
+): Promise<boolean> {
+  if (!supabase) {
+    console.warn("Supabase not configured; cannot update user profile.");
+    return false;
+  }
+  try {
+    const updateData = {
+      email: userProfile.email,
+      name: userProfile.name,
+      given_name: additionalData?.givenName || additionalData?.given_name || null,
+      surname: additionalData?.surname || additionalData?.family_name || null,
+      job_title: userProfile.jobTitle || additionalData?.jobTitle || null,
+      department: userProfile.department || additionalData?.department || null,
+      office_location: userProfile.officeLocation || additionalData?.officeLocation || null,
+      profile_data: additionalData || null,
+      last_login: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    console.log('📝 Updating existing user profile:', {
+      azureUserId,
+      email: updateData.email,
+      name: updateData.name
+    });
+
+    const { error } = await supabase!
+      .from('users')
+      .update(updateData)
+      .eq('azure_user_id', azureUserId);
+
+    if (error) {
+      console.error('❌ Error updating user profile:', error);
+      return false;
+    }
+
+    console.log('✅ User profile updated successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Unexpected error updating user profile:', error);
+    return false;
+  }
+}
+
+/**
  * Links business profile data to a user
  */
 export async function linkBusinessProfileToUser(
   azureUserId: string, 
   profileData: any
 ): Promise<boolean> {
+  if (!supabase) {
+    console.warn("Supabase not configured; cannot link business profile.");
+    return false;
+  }
   try {
-    const { error } = await supabase
+    const { error } = await supabase!
       .from('users')
       .update({ 
         profile_data: profileData,
@@ -273,8 +339,12 @@ export async function linkBusinessProfileToUser(
  * Gets all users (admin function)
  */
 export async function getAllUsers(): Promise<DatabaseUser[]> {
+  if (!supabase) {
+    console.warn("Supabase not configured; cannot fetch all users.");
+    return [];
+  }
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from('users')
       .select('*')
       .order('created_at', { ascending: false });
@@ -295,8 +365,12 @@ export async function getAllUsers(): Promise<DatabaseUser[]> {
  * Deletes a user from the database (admin function)
  */
 export async function deleteUser(azureUserId: string): Promise<boolean> {
+  if (!supabase) {
+    console.warn("Supabase not configured; cannot delete user.");
+    return false;
+  }
   try {
-    const { error } = await supabase
+    const { error } = await supabase!
       .from('users')
       .delete()
       .eq('azure_user_id', azureUserId);
