@@ -16,6 +16,14 @@ import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../components/CourseOutline";
 import { Lesson, toUILesson } from "../types/course";
 import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../services/courseService";
+import {
+  getOrCreateEnrollment,
+  getUserCourseProgress,
+  updateLessonProgress,
+  updateEnrollmentProgress,
+  syncLocalProgressToServer,
+  Enrollment,
+} from "../services/progressService";
 import { Lesson as DBLesson, Course } from "../types/dtma-lms";
 import { ExploreDropdown } from "../components/Header/components/ExploreDropdown";
 import { FEATURES } from "../config/features";
@@ -46,11 +54,13 @@ const LearningScreen: React.FC = () => {
   const [isNextLessonUnlocked, setIsNextLessonUnlocked] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [isTheater, setIsTheater] = useState(false);
+  const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
 
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, databaseUser, logout } = useAuth();
 
   // Fetch course, lessons, and resources from Supabase on mount or when courseId changes
+  // IMPORTANT: Do NOT include databaseUser?.id in dependencies to prevent double-run overwrite
   useEffect(() => {
     const loadCourseData = async () => {
       try {
@@ -65,15 +75,16 @@ const LearningScreen: React.FC = () => {
 
         if (fetchedLessons.length > 0) {
           setDbLessons(fetchedLessons);
-          // Get completed lesson IDs from localStorage (scoped to courseId)
+
+          // Always read localStorage first (works for both anonymous and authenticated)
           const storageKey = `courseProgress_${courseId}`;
           const saved = localStorage.getItem(storageKey);
           const savedLessons: Lesson[] = saved ? JSON.parse(saved) : [];
-          const completedIds = new Set(
+          const completedIds = new Set<string>(
             savedLessons.filter(l => l.completed).map(l => String(l.id))
           );
 
-          // Convert DB lessons to UI lessons - video URLs come from DB
+          // Convert DB lessons to UI lessons with localStorage progress
           const uiLessons = fetchedLessons.map((lesson, idx) =>
             toUILesson(lesson, idx, completedIds)
           );
@@ -91,9 +102,44 @@ const LearningScreen: React.FC = () => {
     };
 
     loadCourseData();
-  }, [courseId]);
+  }, [courseId]); // Only re-run when course changes
 
-  // Persist progress to localStorage (scoped to courseId)
+  // Handle enrollment creation when user becomes authenticated
+  // This is separate from data loading to prevent the double-run overwrite bug
+  useEffect(() => {
+    const handleAuthenticatedUser = async () => {
+      if (!databaseUser?.id || lessons.length === 0 || enrollment) return;
+
+      try {
+        // Get or create enrollment for authenticated user
+        const enroll = await getOrCreateEnrollment(databaseUser.id, courseId);
+        setEnrollment(enroll);
+
+        if (enroll) {
+          // Check if there's localStorage progress to sync to server
+          const storageKey = `courseProgress_${courseId}`;
+          const saved = localStorage.getItem(storageKey);
+          if (saved) {
+            const localLessons: Lesson[] = JSON.parse(saved);
+            const localCompletedIds = localLessons
+              .filter(l => l.completed)
+              .map(l => ({ id: String(l.id), completed: true }));
+
+            if (localCompletedIds.length > 0) {
+              await syncLocalProgressToServer(databaseUser.id, courseId, localCompletedIds);
+              console.log('✅ Synced localStorage progress to server');
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to create enrollment or sync progress:', err);
+      }
+    };
+
+    handleAuthenticatedUser();
+  }, [databaseUser?.id, lessons.length, courseId, enrollment]);
+
+  // Persist progress to localStorage (always, for offline/anonymous support)
   useEffect(() => {
     if (typeof window !== 'undefined' && lessons.length > 0) {
       const storageKey = `courseProgress_${courseId}`;
@@ -124,6 +170,37 @@ const LearningScreen: React.FC = () => {
     [lessons]
   );
 
+  // Helper to mark a lesson complete and sync to server if authenticated
+  const markLessonComplete = useCallback(async (lessonIndex: number) => {
+    const lesson = lessons[lessonIndex];
+    if (!lesson || lesson.completed) return;
+
+    // Update local state immediately
+    setLessons(prevLessons =>
+      prevLessons.map((l, index) =>
+        index === lessonIndex ? { ...l, completed: true } : l
+      )
+    );
+
+    // Sync to server if authenticated
+    if (enrollment && databaseUser?.id) {
+      try {
+        await updateLessonProgress(enrollment.id, String(lesson.id), true);
+        // Update enrollment progress percentage
+        const newCompletedCount = lessons.filter(l => l.completed).length + 1;
+        const newProgressPct = (newCompletedCount / lessons.length) * 100;
+        await updateEnrollmentProgress(
+          enrollment.id,
+          newProgressPct,
+          newCompletedCount === lessons.length
+        );
+      } catch (err) {
+        console.warn('Failed to sync lesson completion to server:', err);
+        // Progress is still saved locally, so user won't lose it
+      }
+    }
+  }, [lessons, enrollment, databaseUser?.id]);
+
   const handleTimeUpdate = (time: number, totalDuration: number) => {
     setCurrentTime(time);
     if (totalDuration > 0) setDuration(totalDuration);
@@ -134,13 +211,7 @@ const LearningScreen: React.FC = () => {
     setIsNextLessonUnlocked(isNearEnd);
 
     if (isNearEnd && !lessons[currentLessonIndex].completed) {
-      setLessons(prevLessons =>
-        prevLessons.map((lesson, index) =>
-          index === currentLessonIndex
-            ? { ...lesson, completed: true }
-            : lesson
-        )
-      );
+      markLessonComplete(currentLessonIndex);
     }
   };
 
@@ -182,13 +253,7 @@ const LearningScreen: React.FC = () => {
 
   const handleNext = () => {
     if (!lessons[currentLessonIndex].completed) {
-      setLessons(prevLessons =>
-        prevLessons.map((lesson, index) =>
-          index === currentLessonIndex
-            ? { ...lesson, completed: true }
-            : lesson
-        )
-      );
+      markLessonComplete(currentLessonIndex);
     }
 
     setShowQuiz(false);
@@ -419,6 +484,7 @@ const LearningScreen: React.FC = () => {
 
                   {/* Video Player */}
                   <VideoPlayer
+                    key={activeLesson?.id || currentLessonIndex}
                     src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
                     poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
                     isPlaying={isPlaying}

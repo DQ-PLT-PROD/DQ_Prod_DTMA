@@ -16,18 +16,24 @@ CREATE INDEX IF NOT EXISTS idx_newsletter_subscriptions_active ON newsletter_sub
 ALTER TABLE public.newsletter_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Allow anonymous users to insert (subscribe)
+-- Policy: Allow anonymous users to insert (subscribe)
+DROP POLICY IF EXISTS "Allow anonymous subscription" ON public.newsletter_subscriptions;
 CREATE POLICY "Allow anonymous subscription" ON public.newsletter_subscriptions
 FOR INSERT 
 TO anon
 WITH CHECK (true);
 
 -- Policy: Allow service role to read all subscriptions (for admin purposes)
+-- Policy: Allow service role to read all subscriptions (for admin purposes)
+DROP POLICY IF EXISTS "Service role can read all" ON public.newsletter_subscriptions;
 CREATE POLICY "Service role can read all" ON public.newsletter_subscriptions
 FOR SELECT 
 TO service_role
 USING (true);
 
 -- Policy: Allow service role to update subscriptions (for unsubscribe functionality)
+-- Policy: Allow service role to update subscriptions (for unsubscribe functionality)
+DROP POLICY IF EXISTS "Service role can update" ON public.newsletter_subscriptions;
 CREATE POLICY "Service role can update" ON public.newsletter_subscriptions
 FOR UPDATE 
 TO service_role

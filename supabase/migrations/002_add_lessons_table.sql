@@ -26,5 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_lessons_order ON public.lessons(course_slug, orde
 ALTER TABLE public.lessons ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Public Read Access
+-- Policy: Public Read Access
+DROP POLICY IF EXISTS "Public Read Access: lessons" ON public.lessons;
 CREATE POLICY "Public Read Access: lessons" ON public.lessons
 FOR SELECT USING (true);

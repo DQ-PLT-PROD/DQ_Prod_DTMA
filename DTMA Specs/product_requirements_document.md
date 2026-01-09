@@ -228,7 +228,6 @@ mindmap
 | `VideoPlayer` | Main video playback area |
 | `LessonSidebar` | Ordered lesson list with completion status |
 | `ProgressBar` | Course completion percentage |
-| `ResourcePanel` | Lesson-specific downloadables |
 | `QuizModule` | In-lesson assessments |
 
 **Lesson Types:**
@@ -240,11 +239,12 @@ mindmap
 | `quiz` | Assessment questions |
 
 **Acceptance Criteria:**
-- [ ] Video playback with standard controls (play, pause, seek, volume)
-- [ ] Lesson marked complete when video reaches >90% playback
-- [ ] Quiz questions load from `quizzes` table
-- [ ] Progress persists across sessions (future: enrollment-based)
-- [ ] Mobile-responsive with collapsible sidebar
+- [x] Video playback with standard controls (play, pause, seek, volume)
+- [x] Lesson marked complete when video reaches final 60 seconds
+- [x] Quiz questions load from `quizzes` table
+- [x] Progress persists across sessions via `user_enrollments` and `lesson_progress` tables
+- [x] Hybrid approach: localStorage for anonymous users, Supabase for authenticated
+- [x] Mobile-responsive with collapsible sidebar
 
 ---
 
