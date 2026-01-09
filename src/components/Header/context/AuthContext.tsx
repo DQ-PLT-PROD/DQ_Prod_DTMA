@@ -7,7 +7,7 @@ import { mockAuthService, MockUser } from '../../../services/auth/mockAuth';
 import { validateAndLogClaims, extractUserProfile } from '../../../utils/claimsValidator';
 import { fetchUserFromGraph, mergeGraphUserData } from '../../../services/graphService';
 import { logAuthenticationState, validateTokenResponse } from '../../../utils/authTester';
-import { syncUserWithDatabase, getUserByAzureId, updateUserLastLogin, DatabaseUser } from '../../../services/userService';
+import { syncUserWithDatabase, getUserByAzureId, updateUserLastLogin, updateUserProfile, DatabaseUser } from '../../../services/userService';
 
 interface UserProfile {
   id: string;
