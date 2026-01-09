@@ -27,8 +27,9 @@ export const toUILesson = (dbLesson: {
     resourceUrl?: string;
     content?: string;
 }, orderIndex: number, completedIds: Set<string> = new Set()): Lesson => {
-    const mins = dbLesson.estimatedDurationMinutes || 0;
-    const durationStr = `${String(Math.floor(mins)).padStart(2, '0')}:00`;
+    // Use loading state initially - actual duration will be populated from video metadata
+    // This ensures all lessons show accurate durations from the video files
+    const durationStr = '--:--';
 
     return {
         id: dbLesson.id,

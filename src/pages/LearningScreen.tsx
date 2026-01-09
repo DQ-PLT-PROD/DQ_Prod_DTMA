@@ -104,6 +104,78 @@ const LearningScreen: React.FC = () => {
     loadCourseData();
   }, [courseId]); // Only re-run when course changes
 
+  // Preload video durations for ALL lessons to show accurate timestamps in course outline
+  // This runs after lessons are loaded and fetches actual durations from video metadata
+  useEffect(() => {
+    if (lessons.length === 0) return;
+
+    const fetchVideoDuration = (videoUrl: string): Promise<number> => {
+      return new Promise((resolve, reject) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+
+        const timeout = setTimeout(() => {
+          video.src = '';
+          reject(new Error('Timeout loading video metadata'));
+        }, 10000); // 10 second timeout
+
+        video.onloadedmetadata = () => {
+          clearTimeout(timeout);
+          resolve(video.duration);
+          video.src = ''; // Clean up
+        };
+
+        video.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('Failed to load video'));
+        };
+
+        video.src = videoUrl;
+      });
+    };
+
+    const formatDuration = (seconds: number): string => {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    };
+
+    const preloadAllDurations = async () => {
+      const durationPromises = lessons.map(async (lesson, index) => {
+        // Skip if no video URL or duration already loaded (not --:--)
+        if (!lesson.videoUrl || (lesson.duration !== '--:--' && lesson.duration !== '')) {
+          return { index, duration: lesson.duration };
+        }
+
+        try {
+          const durationSeconds = await fetchVideoDuration(lesson.videoUrl);
+          return { index, duration: formatDuration(durationSeconds) };
+        } catch (error) {
+          console.warn(`Failed to load duration for lesson ${index + 1}:`, error);
+          return { index, duration: '--:--' }; // Keep empty state for failed videos
+        }
+      });
+
+      const results = await Promise.allSettled(durationPromises);
+
+      // Update lessons with fetched durations
+      setLessons(prevLessons => {
+        const updatedLessons = [...prevLessons];
+        results.forEach(result => {
+          if (result.status === 'fulfilled' && result.value) {
+            const { index, duration } = result.value;
+            if (updatedLessons[index]) {
+              updatedLessons[index] = { ...updatedLessons[index], duration };
+            }
+          }
+        });
+        return updatedLessons;
+      });
+    };
+
+    preloadAllDurations();
+  }, [lessons.length, courseId]); // Run when lessons are loaded
+
   // Handle enrollment creation when user becomes authenticated
   // This is separate from data loading to prevent the double-run overwrite bug
   useEffect(() => {
