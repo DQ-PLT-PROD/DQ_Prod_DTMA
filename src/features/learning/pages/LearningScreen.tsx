@@ -9,6 +9,10 @@ import {
   X,
   Loader2,
   Download,
+  Award,
+  Sparkles,
+  Play,
+  Bookmark,
 } from "lucide-react";
 import { useAuth } from "../../../components/Header";
 import CourseAssessment from "../../courses/pages/CourseAssessment";
@@ -29,6 +33,7 @@ import { PreviewContentGate } from "../../../components/learning/PreviewContentG
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
 import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";
 import { FEATURES } from "../../../config/features";
+import MyCoursesList from "../components/MyCoursesList";
 
 // Default fallback course slug if none provided in URL
 const DEFAULT_COURSE_SLUG = 'perfecting-life-transactions';
@@ -36,6 +41,8 @@ const DEFAULT_COURSE_SLUG = 'perfecting-life-transactions';
 const LearningScreen: React.FC = () => {
   const [searchParams] = useSearchParams();
   const courseId = searchParams.get('courseId') || DEFAULT_COURSE_SLUG;
+  const currentView = searchParams.get('view'); // 'my-courses' or null (default to video player)
+  const isMyCoursesView = currentView === 'my-courses';
 
   const [course, setCourse] = useState<Course | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -285,14 +292,14 @@ const LearningScreen: React.FC = () => {
     // Sync to server if authenticated
     if (enrollment && databaseUser?.id) {
       try {
-        await updateLessonProgress(enrollment.id, String(lesson.id), true);
+        await updateLessonProgress(databaseUser.id, courseId, String(lesson.id), true);
         // Update enrollment progress percentage
         const newCompletedCount = lessons.filter(l => l.completed).length + 1;
         const newProgressPct = (newCompletedCount / lessons.length) * 100;
         await updateEnrollmentProgress(
-          enrollment.id,
-          newProgressPct,
-          newCompletedCount === lessons.length
+          databaseUser.id,
+          courseId,
+          newProgressPct
         );
       } catch (err) {
         console.warn('Failed to sync lesson completion to server:', err);
@@ -409,6 +416,7 @@ const LearningScreen: React.FC = () => {
             {FEATURES.COURSE_MARKETPLACE && <ExploreDropdown />}
           </div>
 
+
           {/* Profile Icon */}
           <div className="relative ml-auto">
             <button
@@ -436,28 +444,89 @@ const LearningScreen: React.FC = () => {
         {/* Minimal Side Navigation - Learning Page with collapse toggle (hidden in theater) */}
         {!isTheater && (
           <aside
-            className={`bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${sidebarOpen ? "w-60" : "w-16"
+            className={`bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${sidebarOpen ? "w-56" : "w-14"
               } hidden lg:flex flex-col shrink-0`}
           >
-            <nav>
+            {/* Sidebar Header - Hamburger menu */}
+            <div
+              className={`flex items-center justify-center px-3 py-3 bg-gray-50 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition`}
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              title={sidebarOpen ? "Collapse menu" : "Expand menu"}
+            >
+              <span className="w-8 flex items-center justify-center text-[#1839AD]">
+                <Menu size={20} />
+              </span>
+              {sidebarOpen && (
+                <ChevronLeft size={16} className="ml-auto text-gray-400" />
+              )}
+            </div>
+
+            {/* Navigation Items */}
+            <nav className="flex-1 py-3 overflow-y-auto">
+              {/* My Courses Section */}
+              <div className="mx-2 space-y-1">
+                <div className="px-2 py-1 text-xs text-gray-400 uppercase font-semibold tracking-wide">
+                  {sidebarOpen ? "My Courses" : ""}
+                </div>
+
+                {/* In Progress */}
+                <a
+                  href="/learning?view=my-courses"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isMyCoursesView ? 'text-[#1839AD] bg-[#1839AD]/10' : 'text-[#1839AD] bg-[#1839AD]/5 hover:bg-[#1839AD]/10'} transition ${!sidebarOpen ? 'justify-center' : ''}`}
+                  title="In Progress"
+                >
+                  <Play size={16} className="shrink-0" />
+                  {sidebarOpen && (
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className="text-sm">In Progress</span>
+                      <span className="text-xs font-bold bg-[#1839AD] text-white px-1.5 py-0.5 rounded-full">1</span>
+                    </div>
+                  )}
+                </a>
+
+                {/* Saved */}
+                <div
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
+                  title="Saved - Coming Soon"
+                >
+                  <Bookmark size={16} className="shrink-0" />
+                  {sidebarOpen && (
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className="text-sm">Saved</span>
+                      <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="my-3 mx-3 border-t border-gray-200" />
+
+              {/* Badges - Coming Soon */}
               <div
-                className={`flex items-center px-4 py-3 bg-white text-[#1839AD] overflow-hidden border-b border-gray-200 ${!sidebarOpen ? 'cursor-pointer justify-center' : 'cursor-default'}`}
-                onClick={() => !sidebarOpen && setSidebarOpen(true)}
+                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
+                title="Badges - Coming Soon"
               >
-                <span className="w-8 flex items-center justify-center flex-shrink-0 text-[#1839AD]">
-                  <BookOpen size={20} />
-                </span>
+                <Award size={16} className="shrink-0" />
                 {sidebarOpen && (
-                  <>
-                    <span className="flex-1 ml-3 font-medium whitespace-nowrap text-[#1839AD]">Learning Page</span>
-                    <button
-                      onClick={() => setSidebarOpen(false)}
-                      className="p-1 rounded hover:bg-gray-100 transition flex-shrink-0"
-                      title="Collapse navigation"
-                    >
-                      <ChevronLeft size={18} className="text-[#1839AD]" />
-                    </button>
-                  </>
+                  <div className="flex-1 flex items-center justify-between">
+                    <span className="text-sm">Badges</span>
+                    <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Career Coach - Coming Soon */}
+              <div
+                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
+                title="AI Career Coach - Coming Soon"
+              >
+                <Sparkles size={16} className="shrink-0" />
+                {sidebarOpen && (
+                  <div className="flex-1 flex items-center justify-between">
+                    <span className="text-sm">Career Coach</span>
+                    <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
+                  </div>
                 )}
               </div>
             </nav>
@@ -485,14 +554,48 @@ const LearningScreen: React.FC = () => {
         {/* Mobile sidebar */}
         {!isTheater && (
           <aside
-            className={`fixed inset-y-0 left-0 z-30 bg-white w-60 transform transition-transform duration-300 ease-in-out lg:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            className={`fixed inset-y-0 left-0 z-30 bg-white w-56 transform transition-transform duration-300 ease-in-out lg:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
               }`}
             style={{ top: '56px' }}
           >
-            <nav className="py-4">
-              <div className="flex items-center px-4 py-3 bg-[#1839AD] text-white">
-                <BookOpen size={20} />
-                <span className="ml-3 font-medium">Learning Page</span>
+            {/* Mobile Nav Header */}
+            <div className="flex items-center justify-between px-3 py-3 bg-gray-50 border-b border-gray-200">
+              <span className="text-sm font-semibold text-gray-700">Menu</span>
+              <button onClick={() => setSidebarOpen(false)} className="p-1 rounded hover:bg-gray-200">
+                <X size={18} className="text-gray-500" />
+              </button>
+            </div>
+
+            <nav className="py-3 overflow-y-auto">
+              {/* My Courses */}
+              <div className="mx-2 space-y-1">
+                <div className="px-2 py-1 text-xs text-gray-400 uppercase font-semibold tracking-wide">My Courses</div>
+
+                <a href="/learning?view=my-courses" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/5">
+                  <Play size={16} />
+                  <span className="text-sm">In Progress</span>
+                  <span className="ml-auto text-xs font-bold bg-[#1839AD] text-white px-1.5 py-0.5 rounded-full">1</span>
+                </a>
+
+                <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400">
+                  <Bookmark size={16} />
+                  <span className="text-sm">Saved</span>
+                  <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
+                </div>
+              </div>
+
+              <div className="my-3 mx-3 border-t border-gray-200" />
+
+              <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400">
+                <Award size={16} />
+                <span className="text-sm">Badges</span>
+                <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
+              </div>
+
+              <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400">
+                <Sparkles size={16} />
+                <span className="text-sm">Career Coach</span>
+                <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
               </div>
             </nav>
           </aside>
@@ -500,46 +603,51 @@ const LearningScreen: React.FC = () => {
 
         {/* Main Content Area */}
         <div className="flex-1 flex">
-          {/* Course Outline Sidebar */}
-          <div className={`${moduleOpen ? 'w-80' : isTheater ? 'w-0' : 'w-12'} shrink-0 bg-white border-r border-gray-200 transition-all duration-300 hidden lg:flex flex-col ${showQuiz ? 'opacity-50 pointer-events-none' : ''} rounded-none`}>
-            {moduleOpen ? (
-              <div className="flex flex-col h-full">
-                <div className="flex-1 overflow-y-auto">
-                  <CourseOutline
-                    lessons={lessons}
-                    currentLessonIndex={currentLessonIndex}
-                    onLessonSelect={handleLessonSelect}
-                    onShowQuiz={handleShowQuiz}
-                    moduleOpen={true}
-                    setModuleOpen={setModuleOpen}
-                    currentTime={currentTime}
-                    duration={duration}
-                    isNextLessonUnlocked={isNextLessonUnlocked}
-                    showQuiz={showQuiz}
-                    completedCount={completedCount}
-                    progressPct={boundedProgress}
-                    isUserEnrolled={isEnrolled}
-                  />
+          {/* Course Outline Sidebar - hide in My Courses view */}
+          {!isMyCoursesView && (
+            <div className={`${moduleOpen ? 'w-80' : isTheater ? 'w-0' : 'w-12'} shrink-0 bg-white border-r border-gray-200 transition-all duration-300 hidden lg:flex flex-col ${showQuiz ? 'opacity-50 pointer-events-none' : ''} rounded-none`}>
+              {moduleOpen ? (
+                <div className="flex flex-col h-full">
+                  <div className="flex-1 overflow-y-auto">
+                    <CourseOutline
+                      lessons={lessons}
+                      currentLessonIndex={currentLessonIndex}
+                      onLessonSelect={handleLessonSelect}
+                      onShowQuiz={handleShowQuiz}
+                      moduleOpen={true}
+                      setModuleOpen={setModuleOpen}
+                      currentTime={currentTime}
+                      duration={duration}
+                      isNextLessonUnlocked={isNextLessonUnlocked}
+                      showQuiz={showQuiz}
+                      completedCount={completedCount}
+                      progressPct={boundedProgress}
+                      isUserEnrolled={isEnrolled}
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              !isTheater && (
-                <div className="flex flex-col items-center py-4">
-                  <button
-                    onClick={() => setModuleOpen(true)}
-                    className="p-2 rounded hover:bg-gray-100 text-gray-500"
-                    title="Expand outline"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-              )
-            )}
-          </div>
+              ) : (
+                !isTheater && (
+                  <div className="flex flex-col items-center py-4">
+                    <button
+                      onClick={() => setModuleOpen(true)}
+                      className="p-2 rounded hover:bg-gray-100 text-gray-500"
+                      title="Expand outline"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
+          )}
 
           {/* Main Content */}
-          <main className={`flex-1 min-w-0 ${isTheater ? "p-0 h-full" : "p-4 md:p-6"} overflow-y-auto`}>
-            {isLoading ? (
+          <main className={`flex-1 min-w-0 ${isTheater ? "p-0 h-full" : "p-3 md:p-4"} overflow-y-auto`}>
+            {isMyCoursesView ? (
+              // My Courses List View
+              <MyCoursesList />
+            ) : isLoading ? (
               <div className="flex h-full items-center justify-center">
                 <Loader2 className="animate-spin text-blue-600" size={48} />
               </div>
@@ -560,7 +668,7 @@ const LearningScreen: React.FC = () => {
                 />
               </div>
             ) : (
-              <div className={`${isTheater ? "w-full h-full space-y-4" : "max-w-4xl mx-auto space-y-4"}`}>
+              <div className={`${isTheater ? "w-full h-full space-y-4" : "max-w-6xl mx-auto space-y-3"}`}>
                 {/* Video Player with Overlay Title */}
                 <div className={`relative overflow-hidden ${isTheater ? "h-full w-full rounded-none" : "rounded-xl shadow-lg"} group`}>
                   {isTheater && (
@@ -585,7 +693,7 @@ const LearningScreen: React.FC = () => {
 
                   {/* Video Player with Preview Content Gate */}
                   <PreviewContentGate
-                    course={course}
+                    course={course!}
                     isPreviewLesson={activeLesson?.isPreview || false}
                     isUserEnrolled={isEnrolled}
                     onEnrollmentSuccess={() => {
