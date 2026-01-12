@@ -1,4 +1,3 @@
-import React from 'react';
 export { Header } from './Header';
 // export { ProfileDropdown } from './ProfileDropdown';
 // export { NotificationsMenu } from './notifications/NotificationsMenu';
@@ -7,5 +6,3 @@ export { Header } from './Header';
 // export { ExploreDropdown } from './components/ExploreDropdown';
 // export { MobileDrawer } from './components/MobileDrawer';
 export { AuthProvider, useAuth } from '../../features/auth/context/AuthContext';
-export { mockNotifications } from './utils/mockNotifications';
-export type { Notification } from './utils/mockNotifications';

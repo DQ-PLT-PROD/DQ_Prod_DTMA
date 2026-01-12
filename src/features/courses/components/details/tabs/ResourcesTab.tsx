@@ -1,7 +1,7 @@
 import React from "react";
 import { FileText, Download, ExternalLink } from "lucide-react";
 
-export interface Resource {
+interface Resource {
     id: string;
     title: string;
     type: string;

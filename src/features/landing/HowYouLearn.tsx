@@ -19,7 +19,7 @@ const steps = [
   },
 ];
 
-export const HowYouLearn: React.FC = () => {
+const HowYouLearn: React.FC = () => {
   return (
     <section className="bg-[#f7f9fc] pt-0 pb-8 sm:pb-10">
       <div className="w-full">

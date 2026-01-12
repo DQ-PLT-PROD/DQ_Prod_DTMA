@@ -1,6 +1,6 @@
 import React from "react";
 
-export interface ApplicationProcessTabProps {
+interface ApplicationProcessTabProps {
   process?: { title: string; description: string }[];
 }
 

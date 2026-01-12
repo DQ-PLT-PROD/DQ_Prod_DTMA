@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
-export interface TabDef {
+interface TabDef {
   id: string;
   label: string;
 }
 
-export interface TabsNavProps {
+interface TabsNavProps {
   tabs: TabDef[];
   activeTab: string;
   onChange: (id: string) => void;
@@ -144,5 +144,4 @@ const TabsNav: React.FC<TabsNavProps> = ({
   );
 };
 
-export { TabsNav };
 export default TabsNav;

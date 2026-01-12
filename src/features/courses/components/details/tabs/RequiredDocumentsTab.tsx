@@ -1,7 +1,7 @@
 import React from "react";
 import { FileText } from "lucide-react";
 
-export interface RequiredDocumentsTabProps {
+interface RequiredDocumentsTabProps {
   documents?: string[];
 }
 

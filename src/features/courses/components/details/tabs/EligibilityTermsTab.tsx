@@ -1,7 +1,7 @@
 import React from "react";
 import { CheckCircleIcon } from "lucide-react";
 
-export interface EligibilityTermsTabProps {
+interface EligibilityTermsTabProps {
   item: any;
   providerName: string;
 }

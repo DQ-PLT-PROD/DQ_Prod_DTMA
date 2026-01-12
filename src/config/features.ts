@@ -14,14 +14,3 @@ export const FEATURES = {
     // AI FEATURES (Inactive but integrated)
     AI_CHATBOT: false,          // Voiceflow KfBot
 };
-
-// Helper to check if a specific form is allowed
-export const isFormActive = (formId: string): boolean => {
-    const ACTIVE_FORMS_FOR_COURSES = [
-        'needs-assessment', // Keeping generic assessment
-        // Add others if strictly needed for courses
-    ];
-
-    if (FEATURES.ADVANCED_FORMS) return true;
-    return ACTIVE_FORMS_FOR_COURSES.includes(formId);
-};

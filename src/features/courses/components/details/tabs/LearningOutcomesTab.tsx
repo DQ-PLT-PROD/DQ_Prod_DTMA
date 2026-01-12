@@ -1,7 +1,7 @@
 import React from "react";
 import { CheckCircleIcon } from "lucide-react";
 
-export interface LearningOutcomesTabProps {
+interface LearningOutcomesTabProps {
   outcomes: string[];
   skills?: string[];
   uponCompletion?: string;

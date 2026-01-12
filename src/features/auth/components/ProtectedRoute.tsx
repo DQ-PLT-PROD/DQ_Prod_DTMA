@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
  */
 const AUTO_LOGIN = true;
 
-export const ProtectedRoute: React.FC<PropsWithChildren> = ({ children }) => {
+const ProtectedRoute: React.FC<PropsWithChildren> = ({ children }) => {
     const { user, isLoading, login } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();

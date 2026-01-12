@@ -2,7 +2,7 @@ import { getSupabase, isSupabaseConfigured } from "../../../lib/supabase/client"
 import { Course, CourseCatalogFilters, Lesson, Category } from "../../../types/dtma-lms";
 
 // Types for quiz and resource data
-export interface Quiz {
+interface Quiz {
     id: string;
     courseSlug: string;
     title: string;
@@ -164,32 +164,6 @@ export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[
     } catch (err) {
         console.error("Unexpected error fetching courses:", err);
         return [];
-    }
-};
-
-export const fetchCourseBySlug = async (slug: string): Promise<any | null> => {
-    if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, returning null");
-        return null;
-    }
-
-    try {
-        const supabase = getSupabase();
-        const { data, error } = await supabase
-            .from("courses")
-            .select("*")
-            .eq("slug", slug)
-            .single();
-
-        if (error) {
-            console.error("Error fetching course by slug:", error.message);
-            return null;
-        }
-
-        return data ? toMarketplaceItem(mapRowToCourse(data)) : null;
-    } catch (err) {
-        console.error("Unexpected error fetching course:", err);
-        return null;
     }
 };
 

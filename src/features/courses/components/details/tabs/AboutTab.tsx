@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 
-export interface AboutTabProps {
+interface AboutTabProps {
   serviceApplication: string;
   itemDescription: string;
   item: any;

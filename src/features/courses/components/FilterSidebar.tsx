@@ -21,7 +21,7 @@ interface AccordionSectionProps {
   children: React.ReactNode;
 }
 
-export interface FilterSidebarProps {
+interface FilterSidebarProps {
   filters: Record<string, string | string[]>;
   filterConfig: FilterConfig[];
   onFilterChange: (filterType: string, value: string) => void;

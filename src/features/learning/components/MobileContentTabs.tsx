@@ -41,4 +41,3 @@ export const MobileContentTabs: React.FC<MobileContentTabsProps> = ({
     );
 };
 
-export default MobileContentTabs;

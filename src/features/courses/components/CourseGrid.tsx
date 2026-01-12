@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { PromoCard } from "../../../components/PromoCard";
 import { CourseTile } from "./CourseTile";
 
-export interface CourseItem {
+interface CourseItem {
   id: string;
   title: string;
   description: string;

@@ -15,7 +15,7 @@ interface UserEmailFix {
 /**
  * Identifies users with fallback email addresses that need fixing
  */
-export async function identifyUsersNeedingEmailFix(): Promise<UserEmailFix[]> {
+async function identifyUsersNeedingEmailFix(): Promise<UserEmailFix[]> {
   const supabase = getSupabase();
   
   try {
@@ -66,7 +66,7 @@ export async function identifyUsersNeedingEmailFix(): Promise<UserEmailFix[]> {
 /**
  * Generates a report of users with email issues
  */
-export async function generateEmailFixReport(): Promise<string> {
+async function generateEmailFixReport(): Promise<string> {
   const usersNeedingFix = await identifyUsersNeedingEmailFix();
   
   let report = `# User Email Fix Report\n\n`;
@@ -116,7 +116,7 @@ export async function generateEmailFixReport(): Promise<string> {
 /**
  * Automatically fixes users where we can confidently determine the correct email
  */
-export async function fixAutoFixableUserEmails(dryRun: boolean = true): Promise<void> {
+async function fixAutoFixableUserEmails(dryRun: boolean = true): Promise<void> {
   const supabase = getSupabase();
   const usersNeedingFix = await identifyUsersNeedingEmailFix();
   const autoFixable = usersNeedingFix.filter(u => !u.needs_manual_review && u.suggested_email);

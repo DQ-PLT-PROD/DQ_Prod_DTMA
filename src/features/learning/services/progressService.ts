@@ -21,7 +21,7 @@ export interface Enrollment {
     progressPct: number;
 }
 
-export interface LessonProgress {
+interface LessonProgress {
     id: string;
     enrollmentId: string;
     lessonId: string;
@@ -30,7 +30,7 @@ export interface LessonProgress {
     completedAt?: string;
 }
 
-export interface LocalLesson {
+interface LocalLesson {
     id: string | number;
     completed: boolean;
 }
@@ -126,7 +126,7 @@ export const getOrCreateEnrollment = async (
 /**
  * Get enrollment by user ID and course slug
  */
-export const getEnrollment = async (
+const getEnrollment = async (
     userId: string,
     courseSlug: string
 ): Promise<Enrollment | null> => {
@@ -207,7 +207,7 @@ export const updateLessonProgress = async (
 /**
  * Get all lesson progress for an enrollment
  */
-export const getLessonProgressByEnrollment = async (
+const getLessonProgressByEnrollment = async (
     enrollmentId: string
 ): Promise<LessonProgress[]> => {
     if (!isSupabaseConfigured()) {
@@ -345,30 +345,3 @@ export const syncLocalProgressToServer = async (
     }
 };
 
-/**
- * Get all enrollments for a user (for dashboard)
- */
-export const getUserEnrollments = async (userId: string): Promise<Enrollment[]> => {
-    if (!isSupabaseConfigured()) {
-        return [];
-    }
-
-    try {
-        const supabase = getProgressSupabase();
-        const { data, error } = await supabase
-            .from("user_enrollments")
-            .select("*")
-            .eq("user_id", userId)
-            .order("last_accessed_at", { ascending: false });
-
-        if (error) {
-            console.error("Error fetching user enrollments:", error.message);
-            return [];
-        }
-
-        return (data || []).map(mapRowToEnrollment);
-    } catch (err) {
-        console.error("Unexpected error fetching enrollments:", err);
-        return [];
-    }
-};

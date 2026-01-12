@@ -22,7 +22,7 @@ function toArrayFilter(val: string | string[] | undefined): string[] {
     return [val];
 }
 
-export interface CourseCatalogPageProps {
+interface CourseCatalogPageProps {
     promoCards?: any[];
 }
 
@@ -461,4 +461,3 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
     );
 };
 
-export default CourseCatalogPage;

@@ -68,4 +68,3 @@ export const MobileProgressBar: React.FC<MobileProgressBarProps> = ({
     );
 };
 
-export default MobileProgressBar;

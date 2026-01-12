@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, PlayCircle, FileText } from "lucide-react";
 import { AudienceFitIndicator } from "../AudienceFitIndicator";
 
-export interface ScheduleTabProps {
+interface ScheduleTabProps {
   item: any;
   audienceLevel?: string;
 }

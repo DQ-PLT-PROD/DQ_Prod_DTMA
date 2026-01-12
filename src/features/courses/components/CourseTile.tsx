@@ -5,7 +5,7 @@ import { Tag } from "../../../components/ui/Tag";
 import { CourseMeta } from "../../../components/ui/CourseMeta";
 import { getCoursePoster } from "../../../utils/courseMedia";
 
-export interface CourseTileProps {
+interface CourseTileProps {
   // Course data - can be passed individually or as an item object
   item?: {
     id: string;

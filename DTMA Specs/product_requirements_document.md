@@ -587,6 +587,6 @@ src/
 ### C. Related Documents
 
 - [Entity Relationship Diagram](./entity_relationship_diagram.md)
-- [Database Schema Documentation](../database_schema.md)
+- [Database Schema Documentation](../docs/database_schema.md)
 - [Auth Configuration Pattern](../docs/auth-config-pattern.md)
 - [MVP Scope Definition](../docs/mvp-scope.md)
