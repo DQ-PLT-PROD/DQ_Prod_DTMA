@@ -2,18 +2,18 @@
  * Custom hook for user synchronization and database operations
  */
 import { useState, useEffect } from 'react';
-import { useAuth } from '../components/Header/context/AuthContext';
-import { 
-  DatabaseUser, 
-  getUserByAzureId, 
-  syncUserWithDatabase 
-} from '../services/userService';
-import { 
-  BusinessProfile, 
-  getUserBusinessProfiles, 
+import { useAuth } from '../features/auth/context/AuthContext';
+import {
+  DatabaseUser,
+  getUserByAzureId,
+  syncUserWithDatabase
+} from '../features/auth/services/userService';
+import {
+  BusinessProfile,
+  getUserBusinessProfiles,
   getPrimaryBusinessProfile,
-  saveBusinessProfile 
-} from '../services/businessProfileService';
+  saveBusinessProfile
+} from '../features/dashboard/services/businessProfileService';
 
 export function useUserSync() {
   const { user, databaseUser } = useAuth();
@@ -52,8 +52,8 @@ export function useUserSync() {
   };
 
   const createBusinessProfile = async (
-    profileName: string, 
-    profileData: any, 
+    profileName: string,
+    profileData: any,
     isPrimary: boolean = false
   ) => {
     if (!user?.id) {
@@ -65,9 +65,9 @@ export function useUserSync() {
 
     try {
       const newProfile = await saveBusinessProfile(
-        user.id, 
-        profileName, 
-        profileData, 
+        user.id,
+        profileName,
+        profileData,
         isPrimary
       );
 
@@ -111,16 +111,16 @@ export function useUserSync() {
     databaseUser,
     businessProfiles,
     primaryProfile,
-    
+
     // State
     isLoading,
     error,
-    
+
     // Actions
     loadBusinessProfiles,
     createBusinessProfile,
     refreshUserData,
-    
+
     // Computed values
     hasBusinessProfiles: businessProfiles.length > 0,
     customerId: databaseUser?.customer_id,

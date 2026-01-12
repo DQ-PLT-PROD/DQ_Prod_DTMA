@@ -1,17 +1,17 @@
 import React, { useCallback, useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { FilterSidebar, FilterConfig, FilterOption as SidebarFilterOption } from "../../components/courses/FilterSidebar";
-import { CourseGrid } from "../../components/courses/CourseGrid";
-import { SearchBar } from "../../components/SearchBar";
+import { FilterSidebar, FilterConfig, FilterOption as SidebarFilterOption } from "../../features/courses/components/FilterSidebar";
+import { CourseGrid } from "../../features/courses/components/CourseGrid";
+import { SearchBar } from "../../features/courses/components/SearchBar";
 import { FilterIcon, XIcon } from "lucide-react";
 import { Breadcrumb } from "../../components/ui/Breadcrumb";
 import { ErrorDisplay, CourseCardSkeleton } from "../../components/SkeletonLoader";
 import { getCourseConfig } from "../../utils/courseConfig";
 import { Header } from "../../components/Header";
 import { Footer } from "../../components/Footer";
-import { fetchCourses, fetchCategories } from "../../services/courseService";
-import { fetchIndustryTree, NestedFilterOption as IndustryNode } from "../../services/filterService";
+import { fetchCourses, fetchCategories } from "../../features/courses/services/courseService";
+import { fetchIndustryTree, NestedFilterOption as IndustryNode } from "../../features/courses/services/filterService";
 
 // Get config once at module level to avoid recreation on every render
 const courseConfig = getCourseConfig();

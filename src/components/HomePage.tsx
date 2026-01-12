@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import HeroSection from './HeroSection';
-import ProofAndTrust from './ProofAndTrust';
-import D6CategoriesSection from './D6CategoriesSection';
-import HowYouLearn from './HowYouLearn';
+import HeroSection from '../features/landing/HeroSection';
+import ProofAndTrust from '../features/landing/ProofAndTrust';
+import D6CategoriesSection from '../features/landing/D6CategoriesSection';
+import HowYouLearn from '../features/landing/HowYouLearn';
 
-import Home from './Home';
-import CallToAction from './CallToAction';
-import KhalifaFundAttribution from './KhalifaFundAttribution';
+import Home from '../features/landing/Home';
+import CallToAction from '../features/landing/CallToAction';
+import KhalifaFundAttribution from '../features/landing/KhalifaFundAttribution';
 import { BRAND_GRADIENT, BRAND_BACKDROP_BLUR, BRAND_PRIMARY } from '../constants/branding';
 
 const HomePage: React.FC = () => {

@@ -2,7 +2,7 @@
  * Test page to demonstrate Entra Auth integration with database sync
  */
 import React from 'react';
-import { useAuth } from '../components/Header/context/AuthContext';
+import { useAuth } from '../features/auth/context/AuthContext';
 import { UserProfileDisplay } from '../components/UserProfile/UserProfileDisplay';
 
 export function AuthTestPage() {
@@ -15,13 +15,13 @@ export function AuthTestPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-6">
             Entra Auth Integration Test
           </h1>
-          
+
           <div className="mb-6">
             <p className="text-gray-600 mb-4">
-              This page demonstrates the complete integration of Azure AD (Entra) authentication 
+              This page demonstrates the complete integration of Azure AD (Entra) authentication
               with database customer ID synchronization.
             </p>
-            
+
             {!user ? (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h2 className="text-lg font-semibold text-blue-900 mb-2">
@@ -56,12 +56,12 @@ export function AuthTestPage() {
                     Logout
                   </button>
                 </div>
-                
+
                 <UserProfileDisplay />
               </div>
             )}
           </div>
-          
+
           <div className="border-t pt-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Integration Features
@@ -76,7 +76,7 @@ export function AuthTestPage() {
                   <li>• Automatic redirects</li>
                 </ul>
               </div>
-              
+
               <div className="bg-green-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-green-900 mb-2">🗄️ Database Synchronization</h3>
                 <ul className="text-sm text-green-800 space-y-1">
@@ -86,7 +86,7 @@ export function AuthTestPage() {
                   <li>• Session tracking</li>
                 </ul>
               </div>
-              
+
               <div className="bg-purple-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-purple-900 mb-2">💼 Business Profiles</h3>
                 <ul className="text-sm text-purple-800 space-y-1">
@@ -96,7 +96,7 @@ export function AuthTestPage() {
                   <li>• Data isolation</li>
                 </ul>
               </div>
-              
+
               <div className="bg-orange-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-orange-900 mb-2">🔒 Security Features</h3>
                 <ul className="text-sm text-orange-800 space-y-1">
@@ -108,7 +108,7 @@ export function AuthTestPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="border-t pt-6 mt-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Implementation Status

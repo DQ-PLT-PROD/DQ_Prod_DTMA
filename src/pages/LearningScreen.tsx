@@ -9,13 +9,14 @@ import {
   X,
   Loader2,
   Download,
+  FileText,
 } from "lucide-react";
 import { useAuth } from "../components/Header";
 import CourseAssessment from "./CourseAssessment";
-import { VideoPlayer } from "../components/VideoPlayer";
-import { CourseOutline } from "../components/CourseOutline";
+import { VideoPlayer } from "../features/learning/components/VideoPlayer";
+import { CourseOutline } from "../features/courses/components/CourseOutline";
 import { Lesson, toUILesson } from "../types/course";
-import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../services/courseService";
+import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../features/courses/services/courseService";
 import {
   getOrCreateEnrollment,
   getUserCourseProgress,
@@ -23,10 +24,12 @@ import {
   updateEnrollmentProgress,
   syncLocalProgressToServer,
   Enrollment,
-} from "../services/progressService";
+} from "../features/learning/services/progressService";
 import { Lesson as DBLesson, Course } from "../types/dtma-lms";
 import { ExploreDropdown } from "../components/Header/components/ExploreDropdown";
 import { FEATURES } from "../config/features";
+import { MobileContentTabs, MobileTabType } from "../features/learning/components/MobileContentTabs";
+import { MobileProgressBar } from "../features/learning/components/MobileProgressBar";
 
 // Default fallback course slug if none provided in URL
 const DEFAULT_COURSE_SLUG = 'perfecting-life-transactions';
@@ -49,12 +52,13 @@ const LearningScreen: React.FC = () => {
   const [duration, setDuration] = useState(0);
   const [captionsEnabled, setCaptionsEnabled] = useState(true);
   const [moduleOpen, setModuleOpen] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isNextLessonUnlocked, setIsNextLessonUnlocked] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [isTheater, setIsTheater] = useState(false);
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
+  const [mobileTab, setMobileTab] = useState<MobileTabType>('lessons');
 
   const navigate = useNavigate();
   const { user, databaseUser, logout } = useAuth();
@@ -436,39 +440,7 @@ const LearningScreen: React.FC = () => {
           </aside>
         )}
 
-        {/* Mobile toggle button */}
-        {!isTheater && (
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="fixed bottom-4 left-4 z-40 p-3 rounded-full bg-[#1839AD] text-white shadow-lg lg:hidden"
-          >
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        )}
-
-        {/* Mobile sidebar overlay */}
-        {sidebarOpen && !isTheater && (
-          <div
-            className="fixed inset-0 bg-black/30 z-20 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-
-        {/* Mobile sidebar */}
-        {!isTheater && (
-          <aside
-            className={`fixed inset-y-0 left-0 z-30 bg-white w-60 transform transition-transform duration-300 ease-in-out lg:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
-              }`}
-            style={{ top: '56px' }}
-          >
-            <nav className="py-4">
-              <div className="flex items-center px-4 py-3 bg-[#1839AD] text-white">
-                <BookOpen size={20} />
-                <span className="ml-3 font-medium">Learning Page</span>
-              </div>
-            </nav>
-          </aside>
-        )}
+        {/* Note: Mobile sidebar and toggle button removed - using MobileContentTabs instead */}
 
         {/* Main Content Area */}
         <div className="flex-1 flex">
@@ -531,7 +503,7 @@ const LearningScreen: React.FC = () => {
                 />
               </div>
             ) : (
-              <div className={`${isTheater ? "w-full h-full space-y-4" : "max-w-4xl mx-auto space-y-4"}`}>
+              <div className={`${isTheater ? "w-full h-full space-y-4" : "max-w-4xl mx-auto space-y-4"} pb-20 lg:pb-4`}>
                 {/* Video Player with Overlay Title */}
                 <div className={`relative overflow-hidden ${isTheater ? "h-full w-full rounded-none" : "rounded-xl shadow-lg"} group`}>
                   {isTheater && (
@@ -544,12 +516,12 @@ const LearningScreen: React.FC = () => {
                   )}
                   {/* Title Overlay - transparent strip over video */}
                   <div
-                    className={`absolute top-3 left-3 right-3 z-10 px-4 py-3 bg-black/40 backdrop-blur-sm rounded-lg transition-opacity duration-300 ${isPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
+                    className={`absolute top-3 left-3 right-3 z-10 px-3 md:px-4 py-2 md:py-3 bg-black/40 backdrop-blur-sm rounded-lg transition-opacity duration-300 ${isPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
                   >
-                    <p className="text-white/90 text-lg font-semibold">
+                    <p className="text-white/90 text-sm md:text-lg font-semibold truncate">
                       {courseTitle}
                     </p>
-                    <h1 className="text-white text-sm md:text-base font-normal mt-0.5">
+                    <h1 className="text-white text-xs md:text-base font-normal mt-0.5 truncate">
                       {activeLesson?.title}
                     </h1>
                   </div>
@@ -578,8 +550,84 @@ const LearningScreen: React.FC = () => {
                   />
                 </div>
 
-                {/* Navigation Buttons - Below Video */}
-                <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm space-y-4">
+                {/* Mobile Content Tabs - Only visible on mobile/tablet */}
+                <div className="lg:hidden">
+                  <MobileContentTabs
+                    activeTab={mobileTab}
+                    onTabChange={(tab) => {
+                      if (tab === 'quiz') {
+                        handleShowQuiz();
+                      } else {
+                        setMobileTab(tab);
+                      }
+                    }}
+                    hasResources={resources.length > 0}
+                  />
+
+                  {/* Mobile Lessons List */}
+                  {mobileTab === 'lessons' && (
+                    <div className="bg-white">
+                      <CourseOutline
+                        lessons={lessons}
+                        currentLessonIndex={currentLessonIndex}
+                        onLessonSelect={handleLessonSelect}
+                        onShowQuiz={handleShowQuiz}
+                        moduleOpen={true}
+                        setModuleOpen={() => { }}
+                        currentTime={currentTime}
+                        duration={duration}
+                        isNextLessonUnlocked={isNextLessonUnlocked}
+                        showQuiz={showQuiz}
+                        completedCount={completedCount}
+                        progressPct={boundedProgress}
+                        variant="stacked"
+                      />
+                    </div>
+                  )}
+
+                  {/* Mobile Resources List */}
+                  {mobileTab === 'resources' && (
+                    <div className="bg-white p-4 space-y-3">
+                      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                        <FileText size={18} className="text-gray-500" />
+                        Course Resources
+                      </h3>
+                      {resources.length > 0 ? (
+                        <div className="space-y-2">
+                          {resources.map((resource) => (
+                            <a
+                              key={resource.id}
+                              href={resource.resourceUrl}
+                              download
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition"
+                            >
+                              <Download size={18} className="text-[#1839AD] shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">
+                                  {resource.title}
+                                </p>
+                                {resource.description && (
+                                  <p className="text-xs text-gray-500 truncate">
+                                    {resource.description}
+                                  </p>
+                                )}
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 py-4 text-center">
+                          No resources available for this course.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Desktop Navigation Buttons - Hidden on mobile */}
+                <div className="hidden lg:block bg-white rounded-xl p-4 border border-gray-200 shadow-sm space-y-4">
                   <div className="flex items-center justify-between gap-4">
                     <button
                       onClick={handlePrev}
@@ -634,6 +682,19 @@ const LearningScreen: React.FC = () => {
           </main>
         </div>
       </div>
+
+      {/* Mobile Progress Bar - Fixed bottom navigation */}
+      {!isLoading && activeLesson && !showQuiz && !isTheater && (
+        <MobileProgressBar
+          progressPct={boundedProgress}
+          currentLesson={currentLessonIndex + 1}
+          totalLessons={lessons.length}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          canGoPrev={!atFirstLesson}
+          canGoNext={!atLastLesson && isNextLessonUnlocked}
+        />
+      )}
     </div>
   );
 };

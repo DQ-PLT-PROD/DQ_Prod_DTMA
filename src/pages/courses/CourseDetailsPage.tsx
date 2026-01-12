@@ -12,15 +12,15 @@ import {
 import { Breadcrumb } from "../../components/ui/Breadcrumb";
 import { Header, useAuth } from "../../components/Header";
 import { Footer } from "../../components/Footer";
-import RequiredDocumentsTab from "../../components/courses/details/tabs/RequiredDocumentsTab";
+import RequiredDocumentsTab from "../../features/courses/components/details/tabs/RequiredDocumentsTab";
 
-import AboutTab from "../../components/courses/details/tabs/AboutTab";
-import ScheduleTab from "../../components/courses/details/tabs/ScheduleTab";
-import LearningOutcomesTab from "../../components/courses/details/tabs/LearningOutcomesTab";
-import EligibilityTermsTab from "../../components/courses/details/tabs/EligibilityTermsTab";
-import ApplicationProcessTab from "../../components/courses/details/tabs/ApplicationProcessTab";
-import ResourcesTab from "../../components/courses/details/tabs/ResourcesTab";
-import TabsNav from "../../components/courses/details/TabsNav";
+import AboutTab from "../../features/courses/components/details/tabs/AboutTab";
+import ScheduleTab from "../../features/courses/components/details/tabs/ScheduleTab";
+import LearningOutcomesTab from "../../features/courses/components/details/tabs/LearningOutcomesTab";
+import EligibilityTermsTab from "../../features/courses/components/details/tabs/EligibilityTermsTab";
+import ApplicationProcessTab from "../../features/courses/components/details/tabs/ApplicationProcessTab";
+import ResourcesTab from "../../features/courses/components/details/tabs/ResourcesTab";
+import TabsNav from "../../features/courses/components/details/TabsNav";
 import { getCourseConfig } from "../../utils/courseConfig";
 import { getCourseMedia } from "../../utils/courseMedia";
 
@@ -28,8 +28,8 @@ import { ErrorDisplay } from "../../components/SkeletonLoader";
 import { useProductDetails } from "../../hooks/useProductDetails";
 import { CourseMeta } from "../../components/ui/CourseMeta";
 import { Tag } from "../../components/ui/Tag";
-import { AudienceFitIndicator } from "../../components/courses/details/AudienceFitIndicator";
-import { CourseTile } from "../../components/CourseTile";
+import { AudienceFitIndicator } from "../../features/courses/components/details/AudienceFitIndicator";
+import { CourseTile } from "../../features/courses/components/CourseTile";
 
 
 const CourseDetailsPage: React.FC = () => {

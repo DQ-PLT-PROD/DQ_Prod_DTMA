@@ -11,7 +11,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import AchievementModal from "../components/AchievementModal";
-import { fetchCourseQuizzes } from "../services/courseService";
+import { fetchCourseQuizzes } from "../features/courses/services/courseService";
 
 type QuizQuestion = {
   id: string;

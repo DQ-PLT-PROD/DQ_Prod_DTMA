@@ -6,7 +6,7 @@ import {
   BRAND_BACKDROP_BLUR,
   BRAND_PRIMARY,
 } from "../../../constants/branding";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../../features/auth/context/AuthContext";
 
 interface MobileDrawerProps {
   onSignIn: () => void;

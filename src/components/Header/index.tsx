@@ -6,6 +6,6 @@ export { Header } from './Header';
 // export { NotificationItem } from './notifications/NotificationItem';
 // export { ExploreDropdown } from './components/ExploreDropdown';
 // export { MobileDrawer } from './components/MobileDrawer';
-export { AuthProvider, useAuth } from './context/AuthContext';
+export { AuthProvider, useAuth } from '../../features/auth/context/AuthContext';
 export { mockNotifications } from './utils/mockNotifications';
 export type { Notification } from './utils/mockNotifications';

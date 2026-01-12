@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { LogOutIcon, ChevronDownIcon, UserIcon } from 'lucide-react';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthContext';
 interface ProfileDropdownProps {
   // Simplified for MVP - removed notifications
   // onViewNotifications: () => void;
   // unreadNotifications: number;
 }
-export function ProfileDropdown({}: ProfileDropdownProps) {
+export function ProfileDropdown({ }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const {
@@ -97,7 +97,7 @@ export function ProfileDropdown({}: ProfileDropdownProps) {
             </div>
           </div>
         </div>
-        
+
         {/* MVP: Notifications section commented out */}
         {/* 
         <div className="py-1">
@@ -114,7 +114,7 @@ export function ProfileDropdown({}: ProfileDropdownProps) {
           </button>
         </div>
         */}
-        
+
         {/* Essential: Logout functionality */}
         <div className="py-1 border-t border-gray-200">
           <button className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={e => {
