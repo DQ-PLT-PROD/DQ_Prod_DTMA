@@ -1,14 +1,11 @@
 /**
- * Progress Service for managing course enrollment and lesson progress
- * Syncs learning progress between client and Supabase database
+ * Progress Service for managing course progress and lesson completion
+ * Works alongside enrollmentService.ts for complete learning management
  * 
- * NOTE: This service uses tables (user_enrollments, lesson_progress) that are
- * created by migration 027_add_progress_tracking_tables.sql. Until that migration
- * is run and Supabase types are regenerated, TypeScript will show errors for
- * unknown table names. These are safe to ignore.
+ * Uses service role for database operations to work with Azure AD authentication
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { getSupabase, isSupabaseConfigured } from "../lib/supabase/client";
+import { getSupabaseForEnrollment } from "../lib/supabase/serviceClient";
+import { isSupabaseConfigured } from "../lib/supabase/client";
 
 // Types
 export interface Enrollment {
@@ -57,16 +54,16 @@ const mapRowToLessonProgress = (row: any): LessonProgress => ({
 });
 
 /**
- * Helper to get Supabase client for progress tables.
- * Uses 'any' type because user_enrollments and lesson_progress tables
- * are created by migration 027 and may not be in generated types yet.
+ * Helper to get Supabase client for progress tables
  */
 const getProgressSupabase = (): any => {
-    return getSupabase();
+    return getSupabaseForEnrollment();
+};
 };
 
 /**
  * Get or create an enrollment for a user in a course
+ * This is for backward compatibility - new code should use enrollmentService
  */
 export const getOrCreateEnrollment = async (
     userId: string,
@@ -107,6 +104,8 @@ export const getOrCreateEnrollment = async (
                 started_at: new Date().toISOString(),
                 last_accessed_at: new Date().toISOString(),
                 progress_pct: 0,
+                status: 'active',
+                enrollment_method: 'auto'
             })
             .select()
             .single();
@@ -124,76 +123,99 @@ export const getOrCreateEnrollment = async (
 };
 
 /**
- * Get enrollment by user ID and course slug
+ * Get user's course progress including lesson completion
  */
-export const getEnrollment = async (
+export const getUserCourseProgress = async (
     userId: string,
     courseSlug: string
-): Promise<Enrollment | null> => {
+): Promise<{
+    enrollment: Enrollment | null;
+    lessonProgress: LessonProgress[];
+}> => {
     if (!isSupabaseConfigured()) {
-        return null;
+        return { enrollment: null, lessonProgress: [] };
     }
 
     try {
         const supabase = getProgressSupabase();
-        const { data, error } = await supabase
+
+        // Get enrollment
+        const { data: enrollmentData, error: enrollmentError } = await supabase
             .from("user_enrollments")
             .select("*")
             .eq("user_id", userId)
             .eq("course_slug", courseSlug)
             .single();
 
-        if (error || !data) {
-            return null;
+        if (enrollmentError || !enrollmentData) {
+            return { enrollment: null, lessonProgress: [] };
         }
 
-        return mapRowToEnrollment(data);
+        const enrollment = mapRowToEnrollment(enrollmentData);
+
+        // Get lesson progress
+        const { data: progressData, error: progressError } = await supabase
+            .from("lesson_progress")
+            .select("*")
+            .eq("enrollment_id", enrollment.id);
+
+        const lessonProgress = progressError || !progressData 
+            ? [] 
+            : progressData.map(mapRowToLessonProgress);
+
+        return { enrollment, lessonProgress };
     } catch (err) {
-        console.error("Error fetching enrollment:", err);
-        return null;
+        console.error("Error getting user course progress:", err);
+        return { enrollment: null, lessonProgress: [] };
     }
 };
 
 /**
- * Update lesson progress (upsert)
+ * Update lesson progress for a user
  */
 export const updateLessonProgress = async (
-    enrollmentId: string,
+    userId: string,
+    courseSlug: string,
     lessonId: string,
     completed: boolean,
     watchTimeSeconds?: number
 ): Promise<boolean> => {
     if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, cannot update lesson progress");
         return false;
     }
 
     try {
         const supabase = getProgressSupabase();
 
-        const updateData: any = {
-            enrollment_id: enrollmentId,
-            lesson_id: lessonId,
-            completed,
-            updated_at: new Date().toISOString(),
-        };
+        // Get enrollment first
+        const { data: enrollmentData } = await supabase
+            .from("user_enrollments")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("course_slug", courseSlug)
+            .single();
 
-        if (completed) {
-            updateData.completed_at = new Date().toISOString();
+        if (!enrollmentData) {
+            console.warn("No enrollment found for lesson progress update");
+            return false;
         }
 
-        if (watchTimeSeconds !== undefined) {
-            updateData.watch_time_seconds = watchTimeSeconds;
-        }
-
+        // Upsert lesson progress
         const { error } = await supabase
             .from("lesson_progress")
-            .upsert(updateData, {
-                onConflict: "enrollment_id,lesson_id",
+            .upsert({
+                enrollment_id: enrollmentData.id,
+                lesson_id: lessonId,
+                completed,
+                watch_time_seconds: watchTimeSeconds || 0,
+                completed_at: completed ? new Date().toISOString() : null,
+                updated_at: new Date().toISOString()
+            }, {
+                onConflict: 'enrollment_id,lesson_id'
             });
 
         if (error) {
-            console.error("Error updating lesson progress:", error.message);
+            console.error("Error updating lesson progress:", error);
             return false;
         }
 
@@ -205,58 +227,12 @@ export const updateLessonProgress = async (
 };
 
 /**
- * Get all lesson progress for an enrollment
- */
-export const getLessonProgressByEnrollment = async (
-    enrollmentId: string
-): Promise<LessonProgress[]> => {
-    if (!isSupabaseConfigured()) {
-        return [];
-    }
-
-    try {
-        const supabase = getProgressSupabase();
-        const { data, error } = await supabase
-            .from("lesson_progress")
-            .select("*")
-            .eq("enrollment_id", enrollmentId);
-
-        if (error) {
-            console.error("Error fetching lesson progress:", error.message);
-            return [];
-        }
-
-        return (data || []).map(mapRowToLessonProgress);
-    } catch (err) {
-        console.error("Unexpected error fetching lesson progress:", err);
-        return [];
-    }
-};
-
-/**
- * Get user's progress for a specific course (combines enrollment and lessons)
- */
-export const getUserCourseProgress = async (
-    userId: string,
-    courseSlug: string
-): Promise<{ enrollment: Enrollment | null; lessons: LessonProgress[] }> => {
-    const enrollment = await getEnrollment(userId, courseSlug);
-
-    if (!enrollment) {
-        return { enrollment: null, lessons: [] };
-    }
-
-    const lessons = await getLessonProgressByEnrollment(enrollment.id);
-    return { enrollment, lessons };
-};
-
-/**
- * Update enrollment progress percentage
+ * Update overall enrollment progress percentage
  */
 export const updateEnrollmentProgress = async (
-    enrollmentId: string,
-    progressPct: number,
-    completed: boolean = false
+    userId: string,
+    courseSlug: string,
+    progressPct: number
 ): Promise<boolean> => {
     if (!isSupabaseConfigured()) {
         return false;
@@ -265,78 +241,55 @@ export const updateEnrollmentProgress = async (
     try {
         const supabase = getProgressSupabase();
 
-        const updateData: any = {
-            progress_pct: Math.min(100, Math.max(0, progressPct)),
-            last_accessed_at: new Date().toISOString(),
-        };
-
-        if (completed) {
-            updateData.completed_at = new Date().toISOString();
-        }
-
         const { error } = await supabase
             .from("user_enrollments")
-            .update(updateData)
-            .eq("id", enrollmentId);
+            .update({
+                progress_pct: Math.min(Math.max(progressPct, 0), 100),
+                updated_at: new Date().toISOString(),
+                ...(progressPct >= 100 && { completed_at: new Date().toISOString() })
+            })
+            .eq("user_id", userId)
+            .eq("course_slug", courseSlug);
 
         if (error) {
-            console.error("Error updating enrollment progress:", error.message);
+            console.error("Error updating enrollment progress:", error);
             return false;
         }
 
         return true;
     } catch (err) {
-        console.error("Unexpected error updating enrollment:", err);
+        console.error("Unexpected error updating enrollment progress:", err);
         return false;
     }
 };
 
 /**
- * Sync localStorage progress to server for authenticated user
- * Called when user logs in to merge any anonymous progress
+ * Sync local progress (from localStorage) to server
  */
 export const syncLocalProgressToServer = async (
     userId: string,
     courseSlug: string,
-    localLessons: LocalLesson[]
+    localLessons: { id: string; completed: boolean }[]
 ): Promise<boolean> => {
-    if (!isSupabaseConfigured() || !localLessons.length) {
+    if (!isSupabaseConfigured() || localLessons.length === 0) {
         return false;
     }
 
     try {
-        // Get or create enrollment
-        const enrollment = await getOrCreateEnrollment(userId, courseSlug);
-        if (!enrollment) {
-            return false;
-        }
+        // Update each completed lesson
+        const updatePromises = localLessons
+            .filter(lesson => lesson.completed)
+            .map(lesson => 
+                updateLessonProgress(userId, courseSlug, lesson.id, true)
+            );
 
-        // Get existing server progress
-        const serverProgress = await getLessonProgressByEnrollment(enrollment.id);
-        const serverCompletedIds = new Set(
-            serverProgress.filter(lp => lp.completed).map(lp => lp.lessonId)
-        );
+        await Promise.all(updatePromises);
 
-        // Find lessons completed locally but not on server
-        const toSync = localLessons.filter(
-            l => l.completed && !serverCompletedIds.has(String(l.id))
-        );
-
-        // Sync each missing completion
-        for (const lesson of toSync) {
-            await updateLessonProgress(enrollment.id, String(lesson.id), true);
-        }
-
-        // Update overall progress
-        const totalLessons = localLessons.length;
+        // Calculate and update overall progress
         const completedCount = localLessons.filter(l => l.completed).length;
-        const progressPct = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
-
-        await updateEnrollmentProgress(
-            enrollment.id,
-            progressPct,
-            completedCount === totalLessons
-        );
+        const progressPct = Math.round((completedCount / localLessons.length) * 100);
+        
+        await updateEnrollmentProgress(userId, courseSlug, progressPct);
 
         return true;
     } catch (err) {
@@ -346,7 +299,7 @@ export const syncLocalProgressToServer = async (
 };
 
 /**
- * Get all enrollments for a user (for dashboard)
+ * Get all enrollments for a user (for dashboard/profile)
  */
 export const getUserEnrollments = async (userId: string): Promise<Enrollment[]> => {
     if (!isSupabaseConfigured()) {
@@ -359,16 +312,16 @@ export const getUserEnrollments = async (userId: string): Promise<Enrollment[]> 
             .from("user_enrollments")
             .select("*")
             .eq("user_id", userId)
+            .eq("status", "active")
             .order("last_accessed_at", { ascending: false });
 
-        if (error) {
-            console.error("Error fetching user enrollments:", error.message);
+        if (error || !data) {
             return [];
         }
 
-        return (data || []).map(mapRowToEnrollment);
+        return data.map(mapRowToEnrollment);
     } catch (err) {
-        console.error("Unexpected error fetching enrollments:", err);
+        console.error("Error getting user enrollments:", err);
         return [];
     }
 };

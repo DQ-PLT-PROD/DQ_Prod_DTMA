@@ -1,9 +1,12 @@
 /**
  * Enrollment Service for managing course enrollments
  * Implements DTMA Feature Specification 02 requirements
+ * 
+ * Uses Supabase service role for database operations to bypass RLS
+ * since we're using Azure AD authentication instead of Supabase auth.
  */
-import { getSupabase, isSupabaseConfigured } from "../lib/supabase/client";
-import { useAuth } from "../components/Header";
+import { getSupabaseForEnrollment, isServiceRoleConfigured } from "../lib/supabase/serviceClient";
+import { isSupabaseConfigured } from "../lib/supabase/client";
 
 // Types
 export interface CourseEnrollment {
@@ -23,9 +26,10 @@ export interface EnrollmentResult {
 
 /**
  * Helper to get Supabase client for enrollment operations
+ * Uses service role to bypass RLS for Azure AD authenticated users
  */
 const getEnrollmentSupabase = (): any => {
-    return getSupabase();
+    return getSupabaseForEnrollment();
 };
 
 /**
@@ -72,11 +76,16 @@ export const isUserEnrolled = async (
             .eq("status", "active")
             .single();
 
-        if (error || !data) {
+        if (error) {
+            // If no record found, user is not enrolled
+            if (error.code === 'PGRST116') {
+                return false;
+            }
+            console.error("Error checking enrollment:", error);
             return false;
         }
 
-        return true;
+        return Boolean(data);
     } catch (err) {
         console.error("Error checking enrollment:", err);
         return false;
@@ -104,7 +113,12 @@ export const getEnrollment = async (
             .eq("course_slug", courseSlug)
             .single();
 
-        if (error || !data) {
+        if (error) {
+            // If no record found, return null
+            if (error.code === 'PGRST116') {
+                return null;
+            }
+            console.error("Error getting enrollment:", error);
             return null;
         }
 
@@ -133,11 +147,19 @@ export const enrollInCourse = async (
     }
 
     try {
+        console.log('🎯 Starting enrollment process...');
+        console.log('User ID:', userId);
+        console.log('Course Slug:', courseSlug);
+        console.log('Method:', method);
+        
         const supabase = getEnrollmentSupabase();
+        console.log('✅ Got Supabase client for enrollment');
 
         // Check if already enrolled
+        console.log('🔍 Checking existing enrollment...');
         const existingEnrollment = await getEnrollment(userId, courseSlug);
         if (existingEnrollment && existingEnrollment.status === 'active') {
+            console.log('✅ User already enrolled');
             return {
                 success: true,
                 enrollment: existingEnrollment
@@ -145,6 +167,7 @@ export const enrollInCourse = async (
         }
 
         // Create new enrollment
+        console.log('📝 Creating new enrollment...');
         const { data, error } = await supabase
             .from("user_enrollments")
             .insert({
@@ -160,13 +183,17 @@ export const enrollInCourse = async (
             .single();
 
         if (error) {
-            console.error("Error creating enrollment:", error);
+            console.error("❌ Error creating enrollment:", error);
+            console.error("Error code:", error.code);
+            console.error("Error message:", error.message);
+            console.error("Error details:", error.details);
             return {
                 success: false,
                 error: error.message
             };
         }
 
+        console.log('✅ Enrollment created successfully:', data);
         return {
             success: true,
             enrollment: mapRowToEnrollment(data)

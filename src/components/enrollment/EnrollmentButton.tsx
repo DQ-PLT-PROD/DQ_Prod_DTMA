@@ -71,24 +71,25 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
 
         setIsEnrolling(true);
         try {
+            console.log('🚀 Starting enrollment for user:', databaseUser.id);
             const result = await enrollInCourse(databaseUser.id, course.slug, 'explicit');
             
             if (result.success) {
                 setEnrollmentStatus('enrolled');
                 setShowModal(false);
                 
-                // Show success message (you can customize this)
                 console.log('✅ Successfully enrolled in course:', course.title);
                 
                 if (onEnrollmentSuccess) {
                     onEnrollmentSuccess();
                 }
             } else {
-                console.error('Enrollment failed:', result.error);
-                // You can add toast notification here
+                console.error('❌ Enrollment failed:', result.error);
+                alert(`Enrollment failed: ${result.error}\n\nPlease make sure the RLS policies have been applied in Supabase. Check APPLY_RLS_POLICIES_NOW.md for instructions.`);
             }
         } catch (error) {
-            console.error('Error during enrollment:', error);
+            console.error('❌ Error during enrollment:', error);
+            alert(`Unexpected error during enrollment: ${error}\n\nPlease check the console for details and ensure RLS policies are applied.`);
         } finally {
             setIsEnrolling(false);
         }
