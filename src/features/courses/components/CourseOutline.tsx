@@ -41,17 +41,7 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
     progressPct,
     isUserEnrolled = false, // Default to false
 }) => {
-    onLessonSelect,
-    onShowQuiz,
-    moduleOpen,
-    setModuleOpen,
-    currentTime,
-    duration,
-    isNextLessonUnlocked,
-    showQuiz,
-    completedCount,
-    progressPct,
-}) => {
+
     const firstLessonTitle = (lessons[0]?.title || "").toLowerCase();
     const hasIntroLesson =
         lessons[0]?.type === "intro" ||
@@ -133,7 +123,7 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
                                         Preview
                                     </div>
                                 )}
-                                
+
                                 <div
                                     className={`mt-1 h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isCompleted
                                         ? "bg-green-500 text-white"

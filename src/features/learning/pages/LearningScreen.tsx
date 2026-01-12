@@ -10,12 +10,12 @@ import {
   Loader2,
   Download,
 } from "lucide-react";
-import { useAuth } from "../components/Header";
-import CourseAssessment from "./CourseAssessment";
+import { useAuth } from "../../../components/Header";
+import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
-import { CourseOutline } from "../components/CourseOutline";
-import { Lesson, toUILesson } from "../types/course";
-import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../services/courseService";
+import { CourseOutline } from "../../courses/components/CourseOutline";
+import { Lesson, toUILesson } from "../../../types/course";
+import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
 import {
   getOrCreateEnrollment,
   getUserCourseProgress,
@@ -24,11 +24,11 @@ import {
   syncLocalProgressToServer,
   Enrollment,
 } from "../services/progressService";
-import { isUserEnrolled, canAccessLesson } from "../services/enrollmentService";
-import { PreviewContentGate } from "../components/learning/PreviewContentGate";
-import { Lesson as DBLesson, Course } from "../types/dtma-lms";
-import { ExploreDropdown } from "../components/Header/components/ExploreDropdown";
-import { FEATURES } from "../config/features";
+import { isUserEnrolled, canAccessLesson } from "../../../services/enrollmentService";
+import { PreviewContentGate } from "../../../components/learning/PreviewContentGate";
+import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
+import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";
+import { FEATURES } from "../../../config/features";
 
 // Default fallback course slug if none provided in URL
 const DEFAULT_COURSE_SLUG = 'perfecting-life-transactions';
