@@ -30,6 +30,7 @@ import { CourseMeta } from "../../components/ui/CourseMeta";
 import { Tag } from "../../components/ui/Tag";
 import { AudienceFitIndicator } from "../../components/courses/details/AudienceFitIndicator";
 import { CourseTile } from "../../components/CourseTile";
+import { EnrollmentButton } from "../../components/enrollment/EnrollmentButton";
 
 
 const CourseDetailsPage: React.FC = () => {
@@ -195,19 +196,8 @@ const CourseDetailsPage: React.FC = () => {
 
 
 
-  const handlePrimaryAction = async () => {
-    // Check if user is authenticated
-    if (!user) {
-      console.log('🔐 User not authenticated, triggering login...');
-      try {
-        await login();
-      } catch (error) {
-        console.error('❌ Login failed:', error);
-      }
-      return;
-    }
-
-    // Take learners straight into the DTMA learning experience
+  const handlePrimaryAction = () => {
+    // Navigate to learning page - enrollment will be handled by EnrollmentButton
     if (item) {
       navigate(`/learning?courseId=${encodeURIComponent(item.id)}`);
     }
@@ -549,12 +539,11 @@ const CourseDetailsPage: React.FC = () => {
 
               {/* Action Buttons */}
               <div className="flex gap-3 w-full sm:w-auto mt-2">
-                <button
-                  onClick={handlePrimaryAction}
+                <EnrollmentButton
+                  course={item}
+                  onEnrollmentSuccess={handlePrimaryAction}
                   className="flex-1 sm:flex-none px-6 py-3 bg-white text-blue-700 font-bold text-base rounded-xl shadow-xl hover:bg-blue-50 transition-all transform hover:-translate-y-1"
-                >
-                  {primaryAction}
-                </button>
+                />
                 <button
                   className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
                 >
@@ -590,13 +579,11 @@ const CourseDetailsPage: React.FC = () => {
             onCheckOverflow={() => { }}
             rightContent={showStickyHeaderCTA ? (
               <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-
-                <button
-                  onClick={handlePrimaryAction}
+                <EnrollmentButton
+                  course={item}
+                  onEnrollmentSuccess={handlePrimaryAction}
                   className="px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
-                >
-                  Start Learning
-                </button>
+                />
               </div>
             ) : undefined}
           />
@@ -680,12 +667,11 @@ const CourseDetailsPage: React.FC = () => {
                     {item.duration || item.serviceType || ""}
                   </div>
                 </div>
-                <button
-                  onClick={handlePrimaryAction}
+                <EnrollmentButton
+                  course={item}
+                  onEnrollmentSuccess={handlePrimaryAction}
                   className="flex-1 px-4 py-3 text-white font-bold rounded-md bg-gradient-to-r from-teal-500 via-blue-500 to-purple-600 hover:from-teal-600 hover:via-blue-600 hover:to-purple-700 transition-colors shadow-md"
-                >
-                  {primaryAction}
-                </button>
+                />
               </div>
             </div>
           )

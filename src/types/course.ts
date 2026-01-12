@@ -13,6 +13,7 @@ export interface Lesson {
     type?: LessonType;
     videoUrl?: string;
     resourceUrl?: string;
+    isPreview?: boolean; // For preview content access control
 }
 
 /**
@@ -26,6 +27,7 @@ export const toUILesson = (dbLesson: {
     videoUrl?: string;
     resourceUrl?: string;
     content?: string;
+    isPreview?: boolean; // Add isPreview field from database
 }, orderIndex: number, completedIds: Set<string> = new Set()): Lesson => {
     // Use loading state initially - actual duration will be populated from video metadata
     // This ensures all lessons show accurate durations from the video files
@@ -40,5 +42,6 @@ export const toUILesson = (dbLesson: {
         type: dbLesson.type,
         videoUrl: dbLesson.videoUrl,
         resourceUrl: dbLesson.resourceUrl,
+        isPreview: dbLesson.isPreview || false, // Map isPreview field
     };
 };
