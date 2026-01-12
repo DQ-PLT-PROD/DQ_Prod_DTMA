@@ -8,7 +8,7 @@ import { ReactNode } from 'react';
 import { Clock, BarChart, Calendar, BookOpen, FileText } from 'lucide-react';
 
 // Type definitions
-export interface TabConfig {
+interface TabConfig {
     id: string;
     label: string;
     icon?: any;
@@ -17,7 +17,7 @@ export interface TabConfig {
     renderContent?: (item: any) => React.ReactNode;
 }
 
-export interface FilterCategoryConfig {
+interface FilterCategoryConfig {
     id: string;
     title: string;
     options: {
@@ -26,14 +26,14 @@ export interface FilterCategoryConfig {
     }[];
 }
 
-export interface AttributeConfig {
+interface AttributeConfig {
     key: string;
     label: string;
     icon: ReactNode;
     formatter?: (value: any) => string;
 }
 
-export interface CourseConfig {
+interface CourseConfig {
     id: string;
     title: string;
     description: string;
@@ -51,7 +51,7 @@ export interface CourseConfig {
 }
 
 // Course configuration
-export const courseConfig: CourseConfig = {
+const courseConfig: CourseConfig = {
     id: 'courses',
     title: 'DTMA Courses',
     description: 'Discover and enroll in courses tailored for SMEs to help grow your business',

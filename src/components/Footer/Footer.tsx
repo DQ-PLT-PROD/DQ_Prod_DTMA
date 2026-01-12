@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ArrowRight, Instagram, Linkedin, X } from "lucide-react";
 import { FEATURES } from "../../config/features";
-import { subscribeToNewsletter } from "../../services/newsletterService";
+import { subscribeToNewsletter } from "../../features/landing/services/newsletterService";
 
 interface FooterProps {
   "data-id"?: string;
