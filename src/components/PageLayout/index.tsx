@@ -2,7 +2,7 @@ import React, { Fragment, ComponentType } from 'react';
 import { ChevronRight, Home } from 'lucide-react';
 import { BurgerMenuButton } from '../Sidebar';
 
-export interface BreadcrumbItem {
+interface BreadcrumbItem {
   label: string;
   href?: string;
   icon?: ComponentType<{ className?: string; }>;

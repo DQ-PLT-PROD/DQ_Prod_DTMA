@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "../../lib/utils";
 
-export type TagVariant = "category" | "topic" | "level" | "audience" | "meta";
+type TagVariant = "category" | "topic" | "level" | "audience" | "meta";
 
 interface TagProps {
   children: React.ReactNode;

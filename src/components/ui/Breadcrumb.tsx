@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 
-export interface BreadcrumbItem {
+interface BreadcrumbItem {
     label: string;
     href?: string;
     current?: boolean;
@@ -94,4 +94,3 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
     );
 };
 
-export default Breadcrumb;
