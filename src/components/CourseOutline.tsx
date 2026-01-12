@@ -23,11 +23,24 @@ interface CourseOutlineProps {
     showQuiz: boolean;
     completedCount: number;
     progressPct: number;
+    isUserEnrolled?: boolean; // Add enrollment status
 }
 
 export const CourseOutline: React.FC<CourseOutlineProps> = ({
     lessons,
     currentLessonIndex,
+    onLessonSelect,
+    onShowQuiz,
+    moduleOpen,
+    setModuleOpen,
+    currentTime,
+    duration,
+    isNextLessonUnlocked,
+    showQuiz,
+    completedCount,
+    progressPct,
+    isUserEnrolled = false, // Default to false
+}) => {
     onLessonSelect,
     onShowQuiz,
     moduleOpen,
@@ -92,9 +105,13 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
                             ? <CheckCircle2 size={12} />
                             : (displayNumber ?? "");
 
-                        // Allow navigation to any completed lesson or the current one
-                        // Or the next immediate one if the previous is completed
-                        const canAccess = isCompleted || idx <= currentLessonIndex || (idx > 0 && lessons[idx - 1].completed);
+                        // Access control logic:
+                        // 1. Preview lessons are always accessible
+                        // 2. For enrolled users: sequential access (completed, current, or next if previous completed)
+                        // 3. For non-enrolled users: only preview lessons
+                        const isPreviewLesson = lesson.isPreview || false;
+                        const sequentialAccess = isCompleted || idx <= currentLessonIndex || (idx > 0 && lessons[idx - 1].completed);
+                        const canAccess = isPreviewLesson || (isUserEnrolled && sequentialAccess);
 
                         return (
                             <button
@@ -110,6 +127,13 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
                                             : "border-gray-200 bg-white hover:bg-gray-50"
                                     }`}
                             >
+                                {/* Preview Badge */}
+                                {isPreviewLesson && (
+                                    <div className="absolute top-2 right-2 bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full font-medium">
+                                        Preview
+                                    </div>
+                                )}
+                                
                                 <div
                                     className={`mt-1 h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${isCompleted
                                         ? "bg-green-500 text-white"

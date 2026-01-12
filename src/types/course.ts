@@ -13,6 +13,7 @@ export interface Lesson {
     type?: LessonType;
     videoUrl?: string;
     resourceUrl?: string;
+    isPreview?: boolean; // For preview content access control
 }
 
 /**
@@ -26,6 +27,7 @@ export const toUILesson = (dbLesson: {
     videoUrl?: string;
     resourceUrl?: string;
     content?: string;
+    isPreview?: boolean; // Add isPreview field from database
 }, orderIndex: number, completedIds: Set<string> = new Set()): Lesson => {
     const mins = dbLesson.estimatedDurationMinutes || 0;
     const durationStr = `${String(Math.floor(mins)).padStart(2, '0')}:00`;
@@ -39,5 +41,6 @@ export const toUILesson = (dbLesson: {
         type: dbLesson.type,
         videoUrl: dbLesson.videoUrl,
         resourceUrl: dbLesson.resourceUrl,
+        isPreview: dbLesson.isPreview || false, // Map isPreview field
     };
 };

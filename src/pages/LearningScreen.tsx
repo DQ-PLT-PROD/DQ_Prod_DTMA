@@ -16,6 +16,16 @@ import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../components/CourseOutline";
 import { Lesson, toUILesson } from "../types/course";
 import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../services/courseService";
+import {
+  getOrCreateEnrollment,
+  getUserCourseProgress,
+  updateLessonProgress,
+  updateEnrollmentProgress,
+  syncLocalProgressToServer,
+  Enrollment,
+} from "../services/progressService";
+import { isUserEnrolled, canAccessLesson } from "../services/enrollmentService";
+import { PreviewContentGate } from "../components/learning/PreviewContentGate";
 import { Lesson as DBLesson, Course } from "../types/dtma-lms";
 import { ExploreDropdown } from "../components/Header/components/ExploreDropdown";
 import { FEATURES } from "../config/features";
@@ -46,9 +56,12 @@ const LearningScreen: React.FC = () => {
   const [isNextLessonUnlocked, setIsNextLessonUnlocked] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [isTheater, setIsTheater] = useState(false);
+  const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrollmentLoading, setEnrollmentLoading] = useState(true);
 
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, databaseUser, logout } = useAuth();
 
   // Fetch course, lessons, and resources from Supabase on mount or when courseId changes
   useEffect(() => {
@@ -92,6 +105,65 @@ const LearningScreen: React.FC = () => {
 
     loadCourseData();
   }, [courseId]);
+
+  // Check enrollment status when user or course changes
+  useEffect(() => {
+    const checkEnrollmentStatus = async () => {
+      if (!databaseUser?.id || !courseId) {
+        setIsEnrolled(false);
+        setEnrollmentLoading(false);
+        return;
+      }
+
+      try {
+        setEnrollmentLoading(true);
+        const enrolled = await isUserEnrolled(databaseUser.id, courseId);
+        setIsEnrolled(enrolled);
+      } catch (error) {
+        console.error('Error checking enrollment status:', error);
+        setIsEnrolled(false);
+      } finally {
+        setEnrollmentLoading(false);
+      }
+    };
+
+    checkEnrollmentStatus();
+  }, [databaseUser?.id, courseId]);
+
+  // Auto-enrollment for backward compatibility (can be removed later)
+  useEffect(() => {
+    const handleAutoEnrollment = async () => {
+      if (!databaseUser?.id || lessons.length === 0 || enrollment || isEnrolled) return;
+
+      try {
+        // Get or create enrollment for authenticated user (backward compatibility)
+        const enroll = await getOrCreateEnrollment(databaseUser.id, courseId);
+        setEnrollment(enroll);
+
+        if (enroll) {
+          setIsEnrolled(true);
+          // Check if there's localStorage progress to sync to server
+          const storageKey = `courseProgress_${courseId}`;
+          const saved = localStorage.getItem(storageKey);
+          if (saved) {
+            const localLessons: Lesson[] = JSON.parse(saved);
+            const localCompletedIds = localLessons
+              .filter(l => l.completed)
+              .map(l => ({ id: String(l.id), completed: true }));
+
+            if (localCompletedIds.length > 0) {
+              await syncLocalProgressToServer(databaseUser.id, courseId, localCompletedIds);
+              console.log('✅ Synced localStorage progress to server');
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to create enrollment or sync progress:', err);
+      }
+    };
+
+    handleAutoEnrollment();
+  }, [databaseUser?.id, lessons.length, courseId, enrollment, isEnrolled]);
 
   // Persist progress to localStorage (scoped to courseId)
   useEffect(() => {
@@ -353,6 +425,7 @@ const LearningScreen: React.FC = () => {
                     showQuiz={showQuiz}
                     completedCount={completedCount}
                     progressPct={boundedProgress}
+                    isUserEnrolled={isEnrolled}
                   />
                 </div>
               </div>
@@ -417,27 +490,39 @@ const LearningScreen: React.FC = () => {
                     </h1>
                   </div>
 
-                  {/* Video Player */}
-                  <VideoPlayer
-                    src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
-                    poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
-                    isPlaying={isPlaying}
-                    volume={volume}
-                    playbackRate={playbackRate}
-                    currentTime={currentTime}
-                    duration={duration}
-                    captionsEnabled={captionsEnabled}
-                    onPlayPause={handlePlayPause}
-                    onVolumeChange={handleVolume}
-                    onSpeedChange={handleSpeedChange}
-                    onSeek={handleSeek}
-                    onToggleCaptions={handleToggleCaptions}
-                    onFullscreen={handleFullscreen}
-                    onTimeUpdate={handleTimeUpdate}
-                    onLoadedMetadata={handleLoadedMetadata}
-                    onEnded={() => setIsPlaying(false)}
-                    className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
-                  />
+                  {/* Video Player with Preview Content Gate */}
+                  <PreviewContentGate
+                    course={course}
+                    isPreviewLesson={activeLesson?.isPreview || false}
+                    isUserEnrolled={isEnrolled}
+                    onEnrollmentSuccess={() => {
+                      // Refresh enrollment status after successful enrollment
+                      if (databaseUser?.id) {
+                        isUserEnrolled(databaseUser.id, courseId).then(setIsEnrolled);
+                      }
+                    }}
+                  >
+                    <VideoPlayer
+                      src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
+                      poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
+                      isPlaying={isPlaying}
+                      volume={volume}
+                      playbackRate={playbackRate}
+                      currentTime={currentTime}
+                      duration={duration}
+                      captionsEnabled={captionsEnabled}
+                      onPlayPause={handlePlayPause}
+                      onVolumeChange={handleVolume}
+                      onSpeedChange={handleSpeedChange}
+                      onSeek={handleSeek}
+                      onToggleCaptions={handleToggleCaptions}
+                      onFullscreen={handleFullscreen}
+                      onTimeUpdate={handleTimeUpdate}
+                      onLoadedMetadata={handleLoadedMetadata}
+                      onEnded={() => setIsPlaying(false)}
+                      className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
+                    />
+                  </PreviewContentGate>
                 </div>
 
                 {/* Navigation Buttons - Below Video */}
