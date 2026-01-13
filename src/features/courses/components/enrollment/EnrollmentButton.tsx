@@ -8,6 +8,7 @@ import { useAuth } from '../../../../components/Header';
 import { isUserEnrolled, enrollInCourse } from '../../services/enrollmentService';
 import { EnrollmentModal } from './EnrollmentModal';
 import { Course } from '../../../../types/dtma-lms';
+import { useToast } from '../../../../components/ui/Toast';
 
 interface EnrollmentButtonProps {
     course: Course;
@@ -23,6 +24,7 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
     variant = 'primary'
 }) => {
     const { user, databaseUser, login } = useAuth();
+    const { showToast, ToastComponent } = useToast();
     const [enrollmentStatus, setEnrollmentStatus] = useState<'loading' | 'not-enrolled' | 'enrolled'>('loading');
     const [showModal, setShowModal] = useState(false);
     const [isEnrolling, setIsEnrolling] = useState(false);
@@ -34,7 +36,10 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
                 userId: databaseUser?.id,
                 courseSlug: course.slug,
                 courseId: course.id,
-                courseTitle: course.title
+                courseTitle: course.title,
+                hasUser: !!user,
+                hasDatabaseUser: !!databaseUser,
+                supabaseConfigured: !!import.meta.env.VITE_SUPABASE_URL
             });
 
             if (!databaseUser?.id) {
@@ -52,6 +57,7 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
             try {
                 // Use slug if available, otherwise fall back to id
                 const courseIdentifier = course.slug || course.id;
+                console.log('🔍 Checking enrollment with identifier:', courseIdentifier);
                 const enrolled = await isUserEnrolled(databaseUser.id, courseIdentifier);
                 console.log('✅ Enrollment check result:', enrolled);
                 setEnrollmentStatus(enrolled ? 'enrolled' : 'not-enrolled');
@@ -98,16 +104,31 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
                 
                 console.log('✅ Successfully enrolled in course:', course.title);
                 
+                // Show success toast
+                showToast(
+                    `🎉 Successfully enrolled in "${course.title}"! You now have full access to all course content.`,
+                    'success'
+                );
+                
                 if (onEnrollmentSuccess) {
-                    onEnrollmentSuccess();
+                    // Small delay to let user see the success message
+                    setTimeout(() => {
+                        onEnrollmentSuccess();
+                    }, 1500);
                 }
             } else {
                 console.error('❌ Enrollment failed:', result.error);
-                alert(`Enrollment failed: ${result.error}\n\nPlease make sure the RLS policies have been applied in Supabase. Check APPLY_RLS_POLICIES_NOW.md for instructions.`);
+                showToast(
+                    `Enrollment failed: ${result.error}. Please try again or contact support.`,
+                    'error'
+                );
             }
         } catch (error) {
             console.error('❌ Error during enrollment:', error);
-            alert(`Unexpected error during enrollment: ${error}\n\nPlease check the console for details and ensure RLS policies are applied.`);
+            showToast(
+                `Unexpected error during enrollment. Please check your connection and try again.`,
+                'error'
+            );
         } finally {
             setIsEnrolling(false);
         }
@@ -181,6 +202,9 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
                 course={course}
                 isLoading={isEnrolling}
             />
+
+            {/* Toast Notifications */}
+            {ToastComponent}
         </>
     );
 };

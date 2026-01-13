@@ -7,6 +7,7 @@ import { Lock, BookOpen, Play } from 'lucide-react';
 import { useAuth } from '../../../components/Header';
 import { EnrollmentButton } from '../../courses/components/enrollment/EnrollmentButton';
 import { Course } from '../../../types/dtma-lms';
+import { useToast } from '../../../components/ui/Toast';
 
 interface PreviewContentGateProps {
     course: Course;
@@ -24,11 +25,27 @@ export const PreviewContentGate: React.FC<PreviewContentGateProps> = ({
     onEnrollmentSuccess
 }) => {
     const { user } = useAuth();
+    const { showToast, ToastComponent } = useToast();
 
     // Allow access if:
     // 1. It's a preview lesson (always accessible)
     // 2. User is enrolled (full access)
     const hasAccess = isPreviewLesson || isUserEnrolled;
+
+    const handleEnrollmentSuccess = () => {
+        // Show success message specific to learning screen
+        showToast(
+            `🎓 Welcome to "${course.title}"! You can now access all lessons and start learning.`,
+            'success'
+        );
+        
+        // Call the parent callback after a brief delay
+        if (onEnrollmentSuccess) {
+            setTimeout(() => {
+                onEnrollmentSuccess();
+            }, 2000);
+        }
+    };
 
     if (hasAccess) {
         return (
@@ -77,7 +94,7 @@ export const PreviewContentGate: React.FC<PreviewContentGateProps> = ({
                         <div className="space-y-3">
                             <EnrollmentButton
                                 course={course}
-                                onEnrollmentSuccess={onEnrollmentSuccess}
+                                onEnrollmentSuccess={handleEnrollmentSuccess}
                                 className="w-full"
                             />
                             
@@ -89,6 +106,9 @@ export const PreviewContentGate: React.FC<PreviewContentGateProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Toast Notifications */}
+            {ToastComponent}
         </div>
     );
 };
