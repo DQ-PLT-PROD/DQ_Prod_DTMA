@@ -7,36 +7,8 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { getSupabase } from './client';
 
-// Get environment variables with multiple fallback methods
-const getEnvVar = (key: string): string => {
-    // Try different ways to access environment variables
-    const methods = [
-        () => (import.meta as any)?.env?.[key],
-        () => (window as any)?.[key],
-        () => process?.env?.[key],
-        () => (globalThis as any)?.[key]
-    ];
-    
-    for (const method of methods) {
-        try {
-            const value = method();
-            if (typeof value === 'string' && value.trim()) {
-                return value.trim();
-            }
-        } catch (e) {
-            // Continue to next method
-        }
-    }
-    return '';
-};
-
-const SUPABASE_URL = getEnvVar('VITE_SUPABASE_URL');
-const SUPABASE_SERVICE_ROLE_KEY = getEnvVar('VITE_SUPABASE_SERVICE_ROLE_KEY');
-
-const isBrowser = typeof window !== 'undefined';
-if (isBrowser && SUPABASE_SERVICE_ROLE_KEY) {
-    console.warn('⚠️ Service role key should not be exposed in the browser. Move this to a server-side environment.');
-}
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 let _serviceClient: SupabaseClient<Database> | null = null;
 
@@ -44,7 +16,9 @@ export const isServiceRoleConfigured = () =>
     Boolean(SUPABASE_URL && /^https?:\/\//i.test(SUPABASE_URL) && SUPABASE_SERVICE_ROLE_KEY);
 
 export function getServiceSupabase(): SupabaseClient<Database> {
-    if (_serviceClient) return _serviceClient;
+    if (_serviceClient) {
+        return _serviceClient;
+    }
     
     if (!isServiceRoleConfigured()) {
         throw new Error(
@@ -71,10 +45,9 @@ export function getSupabaseForEnrollment(): SupabaseClient<Database> {
             return getServiceSupabase();
         }
     } catch (error) {
-        console.warn('❌ Service role not available, falling back to regular client:', error);
+        console.warn('Service role not available, falling back to regular client:', error);
     }
     
-    console.warn('⚠️ Falling back to regular client - RLS policies may block operations');
-    // Fallback to regular client (will require RLS to be disabled)
+    console.warn('Falling back to regular client - RLS policies may block operations');
     return getSupabase();
 }

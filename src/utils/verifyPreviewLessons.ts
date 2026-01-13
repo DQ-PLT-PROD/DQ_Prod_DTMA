@@ -2,7 +2,7 @@
  * Utility to verify preview lesson configuration
  * Helps ensure proper preview content setup for enrollment gating
  */
-import { supabase } from "../lib/supabase/client";
+import { getSupabase } from "../lib/supabase/client";
 
 export interface PreviewLessonInfo {
     id: string;
@@ -20,6 +20,7 @@ export const getCourseLessonsWithPreviewStatus = async (
     courseSlug: string
 ): Promise<PreviewLessonInfo[]> => {
     try {
+        const supabase = getSupabase();
         const { data, error } = await supabase
             .from('lessons')
             .select('id, title, course_slug, type, order_index, is_preview')

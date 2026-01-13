@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { interactiveLoginRequest } from '../../../services/auth/msal';
 import { mockAuthService, MockUser } from '../../../services/auth/mockAuth';
 import { validateAndLogClaims, extractUserProfile } from '../../../utils/claimsValidator';
-import { fetchUserFromGraph } from '../services/graphService';
+import { fetchUserFromGraph, GraphUser } from '../services/graphService';
 import { logAuthenticationState } from '../../../utils/authTester';
 import { syncUserWithDatabase, getUserByAzureId, updateUserLastLogin, updateUserProfile, DatabaseUser } from '../services/userService';
 
@@ -85,6 +85,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fix loading state - should only be loading during actual auth operations
   const isLoading = useMockAuth ? false : (inProgress === 'login' || inProgress === 'ssoSilent' || inProgress === 'acquireToken');
 
+  const fetchGraphUserForAccount = async (account: any): Promise<GraphUser | null> => {
+    try {
+      const tokenRequest = {
+        scopes: ["User.Read"],
+        account,
+      };
+
+      const response = await instance.acquireTokenSilent(tokenRequest);
+      if (!response?.accessToken) {
+        console.warn('No access token available for Graph fetch');
+        return null;
+      }
+
+      return await fetchUserFromGraph(response.accessToken);
+    } catch (error) {
+      console.warn('Could not fetch user info from Graph:', error);
+      return null;
+    }
+  };
+
   // Helper function to extract user information from MSAL account and sync with database
   const extractUserFromAccount = async (account: any): Promise<UserProfile | null> => {
     if (!account) return null;
@@ -116,8 +136,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       userProfile.name = account.name || account.username || 'User';
     }
 
-    if (!userProfile.email || userProfile.email === 'user@domain.com') {
-      userProfile.email = account.username || 'user@domain.com';
+    const graphUser = await fetchGraphUserForAccount(account);
+    const graphEmail = graphUser?.mail || graphUser?.userPrincipalName;
+    if (graphEmail) {
+      userProfile.email = graphEmail;
+    } else if (!userProfile.email || userProfile.email === 'user@domain.com') {
+      console.warn('Graph email unavailable; using claims email fallback.');
     }
 
     console.log('✅ Final extracted user info:', userProfile);
@@ -138,23 +162,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!dbUser) {
         // Create new user in database
-        console.log('👤 Creating new user in database...');
-        dbUser = await syncUserWithDatabase(userProfile, azureUserId, account.idTokenClaims);
+        console.log('Creating new user in database...');
+        const profileData = graphUser ? { ...account.idTokenClaims, ...graphUser } : account.idTokenClaims;
+        dbUser = await syncUserWithDatabase(userProfile, azureUserId, profileData);
 
         if (dbUser) {
-          console.log('✅ New user created successfully:', {
+          console.log('New user created successfully:', {
             id: dbUser.id,
             customerId: dbUser.customer_id,
             email: dbUser.email
           });
         } else {
-          console.error('❌ Failed to create user in database');
+          console.error('Failed to create user in database');
         }
       } else {
-        // Update last login
-        console.log('🔄 Updating existing user last login...');
-        const updateSuccess = await updateUserLastLogin(azureUserId);
-        console.log(updateSuccess ? '✅ Last login updated' : '❌ Failed to update last login');
+        const profileData = graphUser ? { ...account.idTokenClaims, ...graphUser } : account.idTokenClaims;
+        if (graphEmail) {
+          console.log('Updating existing user profile from Graph...');
+          const updateSuccess = await updateUserProfile(
+            azureUserId,
+            {
+              id: azureUserId,
+              name: graphUser?.displayName || dbUser.name,
+              email: graphEmail,
+              jobTitle: graphUser?.jobTitle,
+              department: graphUser?.department,
+              officeLocation: graphUser?.officeLocation
+            },
+            profileData
+          );
+          console.log(updateSuccess ? 'User profile updated from Graph' : 'Failed to update user profile');
+          if (updateSuccess) {
+            dbUser = await getUserByAzureId(azureUserId);
+          }
+        } else {
+          // Update last login
+          console.log('Updating existing user last login...');
+          const updateSuccess = await updateUserLastLogin(azureUserId);
+          console.log(updateSuccess ? 'Last login updated' : 'Failed to update last login');
+        }
       }
 
       if (dbUser) {
@@ -449,46 +495,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const acquireUserInfo = async (account: any) => {
     try {
       console.log('🔍 Attempting to acquire additional user info...');
+      const graphUser = await fetchGraphUserForAccount(account);
+      if (graphUser) {
+        console.log('✅ Additional user info from Graph API:', graphUser);
 
-      const tokenRequest = {
-        scopes: ["User.Read"],
-        account: account,
-      };
-
-      const response = await instance.acquireTokenSilent(tokenRequest);
-      console.log('✅ Token acquired successfully:', response);
-
-      // Fetch additional user information from Microsoft Graph
-      if (response.accessToken) {
-        const graphUser = await fetchUserFromGraph(response.accessToken);
-        if (graphUser) {
-          console.log('✅ Additional user info from Graph API:', graphUser);
-
-          // Update database with enhanced user data
-          const azureUserId = account.localAccountId || account.homeAccountId;
-          if (azureUserId && databaseUser) {
-            try {
-              await syncUserWithDatabase(
-                {
-                  id: azureUserId,
-                  name: graphUser.displayName || databaseUser.name,
-                  email: graphUser.mail || graphUser.userPrincipalName || databaseUser.email,
-                  jobTitle: graphUser.jobTitle,
-                  department: graphUser.department,
-                  officeLocation: graphUser.officeLocation
-                },
-                azureUserId,
-                { ...account.idTokenClaims, ...graphUser }
-              );
-              console.log('✅ Enhanced user data synced to database');
-            } catch (error) {
-              console.error('❌ Error syncing enhanced user data:', error);
-            }
+        // Update database with enhanced user data
+        const azureUserId = account.localAccountId || account.homeAccountId;
+        if (azureUserId && databaseUser) {
+          try {
+            await syncUserWithDatabase(
+              {
+                id: azureUserId,
+                name: graphUser.displayName || databaseUser.name,
+                email: graphUser.mail || graphUser.userPrincipalName || databaseUser.email,
+                jobTitle: graphUser.jobTitle,
+                department: graphUser.department,
+                officeLocation: graphUser.officeLocation
+              },
+              azureUserId,
+              { ...account.idTokenClaims, ...graphUser }
+            );
+            console.log('✅ Enhanced user data synced to database');
+          } catch (error) {
+            console.error('❌ Error syncing enhanced user data:', error);
           }
         }
       }
 
-      return response;
+      return graphUser;
     } catch (error) {
       console.log('⚠️ Could not acquire additional user info:', error);
       return null;
