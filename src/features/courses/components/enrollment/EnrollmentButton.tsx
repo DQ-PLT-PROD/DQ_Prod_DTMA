@@ -36,7 +36,14 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
                 userId: databaseUser?.id,
                 courseSlug: course.slug,
                 courseId: course.id,
+<<<<<<< HEAD
                 courseTitle: course.title
+=======
+                courseTitle: course.title,
+                hasUser: !!user,
+                hasDatabaseUser: !!databaseUser,
+                supabaseConfigured: !!(import.meta as any).env?.VITE_SUPABASE_URL
+>>>>>>> feature/profile
             });
 
             if (!databaseUser?.id) {
@@ -167,18 +174,19 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
     };
 
     const getButtonStyles = () => {
-        const baseStyles = "flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50";
+        const baseStyles = "flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
         
         if (variant === 'secondary') {
-            return `${baseStyles} bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50`;
+            return `${baseStyles} bg-white text-blue-700 border-2 border-blue-600 hover:bg-blue-50 hover:text-blue-800 shadow-sm`;
         }
 
-        // Primary variant
+        // Primary variant - enrolled state
         if (enrollmentStatus === 'enrolled') {
-            return `${baseStyles} bg-green-600 text-white hover:bg-green-700`;
+            return `${baseStyles} bg-green-600 text-white hover:bg-green-700 shadow-md`;
         }
 
-        return `${baseStyles} bg-blue-600 text-white hover:bg-blue-700`;
+        // Primary variant - default state (not enrolled)
+        return `${baseStyles} bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-md`;
     };
 
     return (
