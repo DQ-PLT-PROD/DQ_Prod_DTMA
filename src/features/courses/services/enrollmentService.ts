@@ -5,8 +5,8 @@
  * Uses Supabase service role for database operations to bypass RLS
  * since we're using Azure AD authentication instead of Supabase auth.
  */
-import { getSupabaseForEnrollment, isServiceRoleConfigured } from "../lib/supabase/serviceClient";
-import { isSupabaseConfigured } from "../lib/supabase/client";
+import { getSupabaseForEnrollment, isServiceRoleConfigured } from "../../../lib/supabase/serviceClient";
+import { isSupabaseConfigured } from "../../../lib/supabase/client";
 
 // Types
 export interface CourseEnrollment {

@@ -4,10 +4,10 @@
  */
 import React, { useState, useEffect } from 'react';
 import { BookOpen, CheckCircle, Loader2 } from 'lucide-react';
-import { useAuth } from '../Header';
+import { useAuth } from '../../../../components/Header';
 import { isUserEnrolled, enrollInCourse } from '../../services/enrollmentService';
 import { EnrollmentModal } from './EnrollmentModal';
-import { Course } from '../../types/dtma-lms';
+import { Course } from '../../../../types/dtma-lms';
 
 interface EnrollmentButtonProps {
     course: Course;
@@ -30,22 +30,39 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
     // Check enrollment status on mount and when user changes
     useEffect(() => {
         const checkEnrollmentStatus = async () => {
+            console.log('🔍 Checking enrollment status for:', {
+                userId: databaseUser?.id,
+                courseSlug: course.slug,
+                courseId: course.id,
+                courseTitle: course.title
+            });
+
             if (!databaseUser?.id) {
+                console.log('❌ No database user, setting not-enrolled');
+                setEnrollmentStatus('not-enrolled');
+                return;
+            }
+
+            if (!course.slug && !course.id) {
+                console.error('❌ Both course slug and id are missing!', course);
                 setEnrollmentStatus('not-enrolled');
                 return;
             }
 
             try {
-                const enrolled = await isUserEnrolled(databaseUser.id, course.slug);
+                // Use slug if available, otherwise fall back to id
+                const courseIdentifier = course.slug || course.id;
+                const enrolled = await isUserEnrolled(databaseUser.id, courseIdentifier);
+                console.log('✅ Enrollment check result:', enrolled);
                 setEnrollmentStatus(enrolled ? 'enrolled' : 'not-enrolled');
             } catch (error) {
-                console.error('Error checking enrollment status:', error);
+                console.error('❌ Error checking enrollment status:', error);
                 setEnrollmentStatus('not-enrolled');
             }
         };
 
         checkEnrollmentStatus();
-    }, [databaseUser?.id, course.slug]);
+    }, [databaseUser?.id, course.slug, course.id]);
 
     const handleEnrollClick = async () => {
         // If not authenticated, trigger login
@@ -72,7 +89,8 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
         setIsEnrolling(true);
         try {
             console.log('🚀 Starting enrollment for user:', databaseUser.id);
-            const result = await enrollInCourse(databaseUser.id, course.slug, 'explicit');
+            const courseIdentifier = course.slug || course.id;
+            const result = await enrollInCourse(databaseUser.id, courseIdentifier, 'explicit');
             
             if (result.success) {
                 setEnrollmentStatus('enrolled');

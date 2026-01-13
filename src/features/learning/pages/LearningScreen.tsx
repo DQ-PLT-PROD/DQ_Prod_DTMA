@@ -24,8 +24,8 @@ import {
   syncLocalProgressToServer,
   Enrollment,
 } from "../services/progressService";
-import { isUserEnrolled, canAccessLesson } from "../../../services/enrollmentService";
-import { PreviewContentGate } from "../../../components/learning/PreviewContentGate";
+import { isUserEnrolled, canAccessLesson } from "../../courses/services/enrollmentService";
+import { PreviewContentGate } from "../components/PreviewContentGate";
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
 import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";
 import { FEATURES } from "../../../config/features";

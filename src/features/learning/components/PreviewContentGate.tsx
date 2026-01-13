@@ -4,9 +4,9 @@
  */
 import React from 'react';
 import { Lock, BookOpen, Play } from 'lucide-react';
-import { useAuth } from '../Header';
-import { EnrollmentButton } from '../enrollment/EnrollmentButton';
-import { Course } from '../../types/dtma-lms';
+import { useAuth } from '../../../components/Header';
+import { EnrollmentButton } from '../../courses/components/enrollment/EnrollmentButton';
+import { Course } from '../../../types/dtma-lms';
 
 interface PreviewContentGateProps {
     course: Course;
