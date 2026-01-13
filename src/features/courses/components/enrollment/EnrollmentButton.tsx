@@ -36,10 +36,7 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
                 userId: databaseUser?.id,
                 courseSlug: course.slug,
                 courseId: course.id,
-                courseTitle: course.title,
-                hasUser: !!user,
-                hasDatabaseUser: !!databaseUser,
-                supabaseConfigured: !!import.meta.env.VITE_SUPABASE_URL
+                courseTitle: course.title
             });
 
             if (!databaseUser?.id) {
@@ -57,7 +54,6 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
             try {
                 // Use slug if available, otherwise fall back to id
                 const courseIdentifier = course.slug || course.id;
-                console.log('🔍 Checking enrollment with identifier:', courseIdentifier);
                 const enrolled = await isUserEnrolled(databaseUser.id, courseIdentifier);
                 console.log('✅ Enrollment check result:', enrolled);
                 setEnrollmentStatus(enrolled ? 'enrolled' : 'not-enrolled');
