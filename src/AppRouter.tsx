@@ -1,15 +1,15 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./components/Header";
 import { App } from "./App";
-import { CourseCatalogPage } from "./pages/courses/CourseCatalogPage";
-import CourseDetailsPage from "./pages/courses/CourseDetailsPage";
-import DashboardRouter from "./pages/dashboard/DashboardRouter";
-import ProtectedRoute from "./components/ProtectedRoute";
-import NotFound from "./pages/NotFound";
-import LearningScreen from "./pages/LearningScreen";
-import { ComingSoon } from "./pages/ComingSoon";
-import { AuthCallback } from "./components/AuthCallback";
-import { AuthDebugPanel } from "./components/AuthDebugPanel";
+import { CourseCatalogPage } from "./features/courses/pages/CourseCatalogPage";
+import CourseDetailsPage from "./features/courses/pages/CourseDetailsPage";
+import DashboardRouter from "./features/dashboard/pages/DashboardRouter";
+import ProtectedRoute from "./features/auth/components/ProtectedRoute";
+import NotFound from "./features/app/pages/NotFound";
+import LearningScreen from "./features/learning/pages/LearningScreen";
+import { ComingSoon } from "./features/app/pages/ComingSoon";
+import { AuthCallback } from "./features/auth/components/AuthCallback";
+import { AuthDebugPanel } from "./features/auth/components/AuthDebugPanel";
 
 export function AppRouter() {
   return (
@@ -38,7 +38,7 @@ export function AppRouter() {
 
           {/* Learning */}
           <Route path="/learning" element={<LearningScreen />} />
-          
+
           {/* Auth Debug Panel - for testing authentication and user sync */}
           <Route path="/auth-debug" element={
             <div className="min-h-screen bg-gray-100 py-8">

@@ -1,0 +1,1243 @@
+[33m[*][39m Unresolved configuration
+{
+  cacheLocation: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/node_modules/.cache/knip'[39m,
+  config: [90mundefined[39m,
+  configFilePath: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/knip.json'[39m,
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  dependencies: [33mfalse[39m,
+  experimentalTags: [ [], [] ],
+  exports: [33mfalse[39m,
+  files: [33mfalse[39m,
+  fixTypes: [],
+  gitignore: [33mtrue[39m,
+  includedIssueTypes: {
+    files: [33mtrue[39m,
+    dependencies: [33mtrue[39m,
+    devDependencies: [33mtrue[39m,
+    optionalPeerDependencies: [33mtrue[39m,
+    unlisted: [33mtrue[39m,
+    binaries: [33mtrue[39m,
+    unresolved: [33mtrue[39m,
+    exports: [33mtrue[39m,
+    nsExports: [33mfalse[39m,
+    types: [33mtrue[39m,
+    nsTypes: [33mfalse[39m,
+    enumMembers: [33mtrue[39m,
+    classMembers: [33mfalse[39m,
+    duplicates: [33mtrue[39m
+  },
+  isCache: [33mfalse[39m,
+  isDebug: [33mtrue[39m,
+  isDisableConfigHints: [33mfalse[39m,
+  isFix: [33mfalse[39m,
+  isFixDependencies: [33mtrue[39m,
+  isFixFiles: [90mundefined[39m,
+  isFixUnusedExports: [33mtrue[39m,
+  isFixUnusedTypes: [33mtrue[39m,
+  isFormat: [33mfalse[39m,
+  isIncludeEntryExports: [33mfalse[39m,
+  isIsolateWorkspaces: [33mfalse[39m,
+  isProduction: [33mfalse[39m,
+  isReportClassMembers: [33mfalse[39m,
+  isReportDependencies: [33mtrue[39m,
+  isReportTypes: [33mtrue[39m,
+  isReportValues: [33mtrue[39m,
+  isShowProgress: [90mundefined[39m,
+  isSkipLibs: [33mtrue[39m,
+  isStrict: [33mfalse[39m,
+  isTrace: [33mfalse[39m,
+  isTreatConfigHintsAsErrors: [33mfalse[39m,
+  isWatch: [33mfalse[39m,
+  parsedConfig: {
+    [32m'$schema'[39m: [32m'https://unpkg.com/knip/schema.json'[39m,
+    entry: [ [32m'./src/index.tsx'[39m ],
+    ignore: [
+      [32m'src/utils/mediaUtils.ts::createPeerConnection'[39m,
+      [32m'src/utils/mediaUtils.ts::startCall'[39m,
+      [32m'public/**'[39m,
+      [32m'src/pages/**'[39m,
+      [32m'src/pages/api/**'[39m,
+      [32m'src/server/**'[39m,
+      [32m'src/admin-ui/**'[39m,
+      [32m'src/test*/**'[39m,
+      [32m'src/**/mock*.ts'[39m,
+      [32m'src/**/mockData.ts'[39m,
+      [32m'.unused_backup/**'[39m,
+      [32m'vercel.json'[39m,
+      [32m'vite.config.*'[39m,
+      [32m'.github/**'[39m,
+      [32m'azure-pipelines.yml'[39m,
+      [32m'Dockerfile'[39m
+    ],
+    syncCompilers: {},
+    asyncCompilers: {},
+    workspaces: { [32m'.'[39m: {} }
+  },
+  rules: {
+    files: [32m'error'[39m,
+    dependencies: [32m'error'[39m,
+    devDependencies: [32m'error'[39m,
+    optionalPeerDependencies: [32m'error'[39m,
+    unlisted: [32m'error'[39m,
+    binaries: [32m'error'[39m,
+    unresolved: [32m'error'[39m,
+    exports: [32m'error'[39m,
+    nsExports: [32m'error'[39m,
+    types: [32m'error'[39m,
+    nsTypes: [32m'error'[39m,
+    enumMembers: [32m'error'[39m,
+    classMembers: [32m'error'[39m,
+    duplicates: [32m'error'[39m
+  },
+  tags: [ [], [] ],
+  traceExport: [90mundefined[39m,
+  traceFile: [90mundefined[39m,
+  tsConfigFile: [90mundefined[39m,
+  workspace: [90mundefined[39m,
+  workspaces: []
+}
+[33m[*][39m Included issue types
+{
+  files: [33mtrue[39m,
+  dependencies: [33mtrue[39m,
+  devDependencies: [33mtrue[39m,
+  optionalPeerDependencies: [33mtrue[39m,
+  unlisted: [33mtrue[39m,
+  binaries: [33mtrue[39m,
+  unresolved: [33mtrue[39m,
+  exports: [33mtrue[39m,
+  nsExports: [33mfalse[39m,
+  types: [33mtrue[39m,
+  nsTypes: [33mfalse[39m,
+  enumMembers: [33mtrue[39m,
+  classMembers: [33mfalse[39m,
+  duplicates: [33mtrue[39m
+}
+[33m[*][39m Parsed gitignore files
+{ gitignoreFiles: [ [32m'.git/info/exclude'[39m, [32m'.gitignore'[39m ] }
+[33m[*][39m Included workspaces
+[ [32m'magic-patterns-vite-template'[39m ]
+[33m[*][39m Included workspace configs
+[
+  {
+    pkgName: [32m'magic-patterns-vite-template'[39m,
+    name: [32m'.'[39m,
+    config: {
+      entry: [
+        [32m'{index,cli,main}.{js,mjs,cjs,jsx,ts,tsx,mts,cts}!'[39m,
+        [32m'src/{index,cli,main}.{js,mjs,cjs,jsx,ts,tsx,mts,cts}!'[39m
+      ],
+      project: [ [32m'**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts}!'[39m ],
+      paths: {},
+      ignore: [],
+      ignoreFiles: [],
+      isIncludeEntryExports: [33mfalse[39m
+    },
+    ancestors: []
+  }
+]
+[33m[.][39m Finding paths
+{
+  patterns: [ [32m'.travis.yml'[39m ],
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  gitignore: [33mtrue[39m,
+  absolute: [33mtrue[39m,
+  dot: [33mtrue[39m,
+  ignore: [],
+  paths: []
+}
+[33m[][39m Source mapping (package.json) (0)
+[]
+[33m[.][39m Enabled plugins
+[
+  [32m'Bun'[39m,
+  [32m'ESLint'[39m,
+  [32m'GitHub Actions'[39m,
+  [32m'Node.js'[39m,
+  [32m'PostCSS'[39m,
+  [32m'Tailwind'[39m,
+  [32m'Vite'[39m
+]
+[33m[.][39m Finding config file
+{
+  patterns: [ [32m'package.json'[39m ],
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  gitignore: [33mfalse[39m,
+  absolute: [33mtrue[39m,
+  dot: [33mtrue[39m,
+  ignore: [ [32m'**/node_modules/**'[39m, [32m'.yarn'[39m ],
+  paths: [
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/package.json'[39m
+  ]
+}
+[33m[.][39m Finding config file
+{
+  patterns: [
+    [32m'package.json'[39m,
+    [32m'.eslintrc.{yml,yaml}'[39m,
+    [32m'.eslintrc.{js,json,cjs}'[39m,
+    [32m'.eslintrc'[39m,
+    [32m'eslint.config.{js,cjs,mjs,ts,cts,mts}'[39m
+  ],
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  gitignore: [33mfalse[39m,
+  absolute: [33mtrue[39m,
+  dot: [33mtrue[39m,
+  ignore: [ [32m'**/node_modules/**'[39m, [32m'.yarn'[39m ],
+  paths: [
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/package.json'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/.eslintrc.cjs'[39m
+  ]
+}
+[33m[.][39m Finding config file
+{
+  patterns: [ [32m'.github/**/action.{yml,yaml}'[39m, [32m'.github/workflows/*.{yml,yaml}'[39m ],
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  gitignore: [33mfalse[39m,
+  absolute: [33mtrue[39m,
+  dot: [33mtrue[39m,
+  ignore: [ [32m'**/node_modules/**'[39m, [32m'.yarn'[39m ],
+  paths: [
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/.github/workflows/build.yml'[39m
+  ]
+}
+[33m[.][39m Finding config file
+{
+  patterns: [ [32m'package.json'[39m ],
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  gitignore: [33mfalse[39m,
+  absolute: [33mtrue[39m,
+  dot: [33mtrue[39m,
+  ignore: [ [32m'**/node_modules/**'[39m, [32m'.yarn'[39m ],
+  paths: [
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/package.json'[39m
+  ]
+}
+[33m[.][39m Finding config file
+{
+  patterns: [
+    [32m'postcss.config.{ts,js,cjs,mjs,mts,cts}'[39m,
+    [32m'.postcssrc.{json,ts,js,cjs,mjs,mts,cts,yaml,yml}'[39m,
+    [32m'.postcssrc'[39m,
+    [32m'postcss.config.json'[39m,
+    [32m'package.json'[39m
+  ],
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  gitignore: [33mfalse[39m,
+  absolute: [33mtrue[39m,
+  dot: [33mtrue[39m,
+  ignore: [ [32m'**/node_modules/**'[39m, [32m'.yarn'[39m ],
+  paths: [
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/postcss.config.js'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/package.json'[39m
+  ]
+}
+[33m[.][39m Finding config file
+{
+  patterns: [ [32m'vite.config.{js,mjs,ts,cjs,mts,cts}'[39m ],
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  gitignore: [33mfalse[39m,
+  absolute: [33mtrue[39m,
+  dot: [33mtrue[39m,
+  ignore: [ [32m'**/node_modules/**'[39m, [32m'.yarn'[39m ],
+  paths: [
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/vite.config.ts'[39m
+  ]
+}
+[33m[.][39m Plugin dependencies (20)
+[
+  [32m'binary:eslint (package.json)'[39m,
+  [32m'binary:node (package.json)'[39m,
+  [32m'binary:vercel (package.json)'[39m,
+  [32m'binary:vite (package.json)'[39m,
+  [32m'deferResolve:@typescript-eslint/eslint-plugin (.eslintrc.cjs)'[39m,
+  [32m'deferResolve:@typescript-eslint/parser (.eslintrc.cjs)'[39m,
+  [32m'deferResolve:autoprefixer (postcss.config.js)'[39m,
+  [32m'deferResolve:eslint (.eslintrc.cjs)'[39m,
+  [32m'deferResolve:eslint-plugin-react-hooks (.eslintrc.cjs)'[39m,
+  [32m'deferResolve:eslint-plugin-react-refresh (.eslintrc.cjs)'[39m,
+  [32m'deferResolve:tailwindcss (postcss.config.js)'[39m,
+  [32m'deferResolveEntry:api/server.mjs (package.json)'[39m,
+  [32m'dependency:postcss (postcss.config.js)'[39m,
+  [32m'entry:.eslintrc.cjs'[39m,
+  [32m'entry:.github/workflows/build.yml'[39m,
+  [32m'entry:postcss.config.js'[39m,
+  [32m'entry:server.js (package.json)'[39m,
+  [32m'entry:src/vite-env.d.ts (vite.config.ts)'[39m,
+  [32m'entry:tailwind.config.{js,cjs,mjs,ts}'[39m,
+  [32m'entry:vite.config.ts'[39m
+]
+[33m[.][39m Finding entry paths from plugins (ignore exports)
+{
+  patterns: [
+    [32m'server.js'[39m,
+    [32m'vite.config.ts'[39m,
+    [32m'src/vite-env.d.ts'[39m,
+    [32m'tailwind.config.{js,cjs,mjs,ts}'[39m,
+    [32m'postcss.config.js'[39m,
+    [32m'.github/workflows/build.yml'[39m,
+    [32m'.eslintrc.cjs'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/api/server.mjs'[39m
+  ],
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  gitignore: [33mtrue[39m,
+  absolute: [33mtrue[39m,
+  dot: [33mtrue[39m,
+  ignore: [
+    [32m'.git'[39m,
+    [32m'**/node_modules/**'[39m,
+    [32m'.yarn'[39m,
+    [32m'**/logs'[39m,
+    [32m'**/logs/**'[39m,
+    [32m'**/*.log'[39m,
+    [32m'**/*.log/**'[39m,
+    [32m'**/npm-debug.log*'[39m,
+    [32m'**/npm-debug.log*/**'[39m,
+    [32m'**/yarn-debug.log*'[39m,
+    [32m'**/yarn-debug.log*/**'[39m,
+    [32m'**/yarn-error.log*'[39m,
+    [32m'**/yarn-error.log*/**'[39m,
+    [32m'**/pnpm-debug.log*'[39m,
+    [32m'**/pnpm-debug.log*/**'[39m,
+    [32m'**/lerna-debug.log*'[39m,
+    [32m'**/lerna-debug.log*/**'[39m,
+    [32m'**/node_modules'[39m,
+    [32m'**/api-knowledgehub-server'[39m,
+    [32m'**/api-knowledgehub-server/**'[39m,
+    [32m'**/magic_patterns_media_marketplace'[39m,
+    [32m'**/magic_patterns_media_marketplace/**'[39m,
+    [32m'**/.env'[39m,
+    [32m'**/.env/**'[39m,
+    [32m'**/dist'[39m,
+    [32m'**/dist/**'[39m,
+    [32m'**/dist-ssr'[39m,
+    [32m'**/dist-ssr/**'[39m,
+    [32m'**/*.local'[39m,
+    [32m'**/*.local/**'[39m,
+    [32m'**/.vscode/*'[39m,
+    [32m'**/.idea'[39m,
+    [32m'**/.idea/**'[39m,
+    [32m'**/.DS_Store'[39m,
+    [32m'**/.DS_Store/**'[39m,
+    [32m'**/*.suo'[39m,
+    [32m'**/*.suo/**'[39m,
+    [32m'**/*.ntvs*'[39m,
+    [32m'**/*.ntvs*/**'[39m,
+    [32m'**/*.njsproj'[39m,
+    [32m'**/*.njsproj/**'[39m,
+    [32m'**/*.sln'[39m,
+    [32m'**/*.sln/**'[39m,
+    [32m'**/*.sw?'[39m,
+    [32m'**/*.sw?/**'[39m,
+    [32m'**/.vercel'[39m,
+    [32m'**/.vercel/**'[39m
+  ],
+  paths: [
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/vite.config.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/tailwind.config.js'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/postcss.config.js'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/.github/workflows/build.yml'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/.eslintrc.cjs'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/api/server.mjs'[39m
+  ]
+}
+[33m[.][39m Finding entry paths
+{
+  patterns: [
+    [32m'src/{index,cli,main}.{js,mjs,cjs,jsx,ts,tsx,mts,cts}'[39m,
+    [32m'{index,cli,main}.{js,mjs,cjs,jsx,ts,tsx,mts,cts}'[39m
+  ],
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  gitignore: [33mfalse[39m,
+  absolute: [33mtrue[39m,
+  dot: [33mtrue[39m,
+  ignore: [32m'// using cache from previous glob cwd: C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  paths: [
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/index.tsx'[39m
+  ]
+}
+[33m[.][39m Finding plugin configuration paths (ignore exports)
+{
+  patterns: [
+    [32m'vite.config.{js,mjs,ts,cjs,mts,cts}'[39m,
+    [32m'postcss.config.{ts,js,cjs,mjs,mts,cts}'[39m,
+    [32m'.postcssrc.{json,ts,js,cjs,mjs,mts,cts,yaml,yml}'[39m,
+    [32m'.postcssrc'[39m,
+    [32m'postcss.config.json'[39m,
+    [32m'.github/**/action.{yml,yaml}'[39m,
+    [32m'.github/workflows/*.{yml,yaml}'[39m,
+    [32m'.eslintrc.{yml,yaml}'[39m,
+    [32m'.eslintrc.{js,json,cjs}'[39m,
+    [32m'.eslintrc'[39m,
+    [32m'eslint.config.{js,cjs,mjs,ts,cts,mts}'[39m,
+    [32m'package.json'[39m
+  ],
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  gitignore: [33mtrue[39m,
+  absolute: [33mtrue[39m,
+  dot: [33mtrue[39m,
+  ignore: [32m'// using cache from previous glob cwd: C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  paths: [
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/vite.config.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/postcss.config.js'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/.eslintrc.cjs'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/package.json'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/.github/workflows/build.yml'[39m
+  ]
+}
+[33m[.][39m Finding project paths
+{
+  patterns: [ [32m'server.js'[39m, [32m'**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts}'[39m ],
+  cwd: [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2'[39m,
+  gitignore: [33mtrue[39m,
+  absolute: [33mtrue[39m,
+  dot: [33mtrue[39m,
+  ignore: [
+    [32m'.git'[39m,
+    [32m'**/node_modules/**'[39m,
+    [32m'.yarn'[39m,
+    [32m'**/logs'[39m,
+    [32m'**/logs/**'[39m,
+    [32m'**/*.log'[39m,
+    [32m'**/*.log/**'[39m,
+    [32m'**/npm-debug.log*'[39m,
+    [32m'**/npm-debug.log*/**'[39m,
+    [32m'**/yarn-debug.log*'[39m,
+    [32m'**/yarn-debug.log*/**'[39m,
+    [32m'**/yarn-error.log*'[39m,
+    [32m'**/yarn-error.log*/**'[39m,
+    [32m'**/pnpm-debug.log*'[39m,
+    [32m'**/pnpm-debug.log*/**'[39m,
+    [32m'**/lerna-debug.log*'[39m,
+    [32m'**/lerna-debug.log*/**'[39m,
+    [32m'**/node_modules'[39m,
+    [32m'**/api-knowledgehub-server'[39m,
+    [32m'**/api-knowledgehub-server/**'[39m,
+    [32m'**/magic_patterns_media_marketplace'[39m,
+    [32m'**/magic_patterns_media_marketplace/**'[39m,
+    [32m'**/.env'[39m,
+    [32m'**/.env/**'[39m,
+    [32m'**/dist'[39m,
+    [32m'**/dist/**'[39m,
+    [32m'**/dist-ssr'[39m,
+    [32m'**/dist-ssr/**'[39m,
+    [32m'**/*.local'[39m,
+    [32m'**/*.local/**'[39m,
+    [32m'**/.vscode/*'[39m,
+    [32m'**/.idea'[39m,
+    [32m'**/.idea/**'[39m,
+    [32m'**/.DS_Store'[39m,
+    [32m'**/.DS_Store/**'[39m,
+    [32m'**/*.suo'[39m,
+    [32m'**/*.suo/**'[39m,
+    [32m'**/*.ntvs*'[39m,
+    [32m'**/*.ntvs*/**'[39m,
+    [32m'**/*.njsproj'[39m,
+    [32m'**/*.njsproj/**'[39m,
+    [32m'**/*.sln'[39m,
+    [32m'**/*.sln/**'[39m,
+    [32m'**/*.sw?'[39m,
+    [32m'**/*.sw?/**'[39m,
+    [32m'**/.vercel'[39m,
+    [32m'**/.vercel/**'[39m,
+    [32m'package.json'[39m,
+    [32m'eslint.config.{js,cjs,mjs,ts,cts,mts}'[39m,
+    [32m'.eslintrc'[39m,
+    [32m'.eslintrc.{js,json,cjs}'[39m,
+    [32m'.eslintrc.{yml,yaml}'[39m,
+    [32m'.github/workflows/*.{yml,yaml}'[39m,
+    [32m'.github/**/action.{yml,yaml}'[39m,
+    [32m'postcss.config.json'[39m,
+    [32m'.postcssrc'[39m,
+    [32m'.postcssrc.{json,ts,js,cjs,mjs,mts,cts,yaml,yml}'[39m,
+    [32m'postcss.config.{ts,js,cjs,mjs,mts,cts}'[39m,
+    [32m'vite.config.{js,mjs,ts,cjs,mts,cts}'[39m
+  ],
+  paths: [
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/tailwind.config.js'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/tmp_MediaDetail2.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/api/server.mjs'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/public/pdf.worker.min.mjs'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/App.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/AppRouter.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/testMockOnboardingAPI.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/api/uploads/delete.js'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/api/uploads/sign.js'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/bot/KfBot.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/AnimationUtils.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/BusinessDirectoryMarketplace.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/CallToAction.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/CardComponents.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ComingSoonView.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/CourseCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/CourseComparison.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/CourseGrid.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/CourseMarketplace.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/CourseQuickViewModal.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/EnquiryModal.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/EnterpriseStages.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/EventRegistrationForm.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/FieldRenderer.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/FilterSidebar.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/HeroSection.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Home.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/HomePage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/KhalifaFundAttribution.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/KnowledgeHub.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/NavigationButtons.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ProfileCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ProfileModal.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ProgressIndicator.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/PromoCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ProofAndTrust.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ProtectedRoute.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/RelatedCourses.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ReportModal.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/SearchBar.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/SectorCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/SkeletonLoader.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/TemporaryMarketplaceNav.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/config/onboardingSteps.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/context/ProfileContext.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/hooks/useAutoSave.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/hooks/useMediaItem.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/hooks/UseMediaSearch.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/hooks/useOnboardingForm.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/hooks/useProductDetails.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/hooks/useScrollLock.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/lib/apolloClient.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/lib/storageProvider.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/BusinessDirectoryMarketplace.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/ComingSoon.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/CourseDetailPage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/CourseMarketplacePage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/GrowthAreasMarketplace.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/GrowthAreasPage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/NotFound.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/analyticsAPI.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/api.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/AzureBlobService.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/courses.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/DataverseService.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/enquiryQueries.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/mapAPI.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/marketplace.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/marketplaceQueries.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/mockData.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/mockOnboardingAPI.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/mutations.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/onboardingService.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/steps/GenericStep.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/steps/ReviewStep.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/steps/WelcomeStep.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/types/course.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/types/formData.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/types/index.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/types/marketplace.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/comparisonStorage.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/config.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/documentMetadata.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/fallbackData.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/gitexMockData.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/imageCache.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/marketplaceConfig.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/marketplaceConfiguration.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/mediaMappers.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/mediaSelectors.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/mediaUtils.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/mockData.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/mockMarketplaceData.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/profileConfig.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/stepConfig.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/validation.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/videoUtils.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/api/storage/delete/delete.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/api/storage/upload/upload.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/components/AppLayout.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/components/RichTextEditor.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/components/Toast.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/pages/Dashboard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/pages/MediaCreate.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/pages/MediaDetail.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/pages/MediaDetail2.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/pages/MediaList.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/pages/Settings.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/utils/database.types.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/utils/supabase.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/utils/supabaseClient.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/BusinessProfile/BusinessProfile.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/BusinessProfile/DocumentSection.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/BusinessProfile/TableSection.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/BusinessProfile/TabSection.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Button/Button.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Button/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/BaseCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/CardFooter.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/CardHeader.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/designTokens.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/EventCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/FeatureCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/MarketplaceCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/MediaCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/NewsCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/PromoCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/ReportCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/ResourceCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/ResponsiveCardGrid.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/ServiceCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/ServiceHighlightCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/TagChip.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/UnifiedCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/ChatInput.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/ChatInterface.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/ChatService.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/EmojiPicker.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/FileAttachment.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/MessageBubble.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/types.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/common/ErrorState.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/common/LoadingState.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/DirectorySection.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/GrowthAreasSection.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/HeroSection.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/ProfileCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/ProfileModal.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/SearchBar.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/SectorCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/VideoModal.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentDashboard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentDetail.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentNotification.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentSection.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentTable.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentUpload.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentWallet.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/mockDocumentData.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Enquiry/Enquiry.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Enquiry/styles.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Footer/Footer.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Footer/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/FormPreview.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/Header.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/ProfileDropdown.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/layouts/FormLayout.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/layouts/index.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/FilterSidebar.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/KnowledgeHubCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/KnowledgeHubGrid.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/MarketplaceCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/MarketplaceComparison.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/MarketplaceGrid.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/MarketplacePage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/MarketplaceQuickViewModal.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/ServiceCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/ServiceComparison.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/ServiceGrid.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/ServiceQuickViewModal.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/overview/DocumentSection.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/overview/TableSection.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/overview/TabSection.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/PageLayout/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/PillFilters/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/EmptyState.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/mockData.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/serviceFormRoutes.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/ServiceRequestDetails.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/ServiceRequestsFilters.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/ServiceRequestsHeader.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/ServiceRequestsPage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/ServiceRequestsTable.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/StatusBadge.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ServiceRequestsFilters/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ServiceRequestsFilters/ServiceRequestsFilters.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/settings/IntegrationsBillingTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/settings/PreferencesNotificationsTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/settings/SecurityComplianceTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/settings/UserRolesTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Sidebar/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Sidebar/Sidebar.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/support/ContactSupportTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/support/DocumentationTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/support/FAQsTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/support/TicketHistoryTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/DashboardLayout.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/DashboardRouter.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/discoverAbuDhabi/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/BookConsultationForEntrepreneurship.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/CancelLoan.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/CollateralUserGuide.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/DisburseApprovedLoan.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/FacilitateCommunication.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/IssueSupportLetter.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/NeedsAssessmentForm.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/ReallocationOfLoanDisbursement.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/RequestForFunding.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/RequestForMembership.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/RequestToAmendExistingLoanDetails.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/TrainingInEntrepreneurship.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/marketplace/MarketplaceDetailsPage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/marketplace/MarketplaceRouter.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/media/MediaDetailPage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/server/azure/blobSign.js'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/server/azure/blobSign.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/auth/msal.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/graphql/client.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/graphql/queries.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/AmendExistingLoanSchema.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/BookConsultation.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/CancelLoans.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/CollateralUserGuide.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/DisburseApprovedLoanSchema.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/FacilitateCommunicationSchema.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/IssueSupportLetterSchema.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/LoanDisbursement.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/RequestForMembershipSchema.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/TrainingInEnterprenuershipSchema.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/components/CTAButtons.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/components/ExploreDropdown.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/components/MobileDrawer.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/context/AuthContext.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/notifications/NotificationCenter.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/notifications/NotificationItem.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/notifications/NotificationsMenu.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/utils/mockNotifications.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/SummaryCard.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/TabsNav.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/api/uploads/delete.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/api/uploads/sign.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/businessProfile/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/documents/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/onboarding/OnboardingForm.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/onboarding/OnboardingStep.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/Announcements.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/MetricsOverview.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/ObligationsDeadlines.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/OnboardingProgress.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/QuickActions.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/ServiceRequestsTable.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/profile/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/AllDocumentsPage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/AllReceivedReportsPage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/AllSubmittedReportsPage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/AllUpcomingObligationsPage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/DocumentWalletPanel.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/mockReportsData.ts'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/ReceivedReports.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/ReportsPage.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/SubmittedReports.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/SummaryHighlights.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/UpcomingObligations.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/serviceRequests/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/settings/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/support/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/components/MapComponent/FullscreenMap.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/components/MapComponent/index.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/components/MapComponent/MapControls.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/components/MapComponent/MinimizedMap.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/AboutTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/ApplicationProcessTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/EligibilityTermsTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/LearningOutcomesTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/ProviderTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/RequiredDocumentsTab.tsx'[39m,
+    [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/ScheduleTab.tsx'[39m
+  ]
+}
+[33m[*][39m Created 1 programs for 1 workspaces
+[33m[*][39m Analyzing used resolved files [P1/1] (230)
+[
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/.eslintrc.cjs'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/api/server.mjs'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/api/uploads/delete.js'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/api/uploads/sign.js'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/postcss.config.js'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/App.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/AppRouter.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/components/AppLayout.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/components/RichTextEditor.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/components/Toast.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/pages/Dashboard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/pages/MediaCreate.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/pages/MediaDetail2.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/pages/MediaList.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/pages/Settings.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/utils/database.types.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/utils/supabase.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/admin-ui/utils/supabaseClient.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/bot/KfBot.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/AnimationUtils.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/BusinessProfile/BusinessProfile.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/BusinessProfile/DocumentSection.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/BusinessProfile/TabSection.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/BusinessProfile/TableSection.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/CallToAction.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/CardComponents.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/BaseCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/CardFooter.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/CardHeader.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/EventCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/FeatureCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/MarketplaceCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/MediaCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/NewsCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/PromoCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/ReportCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/ResourceCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/ResponsiveCardGrid.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/ServiceCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/ServiceHighlightCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/TagChip.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/UnifiedCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/designTokens.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Cards/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/ChatInput.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/ChatInterface.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/ChatService.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/EmojiPicker.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/FileAttachment.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/MessageBubble.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Chat/types.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentDashboard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentDetail.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentNotification.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentTable.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentUpload.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/DocumentWallet.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/DocumentWallet/mockDocumentData.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/EnquiryModal.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/EnterpriseStages.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/EventRegistrationForm.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Footer/Footer.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Footer/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/FormPreview.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/AmendExistingLoanSchema.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/BookConsultation.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/CancelLoans.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/CollateralUserGuide.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/DisburseApprovedLoanSchema.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/FacilitateCommunicationSchema.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/IssueSupportLetterSchema.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/LoanDisbursement.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/RequestForMembershipSchema.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Forms/form-schemas/TrainingInEnterprenuershipSchema.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/Header.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/ProfileDropdown.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/components/ExploreDropdown.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/components/MobileDrawer.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/context/AuthContext.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/notifications/NotificationCenter.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/notifications/NotificationItem.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/notifications/NotificationsMenu.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Header/utils/mockNotifications.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/HeroSection.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Home.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/HomePage.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/KhalifaFundAttribution.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/KnowledgeHub.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/NavigationButtons.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/PageLayout/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/PillFilters/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ProfileCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ProfileModal.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ProgressIndicator.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/PromoCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ProofAndTrust.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ProtectedRoute.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ReportModal.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/SearchBar.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/SectorCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ServiceRequestsFilters/ServiceRequestsFilters.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/ServiceRequestsFilters/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Sidebar/Sidebar.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/Sidebar/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/SkeletonLoader.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/DirectorySection.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/GrowthAreasSection.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/HeroSection.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/ProfileCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/ProfileModal.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/SearchBar.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/discoverAbuDhabi/SectorCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/layouts/FormLayout.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/layouts/index.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/FilterSidebar.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/KnowledgeHubCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/MarketplaceCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/MarketplaceComparison.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/MarketplaceGrid.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/MarketplacePage.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/MarketplaceQuickViewModal.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/SummaryCard.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/TabsNav.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/AboutTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/ApplicationProcessTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/EligibilityTermsTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/LearningOutcomesTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/ProviderTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/RequiredDocumentsTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/marketplace/details/tabs/ScheduleTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/EmptyState.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/ServiceRequestDetails.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/ServiceRequestsFilters.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/ServiceRequestsHeader.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/ServiceRequestsTable.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/StatusBadge.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/mockData.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/serviceRequests/serviceFormRoutes.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/settings/IntegrationsBillingTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/settings/PreferencesNotificationsTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/settings/SecurityComplianceTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/settings/UserRolesTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/support/ContactSupportTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/support/DocumentationTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/support/FAQsTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/components/support/TicketHistoryTab.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/config/onboardingSteps.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/hooks/useAutoSave.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/hooks/useOnboardingForm.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/hooks/useProductDetails.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/hooks/useScrollLock.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/lib/storageProvider.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/BusinessDirectoryMarketplace.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/ComingSoon.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/GrowthAreasMarketplace.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/GrowthAreasPage.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/NotFound.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/DashboardLayout.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/DashboardRouter.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/businessProfile/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/documents/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/onboarding/OnboardingForm.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/onboarding/OnboardingStep.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/Announcements.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/MetricsOverview.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/ObligationsDeadlines.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/OnboardingProgress.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/QuickActions.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/ServiceRequestsTable.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/overview/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/AllReceivedReportsPage.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/AllSubmittedReportsPage.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/AllUpcomingObligationsPage.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/DocumentWalletPanel.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/ReceivedReports.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/ReportsPage.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/SubmittedReports.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/SummaryHighlights.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/UpcomingObligations.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/reportingObligations/mockReportsData.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/serviceRequests/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/settings/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/dashboard/support/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/discoverAbuDhabi/index.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/BookConsultationForEntrepreneurship.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/CancelLoan.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/CollateralUserGuide.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/DisburseApprovedLoan.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/FacilitateCommunication.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/IssueSupportLetter.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/NeedsAssessmentForm.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/ReallocationOfLoanDisbursement.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/RequestForFunding.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/RequestForMembership.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/RequestToAmendExistingLoanDetails.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/forms/TrainingInEntrepreneurship.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/marketplace/MarketplaceDetailsPage.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/marketplace/MarketplaceRouter.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/pages/media/MediaDetailPage.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/server/azure/blobSign.js'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/AzureBlobService.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/DataverseService.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/auth/msal.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/graphql/client.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/graphql/queries.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/marketplace.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/marketplaceQueries.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/mockOnboardingAPI.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/services/onboardingService.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/steps/ReviewStep.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/steps/WelcomeStep.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/types/index.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/comparisonStorage.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/config.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/documentMetadata.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/fallbackData.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/imageCache.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/marketplaceConfig.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/marketplaceConfiguration.tsx'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/mediaSelectors.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/mediaUtils.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/mockData.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/mockMarketplaceData.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/profileConfig.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/validation.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/src/utils/videoUtils.ts'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/tailwind.config.js'[39m,
+  [32m'C:/Users/ADMIN/OneDrive/Documents/DQ_projects/MZN-EJP-v2/vite.config.ts'[39m
+]
+[33m[*][39m Deleting principal at . (magic-patterns-vite-template)
+[93m[4mUnused files[24m[39m (54)
+tmp_MediaDetail2.tsx                                                       
+src/testMockOnboardingAPI.ts                                               
+src/components/BusinessDirectoryMarketplace.tsx                            
+src/components/ComingSoonView.tsx                                          
+src/components/CourseCard.tsx                                              
+src/components/CourseComparison.tsx                                        
+src/components/CourseGrid.tsx                                              
+src/components/CourseMarketplace.tsx                                       
+src/components/CourseQuickViewModal.tsx                                    
+src/components/FieldRenderer.tsx                                           
+src/components/FilterSidebar.tsx                                           
+src/components/RelatedCourses.tsx                                          
+src/components/TemporaryMarketplaceNav.tsx                                 
+src/context/ProfileContext.tsx                                             
+src/hooks/useMediaItem.ts                                                  
+src/hooks/UseMediaSearch.ts                                                
+src/lib/apolloClient.ts                                                    
+src/services/analyticsAPI.ts                                               
+src/services/api.ts                                                        
+src/services/courses.ts                                                    
+src/services/enquiryQueries.ts                                             
+src/services/mapAPI.ts                                                     
+src/services/mutations.ts                                                  
+src/steps/GenericStep.tsx                                                  
+src/types/course.ts                                                        
+src/types/formData.ts                                                      
+src/types/marketplace.ts                                                   
+src/utils/gitexMockData.ts                                                 
+src/utils/mediaMappers.ts                                                  
+src/utils/stepConfig.tsx                                                   
+api/storage/delete/delete.ts                                               
+api/storage/upload/upload.ts                                               
+src/components/Button/Button.tsx                                           
+src/components/Button/index.tsx                                            
+src/components/common/ErrorState.tsx                                       
+src/components/common/LoadingState.tsx                                     
+src/components/discoverAbuDhabi/VideoModal.tsx                             
+src/components/DocumentWallet/DocumentSection.tsx                          
+src/components/Enquiry/Enquiry.tsx                                         
+src/components/Enquiry/styles.ts                                           
+src/components/marketplace/KnowledgeHubGrid.tsx                            
+src/components/marketplace/ServiceCard.tsx                                 
+src/components/marketplace/ServiceComparison.tsx                           
+src/components/marketplace/ServiceGrid.tsx                                 
+src/components/marketplace/ServiceQuickViewModal.tsx                       
+src/components/overview/DocumentSection.tsx                                
+src/components/overview/TableSection.tsx                                   
+src/components/overview/TabSection.tsx                                     
+src/components/serviceRequests/ServiceRequestsPage.tsx                     
+src/components/Header/components/CTAButtons.tsx                            
+src/components/discoverAbuDhabi/components/MapComponent/FullscreenMap.tsx  
+src/components/discoverAbuDhabi/components/MapComponent/index.tsx          
+src/components/discoverAbuDhabi/components/MapComponent/MapControls.tsx    
+src/components/discoverAbuDhabi/components/MapComponent/MinimizedMap.tsx   
+[93m[4mUnused dependencies[24m[39m (4)
+@hookform/resolvers  package.json:20:10
+formidable           package.json:30:10
+react-hook-form      package.json:38:10
+styled-components    package.json:43:10
+[93m[4mUnused devDependencies[24m[39m (1)
+@types/styled-jsx  package.json:51:10
+[93m[4mUnused exports[24m[39m (97)
+msalConfig                                    src/services/auth/msal.ts:102:14                                
+ProfileDropdown                               src/components/Header/index.tsx:3:9                             
+NotificationsMenu                             src/components/Header/index.tsx:4:9                             
+NotificationCenter                            src/components/Header/index.tsx:5:9                             
+NotificationItem                              src/components/Header/index.tsx:6:9                             
+ExploreDropdown                               src/components/Header/index.tsx:7:9                             
+MobileDrawer                                  src/components/Header/index.tsx:8:9                             
+mockNotifications                             src/components/Header/index.tsx:10:9                            
+ProtectedRoute                                src/components/ProtectedRoute.tsx:12:14                         
+useCountUp                          function  src/components/AnimationUtils.tsx:54:17                         
+TypingAnimation                               src/components/AnimationUtils.tsx:305:14                        
+UnifiedCard                                   src/components/Cards/index.tsx:3:9                              
+ResponsiveCardGrid                            src/components/Cards/index.tsx:4:9                              
+PromoCard                                     src/components/Cards/index.tsx:8:9                              
+FeatureCard                                   src/components/Cards/index.tsx:9:9                              
+ServiceCard                                   src/components/Cards/index.tsx:12:9                             
+ReportCard                                    src/components/Cards/index.tsx:13:9                             
+MarketplaceCard                               src/components/Cards/index.tsx:14:9                             
+designTokens                                  src/components/Cards/index.tsx:27:9                             
+tagVariants                                   src/components/Cards/index.tsx:27:23                            
+BaseCard                                      src/components/Cards/index.tsx:29:9                             
+CardHeader                                    src/components/Cards/index.tsx:30:9                             
+CardFooter                                    src/components/Cards/index.tsx:31:9                             
+TagChip                                       src/components/Cards/index.tsx:32:9                             
+ServiceHighlightCard                          src/components/CardComponents.tsx:144:9                         
+HomePage                                      src/components/Home.tsx:431:14                                  
+fetchAndCacheImage                            src/utils/imageCache.tsx:11:14                                  
+checkOnboardingStatus                         src/services/onboardingService.ts:10:14                         
+getFallbackKnowledgeHubItems                  src/utils/fallbackData.ts:48:14                                 
+getFallbackKnowledgeHubItemDetails            src/utils/fallbackData.ts:86:14                                 
+sampleKnowledgeHubItems                       src/utils/fallbackData.ts:94:14                                 
+deleteFile                          function  src/lib/storageProvider.ts:29:23                                
+generateUploadSasUrl                          src/services/AzureBlobService.ts:20:14                          
+blobExists                                    src/services/AzureBlobService.ts:94:14                          
+getBlobProperties                             src/services/AzureBlobService.ts:107:14                         
+getDocumentById                               src/services/DataverseService.ts:139:14                         
+getDocumentVersions                           src/services/DataverseService.ts:279:14                         
+saveProfileData                               src/services/DataverseService.ts:345:14                         
+graphqlClient                                 src/services/graphql/client.ts:19:14                            
+getMockResponse                               src/services/graphql/client.ts:22:14                            
+GET_COURSE_DETAILS                            src/services/graphql/queries.ts:307:14                          
+GET_RELATED_COURSES                           src/services/graphql/queries.ts:308:14                          
+GET_COURSES                                   src/services/graphql/queries.ts:309:14                          
+GET_CATEGORIES                                src/services/graphql/queries.ts:310:14                          
+GET_DELIVERY_MODES                            src/services/graphql/queries.ts:318:14                          
+GET_BUSINESS_STAGES                           src/services/graphql/queries.ts:326:14                          
+GET_PROVIDERS                                 src/services/graphql/queries.ts:334:14                          
+mockFinancialServicesData                     src/utils/marketplaceConfig.ts:64:14                            
+mockNonFinancialServicesData                  src/utils/marketplaceConfig.ts:94:14                            
+mockCoursesData                               src/utils/marketplaceConfig.ts:137:14                           
+mockKnowledgeHubData                          src/utils/marketplaceConfig.ts:183:14                           
+marketplaceConfig                             src/utils/marketplaceConfig.ts:189:14                           
+fetchMarketplaceItems                         src/services/marketplace.ts:10:14                               
+fetchMarketplaceItemDetails                   src/services/marketplace.ts:105:14                              
+fetchRelatedMarketplaceItems                  src/services/marketplace.ts:146:14                              
+fetchMarketplaceProviders                     src/services/marketplace.ts:191:14                              
+getSectionsMetadata                           src/utils/config.ts:1311:14                                     
+getSectionConfigById                          src/utils/config.ts:1319:14                                     
+getMandatoryFieldsForStage                    src/utils/config.ts:1334:14                                     
+getFileSizeFromUrl                  function  src/utils/documentMetadata.ts:9:23                              
+getPdfPageCount                     function  src/utils/documentMetadata.ts:28:23                             
+mockFinancialServicesData                     src/utils/marketplaceConfiguration.tsx:63:14                    
+mockNonFinancialServicesData                  src/utils/marketplaceConfiguration.tsx:93:14                    
+mockCoursesData                               src/utils/marketplaceConfiguration.tsx:136:14                   
+marketplaceConfig                             src/utils/marketplaceConfiguration.tsx:182:14                   
+getVideoPosterUrl                             src/utils/videoUtils.ts:37:14                                   
+useVideoDuration                              src/utils/videoUtils.ts:160:14                                  
+initializeLocalMedia                          src/utils/mediaUtils.ts:16:14                                   
+toggleMute                                    src/utils/mediaUtils.ts:202:14                                  
+toggleVideo                                   src/utils/mediaUtils.ts:214:14                                  
+createPeerConnection                          src/utils/mediaUtils.ts:225:14                                  
+startVoiceCall                                src/utils/mediaUtils.ts:283:14                                  
+checkNetworkConnectivity                      src/utils/mediaUtils.ts:325:14                                  
+startCall                                     src/utils/mediaUtils.ts:348:14                                  
+createDummyRemoteStream                       src/utils/mediaUtils.ts:386:14                                  
+handleIncomingOffer                           src/utils/mediaUtils.ts:454:14                                  
+handleIncomingAnswer                          src/utils/mediaUtils.ts:474:14                                  
+sendIceCandidate                              src/utils/mediaUtils.ts:486:14                                  
+sendOffer                                     src/utils/mediaUtils.ts:496:14                                  
+sendAnswer                                    src/utils/mediaUtils.ts:506:14                                  
+updateRemoteStream                            src/utils/mediaUtils.ts:516:14                                  
+endCall                                       src/utils/mediaUtils.ts:528:14                                  
+FeatureCard                                   src/components/Cards/FeatureCard.tsx:19:14                      
+ResponsiveCardGrid                            src/components/Cards/ResponsiveCardGrid.tsx:8:14                
+PromoCard                                     src/components/Cards/PromoCard.tsx:19:14                        
+ServiceCard                                   src/components/Cards/ServiceCard.tsx:25:14                      
+ReportCard                                    src/components/Cards/ReportCard.tsx:25:14                       
+MarketplaceCard                               src/components/Cards/MarketplaceCard.tsx:29:14                  
+default                                       src/components/marketplace/MarketplacePage.tsx:1260:8           
+Breadcrumbs                         function  src/components/PageLayout/index.tsx:17:17                       
+PageHeader                          function  src/components/PageLayout/index.tsx:57:17                       
+SecondaryButton                     function  src/components/PageLayout/index.tsx:222:17                      
+serviceFormRoutes                             src/components/serviceRequests/serviceFormRoutes.tsx:4:14       
+bookConsultationValidationSchema              src/components/Forms/form-schemas/BookConsultation.tsx:301:14   
+loanCancellationValidationSchema              src/components/Forms/form-schemas/CancelLoans.tsx:70:14         
+collateralReleaseValidationSchema             src/components/Forms/form-schemas/CollateralUserGuide.tsx:138:14
+reallocationLoanValidationSchema              src/components/Forms/form-schemas/LoanDisbursement.tsx:213:14   
+[93m[4mUnused exported types[24m[39m (93)
+Notification                type       src/components/Header/index.tsx:11:14                                 
+UnifiedCardProps            type       src/components/Cards/index.tsx:16:14                                  
+CardContent                 type       src/components/Cards/index.tsx:16:32                                  
+CardVariantConfig           type       src/components/Cards/index.tsx:16:45                                  
+ResponsiveCardGridProps     type       src/components/Cards/index.tsx:16:64                                  
+NewsCardProps               type       src/components/Cards/index.tsx:17:14                                  
+NewsItem                    type       src/components/Cards/index.tsx:17:29                                  
+EventCardProps              type       src/components/Cards/index.tsx:18:14                                  
+EventItem                   type       src/components/Cards/index.tsx:18:30                                  
+PromoCardProps              type       src/components/Cards/index.tsx:19:14                                  
+PromoItem                   type       src/components/Cards/index.tsx:19:30                                  
+FeatureCardProps            type       src/components/Cards/index.tsx:20:14                                  
+FeatureItem                 type       src/components/Cards/index.tsx:20:32                                  
+ServiceHighlightCardProps   type       src/components/Cards/index.tsx:21:14                                  
+ServiceHighlightItem        type       src/components/Cards/index.tsx:21:41                                  
+ResourceCardProps           type       src/components/Cards/index.tsx:22:14                                  
+ResourceItem                type       src/components/Cards/index.tsx:22:33                                  
+ServiceCardProps            type       src/components/Cards/index.tsx:23:14                                  
+ServiceItem                 type       src/components/Cards/index.tsx:23:32                                  
+ReportCardProps             type       src/components/Cards/index.tsx:24:14                                  
+ReportItem                  type       src/components/Cards/index.tsx:24:31                                  
+MarketplaceCardProps        type       src/components/Cards/index.tsx:25:14                                  
+MarketplaceItem             type       src/components/Cards/index.tsx:25:36                                  
+UseProductDetailsArgs       interface  src/hooks/useProductDetails.ts:36:18                                  
+ProductItem                 interface  src/hooks/useProductDetails.ts:42:18                                  
+UploadArgs                  type       src/lib/storageProvider.ts:1:13                                       
+UploadResult                type       src/lib/storageProvider.ts:2:13                                       
+FilterOption                interface  src/components/marketplace/FilterSidebar.tsx:3:18                     
+FilterSidebarProps          interface  src/components/marketplace/FilterSidebar.tsx:21:18                    
+MarketplaceTab              interface  src/utils/marketplaceConfig.ts:7:18                                   
+AttributeConfig             interface  src/utils/marketplaceConfig.ts:16:18                                  
+TabConfig                   interface  src/utils/marketplaceConfig.ts:22:18                                  
+FilterCategoryConfig        interface  src/utils/marketplaceConfig.ts:30:18                                  
+MarketplaceConfig           interface  src/utils/marketplaceConfig.ts:38:18                                  
+CompanyStage                interface  src/utils/profileConfig.ts:7:18                                       
+MarketplaceTab              interface  src/utils/marketplaceConfiguration.tsx:6:18                           
+AttributeConfig             interface  src/utils/marketplaceConfiguration.tsx:15:18                          
+TabConfig                   interface  src/utils/marketplaceConfiguration.tsx:21:18                          
+FilterCategoryConfig        interface  src/utils/marketplaceConfiguration.tsx:29:18                          
+MarketplaceConfig           interface  src/utils/marketplaceConfiguration.tsx:37:18                          
+CallState                   interface  src/utils/mediaUtils.ts:2:18                                          
+BaseCardProps               interface  src/components/Cards/BaseCard.tsx:16:18                               
+CardFooterProps             interface  src/components/Cards/CardFooter.tsx:2:18                              
+CardHeaderProps             interface  src/components/Cards/CardHeader.tsx:2:18                              
+TagChipProps                interface  src/components/Cards/TagChip.tsx:2:18                                 
+EventItem                   interface  src/components/Cards/EventCard.tsx:7:18                               
+EventCardProps              interface  src/components/Cards/EventCard.tsx:18:18                              
+CardMedia                   interface  src/components/Cards/UnifiedCard.tsx:4:18                             
+CardTag                     interface  src/components/Cards/UnifiedCard.tsx:11:18                            
+CardMetadata                interface  src/components/Cards/UnifiedCard.tsx:15:18                            
+CardCTA                     interface  src/components/Cards/UnifiedCard.tsx:25:18                            
+CardPill                    interface  src/components/Cards/UnifiedCard.tsx:32:18                            
+UnifiedCardProps            interface  src/components/Cards/UnifiedCard.tsx:59:18                            
+FeatureItem                 interface  src/components/Cards/FeatureCard.tsx:4:18                             
+FeatureCardProps            interface  src/components/Cards/FeatureCard.tsx:13:18                            
+ResponsiveCardGridProps     interface  src/components/Cards/ResponsiveCardGrid.tsx:3:18                      
+NewsItem                    interface  src/components/Cards/NewsCard.tsx:4:18                                
+NewsCardProps               interface  src/components/Cards/NewsCard.tsx:14:18                               
+PromoItem                   interface  src/components/Cards/PromoCard.tsx:4:18                               
+PromoCardProps              interface  src/components/Cards/PromoCard.tsx:13:18                              
+ServiceHighlightItem        interface  src/components/Cards/ServiceHighlightCard.tsx:4:18                    
+ServiceHighlightCardProps   interface  src/components/Cards/ServiceHighlightCard.tsx:13:18                   
+ResourceItem                interface  src/components/Cards/ResourceCard.tsx:7:18                            
+ResourceCardProps           interface  src/components/Cards/ResourceCard.tsx:21:18                           
+ServiceItem                 interface  src/components/Cards/ServiceCard.tsx:7:18                             
+ServiceCardProps            interface  src/components/Cards/ServiceCard.tsx:17:18                            
+ReportItem                  interface  src/components/Cards/ReportCard.tsx:7:18                              
+ReportCardProps             interface  src/components/Cards/ReportCard.tsx:18:18                             
+Provider                    interface  src/components/Cards/MarketplaceCard.tsx:3:18                         
+MarketplaceItem             interface  src/components/Cards/MarketplaceCard.tsx:7:18                         
+MarketplaceCardConfig       interface  src/components/Cards/MarketplaceCard.tsx:14:18                        
+MarketplaceCardProps        interface  src/components/Cards/MarketplaceCard.tsx:18:18                        
+MediaCardProps              interface  src/components/Cards/MediaCard.tsx:21:18                              
+VoiceMessage                interface  src/components/Chat/types.ts:21:18                                    
+FilterOption                type       src/components/PillFilters/index.tsx:151:14                           
+FormGroup                   interface  src/components/Forms/FormPreview.tsx:115:18                           
+FormStep                    interface  src/components/Forms/FormPreview.tsx:125:18                           
+ServiceRequestFormProps     interface  src/components/Forms/FormPreview.tsx:143:18                           
+KnowledgeHubItemProps       interface  src/components/marketplace/KnowledgeHubCard.tsx:30:18                 
+MarketplaceItemProps        interface  src/components/marketplace/MarketplaceCard.tsx:6:18                   
+MarketplacePageProps        interface  src/components/marketplace/MarketplacePage.tsx:155:18                 
+BreadcrumbItem              interface  src/components/PageLayout/index.tsx:5:18                              
+RequiredDocumentsTabProps   interface  src/components/marketplace/details/tabs/RequiredDocumentsTab.tsx:4:18 
+ProviderTabProps            interface  src/components/marketplace/details/tabs/ProviderTab.tsx:4:18          
+AboutTabProps               interface  src/components/marketplace/details/tabs/AboutTab.tsx:3:18             
+ScheduleTabProps            interface  src/components/marketplace/details/tabs/ScheduleTab.tsx:4:18          
+LearningOutcomesTabProps    interface  src/components/marketplace/details/tabs/LearningOutcomesTab.tsx:4:18  
+EligibilityTermsTabProps    interface  src/components/marketplace/details/tabs/EligibilityTermsTab.tsx:4:18  
+ApplicationProcessTabProps  interface  src/components/marketplace/details/tabs/ApplicationProcessTab.tsx:3:18
+SummaryDetailItem           interface  src/components/marketplace/details/SummaryCard.tsx:4:18               
+SummaryCardProps            interface  src/components/marketplace/details/SummaryCard.tsx:9:18               
+TabDef                      interface  src/components/marketplace/details/TabsNav.tsx:4:18                   
+TabsNavProps                interface  src/components/marketplace/details/TabsNav.tsx:9:18                   
+[93m[4mDuplicate exports[24m[39m (3)
+ProtectedRoute|default   src/components/ProtectedRoute.tsx             
+HomePage|default         src/components/Home.tsx                       
+MarketplacePage|default  src/components/marketplace/MarketplacePage.tsx
+[33m[4mConfiguration hints[24m (1)[39m

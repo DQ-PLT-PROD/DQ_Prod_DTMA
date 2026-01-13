@@ -5,7 +5,7 @@ import { ProfileDropdown } from "./ProfileDropdown";
 // import { NotificationsMenu } from "./notifications/NotificationsMenu";
 // import { NotificationCenter } from "./notifications/NotificationCenter";
 // import { mockNotifications } from "./utils/mockNotifications";
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "../../features/auth/context/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserIcon, ArrowRight } from "lucide-react";
 import { ExploreDropdown } from "./components/ExploreDropdown";
