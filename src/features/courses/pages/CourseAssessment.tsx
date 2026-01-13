@@ -9,21 +9,29 @@ import {
   Trophy,
   Lock,
   AlertCircle,
+  CheckSquare,
+  Square
 } from "lucide-react";
 import AchievementModal from "../../../components/AchievementModal";
 import { fetchCourseQuizzes } from "../services/courseService";
 
+type QuizOption = {
+  id: string;
+  text: string;
+};
+
 type QuizQuestion = {
   id: string;
   question: string;
-  options: string[];
-  correctAnswer: number;
+  options: QuizOption[];
+  correctAnswerIds: string[]; // Changed to array
   explanation?: string;
+  distractorFeedback?: Record<string, string>;
 };
 
 type UserAnswer = {
   questionId: string;
-  selectedAnswer: number;
+  selectedAnswerIds: string[]; // Changed to array
   isCorrect: boolean;
 };
 
@@ -35,6 +43,25 @@ interface CourseAssessmentProps {
   variant?: "page" | "inline";
 }
 
+// Fisher-Yates shuffle algorithm
+function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+}
+
+// Helper to check array equality (order-independent)
+function arraysEqual(a: string[], b: string[]) {
+  if (a.length !== b.length) return false;
+  const sortedA = [...a].sort();
+  const sortedB = [...b].sort();
+  return sortedA.every((val, index) => val === sortedB[index]);
+}
+
+
 const CourseAssessment: React.FC<CourseAssessmentProps> = ({
   allLessonsCompleted,
   onBack,
@@ -45,7 +72,9 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
   const [loading, setLoading] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+
+  // Changed to Set or Array logic for multi-select
+  const [selectedAnswerIds, setSelectedAnswerIds] = useState<string[]>([]);
   const [showFeedback, setShowFeedback] = useState(false);
 
   const [showSummary, setShowSummary] = useState(false);
@@ -53,42 +82,48 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
 
   useEffect(() => {
     const mapSupabaseQuiz = (quiz: any, idx: number): QuizQuestion => {
-      const opts = (quiz.options || []).map((opt: any, index: number) => {
-        if (typeof opt === "string") return opt;
-        if (typeof opt === "object" && opt !== null) {
-          return opt.text ?? opt.label ?? opt.id ?? `Option ${index + 1}`;
+      // 1. Normalize Options to { id, text }
+      let rawOptions: QuizOption[] = [];
+      const incomingOptions = quiz.options || [];
+
+      if (incomingOptions.length > 0 && typeof incomingOptions[0] === 'string') {
+        rawOptions = incomingOptions.map((opt: string, i: number) => ({
+          id: String(i),
+          text: opt
+        }));
+      } else {
+        rawOptions = incomingOptions.map((opt: any, i: number) => ({
+          id: opt.id ?? String(i),
+          text: opt.text ?? opt.label ?? `Option ${i + 1}`
+        }));
+      }
+
+      // 2. Identify Correct Answer IDs
+      // quiz.correctAnswer is now string[] from the service
+      let correctIds: string[] = [];
+      const dbAnswers = Array.isArray(quiz.correctAnswer) ? quiz.correctAnswer : [quiz.correctAnswer];
+
+      // Map DB answers (which might be "a" or 1) to normalized Option IDs
+      correctIds = dbAnswers.map((ans: any) => {
+        // If it's a number/index
+        if (typeof ans === 'number' || !isNaN(Number(ans)) && typeof ans !== 'string') {
+          const idx = Number(ans);
+          if (idx >= 0 && idx < rawOptions.length) return rawOptions[idx].id;
         }
-        return `Option ${index + 1}`;
+        // If it's a string ID
+        return String(ans);
       });
 
-      const numericCorrect =
-        typeof quiz.correctAnswer === "number"
-          ? quiz.correctAnswer
-          : Number.isFinite(Number(quiz.correctAnswer))
-            ? Number(quiz.correctAnswer)
-            : -1;
-
-      const correctIndexById = (quiz.options || []).findIndex((opt: any) => {
-        const val =
-          typeof opt === "string"
-            ? opt
-            : opt?.id ?? opt?.text ?? opt?.label;
-        return val !== undefined && String(val) === String(quiz.correctAnswer);
-      });
-
-      const finalCorrectIndex =
-        numericCorrect >= 0 && numericCorrect < opts.length
-          ? numericCorrect
-          : correctIndexById >= 0
-            ? correctIndexById
-            : 0;
+      // 3. Shuffle Options
+      const shuffledOptions = shuffleArray(rawOptions);
 
       return {
         id: String(quiz.id ?? idx),
         question: quiz.question ?? `Question ${idx + 1}`,
-        options: opts.length > 0 ? opts : ["Option 1", "Option 2"],
-        correctAnswer: finalCorrectIndex,
+        options: shuffledOptions,
+        correctAnswerIds: correctIds,
         explanation: quiz.explanation,
+        distractorFeedback: quiz.distractorFeedback,
       };
     };
 
@@ -96,12 +131,8 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
       const quizzes = await fetchCourseQuizzes(slug);
       if (!quizzes || quizzes.length === 0) return null;
 
-      const normalized = quizzes
-        .slice()
-        .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
-        .map(mapSupabaseQuiz);
-
-      return normalized.length > 0 ? normalized : null;
+      const normalized = quizzes.map(mapSupabaseQuiz);
+      return shuffleArray(normalized);
     };
 
     const loadQuizzes = async () => {
@@ -112,16 +143,16 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
           new Set([courseSlug, "plt-course-01"])
         );
 
-        let normalized: QuizQuestion[] | null = null;
+        let finalQuizzes: QuizQuestion[] | null = null;
         for (const slug of slugCandidates) {
-          normalized = await loadQuizzesForSlug(slug);
-          if (normalized) break;
+          finalQuizzes = await loadQuizzesForSlug(slug);
+          if (finalQuizzes) break;
         }
 
-        setQuestions(normalized ?? []);
+        setQuestions(finalQuizzes ?? []);
         setCurrentQuestionIndex(0);
         setUserAnswers([]);
-        setSelectedAnswer(null);
+        setSelectedAnswerIds([]);
         setShowFeedback(false);
         setShowSummary(false);
       } catch (err) {
@@ -139,8 +170,9 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
   const correctAnswers = userAnswers.filter(answer => answer.isCorrect).length;
   const totalQuestions = questions.length;
-  const scorePercentage = Math.round((correctAnswers / totalQuestions) * 100);
+  const scorePercentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
 
+  // Render helpers
   const isInline = variant === "inline";
   const containerClass = isInline ? "w-full" : "min-h-screen bg-gray-50 p-4";
   const wrapperClass = isInline ? "w-full" : "max-w-3xl mx-auto";
@@ -151,24 +183,41 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
   const lockedCardClass = `bg-white rounded-2xl ${isInline ? "border border-gray-200" : "shadow-lg"} p-8 max-w-md w-full text-center`;
 
 
-  const handleAnswerSelect = (answerIndex: number) => {
-    if (!showFeedback) {
-      setSelectedAnswer(answerIndex);
+  const handleAnswerToggle = (optionId: string) => {
+    if (showFeedback) return;
+
+    // Check if it's already selected
+    if (selectedAnswerIds.includes(optionId)) {
+      // Deselect
+      setSelectedAnswerIds(prev => prev.filter(id => id !== optionId));
+    } else {
+      // Select logic
+      // If question only has 1 correct answer (single select behavior expectation even if technically array)
+      // we could implement radio behavior, BUT user asked for multi-support capabilities specifically.
+      // It's safer to always allow multi-select, OR restrict if correctAnswerIds.length === 1
+
+      if (currentQuestion.correctAnswerIds.length === 1) {
+        // Behaves like Radio
+        setSelectedAnswerIds([optionId]);
+      } else {
+        // Behaves like Checkbox
+        setSelectedAnswerIds(prev => [...prev, optionId]);
+      }
     }
   };
 
   const handleSubmitAnswer = () => {
     if (!currentQuestion) return;
-    if (selectedAnswer === null) return;
+    if (selectedAnswerIds.length === 0) return;
 
-    const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
+    const isCorrect = arraysEqual(selectedAnswerIds, currentQuestion.correctAnswerIds);
+
     const newAnswer: UserAnswer = {
       questionId: currentQuestion.id,
-      selectedAnswer,
+      selectedAnswerIds,
       isCorrect
     };
 
-    // Update or add the answer
     setUserAnswers(prev => {
       const existingIndex = prev.findIndex(answer => answer.questionId === currentQuestion.id);
       if (existingIndex >= 0) {
@@ -184,8 +233,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
 
   const handleNextQuestion = () => {
     if (isLastQuestion) {
-      // Check if user passed (70% or higher) to show achievement modal
-      const finalScore = Math.round((correctAnswers / totalQuestions) * 100);
+      const finalScore = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
       if (finalScore >= 70) {
         setShowAchievementModal(true);
       } else {
@@ -193,7 +241,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
       }
     } else {
       setCurrentQuestionIndex(prev => prev + 1);
-      setSelectedAnswer(null);
+      setSelectedAnswerIds([]);
       setShowFeedback(false);
     }
   };
@@ -201,18 +249,29 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
-      setSelectedAnswer(null);
+      setSelectedAnswerIds([]);
       setShowFeedback(false);
     }
   };
 
   const handleRetakeQuiz = () => {
+    const reShuffled = shuffleArray(questions.map(q => ({
+      ...q,
+      options: shuffleArray(q.options)
+    })));
+    setQuestions(reShuffled);
+
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
-    setSelectedAnswer(null);
+    setSelectedAnswerIds([]);
     setShowFeedback(false);
     setShowSummary(false);
     setShowAchievementModal(false);
+  };
+
+  const handleTryAgain = () => {
+    setSelectedAnswerIds([]);
+    setShowFeedback(false);
   };
 
   // Load previous answer when navigating
@@ -222,61 +281,17 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
       answer => answer.questionId === currentQuestion.id
     );
     if (previousAnswer) {
-      setSelectedAnswer(previousAnswer.selectedAnswer);
+      setSelectedAnswerIds(previousAnswer.selectedAnswerIds);
       setShowFeedback(true);
     }
   }, [currentQuestionIndex, userAnswers, currentQuestion?.id]);
-
-  // Temporarily disabled - always allow access to see the quiz interface
-  if (false && !allLessonsCompleted) {
-    return (
-      <div className={containerClass + " flex items-center justify-center"}>
-        <div className={lockedCardClass}>
-          <div className="mb-6">
-            <Lock size={48} className="text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Course Assessment Locked
-            </h2>
-            <p className="text-gray-600">
-              Complete all lesson videos to unlock the final assessment.
-            </p>
-          </div>
-
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center gap-2 text-yellow-800">
-              <AlertCircle size={20} />
-              <span className="font-medium">Almost there!</span>
-            </div>
-            <p className="text-yellow-700 text-sm mt-1">
-              Watch all videos until you're within 1 minute of the end to unlock this assessment.
-            </p>
-          </div>
-
-          <button
-            onClick={onBack}
-            className="w-full px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center justify-center gap-2"
-          >
-            <ArrowLeft size={16} />
-            Back to Course
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   if (!currentQuestion) {
     return (
       <div className={containerClass + " flex items-center justify-center"}>
         <div className={lockedCardClass}>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">No quiz available</h2>
-          <p className="text-gray-600 mb-4">We couldn't load the quiz for this course.</p>
-          <button
-            onClick={onBack}
-            className="w-full px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center justify-center gap-2"
-          >
-            <ArrowLeft size={16} />
-            Back to Course
-          </button>
+          <BookOpen size={48} className="text-[#1839AD] mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Quiz...</h2>
         </div>
       </div>
     );
@@ -348,16 +363,10 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
               )}
 
               {passed && (
-                <a
-                  href="https://ugmybskacomcdgdngolz.supabase.co/storage/v1/object/public/course-content/plt-course-01/resources/25.01_DQ%20DTMB_WP_Perfect_Life_Transactions_The_Cornerstone_of_Economy_4.0.pdf"
-                  download="25.01_DQ DTMB_WP_Perfect_Life_Transactions_The_Cornerstone_of_Economy_4.0.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center justify-center gap-2 text-center"
-                >
+                <button onClick={onBack} className="flex-1 px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center justify-center gap-2">
                   <BookOpen size={16} />
-                  View Resources
-                </a>
+                  Complete & Continue
+                </button>
               )}
             </div>
           </div>
@@ -366,7 +375,9 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
     );
   }
 
-  // Main quiz interface
+  // Check if current selection is correct (for dynamic button state if needed, though we use handleSubmit)
+  const isCurrentlyCorrect = arraysEqual(selectedAnswerIds, currentQuestion.correctAnswerIds);
+
   return (
     <div className={containerClass}>
       <div className={wrapperClass}>
@@ -397,74 +408,110 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
 
         {/* Question Card */}
         <div className={questionCardClass}>
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
             {currentQuestion.question}
           </h2>
 
+          <div className="mb-6 text-sm text-gray-500 font-medium">
+            {currentQuestion.correctAnswerIds.length > 1
+              ? "Select all that apply"
+              : "Select one answer"
+            }
+          </div>
+
           <div className="space-y-3 mb-6">
-            {currentQuestion.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswerSelect(index)}
-                disabled={showFeedback}
-                className={`w-full text-left p-4 rounded-lg border-2 transition ${selectedAnswer === index
-                  ? showFeedback
-                    ? index === currentQuestion.correctAnswer
-                      ? "border-green-500 bg-green-50"
-                      : "border-red-500 bg-red-50"
-                    : "border-[#1839AD] bg-[#1839AD]/5"
-                  : "border-gray-200 hover:border-gray-300"
-                  } ${showFeedback ? "cursor-default" : "cursor-pointer"}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedAnswer === index
+            {currentQuestion.options.map((option) => {
+              const isSelected = selectedAnswerIds.includes(option.id);
+              const isCorrectAnswer = currentQuestion.correctAnswerIds.includes(option.id);
+
+              const showGreen = showFeedback && isCorrectAnswer && isCurrentlyCorrect; // Only reveal if user passed the question
+              const showRed = showFeedback && isSelected && !isCorrectAnswer; // Always warn mistakes
+
+              // Multi-select style Checkbox or Radio?
+              // Use Square/CheckSquare logic for generic feel, or circle for single
+              const isMulti = currentQuestion.correctAnswerIds.length > 1;
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleAnswerToggle(option.id)}
+                  disabled={showFeedback}
+                  className={`w-full text-left p-4 rounded-lg border-2 transition ${isSelected
                     ? showFeedback
-                      ? index === currentQuestion.correctAnswer
-                        ? "border-green-500 bg-green-500"
-                        : "border-red-500 bg-red-500"
-                      : "border-[#1839AD] bg-[#1839AD]"
-                    : "border-gray-300"
-                    }`}>
-                    {selectedAnswer === index && (
-                      <div className="w-2 h-2 rounded-full bg-white" />
+                      ? showGreen
+                        ? "border-green-500 bg-green-50"
+                        : showRed ? "border-red-500 bg-red-50" : "border-[#1839AD] bg-[#1839AD]/5"
+                      : "border-[#1839AD] bg-[#1839AD]/5"
+                    : "border-gray-200 hover:border-gray-300"
+                    } ${showFeedback ? "cursor-default" : "cursor-pointer"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 flex items-center justify-center ${isSelected
+                      ? showFeedback
+                        ? showGreen
+                          ? "text-green-500"
+                          : "text-red-500"
+                        : "text-[#1839AD]"
+                      : "text-gray-300"
+                      }`}>
+                      {/* Checkbox Icon Logic */}
+                      {isSelected
+                        ? (isMulti ? <CheckSquare size={24} className="fill-current" /> : <div className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center"><div className="w-2.5 h-2.5 rounded-full bg-current" /></div>)
+                        : (isMulti ? <Square size={24} /> : <div className="w-5 h-5 rounded-full border-2 border-gray-300" />)
+                      }
+                    </div>
+
+                    <span className="text-gray-800">{option.text}</span>
+
+                    {showFeedback && isSelected && (
+                      <div className="ml-auto">
+                        {isCorrectAnswer ? (
+                          isCurrentlyCorrect ? <CheckCircle2 size={20} className="text-green-500" /> : null
+                        ) : (
+                          <XCircle size={20} className="text-red-500" />
+                        )}
+                      </div>
                     )}
                   </div>
-                  <span className="text-gray-800">{option}</span>
-                  {showFeedback && selectedAnswer === index && (
-                    <div className="ml-auto">
-                      {index === currentQuestion.correctAnswer ? (
-                        <CheckCircle2 size={20} className="text-green-500" />
-                      ) : (
-                        <XCircle size={20} className="text-red-500" />
-                      )}
-                    </div>
-                  )}
-                </div>
-              </button>
-            ))}
+                </button>
+              )
+            })}
           </div>
 
           {/* Feedback */}
           {showFeedback && (
-            <div className={`p-4 rounded-lg mb-6 ${selectedAnswer === currentQuestion.correctAnswer
+            <div className={`p-4 rounded-lg mb-6 ${isCurrentlyCorrect
               ? "bg-green-50 border border-green-200"
               : "bg-red-50 border border-red-200"
               }`}>
               <div className="flex items-center gap-2 mb-2">
-                {selectedAnswer === currentQuestion.correctAnswer ? (
+                {isCurrentlyCorrect ? (
                   <CheckCircle2 size={20} className="text-green-600" />
                 ) : (
                   <XCircle size={20} className="text-red-600" />
                 )}
-                <span className={`font-medium ${selectedAnswer === currentQuestion.correctAnswer
+                <span className={`font-medium ${isCurrentlyCorrect
                   ? "text-green-800"
                   : "text-red-800"
                   }`}>
-                  {selectedAnswer === currentQuestion.correctAnswer ? "Correct!" : "Incorrect"}
+                  {isCurrentlyCorrect ? "Correct!" : "Incorrect"}
                 </span>
               </div>
+
+              {/* Distractor Feedback - Iterate through all wrong selections */}
+              {!isCurrentlyCorrect && selectedAnswerIds.map(badId => {
+                if (currentQuestion.correctAnswerIds.includes(badId)) return null; // Only show for WRONG picks
+                const hint = currentQuestion.distractorFeedback?.[badId];
+                if (!hint) return null;
+                return (
+                  <div key={badId} className="mb-2 p-2 bg-white/50 rounded border border-red-100 text-red-800 font-medium text-sm">
+                    💡 {hint}
+                  </div>
+                );
+              })}
+
               {currentQuestion.explanation && (
-                <p className={`text-sm ${selectedAnswer === currentQuestion.correctAnswer
+                <p className={`text-sm ${isCurrentlyCorrect
                   ? "text-green-700"
                   : "text-red-700"
                   }`}>
@@ -492,19 +539,32 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
               {!showFeedback ? (
                 <button
                   onClick={handleSubmitAnswer}
-                  disabled={selectedAnswer === null}
+                  disabled={selectedAnswerIds.length === 0}
                   className="px-6 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
                   Submit Answer
                 </button>
               ) : (
-                <button
-                  onClick={handleNextQuestion}
-                  className="px-6 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center gap-2"
-                >
-                  {isLastQuestion ? "Finish Quiz" : "Next Question"}
-                  <ArrowRight size={16} />
-                </button>
+                // Correct logic for buttons: 
+                // If Correct -> Show Next
+                // If Incorrect -> Show Try Again
+                isCurrentlyCorrect ? (
+                  <button
+                    onClick={handleNextQuestion}
+                    className="px-6 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center gap-2"
+                  >
+                    {isLastQuestion ? "Finish Quiz" : "Next Question"}
+                    <ArrowRight size={16} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleTryAgain}
+                    className="px-6 py-2 bg-white border border-[#1839AD] text-[#1839AD] rounded-lg hover:bg-blue-50 transition flex items-center gap-2"
+                  >
+                    <RotateCcw size={16} />
+                    Try Again
+                  </button>
+                )
               )}
             </div>
           </div>

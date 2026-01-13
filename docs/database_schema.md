@@ -61,8 +61,9 @@ Stores assessment questions linked to courses.
     - `order_index` (NUMERIC)
     - `question` (TEXT)
     - `options` (JSONB) - Structure: Array of `{id, text}` objects
-    - `correct_answer` (TEXT) - ID of the correct option
+    - `correct_answer` (JSONB) - Array of correct option IDs (supports multi-select)
     - `explanation` (TEXT)
+    - `distractor_feedback` (JSONB) - Map of option IDs to feedback strings
     - `created_at` (TIMESTAMPTZ)
 - **RLS**: Public Read Access enabled.
 

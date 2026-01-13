@@ -205,37 +205,3 @@ html, body, #root {
   min-height: 44px;
 }
 
-/* Landscape video optimization - hide bottom bar in landscape for immersive viewing */
-@media (orientation: landscape) and (max-height: 500px) {
-  .mobile-progress-bar {
-    display: none;
-  }
-  
-  .video-container-landscape {
-    height: 100vh;
-    max-height: 100vh;
-  }
-}
-
-/* Video player responsive adjustments */
-@media (max-width: 640px) {
-  .video-controls-mobile {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-}
-
-/* Mobile content tabs - ensure sticky behavior works */
-@supports (position: sticky) {
-  .mobile-tabs-sticky {
-    position: sticky;
-    top: 56px; /* Header height */
-  }
-}
-
-/* Prevent content from being hidden behind fixed bottom bar on mobile */
-@media (max-width: 1023px) {
-  .learning-content-area {
-    padding-bottom: 80px; /* Height of MobileProgressBar */
-  }
-}

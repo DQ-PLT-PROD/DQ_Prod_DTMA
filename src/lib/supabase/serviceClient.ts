@@ -30,16 +30,12 @@ const getEnvVar = (key: string): string => {
     return '';
 };
 
-const SUPABASE_URL = getEnvVar('VITE_SUPABASE_URL') || 'https://ugmybskacomcdgdngolz.supabase.co';
-const SUPABASE_SERVICE_ROLE_KEY = getEnvVar('VITE_SUPABASE_SERVICE_ROLE_KEY') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnbXlic2thY29tY2RnZG5nb2x6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDY1MzQwMSwiZXhwIjoyMDgwMjI5NDAxfQ.VtwgRdManf3CWTfh1_eWAtagE1PJ5qt1xP01pfLcNHU';
+const SUPABASE_URL = getEnvVar('VITE_SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = getEnvVar('VITE_SUPABASE_SERVICE_ROLE_KEY');
 
-// Debug logging
-console.log('🔧 Environment variable debug:');
-console.log('URL found:', Boolean(SUPABASE_URL));
-console.log('Service Key found:', Boolean(SUPABASE_SERVICE_ROLE_KEY));
-console.log('Service Key length:', SUPABASE_SERVICE_ROLE_KEY.length);
-if (SUPABASE_SERVICE_ROLE_KEY) {
-    console.log('Service Key preview:', `${SUPABASE_SERVICE_ROLE_KEY.substring(0, 20)}...`);
+const isBrowser = typeof window !== 'undefined';
+if (isBrowser && SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('⚠️ Service role key should not be exposed in the browser. Move this to a server-side environment.');
 }
 
 let _serviceClient: SupabaseClient<Database> | null = null;
@@ -70,21 +66,15 @@ export function getServiceSupabase(): SupabaseClient<Database> {
  * Check if service role is available, with fallback to regular client
  */
 export function getSupabaseForEnrollment(): SupabaseClient<Database> {
-    console.log('🔍 Checking service role configuration...');
-    console.log('Service role configured:', isServiceRoleConfigured());
-    console.log('Service role key exists:', Boolean(SUPABASE_SERVICE_ROLE_KEY));
-    console.log('Service role key length:', SUPABASE_SERVICE_ROLE_KEY?.length || 0);
-    
     try {
         if (isServiceRoleConfigured()) {
-            console.log('✅ Using service role client for enrollment operations');
             return getServiceSupabase();
         }
     } catch (error) {
         console.warn('❌ Service role not available, falling back to regular client:', error);
     }
     
-    console.log('⚠️ Falling back to regular client - RLS policies may block operations');
+    console.warn('⚠️ Falling back to regular client - RLS policies may block operations');
     // Fallback to regular client (will require RLS to be disabled)
     return getSupabase();
 }

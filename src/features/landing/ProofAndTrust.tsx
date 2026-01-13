@@ -16,19 +16,19 @@ const stories = [
     title: "From Analyst to AI-Ready Strategist",
     description:
       "Fatima A. used Digital Worker & Workspace lessons to automate reporting - saving 20+ hours each month.",
-    image: "/l1 1.png",
+    image: "/images/testimonials/story-1.png",
   },
   {
     title: "Leading Change in a Hybrid Era",
     description:
       "Omar H. applied DT2.0 and DCO insights to launch his company's first AI-assisted customer journey pilot.",
-    image: "/mm.png",
+    image: "/images/testimonials/story-2.png",
   },
   {
     title: "Designing the Digital Operating Model",
     description:
       "Lina K. built a data-driven operations model after Digital Business Platforms - now scaling to three markets.",
-    image: "/ll.png",
+    image: "/images/testimonials/story-3.png",
   },
 ];
 
@@ -100,7 +100,7 @@ const ProofAndTrust: React.FC = () => {
         <div className="max-w-5xl mx-auto grid grid-cols-1 gap-8 lg:grid-cols-2 items-center">
           <FadeInUpOnScroll className="space-y-6 text-left flex flex-col items-start">
             <img
-              src="/Images.png"
+              src="/images/landing/leaders-collaborating.png"
               alt="Leaders collaborating"
               className="w-full max-w-sm rounded-full"
             />
@@ -165,7 +165,7 @@ const ProofAndTrust: React.FC = () => {
             <div className="relative bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
               <div className="md:w-1/3 flex items-center justify-center p-6 bg-[#1839AD]/10">
                 <img
-                  src={activeStory.image || "/Testimony.jpg"}
+                  src={activeStory.image || "/images/testimonials/testimony.jpg"}
                   alt="Learner testimonial"
                   className="rounded-t-2xl w-48 h-56 sm:w-56 sm:h-64 object-cover object-top"
                 />

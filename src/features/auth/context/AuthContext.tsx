@@ -1,12 +1,12 @@
-import React, { createContext, useContext, ReactNode, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useState, useRef } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { EventType, EventMessage, AuthenticationResult } from '@azure/msal-browser';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { loginRequest, interactiveLoginRequest } from '../../../services/auth/msal';
+import { interactiveLoginRequest } from '../../../services/auth/msal';
 import { mockAuthService, MockUser } from '../../../services/auth/mockAuth';
 import { validateAndLogClaims, extractUserProfile } from '../../../utils/claimsValidator';
-import { fetchUserFromGraph, mergeGraphUserData } from '../services/graphService';
-import { logAuthenticationState, validateTokenResponse } from '../../../utils/authTester';
+import { fetchUserFromGraph } from '../services/graphService';
+import { logAuthenticationState } from '../../../utils/authTester';
 import { syncUserWithDatabase, getUserByAzureId, updateUserLastLogin, updateUserProfile, DatabaseUser } from '../services/userService';
 
 interface UserProfile {
@@ -23,6 +23,7 @@ interface AuthContextType {
   user: UserProfile | null;
   databaseUser: DatabaseUser | null;
   isLoading: boolean;
+  isDatabaseUserLoading: boolean;
   login: () => void;
   signup: () => void;
   logout: () => void;
@@ -36,6 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [mockUser, setMockUser] = useState<UserProfile | null>(null);
   const [databaseUser, setDatabaseUser] = useState<DatabaseUser | null>(null);
   const [loginInProgress, setLoginInProgress] = useState(false);
+  const [isDatabaseUserLoading, setIsDatabaseUserLoading] = useState(false);
+  const databaseLoadCount = useRef(0);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -85,7 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Helper function to extract user information from MSAL account and sync with database
   const extractUserFromAccount = async (account: any): Promise<UserProfile | null> => {
     if (!account) return null;
+    databaseLoadCount.current += 1;
+    setIsDatabaseUserLoading(true);
 
+    try {
     console.log('🔍 Extracting user info from account:', account);
     console.log('🔍 Account properties:', {
       localAccountId: account.localAccountId,
@@ -120,9 +126,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log('🔄 Syncing user with database...');
       console.log('🔧 Supabase config check:', {
-        url: !!import.meta.env.VITE_SUPABASE_URL,
-        key: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
-        urlValue: import.meta.env.VITE_SUPABASE_URL?.substring(0, 20) + '...'
+        url: !!(import.meta as any).env.VITE_SUPABASE_URL,
+        key: !!(import.meta as any).env.VITE_SUPABASE_ANON_KEY,
+        urlValue: (import.meta as any).env.VITE_SUPABASE_URL?.substring(0, 20) + '...'
       });
 
       const azureUserId = account.localAccountId || account.homeAccountId;
@@ -183,6 +189,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return userProfile;
+    } finally {
+      databaseLoadCount.current = Math.max(0, databaseLoadCount.current - 1);
+      if (databaseLoadCount.current === 0) {
+        setIsDatabaseUserLoading(false);
+      }
+    }
   };
 
   // State for the current user (will be set asynchronously for real Azure AD)
@@ -252,10 +264,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Redirect to learning page just like the test account does
       // But exclude the debug panel from redirects
       if ((currentPath === '/' || currentPath.includes('signin')) && !currentPath.includes('auth-debug')) {
-        console.log('🎓 Real account authenticated! Redirecting to learning page from:', currentPath);
-        navigate('/learning', { replace: true });
-      } else if (currentPath === '/learning') {
-        console.log('✅ Real account user is already on learning page');
+        console.log('🎓 Real account authenticated! Redirecting to portal page from:', currentPath);
+        navigate('/portal', { replace: true });
+      } else if (currentPath === '/portal' || currentPath.startsWith('/portal/')) {
+        console.log('✅ Real account user is already on portal page');
       } else if (currentPath.includes('auth-debug')) {
         console.log('🔧 User accessing debug panel - no redirect needed');
       } else {
@@ -329,9 +341,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Redirect to learning page after mock login
         setTimeout(() => {
           const currentPath = window.location.pathname;
-          if (currentPath !== '/learning') {
-            console.log('🎓 Redirecting to learning page after mock login...');
-            navigate('/learning', { replace: true });
+          if (currentPath !== '/portal' && !currentPath.startsWith('/portal/')) {
+            console.log('🎓 Redirecting to portal page after mock login...');
+            navigate('/portal', { replace: true });
           }
         }, 100);
       } catch (error) {
@@ -355,9 +367,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Redirect to learning page after bypass login
       setTimeout(() => {
         const currentPath = window.location.pathname;
-        if (currentPath !== '/learning') {
-          console.log('🎓 Redirecting to learning page after bypass login...');
-          navigate('/learning', { replace: true });
+        if (currentPath !== '/portal' && !currentPath.startsWith('/portal/')) {
+          console.log('🎓 Redirecting to portal page after bypass login...');
+          navigate('/portal', { replace: true });
         }
       }, 100);
 
@@ -522,6 +534,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       databaseUser,
       isLoading,
+      isDatabaseUserLoading,
       login,
       signup,
       logout
