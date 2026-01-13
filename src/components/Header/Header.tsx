@@ -5,7 +5,7 @@ import { ProfileDropdown } from "./ProfileDropdown";
 // import { NotificationsMenu } from "./notifications/NotificationsMenu";
 // import { NotificationCenter } from "./notifications/NotificationCenter";
 // import { mockNotifications } from "./utils/mockNotifications";
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "../../features/auth/context/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { UserIcon, ArrowRight } from "lucide-react";
 import { ExploreDropdown } from "./components/ExploreDropdown";
@@ -136,9 +136,9 @@ export function Header({
           }`}
         data-id={dataId}
         style={{
-          background: isTransparent ? "transparent" : HEADER_GRADIENT,
-          backdropFilter: isTransparent ? "none" : BRAND_BACKDROP_BLUR,
-          WebkitBackdropFilter: isTransparent ? "none" : BRAND_BACKDROP_BLUR,
+          background: isTransparent ? "rgba(0, 0, 0, 0.3)" : HEADER_GRADIENT,
+          backdropFilter: BRAND_BACKDROP_BLUR,
+          WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
         }}
       >
         <div
@@ -149,7 +149,7 @@ export function Header({
             {/* Logo */}
             <Link to="/" className="flex items-center transition-all duration-300">
               <img
-                src="/DTMA%20LOGO%20WHITE.svg"
+                src="/logo/dtma-logo-white.svg"
                 alt="DTMA Logo"
                 className="object-contain w-[130px] h-[36px]"
               />

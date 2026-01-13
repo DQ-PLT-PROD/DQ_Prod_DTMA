@@ -258,6 +258,7 @@ export interface Database {
                     video_url: string | null
                     resource_url: string | null
                     content: string | null
+                    is_preview: boolean | null
                     created_at: string | null
                     updated_at: string | null
                 }
@@ -271,6 +272,7 @@ export interface Database {
                     video_url?: string | null
                     resource_url?: string | null
                     content?: string | null
+                    is_preview?: boolean | null
                     created_at?: string | null
                     updated_at?: string | null
                 }
@@ -284,6 +286,7 @@ export interface Database {
                     video_url?: string | null
                     resource_url?: string | null
                     content?: string | null
+                    is_preview?: boolean | null
                     created_at?: string | null
                     updated_at?: string | null
                 }
@@ -297,7 +300,8 @@ export interface Database {
                     order_index: number
                     question: string
                     options: Json
-                    correct_answer: string
+                    correct_answer: Json
+                    distractor_feedback: Json | null
                     explanation: string | null
                     created_at: string | null
                 }
@@ -308,7 +312,8 @@ export interface Database {
                     order_index: number
                     question: string
                     options: Json
-                    correct_answer: string
+                    correct_answer: Json
+                    distractor_feedback?: Json | null
                     explanation?: string | null
                     created_at?: string | null
                 }
@@ -319,7 +324,8 @@ export interface Database {
                     order_index?: number
                     question?: string
                     options?: Json
-                    correct_answer?: string
+                    correct_answer?: Json
+                    distractor_feedback?: Json | null
                     explanation?: string | null
                     created_at?: string | null
                 }
@@ -512,6 +518,173 @@ export interface Database {
                     display_order?: number | null
                 }
                 Relationships: []
+            },
+            newsletter_subscriptions: {
+                Row: {
+                    id: string
+                    email: string
+                    source: string | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    email: string
+                    source?: string | null
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    email?: string
+                    source?: string | null
+                    created_at?: string | null
+                }
+                Relationships: []
+            },
+            users: {
+                Row: {
+                    id: string
+                    azure_user_id: string
+                    customer_id: string
+                    email: string
+                    name: string
+                    given_name: string | null
+                    surname: string | null
+                    job_title: string | null
+                    department: string | null
+                    office_location: string | null
+                    profile_data: Json | null
+                    last_login: string
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    azure_user_id: string
+                    customer_id: string
+                    email: string
+                    name: string
+                    given_name?: string | null
+                    surname?: string | null
+                    job_title?: string | null
+                    department?: string | null
+                    office_location?: string | null
+                    profile_data?: Json | null
+                    last_login?: string
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    azure_user_id?: string
+                    customer_id?: string
+                    email?: string
+                    name?: string
+                    given_name?: string | null
+                    surname?: string | null
+                    job_title?: string | null
+                    department?: string | null
+                    office_location?: string | null
+                    profile_data?: Json | null
+                    last_login?: string
+                    updated_at?: string
+                }
+                Relationships: []
+            },
+            user_enrollments: {
+                Row: {
+                    id: string
+                    user_id: string
+                    course_slug: string
+                    started_at: string
+                    completed_at: string | null
+                    last_accessed_at: string
+                    progress_pct: number | null
+                    status: string | null
+                    enrollment_method: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    course_slug: string
+                    started_at?: string
+                    completed_at?: string | null
+                    last_accessed_at?: string
+                    progress_pct?: number | null
+                    status?: string | null
+                    enrollment_method?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    user_id?: string
+                    course_slug?: string
+                    started_at?: string
+                    completed_at?: string | null
+                    last_accessed_at?: string
+                    progress_pct?: number | null
+                    status?: string | null
+                    enrollment_method?: string | null
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "user_enrollments_user_id_fkey"
+                        columns: ["user_id"]
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "user_enrollments_course_slug_fkey"
+                        columns: ["course_slug"]
+                        referencedRelation: "courses"
+                        referencedColumns: ["slug"]
+                    }
+                ]
+            },
+            lesson_progress: {
+                Row: {
+                    id: string
+                    enrollment_id: string
+                    lesson_id: string
+                    completed: boolean
+                    watch_time_seconds: number | null
+                    completed_at: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    enrollment_id: string
+                    lesson_id: string
+                    completed?: boolean
+                    watch_time_seconds?: number | null
+                    completed_at?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    enrollment_id?: string
+                    lesson_id?: string
+                    completed?: boolean
+                    watch_time_seconds?: number | null
+                    completed_at?: string | null
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "lesson_progress_enrollment_id_fkey"
+                        columns: ["enrollment_id"]
+                        referencedRelation: "user_enrollments"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "lesson_progress_lesson_id_fkey"
+                        columns: ["lesson_id"]
+                        referencedRelation: "lessons"
+                        referencedColumns: ["id"]
+                    }
+                ]
             }
         }
         Views: {}

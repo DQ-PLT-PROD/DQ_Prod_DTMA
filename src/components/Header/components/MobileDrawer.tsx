@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MenuIcon, XIcon, ChevronRightIcon, User, LogOut } from "lucide-react";
+import { MenuIcon, XIcon, ChevronRightIcon, User, LogOut, ChevronDownIcon } from "lucide-react";
 import {
   BRAND_GRADIENT,
   BRAND_BACKDROP_BLUR,
   BRAND_PRIMARY,
 } from "../../../constants/branding";
-import { useAuth } from "../context/AuthContext";
-import { FEATURES } from "../../../config/features";
+import { useAuth } from "../../../features/auth/context/AuthContext";
 
 interface MobileDrawerProps {
   onSignIn: () => void;
@@ -16,6 +15,15 @@ interface MobileDrawerProps {
   onBrowseCourses?: () => void;
   onBrowseCategories?: () => void;
 }
+
+const COURSE_CATEGORIES = [
+  { id: "d1", name: "Mastering Economy 4.0", href: "/courses?category=economy-4-0" },
+  { id: "d2", name: "Building Tomorrow’s Organisations", href: "/courses?category=digital-cognitive-organization" },
+  { id: "d3", name: "Mastering Digital Transformation", href: "/courses?category=digital-business-platform" },
+  { id: "d4", name: "Designing for the Future", href: "/courses?category=digital-transformation-2-0" },
+  { id: "d5", name: "Architecting Change", href: "/courses?category=digital-worker-workspace" },
+  { id: "d6", name: "Empowering Change", href: "/courses?category=digital-accelerators-tools" },
+];
 
 export function MobileDrawer({
   onSignIn,
@@ -26,6 +34,7 @@ export function MobileDrawer({
 }: MobileDrawerProps) {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
   const { user, login, logout } = useAuth();
 
   useEffect(() => {
@@ -71,15 +80,6 @@ export function MobileDrawer({
     setIsDrawerOpen(false);
   };
 
-  const handleBrowseCategories = () => {
-    if (onBrowseCategories) {
-      onBrowseCategories();
-    } else {
-      navigate("/marketplace/courses");
-    }
-    setIsDrawerOpen(false);
-  };
-
   return (
     <>
       {/* Always visible primary CTA + hamburger menu for Mobile (<768px) */}
@@ -111,131 +111,100 @@ export function MobileDrawer({
       {isDrawerOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-30 z-40 lg:hidden"
             onClick={() => setIsDrawerOpen(false)}
           />
           {/* Mobile and Tablet drawer */}
           <div
-            className="fixed top-0 right-0 h-full w-80 shadow-xl z-50 lg:hidden transform transition-transform duration-300 ease-in-out"
-            style={{
-              background: BRAND_GRADIENT,
-              backdropFilter: BRAND_BACKDROP_BLUR,
-              WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
-            }}
+            className="fixed top-0 right-0 max-h-screen w-80 max-w-[90vw] shadow-lg z-50 lg:hidden transform transition-transform duration-300 ease-in-out bg-white text-gray-900 overflow-hidden"
           >
-            <div className="flex flex-col h-full">
-              {/* Drawer header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
-                <h2 className="text-lg font-semibold text-gray-800 md:text-base sm:text-sm">
-                  Menu
-                </h2>
+            <div className="flex flex-col">
+              {/* Header with close button */}
+              <div className="flex items-center justify-end px-4 py-4 border-b border-gray-200">
                 <button
                   onClick={() => setIsDrawerOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-md border border-gray-200 transition-colors"
                   aria-label="Close menu"
                 >
-                  <XIcon size={18} className="text-gray-600" />
+                  <XIcon size={18} className="text-gray-700" />
                 </button>
               </div>
 
-              {/* Drawer content - scrollable area */}
-              <div className={`flex-1 overflow-y-auto ${!isSignedIn ? "pb-20" : ""}`}>
-                {/* Navigation Section - Show for Mobile only, Tablet has these in header */}
-                <div className="px-4 py-3 md:hidden">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 md:text-[11px] sm:text-[10px]">
-                    Navigation
-                  </h3>
-                  <div className="space-y-1">
-                    {/* Feature Flagged: Growth Areas (Categories map to courses for MVP) */}
-                    {FEATURES.COURSE_MARKETPLACE && (
-                      <button
-                        className="w-full flex items-center justify-between px-3 py-2.5 text-left text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium tracking-tight md:text-[13px] sm:text-xs md:py-2 sm:py-1.5"
-                        onClick={handleBrowseCategories}
+              {/* Single card containing nav + CTA */}
+              <div className="flex-1 px-4 py-6 space-y-5">
+                <div className="flex flex-col space-y-5 bg-[#f9f9fb] border border-gray-200 rounded-xl shadow-sm p-4">
+                  <div className="space-y-3">
+                    <button
+                      className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
+                      onClick={() => setShowCategories((v) => !v)}
+                      aria-expanded={showCategories}
+                      aria-controls="drawer-course-categories"
+                    >
+                      <span>Explore Courses</span>
+                      <ChevronDownIcon
+                        size={16}
+                        className={`text-gray-500 transition-transform ${showCategories ? "rotate-180" : ""}`}
+                      />
+                    </button>
+
+                    {showCategories && (
+                      <div
+                        id="drawer-course-categories"
+                        className="mt-2 space-y-1 rounded-lg border border-gray-200 bg-white"
                       >
-                        <span>Browse D6 Categories</span>
-                        <ChevronRightIcon
-                          size={14}
-                          className="text-gray-400 md:w-3 md:h-3 sm:w-3 sm:h-3"
-                        />
-                      </button>
+                        {COURSE_CATEGORIES.map((cat) => (
+                          <button
+                            key={cat.id}
+                            className="w-full text-left px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 flex items-center justify-between"
+                            onClick={() => {
+                              navigate(cat.href);
+                              setIsDrawerOpen(false);
+                            }}
+                          >
+                            <span className="truncate">{cat.name}</span>
+                            <ChevronRightIcon size={14} className="text-gray-400" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2">
+                    {user ? (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <User size={20} className="text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900 text-sm">
+                              {user.name || 'Learner'}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+                        >
+                          <LogOut size={16} />
+                          Sign Out
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center text-center space-y-2">
+                        <button
+                          className="w-full px-4 py-3 text-[#1839AD] rounded-lg transition-all duration-200 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#1839AD]/20 font-semibold text-sm tracking-tight border border-gray-200 bg-white"
+                          onClick={handleSignIn}
+                        >
+                          Sign In to Get Started
+                        </button>
+                        <p className="text-xs text-gray-500 md:text-[11px] sm:text-[10px]">
+                          Access your personalized dashboard
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
-
-                {/* Divider - Only show for mobile */}
-                <div className="border-t border-gray-200 mx-4 my-2 md:hidden"></div>
-
-                {/* Get Started Section - Always visible, contains both CTAs */}
-                <div className="px-4 py-3">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 md:text-[11px] sm:text-[10px]">
-                    Get Started
-                  </h3>
-                  <div className="space-y-1">
-                    {/* Join the Academy CTA */}
-                    <button
-                      className="w-full flex items-center justify-between px-3 py-2.5 text-left text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-sm font-medium tracking-tight md:text-[13px] sm:text-xs md:py-2 sm:py-1.5"
-                      onClick={() => handleCTAClick("Join the Academy")}
-                    >
-                      <span>Join the Academy</span>
-                      <ChevronRightIcon
-                        size={14}
-                        className="text-gray-400 md:w-3 md:h-3 sm:w-3 sm:h-3"
-                      />
-                    </button>
-
-                    <button
-                      className="w-full flex items-center justify-between px-3 py-2.5 text-left text-white rounded-lg transition-all text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs md:py-2 sm:py-1.5 hover:opacity-90"
-                      style={{ backgroundColor: BRAND_PRIMARY }}
-                      onClick={() => handleCTAClick("Browse Courses")}
-                    >
-                      <span>Browse Courses</span>
-                      <ChevronRightIcon
-                        size={14}
-                        className="text-white md:w-3 md:h-3 sm:w-3 sm:h-3"
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* User Profile or Sign In at bottom */}
-              <div className="sticky bottom-0 left-0 right-0 px-4 py-4 border-t border-gray-200 bg-white shadow-lg">
-                {user ? (
-                  // Signed in - show profile
-                  <div>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User size={20} className="text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900 text-sm">
-                          {user.name || 'Learner'}
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
-                    >
-                      <LogOut size={16} />
-                      Sign Out
-                    </button>
-                  </div>
-                ) : (
-                  // Not signed in - show sign in button
-                  <div>
-                    <button
-                      className="w-full px-4 py-3 text-white rounded-lg transition-all duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-white/30 font-bold text-base tracking-tight shadow-md md:text-[15px] sm:text-sm"
-                      style={{ backgroundColor: BRAND_PRIMARY }}
-                      onClick={handleSignIn}
-                    >
-                      Sign In to Get Started
-                    </button>
-                    <p className="text-xs text-gray-500 text-center mt-2 md:text-[11px] sm:text-[10px]">
-                      Access your personalized dashboard
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           </div>

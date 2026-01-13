@@ -20,18 +20,18 @@ const client = new ApolloClient({
 
 async function initializeApp() {
   console.log('🚀 App initialization starting...');
-  
+
   // Check if we're returning from an auth redirect
   const urlParams = new URLSearchParams(window.location.search);
   const urlHash = window.location.hash;
   const isAuthRedirect = urlParams.has('code') || urlParams.has('error') || urlHash.includes('access_token') || urlHash.includes('id_token');
-  
+
   console.log('🔍 URL analysis:', {
     search: window.location.search,
     hash: window.location.hash,
     isAuthRedirect
   });
-  
+
   const container = document.getElementById("root");
   if (!container) {
     console.error('❌ Root container not found!');
@@ -44,9 +44,9 @@ async function initializeApp() {
     console.log('🔐 Initializing MSAL...');
     // Initialize MSAL
     await msalInstance.initialize();
-    
+
     console.log('✅ MSAL initialized successfully');
-    
+
     // Handle redirect response
     console.log('🔄 Handling MSAL redirect promise...');
     const response = await msalInstance.handleRedirectPromise();
@@ -58,7 +58,7 @@ async function initializeApp() {
       hasAccessToken: response?.accessToken ? true : false,
       hasIdToken: response?.idToken ? true : false
     });
-    
+
     if (response?.account) {
       console.log('✅ Setting active account from redirect:', response.account);
       console.log('🔍 Account details:', {
@@ -66,26 +66,24 @@ async function initializeApp() {
         username: response.account.username,
         idTokenClaims: response.account.idTokenClaims
       });
-      
+
       msalInstance.setActiveAccount(response.account);
-      
+
       // If we have a successful redirect response, ensure we don't redirect again
       if (response.accessToken || response.idToken) {
         console.log('🎉 Authentication successful via redirect!');
         console.log('🔍 ID Token Claims:', response.idTokenClaims);
         console.log('🔍 Access Token present:', !!response.accessToken);
-        
+
         // Clear the URL parameters to prevent confusion
         if (isAuthRedirect) {
           console.log('🧹 Cleaning up auth redirect URL...');
           window.history.replaceState({}, document.title, window.location.pathname);
         }
-        
-        // Redirect to learning page after successful authentication (like test account)
-        setTimeout(() => {
-          console.log('🎓 Redirecting to learning page after successful real authentication...');
-          window.location.href = '/learning';
-        }, 500);
+
+        // NOTE: Navigation is now handled by AuthContext after user state is set
+        // This ensures the UI updates correctly without requiring a page refresh
+        console.log('✅ Auth redirect processed - AuthContext will handle navigation');
       }
     } else {
       // Check for existing accounts
@@ -98,13 +96,13 @@ async function initializeApp() {
         console.log('⚠️ No existing accounts found');
       }
     }
-    
+
     // Additional debugging
     console.log('🔍 Final MSAL state:', {
       activeAccount: !!msalInstance.getActiveAccount(),
       totalAccounts: msalInstance.getAllAccounts().length
     });
-    
+
     // Small delay to ensure MSAL state is updated
     setTimeout(() => {
       root.render(
@@ -122,7 +120,7 @@ async function initializeApp() {
     } else {
       console.error("Error details:", String(error));
     }
-    
+
     // Check if it's a domain/tenant error
     const errorMessage = error instanceof Error ? error.message : String(error);
     if (errorMessage && errorMessage.includes('AADSTS500208')) {
@@ -131,7 +129,7 @@ async function initializeApp() {
       console.error("🔧 Current tenant ID:", (import.meta as any).env.VITE_AZURE_TENANT_ID);
       console.error("🔧 Current authority: https://login.microsoftonline.com/common");
     }
-    
+
     // Render app anyway with error state
     root.render(
       <ApolloProvider client={client}>

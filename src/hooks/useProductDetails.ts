@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchCourseWithContent, fetchRelatedCourses, fetchCourseLessons, fetchCategories } from "../services/courseService";
+import { fetchCourseWithContent, fetchRelatedCourses, fetchCourseLessons, fetchCategories } from "../features/courses/services/courseService";
 import { Course, Category } from "../types/dtma-lms";
 
 export interface UseProductDetailsArgs {
@@ -30,7 +30,7 @@ export function useProductDetails({
 }: UseProductDetailsArgs) {
   const [item, setItem] = useState<ProductItem | null>(null);
   const [relatedItems, setRelatedItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(Boolean(itemId));
   const [error, setError] = useState<Error | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -154,6 +154,8 @@ export function useProductDetails({
     if (!itemId) return;
     setLoading(true);
     setError(null);
+    setItem(null);
+    setRelatedItems([]);
     try {
       const { course, lessons, resources } = await fetchCourseWithContent(itemId);
       if (!course) {
@@ -206,7 +208,13 @@ export function useProductDetails({
   }, [itemId, shouldTakeAction]);
 
   useEffect(() => {
-    if (!itemId) return;
+    if (!itemId) {
+      setLoading(false);
+      setItem(null);
+      setRelatedItems([]);
+      setError(null);
+      return;
+    }
     loadCourse();
   }, [itemId, loadCourse]);
 
