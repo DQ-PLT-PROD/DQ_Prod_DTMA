@@ -175,7 +175,7 @@ export async function getUserByAzureId(azureUserId: string): Promise<DatabaseUse
       .from('users')
       .select('*')
       .eq('azure_user_id', azureUserId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       if (error.code === 'PGRST116') {
@@ -206,7 +206,7 @@ export async function getUserByCustomerId(customerId: string): Promise<DatabaseU
       .from('users')
       .select('*')
       .eq('customer_id', customerId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       if (error.code === 'PGRST116') {

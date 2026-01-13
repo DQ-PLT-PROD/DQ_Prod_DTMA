@@ -175,11 +175,11 @@ export const fetchCourseBySlug = async (slug: string): Promise<any | null> => {
 
     try {
         const supabase = getSupabase();
-        const { data, error } = await supabase
-            .from("courses")
-            .select("*")
-            .eq("slug", slug)
-            .single();
+    const { data, error } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("slug", slug)
+        .maybeSingle();
 
         if (error) {
             console.error("Error fetching course by slug:", error.message);
@@ -201,11 +201,11 @@ export const fetchFullCourse = async (slug: string): Promise<Course | null> => {
 
     try {
         const supabase = getSupabase();
-        const { data, error } = await supabase
-            .from("courses")
-            .select("*")
-            .eq("slug", slug)
-            .single();
+    const { data, error } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("slug", slug)
+        .maybeSingle();
 
         if (error) {
             console.error("Error fetching full course:", error.message);

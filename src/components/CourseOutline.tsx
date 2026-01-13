@@ -41,17 +41,7 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
     progressPct,
     isUserEnrolled = false, // Default to false
 }) => {
-    onLessonSelect,
-    onShowQuiz,
-    moduleOpen,
-    setModuleOpen,
-    currentTime,
-    duration,
-    isNextLessonUnlocked,
-    showQuiz,
-    completedCount,
-    progressPct,
-}) => {
+
     const firstLessonTitle = (lessons[0]?.title || "").toLowerCase();
     const hasIntroLesson =
         lessons[0]?.type === "intro" ||

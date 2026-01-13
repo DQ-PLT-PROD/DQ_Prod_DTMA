@@ -70,7 +70,7 @@ export const isUserEnrolled = async (
             .eq("user_id", userId)
             .eq("course_slug", courseSlug)
             .eq("status", "active")
-            .single();
+            .maybeSingle();
 
         if (error || !data) {
             return false;
@@ -102,7 +102,7 @@ export const getEnrollment = async (
             .select("*")
             .eq("user_id", userId)
             .eq("course_slug", courseSlug)
-            .single();
+            .maybeSingle();
 
         if (error || !data) {
             return null;
