@@ -31,6 +31,7 @@ import { Tag } from "../../../components/ui/Tag";
 import { AudienceFitIndicator } from "../components/details/AudienceFitIndicator";
 import { CourseTile } from "../components/CourseTile";
 import { EnrollmentButton } from "../components/enrollment/EnrollmentButton";
+import { EnvDebug } from "../../../components/debug/EnvDebug";
 
 
 const CourseDetailsPage: React.FC = () => {
@@ -678,6 +679,9 @@ const CourseDetailsPage: React.FC = () => {
         }
       </main>
       <Footer isLoggedIn={false} />
+      
+      {/* Debug component - remove after fixing */}
+      <EnvDebug />
     </div>
   );
 };
