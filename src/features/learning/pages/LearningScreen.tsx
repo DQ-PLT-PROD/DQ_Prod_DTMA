@@ -17,12 +17,10 @@ import { CourseOutline } from "../../courses/components/CourseOutline";
 import { Lesson, toUILesson } from "../../../types/course";
 import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
 import {
-  getOrCreateEnrollment,
   getUserCourseProgress,
   updateLessonProgress,
   updateEnrollmentProgress,
   syncLocalProgressToServer,
-  Enrollment,
 } from "../services/progressService";
 import { isUserEnrolled, canAccessLesson } from "../../courses/services/enrollmentService";
 import { PreviewContentGate } from "../components/PreviewContentGate";
@@ -56,7 +54,6 @@ const LearningScreen: React.FC = () => {
   const [isNextLessonUnlocked, setIsNextLessonUnlocked] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [isTheater, setIsTheater] = useState(false);
-  const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [enrollmentLoading, setEnrollmentLoading] = useState(true);
 
@@ -204,41 +201,6 @@ const LearningScreen: React.FC = () => {
     checkEnrollmentStatus();
   }, [databaseUser?.id, courseId]);
 
-  // Auto-enrollment for backward compatibility (can be removed later)
-  useEffect(() => {
-    const handleAutoEnrollment = async () => {
-      if (!databaseUser?.id || lessons.length === 0 || enrollment || isEnrolled) return;
-
-      try {
-        // Get or create enrollment for authenticated user (backward compatibility)
-        const enroll = await getOrCreateEnrollment(databaseUser.id, courseId);
-        setEnrollment(enroll);
-
-        if (enroll) {
-          setIsEnrolled(true);
-          // Check if there's localStorage progress to sync to server
-          const storageKey = `courseProgress_${courseId}`;
-          const saved = localStorage.getItem(storageKey);
-          if (saved) {
-            const localLessons: Lesson[] = JSON.parse(saved);
-            const localCompletedIds = localLessons
-              .filter(l => l.completed)
-              .map(l => ({ id: String(l.id), completed: true }));
-
-            if (localCompletedIds.length > 0) {
-              await syncLocalProgressToServer(databaseUser.id, courseId, localCompletedIds);
-              console.log('✅ Synced localStorage progress to server');
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to create enrollment or sync progress:', err);
-      }
-    };
-
-    handleAutoEnrollment();
-  }, [databaseUser?.id, lessons.length, courseId, enrollment, isEnrolled]);
-
   // Persist progress to localStorage (scoped to courseId)
   useEffect(() => {
     if (typeof window !== 'undefined' && lessons.length > 0) {
@@ -282,24 +244,9 @@ const LearningScreen: React.FC = () => {
       )
     );
 
-    // Sync to server if authenticated
-    if (enrollment && databaseUser?.id) {
-      try {
-        await updateLessonProgress(enrollment.id, String(lesson.id), true);
-        // Update enrollment progress percentage
-        const newCompletedCount = lessons.filter(l => l.completed).length + 1;
-        const newProgressPct = (newCompletedCount / lessons.length) * 100;
-        await updateEnrollmentProgress(
-          enrollment.id,
-          newProgressPct,
-          newCompletedCount === lessons.length
-        );
-      } catch (err) {
-        console.warn('Failed to sync lesson completion to server:', err);
-        // Progress is still saved locally, so user won't lose it
-      }
-    }
-  }, [lessons, enrollment, databaseUser?.id]);
+    // Note: Server sync for lesson progress can be added later when needed
+    // For now, progress is maintained in localStorage via the useEffect below
+  }, [lessons]);
 
   const handleTimeUpdate = (time: number, totalDuration: number) => {
     setCurrentTime(time);
@@ -584,17 +531,18 @@ const LearningScreen: React.FC = () => {
                   </div>
 
                   {/* Video Player with Preview Content Gate */}
-                  <PreviewContentGate
-                    course={course}
-                    isPreviewLesson={activeLesson?.isPreview || false}
-                    isUserEnrolled={isEnrolled}
-                    onEnrollmentSuccess={() => {
-                      // Refresh enrollment status after successful enrollment
-                      if (databaseUser?.id) {
-                        isUserEnrolled(databaseUser.id, courseId).then(setIsEnrolled);
-                      }
-                    }}
-                  >
+                  {course && (
+                    <PreviewContentGate
+                      course={course}
+                      isPreviewLesson={activeLesson?.isPreview || false}
+                      isUserEnrolled={isEnrolled}
+                      onEnrollmentSuccess={() => {
+                        // Refresh enrollment status after successful enrollment
+                        if (databaseUser?.id) {
+                          isUserEnrolled(databaseUser.id, courseId).then(setIsEnrolled);
+                        }
+                      }}
+                    >
                     <VideoPlayer
                       src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
                       poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
@@ -616,6 +564,7 @@ const LearningScreen: React.FC = () => {
                       className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
                     />
                   </PreviewContentGate>
+                  )}
                 </div>
 
                 {/* Navigation Buttons - Below Video */}
