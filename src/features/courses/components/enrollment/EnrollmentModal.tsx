@@ -2,7 +2,7 @@
  * Enrollment Confirmation Modal
  * Implements explicit enrollment CTA as per DTMA Feature Specification 02
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, BookOpen, Clock, Users, CheckCircle } from 'lucide-react';
 import { Course } from '../../../../types/dtma-lms';
 
@@ -23,6 +23,37 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
 }) => {
     const [isEnrolling, setIsEnrolling] = useState(false);
 
+    // Disable body scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        // Cleanup on unmount
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
+    // Handle escape key to close modal
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && !isEnrolling) {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscape);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [isOpen, isEnrolling, onClose]);
+
     if (!isOpen || !course) return null;
 
     const handleConfirm = async () => {
@@ -34,9 +65,22 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
         }
     };
 
+    const handleBackdropClick = (e: React.MouseEvent) => {
+        // Only close if clicking the backdrop, not the modal content
+        if (e.target === e.currentTarget && !isEnrolling) {
+            onClose();
+        }
+    };
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div 
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={handleBackdropClick}
+        >
+            <div 
+                className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-200 scale-100 animate-in zoom-in-95"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
                     <h2 className="text-xl font-semibold text-gray-900">
