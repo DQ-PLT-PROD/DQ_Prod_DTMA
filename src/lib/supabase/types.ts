@@ -258,6 +258,7 @@ export interface Database {
                     video_url: string | null
                     resource_url: string | null
                     content: string | null
+                    is_preview: boolean | null
                     created_at: string | null
                     updated_at: string | null
                 }
@@ -271,6 +272,7 @@ export interface Database {
                     video_url?: string | null
                     resource_url?: string | null
                     content?: string | null
+                    is_preview?: boolean | null
                     created_at?: string | null
                     updated_at?: string | null
                 }
@@ -284,6 +286,7 @@ export interface Database {
                     video_url?: string | null
                     resource_url?: string | null
                     content?: string | null
+                    is_preview?: boolean | null
                     created_at?: string | null
                     updated_at?: string | null
                 }
@@ -585,6 +588,103 @@ export interface Database {
                     updated_at?: string
                 }
                 Relationships: []
+            },
+            user_enrollments: {
+                Row: {
+                    id: string
+                    user_id: string
+                    course_slug: string
+                    started_at: string
+                    completed_at: string | null
+                    last_accessed_at: string
+                    progress_pct: number | null
+                    status: string | null
+                    enrollment_method: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    course_slug: string
+                    started_at?: string
+                    completed_at?: string | null
+                    last_accessed_at?: string
+                    progress_pct?: number | null
+                    status?: string | null
+                    enrollment_method?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    user_id?: string
+                    course_slug?: string
+                    started_at?: string
+                    completed_at?: string | null
+                    last_accessed_at?: string
+                    progress_pct?: number | null
+                    status?: string | null
+                    enrollment_method?: string | null
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "user_enrollments_user_id_fkey"
+                        columns: ["user_id"]
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "user_enrollments_course_slug_fkey"
+                        columns: ["course_slug"]
+                        referencedRelation: "courses"
+                        referencedColumns: ["slug"]
+                    }
+                ]
+            },
+            lesson_progress: {
+                Row: {
+                    id: string
+                    enrollment_id: string
+                    lesson_id: string
+                    completed: boolean
+                    watch_time_seconds: number | null
+                    completed_at: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    enrollment_id: string
+                    lesson_id: string
+                    completed?: boolean
+                    watch_time_seconds?: number | null
+                    completed_at?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    enrollment_id?: string
+                    lesson_id?: string
+                    completed?: boolean
+                    watch_time_seconds?: number | null
+                    completed_at?: string | null
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "lesson_progress_enrollment_id_fkey"
+                        columns: ["enrollment_id"]
+                        referencedRelation: "user_enrollments"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "lesson_progress_lesson_id_fkey"
+                        columns: ["lesson_id"]
+                        referencedRelation: "lessons"
+                        referencedColumns: ["id"]
+                    }
+                ]
             }
         }
         Views: {}

@@ -4,7 +4,7 @@
  */
 import React, { useState } from 'react';
 import { X, BookOpen, Clock, Users, CheckCircle } from 'lucide-react';
-import { Course } from '../../types/dtma-lms';
+import { Course } from '../../../../types/dtma-lms';
 
 interface EnrollmentModalProps {
     isOpen: boolean;

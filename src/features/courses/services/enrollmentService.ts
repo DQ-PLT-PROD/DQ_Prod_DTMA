@@ -35,13 +35,13 @@ const getEnrollmentSupabase = (): any => {
 /**
  * Helper to map database row to CourseEnrollment type
  */
-const mapRowToEnrollment = (row: any): CourseEnrollment => ({
+const mapRowToEnrollment = (row: UserEnrollmentRow): CourseEnrollment => ({
     id: row.id,
     userId: row.user_id,
     courseSlug: row.course_slug,
-    enrolledAt: row.started_at, // Map started_at to enrolledAt for consistency
-    status: row.status || 'active',
-    enrollmentMethod: row.enrollment_method || 'auto',
+    enrolledAt: row.started_at,
+    status: (row.status as 'active' | 'revoked') || 'active',
+    enrollmentMethod: (row.enrollment_method as 'explicit' | 'auto') || 'auto',
 });
 
 /**
@@ -159,17 +159,19 @@ export const enrollInCourse = async (
 
         // Create new enrollment
         console.log('📝 Creating new enrollment...');
+        const enrollmentData: UserEnrollmentInsert = {
+            user_id: userId,
+            course_slug: courseSlug,
+            started_at: new Date().toISOString(),
+            last_accessed_at: new Date().toISOString(),
+            progress_pct: 0,
+            status: 'active',
+            enrollment_method: method
+        };
+
         const { data, error } = await supabase
             .from("user_enrollments")
-            .insert({
-                user_id: userId,
-                course_slug: courseSlug,
-                started_at: new Date().toISOString(),
-                last_accessed_at: new Date().toISOString(),
-                progress_pct: 0,
-                status: 'active',
-                enrollment_method: method
-            })
+            .insert(enrollmentData)
             .select()
             .single();
 
