@@ -36,14 +36,7 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
                 userId: databaseUser?.id,
                 courseSlug: course.slug,
                 courseId: course.id,
-<<<<<<< HEAD
                 courseTitle: course.title
-=======
-                courseTitle: course.title,
-                hasUser: !!user,
-                hasDatabaseUser: !!databaseUser,
-                supabaseConfigured: !!(import.meta as any).env?.VITE_SUPABASE_URL
->>>>>>> feature/profile
             });
 
             if (!databaseUser?.id) {
