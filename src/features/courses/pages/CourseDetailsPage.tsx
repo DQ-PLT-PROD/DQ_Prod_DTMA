@@ -31,8 +31,6 @@ import { Tag } from "../../../components/ui/Tag";
 import { AudienceFitIndicator } from "../components/details/AudienceFitIndicator";
 import { CourseTile } from "../components/CourseTile";
 import { EnrollmentButton } from "../components/enrollment/EnrollmentButton";
-import { EnvDebug } from "../../../components/debug/EnvDebug";
-import { SupabaseTest } from "../../../components/debug/SupabaseTest";
 
 
 const CourseDetailsPage: React.FC = () => {
@@ -544,7 +542,7 @@ const CourseDetailsPage: React.FC = () => {
                 <EnrollmentButton
                   course={item}
                   onEnrollmentSuccess={handlePrimaryAction}
-                  className="flex-1 sm:flex-none px-6 py-3 bg-white text-blue-700 font-bold text-base rounded-xl shadow-xl hover:bg-blue-50 transition-all transform hover:-translate-y-1"
+                  className="flex-1 sm:flex-none px-6 py-3 bg-blue-600 text-white font-bold text-base rounded-xl shadow-xl hover:bg-blue-700 transition-all transform hover:-translate-y-1"
                 />
                 <button
                   className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
@@ -672,7 +670,7 @@ const CourseDetailsPage: React.FC = () => {
                 <EnrollmentButton
                   course={item}
                   onEnrollmentSuccess={handlePrimaryAction}
-                  className="flex-1 px-4 py-3 text-white font-bold rounded-md bg-gradient-to-r from-teal-500 via-blue-500 to-purple-600 hover:from-teal-600 hover:via-blue-600 hover:to-purple-700 transition-colors shadow-md"
+                  className="flex-1 px-4 py-3 text-white font-bold rounded-md bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 hover:from-blue-700 hover:via-blue-800 hover:to-blue-900 transition-colors shadow-md"
                 />
               </div>
             </div>
@@ -680,10 +678,6 @@ const CourseDetailsPage: React.FC = () => {
         }
       </main>
       <Footer isLoggedIn={false} />
-      
-      {/* Debug components - remove after fixing */}
-      <EnvDebug />
-      <SupabaseTest />
     </div>
   );
 };
