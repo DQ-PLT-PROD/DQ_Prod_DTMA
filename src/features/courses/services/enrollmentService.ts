@@ -5,8 +5,8 @@
  * Uses Supabase service role for database operations to bypass RLS
  * since we're using Azure AD authentication instead of Supabase auth.
  */
-import { getSupabaseForEnrollment } from "../lib/supabase/serviceClient";
-import { isSupabaseConfigured } from "../lib/supabase/client";
+import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
+import { isSupabaseConfigured } from "../../../lib/supabase/client";
 
 // Types
 export interface CourseEnrollment {
@@ -142,7 +142,7 @@ export const enrollInCourse = async (
         console.log('User ID:', userId);
         console.log('Course Slug:', courseSlug);
         console.log('Method:', method);
-        
+
         const supabase = getEnrollmentSupabase();
         console.log('✅ Got Supabase client for enrollment');
 
@@ -219,7 +219,7 @@ export const unenrollFromCourse = async (
 
         const { data, error } = await supabase
             .from("user_enrollments")
-            .update({ 
+            .update({
                 status: 'revoked',
                 updated_at: new Date().toISOString()
             })
@@ -316,7 +316,7 @@ export const validateEnrollmentEligibility = async (
     // - Audience level validation
     // - Course capacity limits
     // - Enrollment periods
-    
+
     if (!userId) {
         return {
             eligible: false,

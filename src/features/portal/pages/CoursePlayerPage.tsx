@@ -21,8 +21,8 @@ import {
     syncLocalProgressToServer,
     Enrollment,
 } from "../services/progressService";
-import { isUserEnrolled } from "../../../services/enrollmentService";
-import { PreviewContentGate } from "../../../components/learning/PreviewContentGate";
+import { isUserEnrolled } from "../../courses/services/enrollmentService";
+import { PreviewContentGate } from "../components/PreviewContentGate";
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
 
 // Defined so we can pass context up to the layout if we needed to (e.g. theater mode)
