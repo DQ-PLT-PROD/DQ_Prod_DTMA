@@ -35,8 +35,8 @@ const ProtectedRoute: React.FC<PropsWithChildren> = ({ children }) => {
             // If user just logged in and is trying to access a protected route,
             // redirect them to the learning page instead
             if (location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/forms')) {
-                console.log('🎓 Redirecting newly authenticated user to learning page...');
-                navigate('/learning', { replace: true });
+                console.log('🎓 Redirecting newly authenticated user to portal...');
+                navigate('/portal', { replace: true });
             }
         }
     }, [user, hasTriggeredLogin, location.pathname, navigate]);
