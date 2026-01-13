@@ -12,7 +12,6 @@ import CoursePlayerPage from "./features/portal/pages/CoursePlayerPage";
 import { QuizAuditPage } from "./features/portal/pages/QuizAuditPage";
 import { ComingSoon } from "./features/app/pages/ComingSoon";
 import { AuthDebugPanel } from "./features/auth/components/AuthDebugPanel";
-import { TestEnvPage } from "./pages/TestEnvPage";
 
 export function AppRouter() {
   return (
@@ -58,9 +57,6 @@ export function AppRouter() {
               <AuthDebugPanel />
             </div>
           } />
-
-          {/* Test Environment Variables */}
-          <Route path="/test-env" element={<TestEnvPage />} />
 
           {/* Coming Soon pages */}
           <Route path="/coming-soon" element={<ComingSoon />} />
