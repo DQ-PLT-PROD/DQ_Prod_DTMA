@@ -45,7 +45,6 @@ DQ_Prod_DTMA/
 ├── public/           # Static assets (images, logos)
 ├── supabase/         # Database migrations
 ├── docs/             # Documentation
-├── DTMA Specs/       # Formal specifications
 ├── k8s/              # Kubernetes configs
 └── [config files]    # vite, tailwind, tsconfig, etc.
 ```
@@ -60,7 +59,7 @@ src/
 │   ├── courses/      # Course catalog, details, assessment
 │   ├── dashboard/    # User profile and settings
 │   ├── landing/      # Marketing landing page
-│   ├── learning/     # Video player, progress tracking
+│   ├── portal/       # Learning portal, player, progress tracking
 │   └── app/          # App-level pages (NotFound, ComingSoon)
 │
 ├── components/       # Shared UI (Header, Footer, Modals)
@@ -72,6 +71,19 @@ src/
 ├── App.tsx           # Root component
 ├── AppRouter.tsx     # Route definitions
 └── index.tsx         # Entry point
+```
+
+---
+
+## Documentation (`docs/`)
+```
+docs/
+├── ai/               # AI workflows/instructions
+├── data/             # Draft data specs and seed content
+├── guides/           # Operational guides
+├── reports/          # Audit and analysis reports
+├── specs/            # Product/architecture specifications
+└── testing/          # Manual test guides
 ```
 
 ---

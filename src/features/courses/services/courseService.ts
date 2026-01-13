@@ -9,8 +9,9 @@ interface Quiz {
     orderIndex: number;
     question: string;
     options: { id: string; text: string }[];
-    correctAnswer: string;
+    correctAnswer: string[];
     explanation?: string;
+    distractorFeedback?: Record<string, string>;
 }
 
 export interface CourseResource {
@@ -217,8 +218,9 @@ const mapRowToQuiz = (row: any): Quiz => {
         orderIndex: row.order_index,
         question: row.question,
         options: row.options || [],
-        correctAnswer: row.correct_answer,
+        correctAnswer: Array.isArray(row.correct_answer) ? row.correct_answer : [row.correct_answer],
         explanation: row.explanation || undefined,
+        distractorFeedback: row.distractor_feedback || {},
     };
 };
 

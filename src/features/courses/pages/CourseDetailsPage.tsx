@@ -209,7 +209,7 @@ const CourseDetailsPage: React.FC = () => {
 
     // Take learners straight into the DTMA learning experience
     if (item) {
-      navigate(`/learning?courseId=${encodeURIComponent(item.id)}`);
+      navigate(`/portal/learning/${encodeURIComponent(item.id)}`);
     }
   };
 
@@ -422,7 +422,7 @@ const CourseDetailsPage: React.FC = () => {
         {/* Hero Banner - Netflix-style video with layered structure */}
         <div
           ref={heroRef}
-          className="w-full text-white relative h-screen min-h-[600px] overflow-hidden isolate"
+          className="w-full text-white relative h-[70vh] min-h-[450px] md:h-[80vh] lg:h-screen lg:min-h-[600px] overflow-hidden isolate"
           onMouseEnter={() => setShowScrollIndicator(true)}
           onMouseLeave={() => setShowScrollIndicator(false)}
         >

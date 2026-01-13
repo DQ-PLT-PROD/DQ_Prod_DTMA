@@ -297,7 +297,8 @@ export interface Database {
                     order_index: number
                     question: string
                     options: Json
-                    correct_answer: string
+                    correct_answer: Json
+                    distractor_feedback: Json | null
                     explanation: string | null
                     created_at: string | null
                 }
@@ -308,7 +309,8 @@ export interface Database {
                     order_index: number
                     question: string
                     options: Json
-                    correct_answer: string
+                    correct_answer: Json
+                    distractor_feedback?: Json | null
                     explanation?: string | null
                     created_at?: string | null
                 }
@@ -319,7 +321,8 @@ export interface Database {
                     order_index?: number
                     question?: string
                     options?: Json
-                    correct_answer?: string
+                    correct_answer?: Json
+                    distractor_feedback?: Json | null
                     explanation?: string | null
                     created_at?: string | null
                 }

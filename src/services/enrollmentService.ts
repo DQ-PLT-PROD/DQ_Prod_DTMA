@@ -5,7 +5,7 @@
  * Uses Supabase service role for database operations to bypass RLS
  * since we're using Azure AD authentication instead of Supabase auth.
  */
-import { getSupabaseForEnrollment, isServiceRoleConfigured } from "../lib/supabase/serviceClient";
+import { getSupabaseForEnrollment } from "../lib/supabase/serviceClient";
 import { isSupabaseConfigured } from "../lib/supabase/client";
 
 // Types
@@ -15,7 +15,7 @@ export interface CourseEnrollment {
     courseSlug: string;
     enrolledAt: string;
     status: 'active' | 'revoked';
-    enrollmentMethod: 'explicit' | 'auto';
+    enrollmentMethod: 'explicit' | 'auto' | 'admin';
 }
 
 export interface EnrollmentResult {
@@ -43,15 +43,6 @@ const mapRowToEnrollment = (row: any): CourseEnrollment => ({
     status: row.status || 'active',
     enrollmentMethod: row.enrollment_method || 'auto',
 });
-
-/**
- * Get current user from auth context
- */
-const getCurrentUser = () => {
-    // This will be called from components that have access to auth context
-    // For now, we'll require userId to be passed in
-    return null;
-};
 
 /**
  * Check if user is enrolled in a course
@@ -137,7 +128,7 @@ export const getEnrollment = async (
 export const enrollInCourse = async (
     userId: string,
     courseSlug: string,
-    method: 'explicit' | 'auto' = 'explicit'
+    method: 'explicit' | 'auto' | 'admin' = 'explicit'
 ): Promise<EnrollmentResult> => {
     if (!isSupabaseConfigured()) {
         return {

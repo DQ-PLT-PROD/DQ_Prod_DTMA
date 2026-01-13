@@ -78,7 +78,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-6">
         <div className="flex items-center justify-between gap-4">
-          <img src="/DTMA%20LOGO%20WHITE.svg" alt="DTMA" className="h-10 w-auto" />
+          <img src="/logo/dtma-logo-white.svg" alt="DTMA" className="h-10 w-auto" />
           <div className="flex items-center gap-4 text-white">
             <a
               href="https://www.linkedin.com/company/digitalqatalyst/posts/?feedView=all"

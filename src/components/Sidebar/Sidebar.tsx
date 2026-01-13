@@ -176,9 +176,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     items.push({
       id: "learning",
-      label: "Learning Page",
+      label: "Learning Portal",
       icon: <BookOpen size={20} />,
-      href: "/learning",
+      href: "/portal",
     });
 
     items.push(

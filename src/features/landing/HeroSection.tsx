@@ -32,7 +32,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
   const handleHeroAction = () => {
     if (user) {
-      navigate('/learning');
+      navigate('/portal');
     } else {
       login(); // Direct Microsoft auth
     }
@@ -224,7 +224,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     <div
       className="relative w-full overflow-hidden"
       style={{
-        backgroundImage: `${BRAND_GRADIENT}, url('/background%20image.png')`,
+        backgroundImage: `${BRAND_GRADIENT}, url('/images/landing/background-image.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundBlendMode: 'overlay',
@@ -242,7 +242,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         <div
           className="absolute inset-0 scale-105 blur-sm"
           style={{
-            backgroundImage: "url('/background%20image.png')",
+            backgroundImage: "url('/images/landing/background-image.png')",
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             filter: 'blur(3px)',

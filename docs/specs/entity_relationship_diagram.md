@@ -72,8 +72,9 @@ erDiagram
         NUMERIC order_index
         TEXT question
         JSONB options "Array of id-text objects"
-        TEXT correct_answer
+        JSONB correct_answer
         TEXT explanation
+        JSONB distractor_feedback
         TIMESTAMPTZ created_at
     }
     
@@ -300,7 +301,8 @@ erDiagram
         TEXT course_slug FK
         TEXT question
         JSONB options
-        TEXT correct_answer
+        JSONB correct_answer
+        JSONB distractor_feedback
     }
     
     course_resources {
