@@ -32,6 +32,7 @@ import { AudienceFitIndicator } from "../components/details/AudienceFitIndicator
 import { CourseTile } from "../components/CourseTile";
 import { EnrollmentButton } from "../components/enrollment/EnrollmentButton";
 import { EnvDebug } from "../../../components/debug/EnvDebug";
+import { SupabaseTest } from "../../../components/debug/SupabaseTest";
 
 
 const CourseDetailsPage: React.FC = () => {
@@ -680,8 +681,9 @@ const CourseDetailsPage: React.FC = () => {
       </main>
       <Footer isLoggedIn={false} />
       
-      {/* Debug component - remove after fixing */}
+      {/* Debug components - remove after fixing */}
       <EnvDebug />
+      <SupabaseTest />
     </div>
   );
 };
