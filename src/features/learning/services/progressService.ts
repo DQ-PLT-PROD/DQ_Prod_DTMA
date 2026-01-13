@@ -27,11 +27,6 @@ export interface LessonProgress {
     completedAt?: string;
 }
 
-export interface LocalLesson {
-    id: string | number;
-    completed: boolean;
-}
-
 // Helper to map database row to Enrollment type
 const mapRowToEnrollment = (row: any): Enrollment => ({
     id: row.id,
@@ -82,7 +77,7 @@ export const getOrCreateEnrollment = async (
             .select("*")
             .eq("user_id", userId)
             .eq("course_slug", courseSlug)
-            .single();
+            .maybeSingle();
 
         if (existing && !fetchError) {
             // Update last accessed timestamp
@@ -107,7 +102,7 @@ export const getOrCreateEnrollment = async (
                 enrollment_method: 'auto'
             })
             .select()
-            .single();
+            .maybeSingle();
 
         if (createError) {
             console.error("Error creating enrollment:", createError.message);
@@ -144,7 +139,7 @@ export const getUserCourseProgress = async (
             .select("*")
             .eq("user_id", userId)
             .eq("course_slug", courseSlug)
-            .single();
+            .maybeSingle();
 
         if (enrollmentError || !enrollmentData) {
             return { enrollment: null, lessonProgress: [] };
@@ -192,7 +187,7 @@ export const updateLessonProgress = async (
             .select("id")
             .eq("user_id", userId)
             .eq("course_slug", courseSlug)
-            .single();
+            .maybeSingle();
 
         if (!enrollmentData) {
             console.warn("No enrollment found for lesson progress update");
@@ -258,41 +253,6 @@ export const updateEnrollmentProgress = async (
         return true;
     } catch (err) {
         console.error("Unexpected error updating enrollment progress:", err);
-        return false;
-    }
-};
-
-/**
- * Sync local progress (from localStorage) to server
- */
-export const syncLocalProgressToServer = async (
-    userId: string,
-    courseSlug: string,
-    localLessons: { id: string; completed: boolean }[]
-): Promise<boolean> => {
-    if (!isSupabaseConfigured() || localLessons.length === 0) {
-        return false;
-    }
-
-    try {
-        // Update each completed lesson
-        const updatePromises = localLessons
-            .filter(lesson => lesson.completed)
-            .map(lesson => 
-                updateLessonProgress(userId, courseSlug, lesson.id, true)
-            );
-
-        await Promise.all(updatePromises);
-
-        // Calculate and update overall progress
-        const completedCount = localLessons.filter(l => l.completed).length;
-        const progressPct = Math.round((completedCount / localLessons.length) * 100);
-        
-        await updateEnrollmentProgress(userId, courseSlug, progressPct);
-
-        return true;
-    } catch (err) {
-        console.error("Error syncing local progress to server:", err);
         return false;
     }
 };

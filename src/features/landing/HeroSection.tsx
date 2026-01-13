@@ -23,13 +23,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   const location = useLocation();
   const [hasStarted, setHasStarted] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedProgress = localStorage.getItem('courseProgress');
-      setHasStarted(!!savedProgress);
-    }
-  }, []);
-
   const handleHeroAction = () => {
     if (user) {
       navigate('/learning');

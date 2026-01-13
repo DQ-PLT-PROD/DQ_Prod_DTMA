@@ -21,8 +21,6 @@ import {
   getUserCourseProgress,
   updateLessonProgress,
   updateEnrollmentProgress,
-  syncLocalProgressToServer,
-  Enrollment,
 } from "../services/progressService";
 import { isUserEnrolled, canAccessLesson } from "../../courses/services/enrollmentService";
 import { PreviewContentGate } from "../components/PreviewContentGate";
@@ -56,9 +54,7 @@ const LearningScreen: React.FC = () => {
   const [isNextLessonUnlocked, setIsNextLessonUnlocked] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [isTheater, setIsTheater] = useState(false);
-  const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
-  const [enrollmentLoading, setEnrollmentLoading] = useState(true);
 
   const navigate = useNavigate();
   const { user, databaseUser, logout } = useAuth();
@@ -79,16 +75,9 @@ const LearningScreen: React.FC = () => {
 
         if (fetchedLessons.length > 0) {
           setDbLessons(fetchedLessons);
+          const completedIds = new Set<string>();
 
-          // Always read localStorage first (works for both anonymous and authenticated)
-          const storageKey = `courseProgress_${courseId}`;
-          const saved = localStorage.getItem(storageKey);
-          const savedLessons: Lesson[] = saved ? JSON.parse(saved) : [];
-          const completedIds = new Set<string>(
-            savedLessons.filter(l => l.completed).map(l => String(l.id))
-          );
-
-          // Convert DB lessons to UI lessons with localStorage progress
+          // Convert DB lessons to UI lessons (completion will hydrate from server)
           const uiLessons = fetchedLessons.map((lesson, idx) =>
             toUILesson(lesson, idx, completedIds)
           );
@@ -185,19 +174,15 @@ const LearningScreen: React.FC = () => {
     const checkEnrollmentStatus = async () => {
       if (!databaseUser?.id || !courseId) {
         setIsEnrolled(false);
-        setEnrollmentLoading(false);
         return;
       }
 
       try {
-        setEnrollmentLoading(true);
         const enrolled = await isUserEnrolled(databaseUser.id, courseId);
         setIsEnrolled(enrolled);
       } catch (error) {
         console.error('Error checking enrollment status:', error);
         setIsEnrolled(false);
-      } finally {
-        setEnrollmentLoading(false);
       }
     };
 
@@ -207,45 +192,57 @@ const LearningScreen: React.FC = () => {
   // Auto-enrollment for backward compatibility (can be removed later)
   useEffect(() => {
     const handleAutoEnrollment = async () => {
-      if (!databaseUser?.id || lessons.length === 0 || enrollment || isEnrolled) return;
+      if (!databaseUser?.id || lessons.length === 0 || isEnrolled) return;
 
       try {
-        // Get or create enrollment for authenticated user (backward compatibility)
         const enroll = await getOrCreateEnrollment(databaseUser.id, courseId);
-        setEnrollment(enroll);
-
         if (enroll) {
           setIsEnrolled(true);
-          // Check if there's localStorage progress to sync to server
-          const storageKey = `courseProgress_${courseId}`;
-          const saved = localStorage.getItem(storageKey);
-          if (saved) {
-            const localLessons: Lesson[] = JSON.parse(saved);
-            const localCompletedIds = localLessons
-              .filter(l => l.completed)
-              .map(l => ({ id: String(l.id), completed: true }));
-
-            if (localCompletedIds.length > 0) {
-              await syncLocalProgressToServer(databaseUser.id, courseId, localCompletedIds);
-              console.log('✅ Synced localStorage progress to server');
-            }
-          }
         }
       } catch (err) {
-        console.warn('Failed to create enrollment or sync progress:', err);
+        console.warn('Failed to create enrollment:', err);
       }
     };
 
     handleAutoEnrollment();
-  }, [databaseUser?.id, lessons.length, courseId, enrollment, isEnrolled]);
+  }, [databaseUser?.id, lessons.length, courseId, isEnrolled]);
 
-  // Persist progress to localStorage (scoped to courseId)
+  // Hydrate completion state from server progress
   useEffect(() => {
-    if (typeof window !== 'undefined' && lessons.length > 0) {
-      const storageKey = `courseProgress_${courseId}`;
-      localStorage.setItem(storageKey, JSON.stringify(lessons));
-    }
-  }, [lessons, courseId]);
+    const hydrateServerProgress = async () => {
+      if (!databaseUser?.id || lessons.length === 0) return;
+
+      try {
+        const { enrollment, lessonProgress } = await getUserCourseProgress(
+          databaseUser.id,
+          courseId
+        );
+
+        if (enrollment) {
+          setIsEnrolled(true);
+        }
+
+        if (!lessonProgress.length) {
+          return;
+        }
+
+        const completedIds = new Set(
+          lessonProgress.filter((lp) => lp.completed).map((lp) => String(lp.lessonId))
+        );
+
+        setLessons((prevLessons) =>
+          prevLessons.map((lesson) => ({
+            ...lesson,
+            completed: completedIds.has(String(lesson.id)),
+          }))
+        );
+      } catch (error) {
+        console.warn("Failed to hydrate server progress:", error);
+      }
+    };
+
+    hydrateServerProgress();
+  }, [databaseUser?.id, courseId, lessons.length]);
 
   const activeLesson = useMemo(
     () => lessons[currentLessonIndex],
@@ -283,23 +280,18 @@ const LearningScreen: React.FC = () => {
     );
 
     // Sync to server if authenticated
-    if (enrollment && databaseUser?.id) {
+    if (databaseUser?.id) {
       try {
-        await updateLessonProgress(enrollment.id, String(lesson.id), true);
+        await updateLessonProgress(databaseUser.id, courseId, String(lesson.id), true);
         // Update enrollment progress percentage
         const newCompletedCount = lessons.filter(l => l.completed).length + 1;
         const newProgressPct = (newCompletedCount / lessons.length) * 100;
-        await updateEnrollmentProgress(
-          enrollment.id,
-          newProgressPct,
-          newCompletedCount === lessons.length
-        );
+        await updateEnrollmentProgress(databaseUser.id, courseId, newProgressPct);
       } catch (err) {
         console.warn('Failed to sync lesson completion to server:', err);
-        // Progress is still saved locally, so user won't lose it
       }
     }
-  }, [lessons, enrollment, databaseUser?.id]);
+  }, [lessons, databaseUser?.id, courseId]);
 
   const handleTimeUpdate = (time: number, totalDuration: number) => {
     setCurrentTime(time);
