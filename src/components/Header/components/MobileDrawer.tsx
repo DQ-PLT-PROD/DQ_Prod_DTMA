@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MenuIcon, XIcon, ChevronRightIcon, User, LogOut, ChevronDownIcon } from "lucide-react";
+import { MenuIcon, XIcon, ChevronRightIcon, User, LogOut, ChevronDownIcon, Layers } from "lucide-react";
 import {
   BRAND_GRADIENT,
   BRAND_BACKDROP_BLUR,
   BRAND_PRIMARY,
 } from "../../../constants/branding";
 import { useAuth } from "../../../features/auth/context/AuthContext";
+import { COURSE_CATEGORIES } from "../../../constants/navigation";
 
 interface MobileDrawerProps {
   onSignIn: () => void;
@@ -15,15 +16,6 @@ interface MobileDrawerProps {
   onBrowseCourses?: () => void;
   onBrowseCategories?: () => void;
 }
-
-const COURSE_CATEGORIES = [
-  { id: "d1", name: "Mastering Economy 4.0", href: "/courses?category=economy-4-0" },
-  { id: "d2", name: "Building Tomorrow’s Organisations", href: "/courses?category=digital-cognitive-organization" },
-  { id: "d3", name: "Mastering Digital Transformation", href: "/courses?category=digital-business-platform" },
-  { id: "d4", name: "Designing for the Future", href: "/courses?category=digital-transformation-2-0" },
-  { id: "d5", name: "Architecting Change", href: "/courses?category=digital-worker-workspace" },
-  { id: "d6", name: "Empowering Change", href: "/courses?category=digital-accelerators-tools" },
-];
 
 export function MobileDrawer({
   onSignIn,
@@ -34,7 +26,6 @@ export function MobileDrawer({
 }: MobileDrawerProps) {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [showCategories, setShowCategories] = useState(false);
   const { user, login, logout } = useAuth();
 
   useEffect(() => {
@@ -67,149 +58,116 @@ export function MobileDrawer({
     }
   };
 
-  const handleCTAClick = (action: string) => {
-    if (action === "Join the Academy") {
-      onJoinAcademy && onJoinAcademy();
-    } else if (action === "Browse Courses") {
-      if (onBrowseCourses) {
-        onBrowseCourses();
-      } else {
-        navigate("/courses");
-      }
-    }
-    setIsDrawerOpen(false);
-  };
-
   return (
     <>
-      {/* Always visible primary CTA + hamburger menu for Mobile (<768px) */}
-      <div className="flex items-center space-x-2 md:hidden">
-        {/* Hamburger menu button */}
-        <button
-          className="p-2 text-white hover:bg-white/10 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/20"
-          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-          aria-label="Open navigation menu"
-          aria-expanded={isDrawerOpen}
-        >
-          {isDrawerOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
-        </button>
-      </div>
+      {/* Menu Toggle Button */}
+      <button
+        className="p-2 text-white hover:bg-white/10 rounded-full transition-all duration-300 focus:outline-none md:hidden active:scale-95"
+        onClick={() => setIsDrawerOpen(true)}
+        aria-label="Open navigation menu"
+      >
+        <MenuIcon size={26} />
+      </button>
 
-      {/* Tablet hamburger menu (768px - 1023px) */}
-      <div className="hidden md:flex lg:hidden items-center">
-        <button
-          className="p-2 text-white hover:bg-white/10 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/20"
-          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-          aria-label="Open navigation menu"
-          aria-expanded={isDrawerOpen}
-        >
-          {isDrawerOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
-        </button>
-      </div>
-
-      {/* Mobile and Tablet drawer overlay */}
+      {/* Backdrop */}
       {isDrawerOpen && (
-        <>
-          <div
-            className="fixed inset-0 bg-black bg-opacity-30 z-40 lg:hidden"
-            onClick={() => setIsDrawerOpen(false)}
-          />
-          {/* Mobile and Tablet drawer */}
-          <div
-            className="fixed top-0 right-0 max-h-screen w-80 max-w-[90vw] shadow-lg z-50 lg:hidden transform transition-transform duration-300 ease-in-out bg-white text-gray-900 overflow-hidden"
-          >
-            <div className="flex flex-col">
-              {/* Header with close button */}
-              <div className="flex items-center justify-end px-4 py-4 border-b border-gray-200">
-                <button
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-md border border-gray-200 transition-colors"
-                  aria-label="Close menu"
-                >
-                  <XIcon size={18} className="text-gray-700" />
-                </button>
-              </div>
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300"
+          onClick={() => setIsDrawerOpen(false)}
+        />
+      )}
 
-              {/* Single card containing nav + CTA */}
-              <div className="flex-1 px-4 py-6 space-y-5">
-                <div className="flex flex-col space-y-5 bg-[#f9f9fb] border border-gray-200 rounded-xl shadow-sm p-4">
-                  <div className="space-y-3">
-                    <button
-                      className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-900 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-sm font-semibold tracking-tight md:text-[13px] sm:text-xs"
-                      onClick={() => setShowCategories((v) => !v)}
-                      aria-expanded={showCategories}
-                      aria-controls="drawer-course-categories"
-                    >
-                      <span>Explore Courses</span>
-                      <ChevronDownIcon
-                        size={16}
-                        className={`text-gray-500 transition-transform ${showCategories ? "rotate-180" : ""}`}
-                      />
-                    </button>
+      {/* Drawer */}
+      <div
+        className={`fixed top-0 right-0 h-full w-[85vw] max-w-[320px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out border-l border-gray-100 ${isDrawerOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+      >
+        <div className="flex flex-col h-full bg-[#FAFAFA]">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-white">
+            <span className="font-bold text-gray-900 text-lg tracking-tight">Menu</span>
+            <button
+              onClick={() => setIsDrawerOpen(false)}
+              className="p-2 -mr-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <XIcon size={20} />
+            </button>
+          </div>
 
-                    {showCategories && (
-                      <div
-                        id="drawer-course-categories"
-                        className="mt-2 space-y-1 rounded-lg border border-gray-200 bg-white"
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6">
+
+            {/* Main Navigation */}
+            <div className="space-y-4">
+              <div className="rounded-xl overflow-hidden bg-white border border-gray-100 shadow-sm">
+                <div className="px-4 py-3.5 bg-gray-50/50 border-b border-gray-100 flex items-center gap-3">
+                  <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                    <Layers size={18} />
+                  </div>
+                  <span className="font-medium text-gray-900">Explore Courses</span>
+                </div>
+
+                <div className="py-1">
+                  {COURSE_CATEGORIES.map((cat) => {
+                    const Icon = cat.icon || Layers;
+                    return (
+                      <button
+                        key={cat.id}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50/50 flex items-center gap-3 transition-colors border-l-2 border-transparent hover:border-blue-600"
+                        onClick={() => {
+                          navigate(cat.href);
+                          setIsDrawerOpen(false);
+                        }}
                       >
-                        {COURSE_CATEGORIES.map((cat) => (
-                          <button
-                            key={cat.id}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 flex items-center justify-between"
-                            onClick={() => {
-                              navigate(cat.href);
-                              setIsDrawerOpen(false);
-                            }}
-                          >
-                            <span className="truncate">{cat.name}</span>
-                            <ChevronRightIcon size={14} className="text-gray-400" />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-2">
-                    {user ? (
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <User size={20} className="text-blue-600" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900 text-sm">
-                              {user.name || 'Learner'}
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          onClick={handleSignOut}
-                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
-                        >
-                          <LogOut size={16} />
-                          Sign Out
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center text-center space-y-2">
-                        <button
-                          className="w-full px-4 py-3 text-[#1839AD] rounded-lg transition-all duration-200 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#1839AD]/20 font-semibold text-sm tracking-tight border border-gray-200 bg-white"
-                          onClick={handleSignIn}
-                        >
-                          Sign In to Get Started
-                        </button>
-                        <p className="text-xs text-gray-500 md:text-[11px] sm:text-[10px]">
-                          Access your personalized dashboard
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                        <Icon size={18} className="text-gray-400" />
+                        <span className="truncate">{cat.name}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           </div>
-        </>
-      )}
+
+          {/* Footer / User Profile */}
+          <div className="p-5 border-t border-gray-100 bg-white">
+            {user ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold shadow-sm">
+                    {user.name ? user.name.charAt(0).toUpperCase() : <User size={18} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 truncate">
+                      {user.name || 'Learner'}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-colors text-sm font-medium"
+                >
+                  <LogOut size={16} />
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <button
+                  className="w-full px-4 py-3 bg-[#1839AD] text-white rounded-xl shadow-md hover:shadow-lg hover:bg-blue-800 transition-all duration-300 font-semibold text-sm"
+                  onClick={handleSignIn}
+                >
+                  Sign In
+                </button>
+                <p className="text-center text-xs text-gray-400">
+                  Join to access your personalized dashboard
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </>
   );
 }

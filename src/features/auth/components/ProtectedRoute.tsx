@@ -1,6 +1,7 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { PageLoader } from '../../../components/loading';
 
 /**
  * Guards routes behind MSAL auth. If unauthenticated, triggers login and
@@ -44,14 +45,7 @@ const ProtectedRoute: React.FC<PropsWithChildren> = ({ children }) => {
     // While determining auth state, don't render or redirect
     if (isLoading) {
         console.log('🔄 ProtectedRoute: Loading authentication state...');
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-2 text-gray-600">Authenticating...</p>
-                </div>
-            </div>
-        );
+        return <PageLoader variant="minimal" message="Authenticating..." />;
     }
 
     // If authenticated, render the protected content
@@ -63,14 +57,7 @@ const ProtectedRoute: React.FC<PropsWithChildren> = ({ children }) => {
     console.log('❌ ProtectedRoute: User not authenticated');
 
     if (AUTO_LOGIN) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-2 text-gray-600">Signing you in...</p>
-                </div>
-            </div>
-        );
+        return <PageLoader variant="minimal" message="Signing you in..." />;
     }
 
     return <Navigate to="/" state={{ from: location }} replace />;

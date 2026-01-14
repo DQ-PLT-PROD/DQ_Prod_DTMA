@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
+import { ContentSkeleton } from '../../../../components/loading';
 interface MetricsOverviewProps {
     isLoading: boolean;
 }
@@ -57,15 +58,7 @@ export const MetricsOverview: React.FC<MetricsOverviewProps> = ({
     if (isLoading) {
         return (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                {[1, 2, 3, 4].map((item) => (
-                    <div
-                        key={item}
-                        className="bg-white p-4 rounded-lg shadow-sm animate-pulse"
-                    >
-                        <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
-                        <div className="h-10 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                ))}
+                <ContentSkeleton variant="metric-card" count={4} className="contents" />
             </div>
         );
     }

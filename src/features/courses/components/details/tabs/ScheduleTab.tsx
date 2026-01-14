@@ -1,30 +1,116 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, PlayCircle, FileText } from "lucide-react";
 import { AudienceFitIndicator } from "../AudienceFitIndicator";
 
 interface ScheduleTabProps {
   item: any;
   audienceLevel?: string;
+  onDurationCalculated?: (duration: string) => void;
 }
 
-const ScheduleTab: React.FC<ScheduleTabProps> = ({ item, audienceLevel }) => {
+const ScheduleTab: React.FC<ScheduleTabProps> = ({ item, audienceLevel, onDurationCalculated }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [lessonDurations, setLessonDurations] = useState<Record<number, string>>({});
+  const [totalDurationFormatted, setTotalDurationFormatted] = useState<string>("");
 
-  const steps: Array<{ title: string; description?: string; duration?: string; type?: 'video' | 'reading' }> = useMemo(() => {
-    const ap = Array.isArray(item?.applicationProcess) ? item.applicationProcess : [];
-    // If no applicationProcess, we rely on the empty state below
+  // Get application process / lessons data
+  const applicationProcess = useMemo(() => {
+    return Array.isArray(item?.applicationProcess) ? item.applicationProcess : [];
+  }, [item?.applicationProcess]);
 
-    return ap
-      .map((s: any) => ({
+  // Preload video durations from actual video metadata (same methodology as learning page)
+  useEffect(() => {
+    if (applicationProcess.length === 0) return;
+
+    const fetchVideoDuration = (videoUrl: string): Promise<number> => {
+      return new Promise((resolve, reject) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        const timeout = setTimeout(() => {
+          video.src = '';
+          reject(new Error('Timeout loading video metadata'));
+        }, 10000);
+
+        video.onloadedmetadata = () => {
+          clearTimeout(timeout);
+          resolve(video.duration);
+          video.src = '';
+        };
+        video.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('Failed to load video'));
+        };
+        video.src = videoUrl;
+      });
+    };
+
+    const formatDuration = (seconds: number): string => {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${String(secs).padStart(2, '0')}`;
+    };
+
+    const formatTotalDuration = (seconds: number): string => {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      if (hours > 0) return `${hours} hr ${minutes} min`;
+      return `${minutes} min`;
+    };
+
+    const preloadAllDurations = async () => {
+      const durations: Record<number, string> = {};
+      let totalSeconds = 0;
+      let hasCalculatedDuration = false;
+
+      await Promise.allSettled(
+        applicationProcess.map(async (step: any, index: number) => {
+          if (step?.videoUrl) {
+            try {
+              const durationSeconds = await fetchVideoDuration(step.videoUrl);
+              durations[index] = formatDuration(durationSeconds);
+              totalSeconds += durationSeconds;
+              hasCalculatedDuration = true;
+            } catch {
+              // Keep DB fallback if fetch fails
+              // Try to parse DB duration if available to add to total
+              if (step.estimatedDurationMinutes) {
+                totalSeconds += step.estimatedDurationMinutes * 60;
+              }
+            }
+          } else if (step?.estimatedDurationMinutes) {
+            totalSeconds += step.estimatedDurationMinutes * 60;
+          }
+        })
+      );
+
+      setLessonDurations(durations);
+      if (totalSeconds > 0) {
+        const formattedTotal = formatTotalDuration(totalSeconds);
+        setTotalDurationFormatted(formattedTotal);
+        onDurationCalculated?.(formattedTotal);
+      }
+    };
+
+    preloadAllDurations();
+  }, [applicationProcess]);
+
+  const steps: Array<{ title: string; description?: string; duration?: string; type?: 'video' | 'reading'; originalType?: string }> = useMemo(() => {
+    return applicationProcess
+      .map((s: any, idx: number) => ({
         title: s?.title || (typeof s?.week === "number" ? `Week ${s.week}` : ""),
         description: typeof s?.description === "string" ? s.description : "",
-        duration: s?.estimatedDurationMinutes
+        duration: lessonDurations[idx] || (s?.estimatedDurationMinutes
           ? `${s.estimatedDurationMinutes} min`
-          : undefined,
-        type: 'video'
+          : undefined),
+        type: 'video' as const,
+        originalType: s?.type
       }))
       .filter((s) => s.title);
-  }, [item?.applicationProcess, item?.lessonCount]);
+  }, [applicationProcess, lessonDurations]);
+
+  const displayLessonCount = useMemo(() => {
+    return applicationProcess.filter((l: any) => l.type !== 'intro' && l.type !== 'outro').length;
+  }, [applicationProcess]);
 
   const toggleStep = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -38,7 +124,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ item, audienceLevel }) => {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-gray-900">Course Outline</h3>
         <div className="text-sm text-gray-500 font-medium">
-          {item.lessonCount || steps.length} Lessons • {item.duration || "N/A"}
+          {displayLessonCount || item.lessonCount} Lessons • {totalDurationFormatted || item.duration || "N/A"}
         </div>
       </div>
 
@@ -58,7 +144,11 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ item, audienceLevel }) => {
                     h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold
                     ${openIndex === idx ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'}
                   `}>
-                    {idx + 1}
+                    {s.originalType === 'intro' || s.originalType === 'outro' ? (
+                      <PlayCircle size={16} />
+                    ) : (
+                      steps.slice(0, idx).filter(prev => prev.originalType !== 'intro' && prev.originalType !== 'outro').length + 1
+                    )}
                   </div>
                   <span className={`font-bold text-lg ${openIndex === idx ? 'text-gray-900' : 'text-gray-700'}`}>
                     {s.title}

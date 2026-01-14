@@ -15,13 +15,19 @@ interface EnrollmentButtonProps {
     onEnrollmentSuccess?: () => void;
     className?: string;
     variant?: 'primary' | 'secondary';
+    /** Formatted duration string (e.g., "1 hr 30 min") */
+    calculatedDuration?: string;
+    /** Accurate lesson count (excluding intro/outro) */
+    calculatedLessonCount?: number;
 }
 
 export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
     course,
     onEnrollmentSuccess,
     className = '',
-    variant = 'primary'
+    variant = 'primary',
+    calculatedDuration,
+    calculatedLessonCount
 }) => {
     const { user, databaseUser, login } = useAuth();
     const { showToast, ToastComponent } = useToast();
@@ -93,19 +99,19 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
             console.log('🚀 Starting enrollment for user:', databaseUser.id);
             const courseIdentifier = course.slug || course.id;
             const result = await enrollInCourse(databaseUser.id, courseIdentifier, 'explicit');
-            
+
             if (result.success) {
                 setEnrollmentStatus('enrolled');
                 setShowModal(false);
-                
+
                 console.log('✅ Successfully enrolled in course:', course.title);
-                
+
                 // Show success toast
                 showToast(
                     `🎉 Successfully enrolled in "${course.title}"! You now have full access to all course content.`,
                     'success'
                 );
-                
+
                 if (onEnrollmentSuccess) {
                     // Small delay to let user see the success message
                     setTimeout(() => {
@@ -168,7 +174,7 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
 
     const getButtonStyles = () => {
         const baseStyles = "flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
-        
+
         if (variant === 'secondary') {
             return `${baseStyles} bg-white text-blue-700 border-2 border-blue-600 hover:bg-blue-50 hover:text-blue-800 shadow-sm`;
         }
@@ -198,6 +204,8 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
                 onConfirm={handleEnrollmentConfirm}
                 course={course}
                 isLoading={isEnrolling}
+                calculatedDuration={calculatedDuration}
+                calculatedLessonCount={calculatedLessonCount}
             />
 
             {/* Toast Notifications */}

@@ -6,8 +6,8 @@ import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import {
     ChevronRight,
     ChevronLeft,
-    Loader2,
 } from "lucide-react";
+import { LoadingSpinner } from "../../../components/loading";
 import { useAuth } from "../../../components/Header";
 import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
@@ -23,7 +23,6 @@ import {
     Enrollment,
 } from "../services/progressService";
 import { isUserEnrolled } from "../../courses/services/enrollmentService";
-import { PreviewContentGate } from "../components/PreviewContentGate";
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
 
 // Defined so we can pass context up to the layout if we needed to (e.g. theater mode)
@@ -151,9 +150,15 @@ const CoursePlayerPage: React.FC = () => {
         loadCourseData();
     }, [courseId, databaseUser?.id]);
 
+    // Create a stable reference to lesson video URLs for the preload effect
+    const lessonVideoUrls = useMemo(
+        () => lessons.map(l => l.videoUrl).filter(Boolean).join(','),
+        [lessons]
+    );
+
     // Preload video durations
     useEffect(() => {
-        if (lessons.length === 0 || !courseId) return;
+        if (lessons.length === 0 || !courseId || !lessonVideoUrls) return;
 
         const fetchVideoDuration = (videoUrl: string): Promise<number> => {
             return new Promise((resolve, reject) => {
@@ -184,14 +189,25 @@ const CoursePlayerPage: React.FC = () => {
         };
 
         const preloadAllDurations = async () => {
+            console.log('📊 Preloading durations for', lessons.length, 'lessons');
             const durationPromises = lessons.map(async (lesson, index) => {
-                if (!lesson.videoUrl || (lesson.duration !== '--:--' && lesson.duration !== '')) {
+                // Skip lessons that already have a valid duration or no video URL
+                if (!lesson.videoUrl) {
+                    console.log(`⏭️ Lesson ${index}: No video URL, skipping`);
+                    return { index, duration: lesson.duration };
+                }
+                if (lesson.duration !== '--:--' && lesson.duration !== '') {
+                    console.log(`✅ Lesson ${index}: Already has duration: ${lesson.duration}`);
                     return { index, duration: lesson.duration };
                 }
                 try {
+                    console.log(`🎬 Lesson ${index}: Fetching duration for ${lesson.videoUrl}`);
                     const durationSeconds = await fetchVideoDuration(lesson.videoUrl);
-                    return { index, duration: formatDuration(durationSeconds) };
+                    const formatted = formatDuration(durationSeconds);
+                    console.log(`✅ Lesson ${index}: Duration fetched: ${formatted}`);
+                    return { index, duration: formatted };
                 } catch (error) {
+                    console.warn(`❌ Lesson ${index}: Failed to fetch duration`, error);
                     return { index, duration: '--:--' };
                 }
             });
@@ -212,9 +228,9 @@ const CoursePlayerPage: React.FC = () => {
         };
 
         preloadAllDurations();
-    }, [lessons.length, courseId]);
+    }, [lessons.length, courseId, lessonVideoUrls]);
 
-    // Check enrollment status
+    // Check enrollment status and redirect if not enrolled
     useEffect(() => {
         const checkEnrollmentStatus = async () => {
             if (!databaseUser?.id || !courseId) {
@@ -227,6 +243,12 @@ const CoursePlayerPage: React.FC = () => {
                 setEnrollmentLoading(true);
                 const enrolled = await isUserEnrolled(databaseUser.id, courseId);
                 setIsEnrolled(enrolled);
+
+                // Redirect unenrolled users to the course details page
+                if (!enrolled) {
+                    console.log('🚫 User not enrolled, redirecting to course details page');
+                    navigate(`/courses/${courseId}`, { replace: true });
+                }
             } catch (error) {
                 console.error('Error checking enrollment status:', error);
                 setIsEnrolled(false);
@@ -236,39 +258,9 @@ const CoursePlayerPage: React.FC = () => {
         };
 
         checkEnrollmentStatus();
-    }, [databaseUser?.id, courseId]);
+    }, [databaseUser?.id, courseId, navigate]);
 
-    // Auto-enrollment logic
-    useEffect(() => {
-        const handleAutoEnrollment = async () => {
-            if (!databaseUser?.id || lessons.length === 0 || enrollment || isEnrolled || !courseId) return;
-
-            try {
-                const enroll = await getOrCreateEnrollment(databaseUser.id, courseId);
-                setEnrollment(enroll);
-
-                if (enroll) {
-                    setIsEnrolled(true);
-                    const storageKey = `courseProgress_${courseId}`;
-                    const saved = localStorage.getItem(storageKey);
-                    if (saved) {
-                        const localLessons: Lesson[] = JSON.parse(saved);
-                        const localCompletedIds = localLessons
-                            .filter(l => l.completed)
-                            .map(l => ({ id: String(l.id), completed: true }));
-
-                        if (localCompletedIds.length > 0) {
-                            await syncLocalProgressToServer(databaseUser.id, courseId, localCompletedIds);
-                        }
-                    }
-                }
-            } catch (err) {
-                console.warn('Failed to create enrollment or sync progress:', err);
-            }
-        };
-
-        handleAutoEnrollment();
-    }, [databaseUser?.id, lessons.length, courseId, enrollment, isEnrolled]);
+    // Note: Auto-enrollment removed. Users must enroll via the course details page before accessing the portal.
 
     // Persist progress
     useEffect(() => {
@@ -458,7 +450,7 @@ const CoursePlayerPage: React.FC = () => {
             <main className={`flex-1 min-w-0 ${isTheater ? "p-0 h-full" : "p-3 md:p-4"} overflow-y-auto`}>
                 {isLoading ? (
                     <div className="flex h-full items-center justify-center">
-                        <Loader2 className="animate-spin text-blue-600" size={48} />
+                        <LoadingSpinner size="xl" label="Loading course..." />
                     </div>
                 ) : !activeLesson ? (
                     <div className="flex h-full items-center justify-center">
@@ -499,37 +491,26 @@ const CoursePlayerPage: React.FC = () => {
                                 </h1>
                             </div>
 
-                            <PreviewContentGate
-                                course={course!}
-                                isPreviewLesson={activeLesson?.isPreview || false}
-                                isUserEnrolled={isEnrolled}
-                                onEnrollmentSuccess={() => {
-                                    if (databaseUser?.id) {
-                                        isUserEnrolled(databaseUser.id, courseId!).then(setIsEnrolled);
-                                    }
-                                }}
-                            >
-                                <VideoPlayer
-                                    src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
-                                    poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
-                                    isPlaying={isPlaying}
-                                    volume={volume}
-                                    playbackRate={playbackRate}
-                                    currentTime={currentTime}
-                                    duration={duration}
-                                    captionsEnabled={captionsEnabled}
-                                    onPlayPause={handlePlayPause}
-                                    onVolumeChange={handleVolume}
-                                    onSpeedChange={handleSpeedChange}
-                                    onSeek={handleSeek}
-                                    onToggleCaptions={handleToggleCaptions}
-                                    onFullscreen={handleFullscreen}
-                                    onTimeUpdate={handleTimeUpdate}
-                                    onLoadedMetadata={handleLoadedMetadata}
-                                    onEnded={() => setIsPlaying(false)}
-                                    className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
-                                />
-                            </PreviewContentGate>
+                            <VideoPlayer
+                                src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
+                                poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
+                                isPlaying={isPlaying}
+                                volume={volume}
+                                playbackRate={playbackRate}
+                                currentTime={currentTime}
+                                duration={duration}
+                                captionsEnabled={captionsEnabled}
+                                onPlayPause={handlePlayPause}
+                                onVolumeChange={handleVolume}
+                                onSpeedChange={handleSpeedChange}
+                                onSeek={handleSeek}
+                                onToggleCaptions={handleToggleCaptions}
+                                onFullscreen={handleFullscreen}
+                                onTimeUpdate={handleTimeUpdate}
+                                onLoadedMetadata={handleLoadedMetadata}
+                                onEnded={() => setIsPlaying(false)}
+                                className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
+                            />
                         </div>
 
                         {/* Navigation Buttons */}

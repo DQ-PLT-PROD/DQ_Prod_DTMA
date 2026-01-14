@@ -6,10 +6,10 @@ import { useNavigate, Link } from "react-router-dom";
 import {
     Play,
     Clock,
-    Loader2,
     BookOpen,
     ChevronRight
 } from "lucide-react";
+import { LoadingSpinner } from "../../../components/loading";
 import { useAuth } from "../../../components/Header";
 import { getUserEnrollments, getActualProgressStats, Enrollment } from "../services/progressService";
 import { fetchFullCourse } from "../../courses/services/courseService";
@@ -100,7 +100,7 @@ const InProgressPage: React.FC = () => {
 
                     {isLoading ? (
                         <div className="flex items-center justify-center py-12">
-                            <Loader2 className="animate-spin text-[#1839AD]" size={32} />
+                            <LoadingSpinner size="lg" label="Loading courses..." />
                         </div>
                     ) : !user ? (
                         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
