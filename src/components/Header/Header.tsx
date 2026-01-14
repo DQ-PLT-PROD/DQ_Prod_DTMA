@@ -164,7 +164,9 @@ export function Header({
           {/* Right side actions */}
           <div className="flex items-center gap-4 relative">
             {user ? (
-              <ProfileDropdown />
+              <div className="hidden md:block">
+                <ProfileDropdown />
+              </div>
             ) : (
               <div className="hidden lg:flex items-center gap-2 text-sm font-medium">
                 <button
