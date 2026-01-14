@@ -10,6 +10,8 @@ import LearningScreen from "./features/learning/pages/LearningScreen";
 import { ComingSoon } from "./features/app/pages/ComingSoon";
 import { AuthCallback } from "./features/auth/components/AuthCallback";
 import { AuthDebugPanel } from "./features/auth/components/AuthDebugPanel";
+import { EnrollmentGuard } from "./features/courses/components/guards/EnrollmentGuard";
+import { PaymentSuccessHandler } from "./features/courses/components/payment/PaymentSuccessHandler";
 
 export function AppRouter() {
   return (
@@ -21,6 +23,9 @@ export function AppRouter() {
           {/* Course routes */}
           <Route path="/courses" element={<CourseCatalogPage />} />
           <Route path="/courses/:itemId" element={<CourseDetailsPage />} />
+          
+          {/* Payment success handler */}
+          <Route path="/payment/success" element={<PaymentSuccessHandler />} />
 
           {/* Legacy marketplace routes - redirect to new course routes */}
           <Route path="/marketplace/courses" element={<Navigate to="/courses" replace />} />
@@ -36,8 +41,15 @@ export function AppRouter() {
             }
           />
 
-          {/* Learning */}
-          <Route path="/learning" element={<LearningScreen />} />
+          {/* Learning - Protected by enrollment guard */}
+          <Route 
+            path="/learning" 
+            element={
+              <EnrollmentGuard allowPreview={true}>
+                <LearningScreen />
+              </EnrollmentGuard>
+            } 
+          />
 
           {/* Auth Debug Panel - for testing authentication and user sync */}
           <Route path="/auth-debug" element={
