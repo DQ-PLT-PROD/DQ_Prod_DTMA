@@ -158,8 +158,8 @@ export const getUserCourseProgress = async (
             .select("*")
             .eq("enrollment_id", enrollment.id);
 
-        const lessonProgress = progressError || !progressData 
-            ? [] 
+        const lessonProgress = progressError || !progressData
+            ? []
             : progressData.map(mapRowToLessonProgress);
 
         return { enrollment, lessonProgress };
@@ -278,7 +278,7 @@ export const syncLocalProgressToServer = async (
         // Update each completed lesson
         const updatePromises = localLessons
             .filter(lesson => lesson.completed)
-            .map(lesson => 
+            .map(lesson =>
                 updateLessonProgress(userId, courseSlug, lesson.id, true)
             );
 
@@ -287,7 +287,7 @@ export const syncLocalProgressToServer = async (
         // Calculate and update overall progress
         const completedCount = localLessons.filter(l => l.completed).length;
         const progressPct = Math.round((completedCount / localLessons.length) * 100);
-        
+
         await updateEnrollmentProgress(userId, courseSlug, progressPct);
 
         return true;
@@ -322,5 +322,63 @@ export const getUserEnrollments = async (userId: string): Promise<Enrollment[]> 
     } catch (err) {
         console.error("Error getting user enrollments:", err);
         return [];
+    }
+};
+
+/**
+ * Get actual progress stats by counting lesson completions (source of truth)
+ * This should be used for display instead of user_enrollments.progress_pct
+ */
+export const getActualProgressStats = async (
+    userId: string,
+    courseSlug: string
+): Promise<{ completedCount: number; totalCount: number; progressPct: number }> => {
+    const defaultResult = { completedCount: 0, totalCount: 0, progressPct: 0 };
+
+    if (!isSupabaseConfigured()) {
+        return defaultResult;
+    }
+
+    try {
+        const supabase = getProgressSupabase();
+
+        // Get enrollment to find enrollment_id
+        const { data: enrollmentData, error: enrollmentError } = await supabase
+            .from("user_enrollments")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("course_slug", courseSlug)
+            .single();
+
+        if (enrollmentError || !enrollmentData) {
+            return defaultResult;
+        }
+
+        // Get completed lessons count from lesson_progress
+        const { count: completedCount, error: progressError } = await supabase
+            .from("lesson_progress")
+            .select("*", { count: "exact", head: true })
+            .eq("enrollment_id", enrollmentData.id)
+            .eq("completed", true);
+
+        // Get total lessons count from lessons table
+        const { count: totalCount, error: lessonsError } = await supabase
+            .from("lessons")
+            .select("*", { count: "exact", head: true })
+            .eq("course_slug", courseSlug);
+
+        if (progressError || lessonsError) {
+            console.error("Error fetching progress stats:", progressError || lessonsError);
+            return defaultResult;
+        }
+
+        const completed = completedCount ?? 0;
+        const total = totalCount ?? 0;
+        const progressPct = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        return { completedCount: completed, totalCount: total, progressPct };
+    } catch (err) {
+        console.error("Error getting actual progress stats:", err);
+        return defaultResult;
     }
 };

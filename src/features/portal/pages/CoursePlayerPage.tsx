@@ -19,6 +19,7 @@ import {
     updateLessonProgress,
     updateEnrollmentProgress,
     syncLocalProgressToServer,
+    getUserCourseProgress,
     Enrollment,
 } from "../services/progressService";
 import { isUserEnrolled } from "../../courses/services/enrollmentService";
@@ -74,7 +75,7 @@ const CoursePlayerPage: React.FC = () => {
     const navigate = useNavigate();
     const { user, databaseUser } = useAuth();
 
-    // Fetch course, lessons, and resources
+    // Fetch course, lessons, resources, and user progress
     useEffect(() => {
         if (!courseId) return;
 
@@ -89,20 +90,52 @@ const CoursePlayerPage: React.FC = () => {
 
                 setCourse(fetchedCourse);
 
+                let completedLessonIds = new Set<string>();
+
+                // If user is logged in, fetch server-side progress
+                if (databaseUser?.id) {
+                    try {
+                        const { lessonProgress } = await getUserCourseProgress(databaseUser.id, courseId);
+                        lessonProgress.forEach(p => {
+                            if (p.completed) completedLessonIds.add(p.lessonId);
+                        });
+                    } catch (err) {
+                        console.warn("Failed to load server progress:", err);
+                    }
+                }
+
                 if (fetchedLessons.length > 0) {
                     setDbLessons(fetchedLessons);
 
+                    // Load local storage progress as a fallback/supplement
                     const storageKey = `courseProgress_${courseId}`;
                     const saved = localStorage.getItem(storageKey);
-                    const savedLessons: Lesson[] = saved ? JSON.parse(saved) : [];
-                    const completedIds = new Set<string>(
-                        savedLessons.filter(l => l.completed).map(l => String(l.id))
-                    );
+                    if (saved) {
+                        try {
+                            const savedLessons: Lesson[] = JSON.parse(saved);
+                            savedLessons.forEach(l => {
+                                if (l.completed) completedLessonIds.add(String(l.id));
+                            });
+                        } catch (e) {
+                            console.warn("Failed to parse local progress", e);
+                        }
+                    }
 
                     const uiLessons = fetchedLessons.map((lesson, idx) =>
-                        toUILesson(lesson, idx, completedIds)
+                        toUILesson(lesson, idx, completedLessonIds)
                     );
                     setLessons(uiLessons);
+
+                    // If we have local completed lessons that weren't in DB, we should sync up
+                    if (databaseUser?.id && saved) {
+                        const localLessons: Lesson[] = JSON.parse(saved);
+                        const localCompleted = localLessons.filter(l => l.completed).map(l => ({ id: String(l.id), completed: true }));
+                        if (localCompleted.length > 0) {
+                            // This is 'fire and forget' to ensure server is caught up
+                            syncLocalProgressToServer(databaseUser.id, courseId, localCompleted);
+                        }
+                    }
+
                 } else {
                     setLessons([]);
                 }
@@ -116,7 +149,7 @@ const CoursePlayerPage: React.FC = () => {
         };
 
         loadCourseData();
-    }, [courseId]);
+    }, [courseId, databaseUser?.id]);
 
     // Preload video durations
     useEffect(() => {
@@ -279,7 +312,8 @@ const CoursePlayerPage: React.FC = () => {
             )
         );
 
-        if (enrollment && databaseUser?.id && courseId) {
+        // Use isEnrolled instead of enrollment to ensure sync works for all enrolled users
+        if (isEnrolled && databaseUser?.id && courseId) {
             try {
                 await updateLessonProgress(databaseUser.id, courseId, String(lesson.id), true);
                 const newCompletedCount = lessons.filter(l => l.completed).length + 1;
@@ -289,7 +323,7 @@ const CoursePlayerPage: React.FC = () => {
                 console.warn('Failed to sync lesson completion to server:', err);
             }
         }
-    }, [lessons, enrollment, databaseUser?.id, courseId]);
+    }, [lessons, isEnrolled, databaseUser?.id, courseId]);
 
     const handleTimeUpdate = (time: number, totalDuration: number) => {
         setCurrentTime(time);

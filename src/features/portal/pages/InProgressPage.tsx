@@ -11,12 +11,13 @@ import {
     ChevronRight
 } from "lucide-react";
 import { useAuth } from "../../../components/Header";
-import { getUserEnrollments, Enrollment } from "../services/progressService";
+import { getUserEnrollments, getActualProgressStats, Enrollment } from "../services/progressService";
 import { fetchFullCourse } from "../../courses/services/courseService";
 import { Course } from "../../../types/dtma-lms";
 
 interface CourseWithProgress extends Enrollment {
     course?: Course | null;
+    actualProgress?: { completedCount: number; totalCount: number; progressPct: number };
 }
 
 const InProgressPage: React.FC = () => {
@@ -43,11 +44,14 @@ const InProgressPage: React.FC = () => {
                 setIsLoading(true);
                 const userEnrollments = await getUserEnrollments(databaseUser.id);
 
-                // Fetch course details for each enrollment
+                // Fetch course details AND actual progress for each enrollment
                 const enrollmentsWithCourses = await Promise.all(
                     userEnrollments.map(async (enrollment) => {
-                        const course = await fetchFullCourse(enrollment.courseSlug);
-                        return { ...enrollment, course };
+                        const [course, actualProgress] = await Promise.all([
+                            fetchFullCourse(enrollment.courseSlug),
+                            getActualProgressStats(databaseUser.id, enrollment.courseSlug)
+                        ]);
+                        return { ...enrollment, course, actualProgress };
                     })
                 );
 
@@ -152,16 +156,16 @@ const InProgressPage: React.FC = () => {
                                                 {enrollment.course?.title || enrollment.courseSlug}
                                             </h3>
 
-                                            {/* Progress Bar */}
+                                            {/* Progress Bar - uses actual lesson completion count as source of truth */}
                                             <div className="flex items-center gap-3 mt-2">
                                                 <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                                                     <div
                                                         className="h-full bg-[#1839AD] rounded-full transition-all"
-                                                        style={{ width: `${enrollment.progressPct}%` }}
+                                                        style={{ width: `${enrollment.actualProgress?.progressPct ?? enrollment.progressPct}%` }}
                                                     />
                                                 </div>
                                                 <span className="text-sm font-semibold text-[#1839AD]">
-                                                    {Math.round(enrollment.progressPct)}%
+                                                    {enrollment.actualProgress?.progressPct ?? Math.round(enrollment.progressPct)}%
                                                 </span>
                                             </div>
 
