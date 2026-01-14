@@ -211,6 +211,29 @@ const CourseDetailsPage: React.FC = () => {
     }
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: item?.title || "Course",
+      text: item?.description || "",
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // User cancelled or error - silently ignore
+      }
+    } else {
+      // Fallback: copy URL to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert("Link copied to clipboard!");
+      } catch {
+        // Clipboard API not available
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -545,7 +568,9 @@ const CourseDetailsPage: React.FC = () => {
                   className="flex-1 sm:flex-none px-6 py-3 bg-blue-600 text-white font-bold text-base rounded-xl shadow-xl hover:bg-blue-700 transition-all transform hover:-translate-y-1"
                 />
                 <button
+                  onClick={handleShare}
                   className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
+                  aria-label="Share this course"
                 >
                   <Share2Icon size={20} />
                 </button>

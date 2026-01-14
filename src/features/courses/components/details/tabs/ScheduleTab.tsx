@@ -18,7 +18,9 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ item, audienceLevel }) => {
       .map((s: any) => ({
         title: s?.title || (typeof s?.week === "number" ? `Week ${s.week}` : ""),
         description: typeof s?.description === "string" ? s.description : "",
-        duration: s?.duration || "15 mins",
+        duration: s?.estimatedDurationMinutes
+          ? `${s.estimatedDurationMinutes} min`
+          : undefined,
         type: 'video'
       }))
       .filter((s) => s.title);
@@ -34,9 +36,9 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ item, audienceLevel }) => {
         <AudienceFitIndicator audienceLevel={audienceLevel} />
       )}
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-gray-900">Course Schedule</h3>
+        <h3 className="text-xl font-bold text-gray-900">Course Outline</h3>
         <div className="text-sm text-gray-500 font-medium">
-          {steps.length} Lessons • {item.duration || "55m total"}
+          {item.lessonCount || steps.length} Lessons • {item.duration || "N/A"}
         </div>
       </div>
 
@@ -64,7 +66,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ item, audienceLevel }) => {
                 </div>
                 <div className="flex items-center gap-4">
                   {s.duration && (
-                    <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full">
                       {s.type === 'video' ? <PlayCircle size={12} /> : <FileText size={12} />}
                       {s.type === 'video' ? 'Video' : 'Reading'}
                       <span className="mx-1">•</span>

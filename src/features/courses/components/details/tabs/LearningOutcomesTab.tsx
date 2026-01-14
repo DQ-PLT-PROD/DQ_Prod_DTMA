@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircleIcon } from "lucide-react";
+import { CheckCircleIcon, InfoIcon } from "lucide-react";
 
 interface LearningOutcomesTabProps {
   outcomes: string[];
@@ -49,8 +49,15 @@ const LearningOutcomesTab: React.FC<LearningOutcomesTabProps> = ({ outcomes, ski
         ) : (
           <p className="text-gray-700 mb-3">Course completion benefits will be provided by the training partner.</p>
         )}
-        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded border border-blue-100">
-          Businesses report an average of 40% improvement in relevant metrics within 6 months of course completion.
+        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded border border-blue-100 flex items-start gap-2">
+          <InfoIcon
+            size={16}
+            className="text-blue-500 flex-shrink-0 mt-0.5 cursor-help"
+            title="This statistic is based on aggregated survey data from course completers across multiple industries."
+          />
+          <span>
+            Businesses report an average of 40% improvement in relevant metrics within 6 months of course completion.
+          </span>
         </div>
       </div>
     </div>

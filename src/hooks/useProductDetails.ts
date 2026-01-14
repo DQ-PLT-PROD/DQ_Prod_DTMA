@@ -103,6 +103,7 @@ export function useProductDetails({
         week: lesson.orderIndex,
         title: lesson.title,
         description: lesson.content || "",
+        estimatedDurationMinutes: lesson.estimatedDurationMinutes,
       }));
     }
 
@@ -110,6 +111,7 @@ export function useProductDetails({
       course.introLessonId &&
       lessonList.find((lesson) => lesson.id === course.introLessonId);
     const firstIntro = introLesson || lessonList.find((lesson) => lesson.type === "intro");
+
 
     const highlights = course.learningOutcomes && course.learningOutcomes.length > 0
       ? course.learningOutcomes
