@@ -19,14 +19,34 @@ export interface CourseEnrollment {
     userId: string;
     courseSlug: string;
     enrolledAt: string;
-    status: 'active' | 'revoked';
-    enrollmentMethod: 'explicit' | 'auto' | 'admin';
+    status: 'active' | 'cancelled' | 'expired';
+    enrollmentMethod: 'explicit' | 'auto';
+    cancelledAt?: string | null;
 }
 
 export interface EnrollmentResult {
     success: boolean;
     enrollment?: CourseEnrollment;
     error?: string;
+}
+
+/**
+ * Access Contract - Standardized interface for access control
+ * Spec requirement: Stable read contract for other features
+ */
+export interface AccessContract {
+    isEnrolled: boolean;
+    enrollmentStatus: 'active' | 'cancelled' | 'expired' | null;
+    subscriptionStatus?: 'active' | 'inactive' | null;
+}
+
+export interface Subscription {
+    id: string;
+    userId: string;
+    planId: string;
+    status: 'active' | 'inactive';
+    provider: string;
+    createdAt: string;
 }
 
 /**
@@ -45,8 +65,9 @@ const mapRowToEnrollment = (row: UserEnrollmentRow): CourseEnrollment => ({
     userId: row.user_id,
     courseSlug: row.course_slug,
     enrolledAt: row.started_at,
-    status: (row.status as 'active' | 'revoked') || 'active',
+    status: (row.status as 'active' | 'cancelled' | 'expired') || 'active',
     enrollmentMethod: (row.enrollment_method as 'explicit' | 'auto') || 'auto',
+    cancelledAt: (row as any).cancelled_at || null,
 });
 
 /**
@@ -206,51 +227,15 @@ export const enrollInCourse = async (
 };
 
 /**
- * Unenroll user from a course (revoke enrollment)
+ * Unenroll user from a course (legacy function, use cancelEnrollment instead)
+ * @deprecated Use cancelEnrollment for spec compliance
  */
 export const unenrollFromCourse = async (
     userId: string,
     courseSlug: string
 ): Promise<EnrollmentResult> => {
-    if (!isSupabaseConfigured()) {
-        return {
-            success: false,
-            error: "Database not configured"
-        };
-    }
-
-    try {
-        const supabase = getEnrollmentSupabase();
-
-        const { data, error } = await supabase
-            .from("user_enrollments")
-            .update({
-                status: 'revoked',
-                updated_at: new Date().toISOString()
-            })
-            .eq("user_id", userId)
-            .eq("course_slug", courseSlug)
-            .select()
-            .single();
-
-        if (error) {
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-
-        return {
-            success: true,
-            enrollment: data ? mapRowToEnrollment(data) : undefined
-        };
-    } catch (err) {
-        console.error("Error unenrolling from course:", err);
-        return {
-            success: false,
-            error: "Failed to unenroll from course"
-        };
-    }
+    // Delegate to cancelEnrollment for consistency
+    return await cancelEnrollment(userId, courseSlug);
 };
 
 /**
@@ -332,4 +317,208 @@ export const validateEnrollmentEligibility = async (
     return {
         eligible: true
     };
+};
+
+/**
+ * Get user's active subscription (if any)
+ * Spec requirement: Support subscription status in access contract
+ */
+export const getUserSubscription = async (
+    userId: string
+): Promise<Subscription | null> => {
+    if (!isSupabaseConfigured()) {
+        return null;
+    }
+
+    try {
+        const supabase = getEnrollmentSupabase();
+        const { data, error } = await supabase
+            .from("subscriptions")
+            .select("*")
+            .eq("user_id", userId)
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+        if (error) {
+            // If no subscription found, return null (not an error)
+            if (error.code === 'PGRST116') {
+                return null;
+            }
+            console.error("Error getting subscription:", error);
+            return null;
+        }
+
+        return {
+            id: data.id,
+            userId: data.user_id,
+            planId: data.plan_id,
+            status: data.status as 'active' | 'inactive',
+            provider: data.provider,
+            createdAt: data.created_at,
+        };
+    } catch (err) {
+        console.error("Error getting subscription:", err);
+        return null;
+    }
+};
+
+/**
+ * Get Access Contract - Standardized interface for access control
+ * Spec requirement: Stable read contract consumed by other features
+ * 
+ * This is the AUTHORITATIVE function for determining access rights.
+ * All features should use this instead of querying tables directly.
+ */
+export const getAccessContract = async (
+    userId: string | null,
+    courseSlug: string
+): Promise<AccessContract> => {
+    // Non-authenticated users have no access
+    if (!userId) {
+        return {
+            isEnrolled: false,
+            enrollmentStatus: null,
+            subscriptionStatus: null,
+        };
+    }
+
+    if (!isSupabaseConfigured()) {
+        return {
+            isEnrolled: false,
+            enrollmentStatus: null,
+            subscriptionStatus: null,
+        };
+    }
+
+    try {
+        // Get enrollment and subscription in parallel
+        const [enrollment, subscription] = await Promise.all([
+            getEnrollment(userId, courseSlug),
+            getUserSubscription(userId),
+        ]);
+
+        return {
+            isEnrolled: enrollment?.status === 'active',
+            enrollmentStatus: enrollment?.status || null,
+            subscriptionStatus: subscription?.status || null,
+        };
+    } catch (err) {
+        console.error("Error getting access contract:", err);
+        return {
+            isEnrolled: false,
+            enrollmentStatus: null,
+            subscriptionStatus: null,
+        };
+    }
+};
+
+/**
+ * Cancel enrollment (spec-aligned naming)
+ * Spec requirement: cancelEnrollment(courseId)
+ */
+export const cancelEnrollment = async (
+    userId: string,
+    courseSlug: string
+): Promise<EnrollmentResult> => {
+    if (!isSupabaseConfigured()) {
+        return {
+            success: false,
+            error: "Database not configured"
+        };
+    }
+
+    try {
+        const supabase = getEnrollmentSupabase();
+
+        const { data, error } = await supabase
+            .from("user_enrollments")
+            .update({ 
+                status: 'cancelled',
+                cancelled_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            })
+            .eq("user_id", userId)
+            .eq("course_slug", courseSlug)
+            .eq("status", "active")
+            .select()
+            .single();
+
+        if (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+
+        return {
+            success: true,
+            enrollment: data ? mapRowToEnrollment(data) : undefined
+        };
+    } catch (err) {
+        console.error("Error cancelling enrollment:", err);
+        return {
+            success: false,
+            error: "Failed to cancel enrollment"
+        };
+    }
+};
+
+/**
+ * Re-enroll in a course (reactivate cancelled/expired enrollment)
+ */
+export const reEnrollInCourse = async (
+    userId: string,
+    courseSlug: string
+): Promise<EnrollmentResult> => {
+    if (!isSupabaseConfigured()) {
+        return {
+            success: false,
+            error: "Database not configured"
+        };
+    }
+
+    try {
+        const supabase = getEnrollmentSupabase();
+
+        // Check if there's a cancelled or expired enrollment
+        const existingEnrollment = await getEnrollment(userId, courseSlug);
+        
+        if (existingEnrollment && (existingEnrollment.status === 'cancelled' || existingEnrollment.status === 'expired')) {
+            // Reactivate existing enrollment
+            const { data, error } = await supabase
+                .from("user_enrollments")
+                .update({ 
+                    status: 'active',
+                    cancelled_at: null,
+                    updated_at: new Date().toISOString()
+                })
+                .eq("user_id", userId)
+                .eq("course_slug", courseSlug)
+                .select()
+                .single();
+
+            if (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+
+            return {
+                success: true,
+                enrollment: data ? mapRowToEnrollment(data) : undefined
+            };
+        } else {
+            // No existing enrollment, create new one
+            return await enrollInCourse(userId, courseSlug, 'explicit');
+        }
+    } catch (err) {
+        console.error("Error re-enrolling in course:", err);
+        return {
+            success: false,
+            error: "Failed to re-enroll in course"
+        };
+    }
 };

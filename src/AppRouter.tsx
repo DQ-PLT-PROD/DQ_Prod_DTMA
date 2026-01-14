@@ -10,8 +10,12 @@ import { PortalLayout } from "./features/portal/layout/PortalLayout";
 import InProgressPage from "./features/portal/pages/InProgressPage";
 import CoursePlayerPage from "./features/portal/pages/CoursePlayerPage";
 import { QuizAuditPage } from "./features/portal/pages/QuizAuditPage";
+import LearningScreen from "./features/learning/pages/LearningScreen";
 import { ComingSoon } from "./features/app/pages/ComingSoon";
+import { AuthCallback } from "./features/auth/components/AuthCallback";
 import { AuthDebugPanel } from "./features/auth/components/AuthDebugPanel";
+import { EnrollmentGuard } from "./features/courses/components/guards/EnrollmentGuard";
+import { PaymentSuccessHandler } from "./features/courses/components/payment/PaymentSuccessHandler";
 
 export function AppRouter() {
   return (
@@ -23,6 +27,9 @@ export function AppRouter() {
           {/* Course routes */}
           <Route path="/courses" element={<CourseCatalogPage />} />
           <Route path="/courses/:itemId" element={<CourseDetailsPage />} />
+          
+          {/* Payment success handler */}
+          <Route path="/payment/success" element={<PaymentSuccessHandler />} />
 
           {/* Legacy marketplace routes - redirect to new course routes */}
           <Route path="/marketplace/courses" element={<Navigate to="/courses" replace />} />
@@ -48,8 +55,15 @@ export function AppRouter() {
 
           <Route path="/portal/admin/audit-quizzes" element={<QuizAuditPage />} />
 
-          {/* Redirect /learning to /portal for backward compatibility */}
-          <Route path="/learning" element={<Navigate to="/portal" replace />} />
+          {/* Learning - Protected by enrollment guard */}
+          <Route 
+            path="/learning" 
+            element={
+              <EnrollmentGuard allowPreview={true}>
+                <LearningScreen />
+              </EnrollmentGuard>
+            } 
+          />
 
           {/* Auth Debug Panel - for testing authentication and user sync */}
           <Route path="/auth-debug" element={

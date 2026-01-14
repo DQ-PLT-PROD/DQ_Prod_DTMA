@@ -1,12 +1,15 @@
 /**
  * Enrollment Button Component
  * Handles enrollment state and CTA display
+ * Updated for Jan 29 Spec: Plan selection and payment integration
  */
 import React, { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle, Loader2 } from 'lucide-react';
+import { BookOpen, CheckCircle, Loader2, RotateCcw } from 'lucide-react';
 import { useAuth } from '../../../../components/Header';
-import { isUserEnrolled, enrollInCourse } from '../../services/enrollmentService';
+import { isUserEnrolled, enrollInCourse, getEnrollment } from '../../services/enrollmentService';
 import { EnrollmentModal } from './EnrollmentModal';
+import { PlanSelectionModal } from './PlanSelectionModal';
+import { courseRequiresPayment } from '../../services/paymentService';
 import { Course } from '../../../../types/dtma-lms';
 import { useToast } from '../../../../components/ui/Toast';
 
@@ -25,9 +28,11 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
 }) => {
     const { user, databaseUser, login } = useAuth();
     const { showToast, ToastComponent } = useToast();
-    const [enrollmentStatus, setEnrollmentStatus] = useState<'loading' | 'not-enrolled' | 'enrolled'>('loading');
+    const [enrollmentStatus, setEnrollmentStatus] = useState<'loading' | 'not-enrolled' | 'enrolled' | 'cancelled' | 'expired'>('loading');
     const [showModal, setShowModal] = useState(false);
+    const [showPlanModal, setShowPlanModal] = useState(false);
     const [isEnrolling, setIsEnrolling] = useState(false);
+    const [requiresPayment, setRequiresPayment] = useState(false);
 
     // Check enrollment status on mount and when user changes
     useEffect(() => {
@@ -54,9 +59,27 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
             try {
                 // Use slug if available, otherwise fall back to id
                 const courseIdentifier = course.slug || course.id;
-                const enrolled = await isUserEnrolled(databaseUser.id, courseIdentifier);
-                console.log('✅ Enrollment check result:', enrolled);
-                setEnrollmentStatus(enrolled ? 'enrolled' : 'not-enrolled');
+                console.log('🔍 Checking enrollment with identifier:', courseIdentifier);
+                
+                // Get full enrollment details to check status
+                const enrollment = await getEnrollment(databaseUser.id, courseIdentifier);
+                console.log('✅ Enrollment check result:', enrollment);
+                
+                if (!enrollment) {
+                    setEnrollmentStatus('not-enrolled');
+                } else if (enrollment.status === 'active') {
+                    setEnrollmentStatus('enrolled');
+                } else if (enrollment.status === 'cancelled') {
+                    setEnrollmentStatus('cancelled');
+                } else if (enrollment.status === 'expired') {
+                    setEnrollmentStatus('expired');
+                } else {
+                    setEnrollmentStatus('not-enrolled');
+                }
+                
+                // Check if course requires payment
+                const needsPayment = courseRequiresPayment(courseIdentifier);
+                setRequiresPayment(needsPayment);
             } catch (error) {
                 console.error('❌ Error checking enrollment status:', error);
                 setEnrollmentStatus('not-enrolled');
@@ -73,9 +96,21 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
             return;
         }
 
-        // If not enrolled, show enrollment modal
-        if (enrollmentStatus === 'not-enrolled') {
+        // If cancelled or expired, show re-enrollment option
+        if (enrollmentStatus === 'cancelled' || enrollmentStatus === 'expired') {
             setShowModal(true);
+            return;
+        }
+
+        // If not enrolled, check if payment is required
+        if (enrollmentStatus === 'not-enrolled') {
+            if (requiresPayment) {
+                // Show plan selection modal for paid courses
+                setShowPlanModal(true);
+            } else {
+                // Show enrollment confirmation for free courses
+                setShowModal(true);
+            }
             return;
         }
 
@@ -158,6 +193,15 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
             );
         }
 
+        if (enrollmentStatus === 'cancelled' || enrollmentStatus === 'expired') {
+            return (
+                <>
+                    <RotateCcw size={16} />
+                    Re-enroll
+                </>
+            );
+        }
+
         return (
             <>
                 <BookOpen size={16} />
@@ -176,6 +220,11 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
         // Primary variant - enrolled state
         if (enrollmentStatus === 'enrolled') {
             return `${baseStyles} bg-green-600 text-white hover:bg-green-700 shadow-md`;
+        }
+
+        // Primary variant - cancelled/expired state
+        if (enrollmentStatus === 'cancelled' || enrollmentStatus === 'expired') {
+            return `${baseStyles} bg-orange-600 text-white hover:bg-orange-700 shadow-md`;
         }
 
         // Primary variant - default state (not enrolled)
@@ -199,6 +248,19 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
                 course={course}
                 isLoading={isEnrolling}
             />
+
+            {databaseUser && (
+                <PlanSelectionModal
+                    isOpen={showPlanModal}
+                    onClose={() => setShowPlanModal(false)}
+                    course={course}
+                    userId={databaseUser.id}
+                    onPaymentInitiated={() => {
+                        setShowPlanModal(false);
+                        showToast('Redirecting to payment...', 'info');
+                    }}
+                />
+            )}
 
             {/* Toast Notifications */}
             {ToastComponent}
