@@ -271,6 +271,7 @@ const LearningScreen: React.FC = () => {
       const minutes = Math.floor(dur / 60);
       const seconds = Math.floor(dur % 60);
       const formattedDuration = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
       setLessons(prevLessons =>
         prevLessons.map((lesson, index) =>
           index === currentLessonIndex
@@ -382,9 +383,8 @@ const LearningScreen: React.FC = () => {
         {/* Minimal Side Navigation - Learning Page with collapse toggle (hidden in theater) */}
         {!isTheater && (
           <aside
-            className={`bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
-              sidebarOpen ? "w-60" : "w-16"
-            } hidden lg:flex flex-col shrink-0`}
+            className={`bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${sidebarOpen ? "w-60" : "w-16"
+              } hidden lg:flex flex-col shrink-0`}
           >
             <nav>
               <div
@@ -432,9 +432,8 @@ const LearningScreen: React.FC = () => {
         {/* Mobile sidebar */}
         {!isTheater && (
           <aside
-            className={`fixed inset-y-0 left-0 z-30 bg-white w-60 transform transition-transform duration-300 ease-in-out lg:hidden ${
-              sidebarOpen ? "translate-x-0" : "-translate-x-full"
-            }`}
+            className={`fixed inset-y-0 left-0 z-30 bg-white w-60 transform transition-transform duration-300 ease-in-out lg:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+              }`}
             style={{ top: '56px' }}
           >
             <nav className="py-4">
@@ -521,9 +520,7 @@ const LearningScreen: React.FC = () => {
                   )}
                   {/* Title Overlay - transparent strip over video */}
                   <div
-                    className={`absolute top-3 left-3 right-3 z-10 px-4 py-3 bg-black/40 backdrop-blur-sm rounded-lg transition-opacity duration-300 ${
-                      isPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"
-                    }`}
+                    className={`absolute top-3 left-3 right-3 z-10 px-4 py-3 bg-black/40 backdrop-blur-sm rounded-lg transition-opacity duration-300 ${isPlaying ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
                   >
                     <p className="text-white/90 text-lg font-semibold">
                       {courseTitle}
@@ -591,11 +588,10 @@ const LearningScreen: React.FC = () => {
                     <button
                       onClick={handleNext}
                       disabled={atLastLesson || !isNextLessonUnlocked}
-                      className={`px-4 py-2.5 rounded-lg font-medium flex items-center gap-2 transition ${
-                        atLastLesson || !isNextLessonUnlocked
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "bg-[#1839AD] text-white hover:bg-[#132b7c] shadow-sm"
-                      }`}
+                      className={`px-4 py-2.5 rounded-lg font-medium flex items-center gap-2 transition ${atLastLesson || !isNextLessonUnlocked
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-[#1839AD] text-white hover:bg-[#132b7c] shadow-sm"
+                        }`}
                       title={!isNextLessonUnlocked && !atLastLesson ? "Watch until 1 minute before the end to unlock next lesson" : ""}
                     >
                       Next Lesson
