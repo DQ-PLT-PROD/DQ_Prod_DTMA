@@ -8,6 +8,7 @@ import { validateAndLogClaims, extractUserProfile } from '../../../utils/claimsV
 import { fetchUserFromGraph, GraphUser } from '../services/graphService';
 import { logAuthenticationState } from '../../../utils/authTester';
 import { syncUserWithDatabase, getUserByAzureId, updateUserLastLogin, updateUserProfile, DatabaseUser } from '../services/userService';
+import { getLearnerProfile } from '../../learner/services/learnerProfileService';
 
 interface UserProfile {
   id: string;
@@ -83,7 +84,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [useMockAuth]);
 
   // Fix loading state - should only be loading during actual auth operations
-  const isLoading = useMockAuth ? false : (inProgress === 'login' || inProgress === 'ssoSilent' || inProgress === 'acquireToken');
+  const isLoading = useMockAuth
+    ? false
+    : (
+        inProgress === 'startup' ||
+        inProgress === 'handleRedirect' ||
+        inProgress === 'login' ||
+        inProgress === 'ssoSilent' ||
+        inProgress === 'acquireToken'
+      );
 
   const fetchGraphUserForAccount = async (account: any): Promise<GraphUser | null> => {
     try {
@@ -302,27 +311,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isLoading, accounts.length, inProgress, useMockAuth, bypassMode, accounts, instance]);
 
-  // Redirect to learning page after successful authentication (like test account)
+    // Redirect flow with onboarding gate:
+  // - Default landing after login is /portal
+  // - If onboarding is incomplete, redirect to /dashboard/onboarding first
   useEffect(() => {
-    if (user && !isLoading) {
-      const currentPath = location.pathname;
-
-      // Redirect to learning page just like the test account does
-      // But exclude the debug panel from redirects
-      if ((currentPath === '/' || currentPath.includes('signin')) && !currentPath.includes('auth-debug')) {
-        console.log('🎓 Real account authenticated! Redirecting to portal page from:', currentPath);
-        navigate('/portal', { replace: true });
-      } else if (currentPath === '/portal' || currentPath.startsWith('/portal/')) {
-        console.log('✅ Real account user is already on portal page');
-      } else if (currentPath.includes('auth-debug')) {
-        console.log('🔧 User accessing debug panel - no redirect needed');
-      } else {
-        console.log('ℹ️ Real account authenticated on page:', currentPath);
-      }
+    if (!user || isLoading || isDatabaseUserLoading) {
+      return;
     }
-  }, [user, isLoading, location.pathname, navigate]);
 
-  // MSAL Event Listener - Listen for login success events to immediately update state
+    const currentPath = location.pathname;
+    const isOnboardingRoute = currentPath.startsWith('/dashboard/onboarding');
+    const isPortalRoute = currentPath === '/portal' || currentPath.startsWith('/portal/');
+    const isSigninRoute = currentPath === '/' || currentPath.includes('signin');
+
+    if (currentPath.includes('auth-debug') || isOnboardingRoute) {
+      return;
+    }
+
+    if (!isPortalRoute && !isSigninRoute) {
+      return;
+    }
+
+    const azureUserId = databaseUser?.azure_user_id;
+    if (!azureUserId) {
+      if (isSigninRoute) {
+        navigate('/portal', { replace: true });
+      }
+      return;
+    }
+
+    let isCancelled = false;
+
+    const checkOnboarding = async () => {
+      const { profile, error } = await getLearnerProfile(azureUserId);
+      if (isCancelled) {
+        return;
+      }
+
+      if (error) {
+        console.warn('Onboarding gate: profile fetch failed, allowing portal access.', error);
+        if (isSigninRoute) {
+          navigate('/portal', { replace: true });
+        }
+        return;
+      }
+
+      const onboardingComplete = Boolean(profile?.onboardingCompleted);
+      if (!onboardingComplete) {
+        navigate('/dashboard/onboarding', { replace: true });
+        return;
+      }
+
+      if (isSigninRoute) {
+        navigate('/portal', { replace: true });
+      }
+    };
+
+    checkOnboarding();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    user,
+    isLoading,
+    isDatabaseUserLoading,
+    databaseUser?.azure_user_id,
+    location.pathname,
+    navigate,
+  ]);
+// MSAL Event Listener - Listen for login success events to immediately update state
   // This fixes the issue where users need to refresh the page after sign-in
   useEffect(() => {
     if (useMockAuth || bypassMode) return;
@@ -585,3 +643,4 @@ export function useAuth() {
   }
   return context;
 }
+

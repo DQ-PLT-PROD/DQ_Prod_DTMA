@@ -1,5 +1,6 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useMsal } from '@azure/msal-react';
 import { useAuth } from '../context/AuthContext';
 
 /**
@@ -11,20 +12,21 @@ const AUTO_LOGIN = true;
 
 const ProtectedRoute: React.FC<PropsWithChildren> = ({ children }) => {
     const { user, isLoading, login } = useAuth();
+    const { accounts } = useMsal();
     const location = useLocation();
     const navigate = useNavigate();
     const [hasTriggeredLogin, setHasTriggeredLogin] = useState(false);
 
     // Not authenticated: either auto-login or redirect to home
     useEffect(() => {
-        if (!isLoading && !user && AUTO_LOGIN && !hasTriggeredLogin) {
+        if (!isLoading && !user && AUTO_LOGIN && !hasTriggeredLogin && accounts.length === 0) {
             console.log('🔒 ProtectedRoute: User not authenticated, triggering login...');
             setHasTriggeredLogin(true);
             // Kick off MSAL redirect sign-in flow
             // MSAL will remember current URL so user returns to the same route
             login();
         }
-    }, [isLoading, user, login, hasTriggeredLogin]);
+    }, [isLoading, user, login, hasTriggeredLogin, accounts.length]);
 
     // Reset login trigger when user becomes authenticated
     useEffect(() => {
@@ -34,7 +36,8 @@ const ProtectedRoute: React.FC<PropsWithChildren> = ({ children }) => {
 
             // If user just logged in and is trying to access a protected route,
             // redirect them to the learning page instead
-            if (location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/forms')) {
+            const isOnboardingRoute = location.pathname.startsWith('/dashboard/onboarding');
+            if ((location.pathname.startsWith('/dashboard') && !isOnboardingRoute) || location.pathname.startsWith('/forms')) {
                 console.log('🎓 Redirecting newly authenticated user to portal...');
                 navigate('/portal', { replace: true });
             }
@@ -77,3 +80,5 @@ const ProtectedRoute: React.FC<PropsWithChildren> = ({ children }) => {
 };
 
 export default ProtectedRoute;
+
+

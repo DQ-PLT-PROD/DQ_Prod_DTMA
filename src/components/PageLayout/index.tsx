@@ -14,36 +14,36 @@ interface BreadcrumbsProps {
   'data-id'?: string;
 }
 
-// export function Breadcrumbs({ items, 'data-id': dataId }: BreadcrumbsProps) {
-//   return (
-//     <nav
-//       className="flex items-center gap-2 text-sm max-w-full overflow-hidden"
-//       style={{ whiteSpace: 'nowrap' }}
-//       aria-label="Breadcrumb"
-//       data-id={dataId}
-//     >
-//       {items.map((item, index) => (
-//         <Fragment key={index}>
-//           {index > 0 && <ChevronRight className="w-3 h-3 shrink-0 text-gray-400" />}
-//           {item.current ? (
-//             <span className="text-gray-900 font-medium flex items-center min-w-0 truncate">
-//               {index === 0 && <Home className="w-4 h-4 shrink-0 text-gray-400 mr-1" />}
-//               <span className="truncate">{item.label}</span>
-//             </span>
-//           ) : (
-//             <a
-//               href={item.href || '#'}
-//               className="text-gray-600 hover:text-gray-800 flex items-center min-w-0 truncate"
-//             >
-//               {index === 0 && <Home className="w-4 h-4 shrink-0 text-gray-400 mr-1" />}
-//               <span className="truncate">{item.label}</span>
-//             </a>
-//           )}
-//         </Fragment>
-//       ))}
-//     </nav>
-//   );
-// }
+export function Breadcrumbs({ items, 'data-id': dataId }: BreadcrumbsProps) {
+  return (
+    <nav
+      className="flex items-center gap-2 text-sm max-w-full overflow-hidden"
+      style={{ whiteSpace: 'nowrap' }}
+      aria-label="Breadcrumb"
+      data-id={dataId}
+    >
+      {items.map((item, index) => (
+        <Fragment key={index}>
+          {index > 0 && <ChevronRight className="w-3 h-3 shrink-0 text-gray-400" />}
+          {item.current ? (
+            <span className="text-gray-900 font-medium flex items-center min-w-0 truncate">
+              {index === 0 && <Home className="w-4 h-4 shrink-0 text-gray-400 mr-1" />}
+              <span className="truncate">{item.label}</span>
+            </span>
+          ) : (
+            <a
+              href={item.href || '#'}
+              className="text-gray-600 hover:text-gray-800 flex items-center min-w-0 truncate"
+            >
+              {index === 0 && <Home className="w-4 h-4 shrink-0 text-gray-400 mr-1" />}
+              <span className="truncate">{item.label}</span>
+            </a>
+          )}
+        </Fragment>
+      ))}
+    </nav>
+  );
+}
 
 
 interface PageHeaderProps {
@@ -54,22 +54,22 @@ interface PageHeaderProps {
   titleClassName?: string;
 }
 
-// export function PageHeader({
-//   title,
-//   breadcrumbs,
-//   'data-id': dataId,
-//   headerClassName = 'pb-4',
-//   titleClassName = 'text-3xl font-bold text-gray-900 mb-2',
-// }: PageHeaderProps) {
-//   return (
-//     <div className={headerClassName} data-id={dataId}>
-//       <h1 className={titleClassName}>{title}</h1>
-//       {breadcrumbs && breadcrumbs.length > 0 && (
-//         <Breadcrumbs items={breadcrumbs} />
-//       )}
-//     </div>
-//   );
-// }
+export function PageHeader({
+  title,
+  breadcrumbs,
+  'data-id': dataId,
+  headerClassName = 'pb-4',
+  titleClassName = 'text-3xl font-bold text-gray-900 mb-2',
+}: PageHeaderProps) {
+  return (
+    <div className={headerClassName} data-id={dataId}>
+      <h1 className={titleClassName}>{title}</h1>
+      {breadcrumbs && breadcrumbs.length > 0 && (
+        <Breadcrumbs items={breadcrumbs} />
+      )}
+    </div>
+  );
+}
 
 interface PageLayoutProps {
   title?: string;

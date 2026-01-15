@@ -10,6 +10,7 @@ import { useAuth } from "../../../components/Header";
 import { FEATURES } from "../../../config/features";
 import DashboardLayout from "./DashboardLayout";
 import { Overview } from "./overview";
+import LearnerOnboarding from "./onboarding";
 
 // Main Dashboard Router Component
 const DashboardRouter = () => {
@@ -65,7 +66,10 @@ const DashboardRouter = () => {
         <Route path="requests" element={<Navigate to="/404" replace />} />
         <Route path="reporting*" element={<Navigate to="/404" replace />} />
         <Route path="documents" element={<Navigate to="/404" replace />} />
-        <Route path="onboarding" element={<Navigate to="/404" replace />} />
+        <Route
+          path="onboarding"
+          element={<LearnerOnboarding setIsOpen={setIsOpen} isLoggedIn={isLoggedIn} />}
+        />
         <Route path="forms/*" element={<Navigate to="/404" replace />} />
 
         <Route path="*" element={<Navigate to="overview" replace />} />
