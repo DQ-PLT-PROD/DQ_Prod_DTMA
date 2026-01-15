@@ -149,7 +149,7 @@ export function Header({
             {/* Logo */}
             <Link to="/" className="flex items-center transition-all duration-300">
               <img
-                src="/DTMA%20LOGO%20WHITE.svg"
+                src="/logo/dtma-logo-white.svg"
                 alt="DTMA Logo"
                 className="object-contain w-[130px] h-[36px]"
               />

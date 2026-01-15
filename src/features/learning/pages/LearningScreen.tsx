@@ -348,7 +348,7 @@ const LearningScreen: React.FC = () => {
         <div className="px-6 py-3 flex items-center gap-6">
           {/* Logo */}
           <a href="/" className="flex items-center">
-            <img src="/DTMA LOGO WHITE.svg" alt="DTMA" className="h-8 w-auto" />
+            <img src="/logo/dtma-logo-white.svg" alt="DTMA" className="h-8 w-auto" />
           </a>
 
           {/* Navigation */}
