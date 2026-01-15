@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../../components/Header";
 import CourseAssessment from "../../courses/pages/CourseAssessment";
-import { VideoPlayer } from "../components/VideoPlayer";
+import { VideoPlayer } from "../../portal/components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
 import { Lesson, toUILesson } from "../../../types/course";
 import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
@@ -23,7 +23,7 @@ import {
   syncLocalProgressToServer,
 } from "../services/progressService";
 import { isUserEnrolled, canAccessLesson } from "../../courses/services/enrollmentService";
-import { PreviewContentGate } from "../components/PreviewContentGate";
+import { PreviewContentGate } from "../../portal/components/PreviewContentGate";
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
 import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";
 import { FEATURES } from "../../../config/features";
