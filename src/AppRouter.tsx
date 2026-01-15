@@ -8,10 +8,10 @@ import ProtectedRoute from "./features/auth/components/ProtectedRoute";
 import NotFound from "./features/app/pages/NotFound";
 import LearningScreen from "./features/learning/pages/LearningScreen";
 import { ComingSoon } from "./features/app/pages/ComingSoon";
-import { AuthCallback } from "./features/auth/components/AuthCallback";
 import { AuthDebugPanel } from "./features/auth/components/AuthDebugPanel";
 import { EnrollmentGuard } from "./features/courses/components/guards/EnrollmentGuard";
 import { PaymentSuccessHandler } from "./features/courses/components/payment/PaymentSuccessHandler";
+import RBACRoute from "./components/RBAC/RBACRoute";
 
 export function AppRouter() {
   return (
@@ -36,7 +36,21 @@ export function AppRouter() {
             path="/dashboard/*"
             element={
               <ProtectedRoute>
-                <DashboardRouter />
+                <RBACRoute>
+                  <DashboardRouter />
+                </RBACRoute>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Instructor routes */}
+          <Route
+            path="/instructor/*"
+            element={
+              <ProtectedRoute>
+                <RBACRoute>
+                  <ComingSoon />
+                </RBACRoute>
               </ProtectedRoute>
             }
           />

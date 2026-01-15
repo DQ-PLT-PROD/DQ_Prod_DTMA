@@ -6,6 +6,7 @@ import { MsalProvider } from "@azure/msal-react";
 import { msalInstance } from "./services/auth/msal";
 import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
 import { ApolloProvider } from "@apollo/client/react";
+import { AbilityProvider } from "./context/AbilityContext";
 
 const client = new ApolloClient({
   link: new HttpLink({
@@ -108,7 +109,9 @@ async function initializeApp() {
       root.render(
         <ApolloProvider client={client}>
           <MsalProvider instance={msalInstance}>
-            <AppRouter />
+            <AbilityProvider>
+              <AppRouter />
+            </AbilityProvider>
           </MsalProvider>
         </ApolloProvider>
       );
@@ -134,7 +137,9 @@ async function initializeApp() {
     root.render(
       <ApolloProvider client={client}>
         <MsalProvider instance={msalInstance}>
-          <AppRouter />
+          <AbilityProvider>
+            <AppRouter />
+          </AbilityProvider>
         </MsalProvider>
       </ApolloProvider>
     );
