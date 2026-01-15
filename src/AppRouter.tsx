@@ -6,12 +6,12 @@ import CourseDetailsPage from "./features/courses/pages/CourseDetailsPage";
 import DashboardRouter from "./features/dashboard/pages/DashboardRouter";
 import ProtectedRoute from "./features/auth/components/ProtectedRoute";
 import NotFound from "./features/app/pages/NotFound";
-import { PortalLayout } from "./features/portal/layout/PortalLayout";
-import InProgressPage from "./features/portal/pages/InProgressPage";
-import CoursePlayerPage from "./features/portal/pages/CoursePlayerPage";
-import { QuizAuditPage } from "./features/portal/pages/QuizAuditPage";
+import LearningScreen from "./features/learning/pages/LearningScreen";
 import { ComingSoon } from "./features/app/pages/ComingSoon";
+import { AuthCallback } from "./features/auth/components/AuthCallback";
 import { AuthDebugPanel } from "./features/auth/components/AuthDebugPanel";
+import { EnrollmentGuard } from "./features/courses/components/guards/EnrollmentGuard";
+import { PaymentSuccessHandler } from "./features/courses/components/payment/PaymentSuccessHandler";
 
 export function AppRouter() {
   return (
@@ -23,6 +23,9 @@ export function AppRouter() {
           {/* Course routes */}
           <Route path="/courses" element={<CourseCatalogPage />} />
           <Route path="/courses/:itemId" element={<CourseDetailsPage />} />
+          
+          {/* Payment success handler */}
+          <Route path="/payment/success" element={<PaymentSuccessHandler />} />
 
           {/* Legacy marketplace routes - redirect to new course routes */}
           <Route path="/marketplace/courses" element={<Navigate to="/courses" replace />} />
@@ -38,22 +41,15 @@ export function AppRouter() {
             }
           />
 
-          {/* Portal / Learning */}
-          <Route path="/portal" element={
-            <ProtectedRoute>
-              <PortalLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Navigate to="my-courses/in-progress" replace />} />
-            <Route path="my-courses/in-progress" element={<InProgressPage />} />
-            <Route path="learning/:courseId" element={<CoursePlayerPage />} />
-            {/* Backward compatibility for /learning?courseId=... */}
-          </Route>
-
-          <Route path="/portal/admin/audit-quizzes" element={<QuizAuditPage />} />
-
-          {/* Redirect /learning to /portal for backward compatibility */}
-          <Route path="/learning" element={<Navigate to="/portal" replace />} />
+          {/* Learning - Protected by enrollment guard */}
+          <Route 
+            path="/learning" 
+            element={
+              <EnrollmentGuard allowPreview={true}>
+                <LearningScreen />
+              </EnrollmentGuard>
+            } 
+          />
 
           {/* Auth Debug Panel - for testing authentication and user sync */}
           <Route path="/auth-debug" element={

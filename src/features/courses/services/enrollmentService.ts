@@ -71,6 +71,15 @@ const mapRowToEnrollment = (row: UserEnrollmentRow): CourseEnrollment => ({
 });
 
 /**
+ * Get current user from auth context
+ */
+const getCurrentUser = () => {
+    // This will be called from components that have access to auth context
+    // For now, we'll require userId to be passed in
+    return null;
+};
+
+/**
  * Check if user is enrolled in a course
  * FR3: Access enforcement point
  */
@@ -154,7 +163,7 @@ export const getEnrollment = async (
 export const enrollInCourse = async (
     userId: string,
     courseSlug: string,
-    method: 'explicit' | 'auto' | 'admin' = 'explicit'
+    method: 'explicit' | 'auto' = 'explicit'
 ): Promise<EnrollmentResult> => {
     if (!isSupabaseConfigured()) {
         return {
@@ -168,7 +177,7 @@ export const enrollInCourse = async (
         console.log('User ID:', userId);
         console.log('Course Slug:', courseSlug);
         console.log('Method:', method);
-
+        
         const supabase = getEnrollmentSupabase();
         console.log('✅ Got Supabase client for enrollment');
 
@@ -306,7 +315,7 @@ export const validateEnrollmentEligibility = async (
     // - Audience level validation
     // - Course capacity limits
     // - Enrollment periods
-
+    
     if (!userId) {
         return {
             eligible: false,
