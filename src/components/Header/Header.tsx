@@ -149,7 +149,7 @@ export function Header({
             {/* Logo */}
             <Link to="/" className="flex items-center transition-all duration-300">
               <img
-                src="/logo/dtma-logo-white.svg"
+                src="/DTMA%20LOGO%20WHITE.svg"
                 alt="DTMA Logo"
                 className="object-contain w-[130px] h-[36px]"
               />
@@ -164,9 +164,7 @@ export function Header({
           {/* Right side actions */}
           <div className="flex items-center gap-4 relative">
             {user ? (
-              <div className="hidden md:block">
-                <ProfileDropdown />
-              </div>
+              <ProfileDropdown />
             ) : (
               <div className="hidden lg:flex items-center gap-2 text-sm font-medium">
                 <button

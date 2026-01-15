@@ -1,12 +1,12 @@
-import React, { createContext, useContext, ReactNode, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useState, useCallback } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { EventType, EventMessage, AuthenticationResult } from '@azure/msal-browser';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { interactiveLoginRequest } from '../../../services/auth/msal';
+import { loginRequest, interactiveLoginRequest } from '../../../services/auth/msal';
 import { mockAuthService, MockUser } from '../../../services/auth/mockAuth';
 import { validateAndLogClaims, extractUserProfile } from '../../../utils/claimsValidator';
-import { fetchUserFromGraph, GraphUser } from '../services/graphService';
-import { logAuthenticationState } from '../../../utils/authTester';
+import { fetchUserFromGraph, mergeGraphUserData } from '../services/graphService';
+import { logAuthenticationState, validateTokenResponse } from '../../../utils/authTester';
 import { syncUserWithDatabase, getUserByAzureId, updateUserLastLogin, updateUserProfile, DatabaseUser } from '../services/userService';
 
 interface UserProfile {
@@ -23,9 +23,6 @@ interface AuthContextType {
   user: UserProfile | null;
   databaseUser: DatabaseUser | null;
   isLoading: boolean;
-  isDatabaseUserLoading: boolean;
-  isRedirecting: boolean;
-  setIsRedirecting: (value: boolean) => void;
   login: () => void;
   signup: () => void;
   logout: () => void;
@@ -39,9 +36,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [mockUser, setMockUser] = useState<UserProfile | null>(null);
   const [databaseUser, setDatabaseUser] = useState<DatabaseUser | null>(null);
   const [loginInProgress, setLoginInProgress] = useState(false);
-  const [isDatabaseUserLoading, setIsDatabaseUserLoading] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(false);
-  const databaseLoadCount = useRef(0);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -88,162 +82,107 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fix loading state - should only be loading during actual auth operations
   const isLoading = useMockAuth ? false : (inProgress === 'login' || inProgress === 'ssoSilent' || inProgress === 'acquireToken');
 
-  const fetchGraphUserForAccount = async (account: any): Promise<GraphUser | null> => {
-    try {
-      const tokenRequest = {
-        scopes: ["User.Read"],
-        account,
-      };
-
-      const response = await instance.acquireTokenSilent(tokenRequest);
-      if (!response?.accessToken) {
-        console.warn('No access token available for Graph fetch');
-        return null;
-      }
-
-      return await fetchUserFromGraph(response.accessToken);
-    } catch (error) {
-      console.warn('Could not fetch user info from Graph:', error);
-      return null;
-    }
-  };
-
   // Helper function to extract user information from MSAL account and sync with database
   const extractUserFromAccount = async (account: any): Promise<UserProfile | null> => {
     if (!account) return null;
-    databaseLoadCount.current += 1;
-    setIsDatabaseUserLoading(true);
 
+    console.log('🔍 Extracting user info from account:', account);
+    console.log('🔍 Account properties:', {
+      localAccountId: account.localAccountId,
+      homeAccountId: account.homeAccountId,
+      name: account.name,
+      username: account.username
+    });
+
+    // Validate and process ID token claims
+    const idTokenClaims = account.idTokenClaims || {};
+    const validatedClaims = validateAndLogClaims(idTokenClaims);
+
+    // Extract user profile from validated claims
+    const userProfile = extractUserProfile(validatedClaims);
+
+    // Fallback to account properties if claims are insufficient
+    if (!userProfile.id || userProfile.id === 'unknown-user') {
+      userProfile.id = account.localAccountId || account.homeAccountId || 'user-' + Date.now();
+    }
+
+    if (!userProfile.name || userProfile.name === 'User') {
+      userProfile.name = account.name || account.username || 'User';
+    }
+
+    if (!userProfile.email || userProfile.email === 'user@domain.com') {
+      userProfile.email = account.username || 'user@domain.com';
+    }
+
+    console.log('✅ Final extracted user info:', userProfile);
+
+    // Sync user with database
     try {
-      console.log('🔍 Extracting user info from account:', account);
-      console.log('🔍 Account properties:', {
-        localAccountId: account.localAccountId,
-        homeAccountId: account.homeAccountId,
-        name: account.name,
-        username: account.username
+      console.log('🔄 Syncing user with database...');
+      console.log('🔧 Supabase config check:', {
+        url: !!import.meta.env.VITE_SUPABASE_URL,
+        key: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+        urlValue: import.meta.env.VITE_SUPABASE_URL?.substring(0, 20) + '...'
       });
 
-      // Validate and process ID token claims
-      const idTokenClaims = account.idTokenClaims || {};
-      const validatedClaims = validateAndLogClaims(idTokenClaims);
+      const azureUserId = account.localAccountId || account.homeAccountId;
 
-      // Extract user profile from validated claims
-      const userProfile = extractUserProfile(validatedClaims);
+      // Check if user already exists
+      let dbUser = await getUserByAzureId(azureUserId);
 
-      // Fallback to account properties if claims are insufficient
-      if (!userProfile.id || userProfile.id === 'unknown-user') {
-        userProfile.id = account.localAccountId || account.homeAccountId || 'user-' + Date.now();
-      }
-
-      if (!userProfile.name || userProfile.name === 'User') {
-        userProfile.name = account.name || account.username || 'User';
-      }
-
-      const graphUser = await fetchGraphUserForAccount(account);
-      const graphEmail = graphUser?.mail || graphUser?.userPrincipalName;
-      if (graphEmail) {
-        userProfile.email = graphEmail;
-      } else if (!userProfile.email || userProfile.email === 'user@domain.com') {
-        console.warn('Graph email unavailable; using claims email fallback.');
-      }
-
-      console.log('✅ Final extracted user info:', userProfile);
-
-      // Sync user with database
-      try {
-        console.log('🔄 Syncing user with database...');
-        console.log('🔧 Supabase config check:', {
-          url: !!(import.meta as any).env.VITE_SUPABASE_URL,
-          key: !!(import.meta as any).env.VITE_SUPABASE_ANON_KEY,
-          urlValue: (import.meta as any).env.VITE_SUPABASE_URL?.substring(0, 20) + '...'
-        });
-
-        const azureUserId = account.localAccountId || account.homeAccountId;
-
-        // Check if user already exists
-        let dbUser = await getUserByAzureId(azureUserId);
-
-        if (!dbUser) {
-          // Create new user in database
-          console.log('Creating new user in database...');
-          const profileData = graphUser ? { ...account.idTokenClaims, ...graphUser } : account.idTokenClaims;
-          dbUser = await syncUserWithDatabase(userProfile, azureUserId, profileData);
-
-          if (dbUser) {
-            console.log('New user created successfully:', {
-              id: dbUser.id,
-              customerId: dbUser.customer_id,
-              email: dbUser.email
-            });
-          } else {
-            console.error('Failed to create user in database');
-          }
-        } else {
-          const profileData = graphUser ? { ...account.idTokenClaims, ...graphUser } : account.idTokenClaims;
-          if (graphEmail) {
-            console.log('Updating existing user profile from Graph...');
-            const updateSuccess = await updateUserProfile(
-              azureUserId,
-              {
-                id: azureUserId,
-                name: graphUser?.displayName || dbUser.name,
-                email: graphEmail,
-                jobTitle: graphUser?.jobTitle,
-                department: graphUser?.department,
-                officeLocation: graphUser?.officeLocation
-              },
-              profileData
-            );
-            console.log(updateSuccess ? 'User profile updated from Graph' : 'Failed to update user profile');
-            if (updateSuccess) {
-              dbUser = await getUserByAzureId(azureUserId);
-            }
-          } else {
-            // Update last login
-            console.log('Updating existing user last login...');
-            const updateSuccess = await updateUserLastLogin(azureUserId);
-            console.log(updateSuccess ? 'Last login updated' : 'Failed to update last login');
-          }
-        }
+      if (!dbUser) {
+        // Create new user in database
+        console.log('👤 Creating new user in database...');
+        dbUser = await syncUserWithDatabase(userProfile, azureUserId, account.idTokenClaims);
 
         if (dbUser) {
-          setDatabaseUser(dbUser);
-
-          console.log('✅ User synced with database:', {
+          console.log('✅ New user created successfully:', {
+            id: dbUser.id,
             customerId: dbUser.customer_id,
-            azureUserId: azureUserId,
-            lastLogin: dbUser.last_login
+            email: dbUser.email
           });
-
-          // Enhance user profile with database info
-          const enhancedProfile: UserProfile = {
-            ...userProfile,
-            customerId: dbUser.customer_id,
-            jobTitle: dbUser.job_title || (userProfile as any).jobTitle,
-            department: dbUser.department || (userProfile as any).department,
-            officeLocation: dbUser.office_location || (userProfile as any).officeLocation
-          };
-
-          return enhancedProfile;
         } else {
-          console.error('❌ No database user available after sync attempt');
+          console.error('❌ Failed to create user in database');
         }
-      } catch (error) {
-        console.error('❌ Error syncing user with database:', error);
-        console.error('❌ Error details:', {
-          message: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
-        });
-        // Continue without database sync - don't block authentication
+      } else {
+        // Update last login
+        console.log('🔄 Updating existing user last login...');
+        const updateSuccess = await updateUserLastLogin(azureUserId);
+        console.log(updateSuccess ? '✅ Last login updated' : '❌ Failed to update last login');
       }
 
-      return userProfile;
-    } finally {
-      databaseLoadCount.current = Math.max(0, databaseLoadCount.current - 1);
-      if (databaseLoadCount.current === 0) {
-        setIsDatabaseUserLoading(false);
+      if (dbUser) {
+        setDatabaseUser(dbUser);
+
+        console.log('✅ User synced with database:', {
+          customerId: dbUser.customer_id,
+          azureUserId: azureUserId,
+          lastLogin: dbUser.last_login
+        });
+
+        // Enhance user profile with database info
+        const enhancedProfile: UserProfile = {
+          ...userProfile,
+          customerId: dbUser.customer_id,
+          jobTitle: dbUser.job_title || (userProfile as any).jobTitle,
+          department: dbUser.department || (userProfile as any).department,
+          officeLocation: dbUser.office_location || (userProfile as any).officeLocation
+        };
+
+        return enhancedProfile;
+      } else {
+        console.error('❌ No database user available after sync attempt');
       }
+    } catch (error) {
+      console.error('❌ Error syncing user with database:', error);
+      console.error('❌ Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      // Continue without database sync - don't block authentication
     }
+
+    return userProfile;
   };
 
   // State for the current user (will be set asynchronously for real Azure AD)
@@ -313,17 +252,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Redirect to learning page just like the test account does
       // But exclude the debug panel from redirects
       if ((currentPath === '/' || currentPath.includes('signin')) && !currentPath.includes('auth-debug')) {
-        console.log('🎓 Real account authenticated! Setting isRedirecting to show transition screen from:', currentPath);
-        setIsRedirecting(true);
-      } else if (currentPath === '/portal' || currentPath.startsWith('/portal/')) {
-        console.log('✅ Real account user is already on portal page');
+        console.log('🎓 Real account authenticated! Redirecting to learning page from:', currentPath);
+        navigate('/learning', { replace: true });
+      } else if (currentPath === '/learning') {
+        console.log('✅ Real account user is already on learning page');
       } else if (currentPath.includes('auth-debug')) {
         console.log('🔧 User accessing debug panel - no redirect needed');
       } else {
         console.log('ℹ️ Real account authenticated on page:', currentPath);
       }
     }
-  }, [user, isLoading, location.pathname]);
+  }, [user, isLoading, location.pathname, navigate]);
 
   // MSAL Event Listener - Listen for login success events to immediately update state
   // This fixes the issue where users need to refresh the page after sign-in
@@ -390,9 +329,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Redirect to learning page after mock login
         setTimeout(() => {
           const currentPath = window.location.pathname;
-          if (currentPath !== '/portal' && !currentPath.startsWith('/portal/')) {
-            console.log('🎓 Redirecting to portal page after mock login...');
-            navigate('/portal', { replace: true });
+          if (currentPath !== '/learning') {
+            console.log('🎓 Redirecting to learning page after mock login...');
+            navigate('/learning', { replace: true });
           }
         }, 100);
       } catch (error) {
@@ -416,9 +355,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Redirect to learning page after bypass login
       setTimeout(() => {
         const currentPath = window.location.pathname;
-        if (currentPath !== '/portal' && !currentPath.startsWith('/portal/')) {
-          console.log('🎓 Redirecting to portal page after bypass login...');
-          navigate('/portal', { replace: true });
+        if (currentPath !== '/learning') {
+          console.log('🎓 Redirecting to learning page after bypass login...');
+          navigate('/learning', { replace: true });
         }
       }, 100);
 
@@ -498,34 +437,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const acquireUserInfo = async (account: any) => {
     try {
       console.log('🔍 Attempting to acquire additional user info...');
-      const graphUser = await fetchGraphUserForAccount(account);
-      if (graphUser) {
-        console.log('✅ Additional user info from Graph API:', graphUser);
 
-        // Update database with enhanced user data
-        const azureUserId = account.localAccountId || account.homeAccountId;
-        if (azureUserId && databaseUser) {
-          try {
-            await syncUserWithDatabase(
-              {
-                id: azureUserId,
-                name: graphUser.displayName || databaseUser.name,
-                email: graphUser.mail || graphUser.userPrincipalName || databaseUser.email,
-                jobTitle: graphUser.jobTitle,
-                department: graphUser.department,
-                officeLocation: graphUser.officeLocation
-              },
-              azureUserId,
-              { ...account.idTokenClaims, ...graphUser }
-            );
-            console.log('✅ Enhanced user data synced to database');
-          } catch (error) {
-            console.error('❌ Error syncing enhanced user data:', error);
+      const tokenRequest = {
+        scopes: ["User.Read"],
+        account: account,
+      };
+
+      const response = await instance.acquireTokenSilent(tokenRequest);
+      console.log('✅ Token acquired successfully:', response);
+
+      // Fetch additional user information from Microsoft Graph
+      if (response.accessToken) {
+        const graphUser = await fetchUserFromGraph(response.accessToken);
+        if (graphUser) {
+          console.log('✅ Additional user info from Graph API:', graphUser);
+
+          // Update database with enhanced user data
+          const azureUserId = account.localAccountId || account.homeAccountId;
+          if (azureUserId && databaseUser) {
+            try {
+              await syncUserWithDatabase(
+                {
+                  id: azureUserId,
+                  name: graphUser.displayName || databaseUser.name,
+                  email: graphUser.mail || graphUser.userPrincipalName || databaseUser.email,
+                  jobTitle: graphUser.jobTitle,
+                  department: graphUser.department,
+                  officeLocation: graphUser.officeLocation
+                },
+                azureUserId,
+                { ...account.idTokenClaims, ...graphUser }
+              );
+              console.log('✅ Enhanced user data synced to database');
+            } catch (error) {
+              console.error('❌ Error syncing enhanced user data:', error);
+            }
           }
         }
       }
 
-      return graphUser;
+      return response;
     } catch (error) {
       console.log('⚠️ Could not acquire additional user info:', error);
       return null;
@@ -571,9 +522,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       databaseUser,
       isLoading,
-      isDatabaseUserLoading,
-      isRedirecting,
-      setIsRedirecting,
       login,
       signup,
       logout

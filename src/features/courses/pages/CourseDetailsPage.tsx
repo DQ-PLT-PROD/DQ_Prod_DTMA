@@ -25,8 +25,7 @@ import { getCourseConfig } from "../../../utils/courseConfig";
 import { getCourseMedia } from "../../../utils/courseMedia";
 
 import { ErrorDisplay } from "../../../components/SkeletonLoader";
-import { PageLoader } from "../../../components/loading";
-import { useCourseDetails } from "../../../hooks/useCourseDetails";
+import { useProductDetails } from "../../../hooks/useProductDetails";
 import { CourseMeta } from "../../../components/ui/CourseMeta";
 import { Tag } from "../../../components/ui/Tag";
 import { AudienceFitIndicator } from "../components/details/AudienceFitIndicator";
@@ -55,7 +54,6 @@ const CourseDetailsPage: React.FC = () => {
   const [isPointerFine, setIsPointerFine] = useState<boolean>(true);
   const [showDescription, setShowDescription] = useState(true);
   const [isMuted, setIsMuted] = useState(true); // Video starts muted for autoplay
-  const [calculatedDuration, setCalculatedDuration] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Auto-hide description after 8 seconds to focus on video
@@ -77,7 +75,7 @@ const CourseDetailsPage: React.FC = () => {
   }, []);
 
   // Centralized data fetching & mapping
-  const { item, relatedItems, loading, error, refetch } = useCourseDetails({
+  const { item, relatedItems, loading, error, refetch } = useProductDetails({
     itemId,
     shouldTakeAction,
   });
@@ -201,7 +199,7 @@ const CourseDetailsPage: React.FC = () => {
   const handlePrimaryAction = () => {
     // Navigate to learning screen - EnrollmentButton will handle enrollment
     if (item) {
-      navigate(`/portal/learning/${encodeURIComponent(item.id)}`);
+      navigate(`/learning?courseId=${encodeURIComponent(item.id)}`);
     }
   };
 
@@ -213,29 +211,6 @@ const CourseDetailsPage: React.FC = () => {
     }
   };
 
-  const handleShare = async () => {
-    const shareData = {
-      title: item?.title || "Course",
-      text: item?.description || "",
-      url: window.location.href,
-    };
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch {
-        // User cancelled or error - silently ignore
-      }
-    } else {
-      // Fallback: copy URL to clipboard
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        alert("Link copied to clipboard!");
-      } catch {
-        // Clipboard API not available
-      }
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -243,8 +218,11 @@ const CourseDetailsPage: React.FC = () => {
           toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           sidebarOpen={sidebarOpen}
         />
-        <div className="flex-grow flex items-center justify-center">
-          <PageLoader variant="minimal" message="Loading course details..." />
+        <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[300px] flex-grow">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-8 w-32 bg-gray-200 rounded mb-4"></div>
+            <div className="h-4 w-48 bg-gray-200 rounded"></div>
+          </div>
         </div>
         <Footer isLoggedIn={false} />
       </div>
@@ -366,7 +344,7 @@ const CourseDetailsPage: React.FC = () => {
         );
 
       case "schedule":
-        return <ScheduleTab item={item} onDurationCalculated={setCalculatedDuration} />;
+        return <ScheduleTab item={item} />;
 
       case "learning_outcomes":
         return (
@@ -434,7 +412,7 @@ const CourseDetailsPage: React.FC = () => {
         {/* Hero Banner - Netflix-style video with layered structure */}
         <div
           ref={heroRef}
-          className="w-full text-white relative h-[70vh] min-h-[450px] md:h-[80vh] lg:h-screen lg:min-h-[600px] overflow-hidden isolate"
+          className="w-full text-white relative h-screen min-h-[600px] overflow-hidden isolate"
           onMouseEnter={() => setShowScrollIndicator(true)}
           onMouseLeave={() => setShowScrollIndicator(false)}
         >
@@ -541,7 +519,7 @@ const CourseDetailsPage: React.FC = () => {
               {/* Meta Row */}
               <div className="flex flex-wrap items-center gap-6 text-white/90 text-sm mb-6">
                 <CourseMeta
-                  duration={calculatedDuration || item.duration}
+                  duration={item.duration}
                   lessonCount={item.lessonCount}
                   className="text-white/90 font-medium text-sm"
                 />
@@ -565,13 +543,9 @@ const CourseDetailsPage: React.FC = () => {
                   course={item}
                   onEnrollmentSuccess={handlePrimaryAction}
                   className="flex-1 sm:flex-none px-6 py-3 bg-blue-600 text-white font-bold text-base rounded-xl shadow-xl hover:bg-blue-700 transition-all transform hover:-translate-y-1"
-                  calculatedDuration={calculatedDuration || item.duration}
-                  calculatedLessonCount={item.lessonCount}
                 />
                 <button
-                  onClick={handleShare}
                   className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
-                  aria-label="Share this course"
                 >
                   <Share2Icon size={20} />
                 </button>
@@ -609,8 +583,6 @@ const CourseDetailsPage: React.FC = () => {
                   course={item}
                   onEnrollmentSuccess={handlePrimaryAction}
                   className="px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
-                  calculatedDuration={calculatedDuration || item.duration}
-                  calculatedLessonCount={item.lessonCount}
                 />
               </div>
             ) : undefined}
@@ -699,8 +671,6 @@ const CourseDetailsPage: React.FC = () => {
                   course={item}
                   onEnrollmentSuccess={handlePrimaryAction}
                   className="flex-1 px-4 py-3 text-white font-bold rounded-md bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 hover:from-blue-700 hover:via-blue-800 hover:to-blue-900 transition-colors shadow-md"
-                  calculatedDuration={calculatedDuration || item.duration}
-                  calculatedLessonCount={item.lessonCount}
                 />
               </div>
             </div>
