@@ -8,7 +8,7 @@ import {
     Download,
     FileText,
 } from "lucide-react";
-import { Lesson } from "../types/course";
+import { Lesson } from "../../../types/course";
 
 interface CourseOutlineProps {
     lessons: Lesson[];
@@ -49,22 +49,25 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
 
     return (
         <aside className="bg-white border border-gray-200 rounded-none overflow-hidden flex flex-col h-full sticky top-4">
-            <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50 rounded-none">
-                <div className="flex items-center gap-2 text-[#030C2B] font-semibold">
-                    <ListVideo size={18} />
-                    Course Outline
+            <div className="px-3 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50 rounded-none">
+                <div className="flex items-center gap-2 text-[#030C2B]">
+                    <ListVideo size={16} />
+                    <span className="font-semibold text-sm">Course Outline</span>
+                    <span className="text-xs text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">
+                        {completedCount}/{lessons.length}
+                    </span>
                 </div>
                 <button
                     onClick={() => setModuleOpen(!moduleOpen)}
-                    className="text-sm text-[#1839AD] font-semibold flex items-center gap-1"
+                    className="text-xs text-[#1839AD] font-semibold flex items-center gap-1"
                 >
                     {moduleOpen ? (
                         <>
-                            Hide <ChevronLeft size={14} />
+                            Hide <ChevronLeft size={12} />
                         </>
                     ) : (
                         <>
-                            Show <ChevronRight size={14} />
+                            Show <ChevronRight size={12} />
                         </>
                     )}
                 </button>

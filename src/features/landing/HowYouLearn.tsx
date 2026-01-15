@@ -64,7 +64,7 @@ const HowYouLearn: React.FC = () => {
           <div className="relative h-full min-h-[170px] sm:min-h-[200px] md:w-5/12">
             <div className="absolute inset-0 bg-black/10 z-10" />
             <img
-              src="/Leader%202.jpg"
+              src="/images/landing/leader-2.jpg"
               alt="Learner engaged with coursework"
               className="h-full w-full object-cover object-center"
             />

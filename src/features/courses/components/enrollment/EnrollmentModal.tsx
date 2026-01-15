@@ -2,7 +2,8 @@
  * Enrollment Confirmation Modal
  * Implements explicit enrollment CTA as per DTMA Feature Specification 02
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, BookOpen, Clock, Users, CheckCircle } from 'lucide-react';
 import { Course } from '../../../../types/dtma-lms';
 
@@ -12,6 +13,10 @@ interface EnrollmentModalProps {
     onConfirm: () => Promise<void>;
     course: Course | null;
     isLoading?: boolean;
+    /** Formatted duration string (e.g., "1 hr 30 min") to override course.estimatedDurationMinutes */
+    calculatedDuration?: string;
+    /** Accurate lesson count (excluding intro/outro) to override course.lessonCount */
+    calculatedLessonCount?: number;
 }
 
 export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
@@ -19,9 +24,42 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
     onClose,
     onConfirm,
     course,
-    isLoading = false
+    isLoading = false,
+    calculatedDuration,
+    calculatedLessonCount
 }) => {
     const [isEnrolling, setIsEnrolling] = useState(false);
+
+    // Disable body scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        // Cleanup on unmount
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
+    // Handle escape key to close modal
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && !isEnrolling) {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscape);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [isOpen, isEnrolling, onClose]);
 
     if (!isOpen || !course) return null;
 
@@ -34,9 +72,23 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
         }
     };
 
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    const handleBackdropClick = (e: React.MouseEvent) => {
+        // Only close if clicking the backdrop, not the modal content
+        if (e.target === e.currentTarget && !isEnrolling) {
+            onClose();
+        }
+    };
+
+    // Use portal to render modal at document body level, escaping stacking contexts
+    return createPortal(
+        <div
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999] p-4 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={handleBackdropClick}
+        >
+            <div
+                className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-200 scale-100 animate-in zoom-in-95"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
                     <h2 className="text-xl font-semibold text-gray-900">
@@ -54,9 +106,9 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                 {/* Course Info */}
                 <div className="p-6">
                     <div className="flex items-start gap-4 mb-6">
-                        {course.thumbnailUrl && (
+                        {(course.thumbnailUrl || course.heroImageUrl) && (
                             <img
-                                src={course.thumbnailUrl}
+                                src={course.thumbnailUrl || course.heroImageUrl}
                                 alt={course.title}
                                 className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
                             />
@@ -75,11 +127,11 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Clock size={16} />
-                            <span>{course.estimatedDurationMinutes} min</span>
+                            <span>{calculatedDuration || `${course.estimatedDurationMinutes} min`}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                             <BookOpen size={16} />
-                            <span>{course.lessonCount} lessons</span>
+                            <span>{calculatedLessonCount ?? course.lessonCount} lessons</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Users size={16} />
@@ -104,13 +156,6 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                         </ul>
                     </div>
 
-                    {/* Preview Notice */}
-                    <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                        <p className="text-sm text-gray-600">
-                            <strong>Note:</strong> You can preview the first few lessons without enrolling. 
-                            Enrollment gives you access to the complete course content.
-                        </p>
-                    </div>
                 </div>
 
                 {/* Actions */}
@@ -138,6 +183,7 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

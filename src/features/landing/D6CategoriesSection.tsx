@@ -14,42 +14,42 @@ const categories = [
     slug: "economy-4-0",
     description:
       "Navigating the opportunities and challenges in the new economy",
-    image: "/Economy 4.0 thumnail.png",
+    image: "/images/landing/category-economy-4-0.png",
   },
   {
     title: "Building Tomorrow's Organisations",
     slug: "digital-cognitive-organization",
     description:
       "Where organizations are headed in the age of digital transformation",
-    image: "/2nd category Thumbnail.jpg",
+    image: "/images/landing/category-digital-cognitive-organization.jpg",
   },
   {
     title: "Mastering Digital Transformation",
     slug: "digital-business-platform",
     description:
       "What legacy value or orchestration engine powers the future?",
-    image: "/tl.jpg",
+    image: "/images/landing/category-digital-business-platform.jpg",
   },
   {
     title: "Designing for the Future",
     slug: "digital-transformation-2-0",
     description:
       "How to design and deploy next-generation transformation frameworks",
-    image: "/thm4.jpg",
+    image: "/images/landing/category-digital-transformation-2-0.jpg",
   },
   {
     title: "Architecting Change",
     slug: "digital-worker-workspace",
     description:
       "Who are the orchestrators of the new digital workspace?",
-    image: "/thumb 3.jpg",
+    image: "/images/landing/category-digital-worker-workspace.jpg",
   },
   {
     title: "Empowering Change",
     slug: "digital-accelerators-tools",
     description:
       "When will we get there? Exploring tools to accelerate transformation",
-    image: "/Thumb6.jpg",
+    image: "/images/landing/category-digital-accelerators-tools.jpg",
   },
 ];
 

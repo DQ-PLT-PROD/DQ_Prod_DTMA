@@ -25,7 +25,7 @@ const KhalifaFundAttribution: React.FC<KhalifaFundAttributionProps> = ({
           >
             <div className="flex items-center bg-white px-3 py-1.5 rounded-full shadow-sm">
               <img
-                src="/public/logo/KhalifaFund_Logo_Dark Blue_RGB.png"
+                src="/logo/khalifa-fund-dark-blue.png"
                 alt="Khalifa Fund"
                 className="w-auto h-4 object-contain"
               />
@@ -43,7 +43,7 @@ const KhalifaFundAttribution: React.FC<KhalifaFundAttributionProps> = ({
             <div className="flex items-center bg-white/90 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
               <span className="text-xs text-black mr-1.5">Powered by</span>
               <img
-                src="/public/logo/KhalifaFund_Logo_Dark Blue_RGB.png"
+                src="/logo/khalifa-fund-dark-blue.png"
                 alt="Khalifa Fund"
                 className="w-6 h-6 object-contain"
               />
@@ -58,7 +58,7 @@ const KhalifaFundAttribution: React.FC<KhalifaFundAttributionProps> = ({
             <div className="container mx-auto flex justify-center items-center">
               <span className="text-xs text-black mr-2">Powered by</span>
               <img
-                src="/public/logo/KhalifaFund_Logo_Dark Blue_RGB.png"
+                src="/logo/khalifa-fund-dark-blue.png"
                 alt="Khalifa Fund"
                 className="w-5 h-5 object-contain"
               />
@@ -75,7 +75,7 @@ const KhalifaFundAttribution: React.FC<KhalifaFundAttributionProps> = ({
           >
             <div className="flex items-center bg-blue-50 px-3 py-2 border-l border-t border-blue-200 rounded-tl-md">
               <img
-                src="/public/logo/KhalifaFund_Logo_Dark Blue_RGB.png"
+                src="/logo/khalifa-fund-dark-blue.png"
                 alt="Khalifa Fund"
                 className="w-5 h-5 object-contain"
               />
