@@ -163,7 +163,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         id: "onboarding",
         label: "Onboarding",
         icon: <Users size={20} />,
-        href: "/dashboard/onboarding",
+        href: "/portal/onboarding",
       });
     } else {
       items.push({

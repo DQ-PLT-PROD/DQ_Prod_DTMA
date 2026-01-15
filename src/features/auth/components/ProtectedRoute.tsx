@@ -1,5 +1,6 @@
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useMsal } from '@azure/msal-react';
 import { useAuth } from '../context/AuthContext';
 
 /**
@@ -11,39 +12,70 @@ const AUTO_LOGIN = true;
 
 const ProtectedRoute: React.FC<PropsWithChildren> = ({ children }) => {
     const { user, isLoading, login } = useAuth();
+    const { accounts } = useMsal();
     const location = useLocation();
     const navigate = useNavigate();
     const [hasTriggeredLogin, setHasTriggeredLogin] = useState(false);
 
-    // Not authenticated: either auto-login or redirect to home
+    const isOnboardingRoute = location.pathname.startsWith('/dashboard/onboarding')
+        || location.pathname.startsWith('/portal/onboarding');
+    const isMsalCallbackRoute = location.pathname.startsWith('/code');
+    const hasSession = accounts.length > 0;
+
+    // Not authenticated: only trigger login when there is no MSAL session.
     useEffect(() => {
-        if (!isLoading && !user && AUTO_LOGIN && !hasTriggeredLogin) {
-            console.log('🔒 ProtectedRoute: User not authenticated, triggering login...');
+        if (
+            !isLoading &&
+            !user &&
+            AUTO_LOGIN &&
+            !hasTriggeredLogin &&
+            !hasSession &&
+            !isMsalCallbackRoute
+        ) {
+            console.log('ProtectedRoute: User not authenticated, triggering login...');
             setHasTriggeredLogin(true);
             // Kick off MSAL redirect sign-in flow
             // MSAL will remember current URL so user returns to the same route
             login();
         }
-    }, [isLoading, user, login, hasTriggeredLogin]);
+    }, [isLoading, user, login, hasTriggeredLogin, hasSession, isMsalCallbackRoute]);
 
     // Reset login trigger when user becomes authenticated
     useEffect(() => {
         if (user && hasTriggeredLogin) {
-            console.log('✅ ProtectedRoute: User authenticated, resetting login trigger');
+            console.log('ProtectedRoute: User authenticated, resetting login trigger');
             setHasTriggeredLogin(false);
 
             // If user just logged in and is trying to access a protected route,
             // redirect them to the learning page instead
-            if (location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/forms')) {
-                console.log('🎓 Redirecting newly authenticated user to learning page...');
-                navigate('/learning', { replace: true });
+            if (
+                (location.pathname.startsWith('/dashboard') && !isOnboardingRoute) ||
+                location.pathname.startsWith('/forms')
+            ) {
+                console.log('ProtectedRoute: Redirecting newly authenticated user to portal...');
+                navigate('/portal', { replace: true });
             }
         }
-    }, [user, hasTriggeredLogin, location.pathname, navigate]);
+    }, [user, hasTriggeredLogin, location.pathname, navigate, isOnboardingRoute]);
+
+    // User has a session but user state is still hydrating
+    if (hasSession && !user) {
+        if (isOnboardingRoute) {
+            return <>{children}</>;
+        }
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-2 text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     // While determining auth state, don't render or redirect
     if (isLoading) {
-        console.log('🔄 ProtectedRoute: Loading authentication state...');
+        console.log('ProtectedRoute: Loading authentication state...');
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-center">
@@ -56,11 +88,11 @@ const ProtectedRoute: React.FC<PropsWithChildren> = ({ children }) => {
 
     // If authenticated, render the protected content
     if (user) {
-        console.log('✅ ProtectedRoute: User authenticated, rendering content');
+        console.log('ProtectedRoute: User authenticated, rendering content');
         return <>{children}</>;
     }
 
-    console.log('❌ ProtectedRoute: User not authenticated');
+    console.log('ProtectedRoute: User not authenticated');
 
     if (AUTO_LOGIN) {
         return (

@@ -65,7 +65,7 @@ const DashboardRouter = () => {
         <Route path="requests" element={<Navigate to="/404" replace />} />
         <Route path="reporting*" element={<Navigate to="/404" replace />} />
         <Route path="documents" element={<Navigate to="/404" replace />} />
-        <Route path="onboarding" element={<Navigate to="/404" replace />} />
+        <Route path="onboarding" element={<Navigate to="/portal/onboarding" replace />} />
         <Route path="forms/*" element={<Navigate to="/404" replace />} />
 
         <Route path="*" element={<Navigate to="overview" replace />} />

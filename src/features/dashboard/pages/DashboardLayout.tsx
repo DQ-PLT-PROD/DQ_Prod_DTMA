@@ -66,7 +66,7 @@ const DashboardLayout = ({
   const handleAddNewEnterprise = () => {
     console.log("Add new enterprise clicked - trigger onboarding flow");
     setOnboardingComplete(false);
-    navigate("/dashboard/onboarding");
+    navigate("/portal/onboarding");
     setActiveSection("onboarding");
   };
 

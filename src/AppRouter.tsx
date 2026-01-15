@@ -6,7 +6,12 @@ import CourseDetailsPage from "./features/courses/pages/CourseDetailsPage";
 import DashboardRouter from "./features/dashboard/pages/DashboardRouter";
 import ProtectedRoute from "./features/auth/components/ProtectedRoute";
 import NotFound from "./features/app/pages/NotFound";
-import LearningScreen from "./features/learning/pages/LearningScreen";
+import { PortalLayout } from "./features/portal/layout/PortalLayout";
+import InProgressPage from "./features/portal/pages/InProgressPage";
+import CoursePlayerPage from "./features/portal/pages/CoursePlayerPage";
+import LearnerOnboarding from "./features/dashboard/pages/onboarding";
+import ProfilePage from "./features/portal/pages/ProfilePage";
+import { QuizAuditPage } from "./features/portal/pages/QuizAuditPage";
 import { ComingSoon } from "./features/app/pages/ComingSoon";
 import { AuthCallback } from "./features/auth/components/AuthCallback";
 import { AuthDebugPanel } from "./features/auth/components/AuthDebugPanel";
@@ -41,15 +46,20 @@ export function AppRouter() {
             }
           />
 
-          {/* Learning - Protected by enrollment guard */}
-          <Route 
-            path="/learning" 
-            element={
-              <EnrollmentGuard allowPreview={true}>
-                <LearningScreen />
-              </EnrollmentGuard>
-            } 
-          />
+          {/* Portal / Learning */}
+          <Route path="/portal" element={<PortalLayout />}>
+            <Route index element={<Navigate to="my-courses/in-progress" replace />} />
+            <Route path="onboarding" element={<LearnerOnboarding layout="portal" />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="my-courses/in-progress" element={<InProgressPage />} />
+            <Route path="learning/:courseId" element={<CoursePlayerPage />} />
+            {/* Backward compatibility for /learning?courseId=... */}
+          </Route>
+
+          <Route path="/portal/admin/audit-quizzes" element={<QuizAuditPage />} />
+
+          {/* Redirect /learning to /portal for backward compatibility */}
+          <Route path="/learning" element={<Navigate to="/portal" replace />} />
 
           {/* Auth Debug Panel - for testing authentication and user sync */}
           <Route path="/auth-debug" element={
