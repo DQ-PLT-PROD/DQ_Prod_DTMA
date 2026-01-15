@@ -110,6 +110,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       userProfile.name = account.name || account.username || 'User';
     }
 
+    // Fetch email from Microsoft Graph API
+    try {
+      const tokenRequest = {
+        scopes: ["User.Read"],
+        account,
+      };
+
+      const response = await instance.acquireTokenSilent(tokenRequest);
+      if (response?.accessToken) {
+        const graphUser = await fetchUserFromGraph(response.accessToken);
+        const graphEmail = graphUser?.mail || graphUser?.userPrincipalName;
+        if (graphEmail) {
+          userProfile.email = graphEmail;
+          console.log('✅ Email fetched from Graph API:', graphEmail);
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not fetch email from Graph API:', error);
+    }
+
+    // Fallback to account username if Graph fetch failed
     if (!userProfile.email || userProfile.email === 'user@domain.com') {
       userProfile.email = account.username || 'user@domain.com';
     }
