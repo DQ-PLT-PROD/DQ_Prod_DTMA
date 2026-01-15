@@ -12,15 +12,11 @@ import CoursePlayerPage from "./features/portal/pages/CoursePlayerPage";
 import { QuizAuditPage } from "./features/portal/pages/QuizAuditPage";
 import { ComingSoon } from "./features/app/pages/ComingSoon";
 import { AuthDebugPanel } from "./features/auth/components/AuthDebugPanel";
-import { AuthRedirectHandler } from "./features/auth/components/AuthRedirectHandler";
 
 export function AppRouter() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        {/* Auth redirect transition overlay */}
-        <AuthRedirectHandler />
-
         <Routes>
           <Route path="/" element={<App />} />
 
