@@ -2,7 +2,7 @@
  * CoursePlayerPage - The active learning interface with video player and course outline
  */
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams, useOutletContext } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useOutletContext } from "react-router-dom";
 import {
     ChevronRight,
     ChevronLeft,
@@ -35,6 +35,7 @@ import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
 
 const CoursePlayerPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
+    const location = useLocation();
 
     // We expect the Layout to provide a way to toggle theater mode via context or we assume Layout handles it
     // For now, let's just implement functionality and assume Layout is always present.
@@ -75,6 +76,12 @@ const CoursePlayerPage: React.FC = () => {
     const navigate = useNavigate();
     const { user, databaseUser } = useAuth();
 
+    const resumeLessonId = useMemo(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const value = searchParams.get("resumeLessonId");
+        return value ? value : null;
+    }, [location.search]);
+
     // Fetch course, lessons, resources, and user progress
     useEffect(() => {
         if (!courseId) return;
@@ -89,6 +96,10 @@ const CoursePlayerPage: React.FC = () => {
                 ]);
 
                 setCourse(fetchedCourse);
+
+                const resumeIndex = resumeLessonId
+                    ? fetchedLessons.findIndex((lesson) => String(lesson.id) === resumeLessonId)
+                    : -1;
 
                 let completedLessonIds = new Set<string>();
 
@@ -125,6 +136,9 @@ const CoursePlayerPage: React.FC = () => {
                         toUILesson(lesson, idx, completedLessonIds)
                     );
                     setLessons(uiLessons);
+                    if (resumeIndex >= 0) {
+                        setCurrentLessonIndex(resumeIndex);
+                    }
 
                     // If we have local completed lessons that weren't in DB, we should sync up
                     if (databaseUser?.id && saved) {

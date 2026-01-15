@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import {
     Menu,
@@ -7,11 +7,15 @@ import {
     Bookmark,
     Award,
     Sparkles,
+    CheckCircle,
+    User,
     ChevronLeft
 } from "lucide-react";
 import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";
 import { ProfileDropdown } from "../../../components/Header/ProfileDropdown";
 import { FEATURES } from "../../../config/features";
+import { useAuth } from "../../../components/Header";
+import { getLearnerProfile } from "../../learner/services/learnerProfileService";
 
 interface PortalLayoutProps {
     children?: React.ReactNode;
@@ -20,10 +24,41 @@ interface PortalLayoutProps {
 
 export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterMode = false }) => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [showOnboarding, setShowOnboarding] = useState(false);
     const location = useLocation();
+    const { databaseUser, isDatabaseUserLoading } = useAuth();
 
     // Highlight active link
     const isMyCoursesActive = location.pathname.includes("/portal/my-courses") || location.search.includes("view=my-courses");
+    const isProfileActive = location.pathname.startsWith("/portal/profile");
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadOnboardingStatus = async () => {
+            if (!databaseUser?.azure_user_id || isDatabaseUserLoading) {
+                return;
+            }
+
+            const { profile, error } = await getLearnerProfile(databaseUser.azure_user_id);
+            if (!isMounted) {
+                return;
+            }
+
+            if (error) {
+                console.warn('Portal onboarding status check failed; hiding onboarding nav.', error);
+                return;
+            }
+
+            setShowOnboarding(!profile?.onboardingCompleted);
+        };
+
+        loadOnboardingStatus();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [databaseUser?.azure_user_id, isDatabaseUserLoading]);
 
     return (
         <div className="min-h-screen bg-gray-100 text-gray-900 font-sans flex flex-col">
@@ -84,6 +119,19 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                                     {sidebarOpen ? "My Courses" : ""}
                                 </div>
 
+                                {showOnboarding && (
+                                    <Link
+                                        to="/portal/onboarding"
+                                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/10 transition ${!sidebarOpen ? 'justify-center' : ''}`}
+                                        title="Onboarding"
+                                    >
+                                        <CheckCircle size={16} className="shrink-0" />
+                                        {sidebarOpen && (
+                                            <span className="text-sm">Onboarding</span>
+                                        )}
+                                    </Link>
+                                )}
+
                                 {/* In Progress */}
                                 <Link
                                     to="/portal/my-courses/in-progress"
@@ -98,6 +146,15 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                                             {/* <span className="text-xs font-bold bg-[#1839AD] text-white px-1.5 py-0.5 rounded-full">1</span> */}
                                         </div>
                                     )}
+                                </Link>
+
+                                <Link
+                                    to="/portal/profile"
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isProfileActive ? 'text-[#1839AD] bg-[#1839AD]/10' : 'text-[#1839AD] bg-[#1839AD]/5 hover:bg-[#1839AD]/10'} transition ${!sidebarOpen ? 'justify-center' : ''}`}
+                                    title="Profile"
+                                >
+                                    <User size={16} className="shrink-0" />
+                                    {sidebarOpen && <span className="text-sm">Profile</span>}
                                 </Link>
 
                                 {/* Saved */}
@@ -187,9 +244,21 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                             <div className="mx-2 space-y-1">
                                 <div className="px-2 py-1 text-xs text-gray-400 uppercase font-semibold tracking-wide">My Courses</div>
 
+                                {showOnboarding && (
+                                    <Link to="/portal/onboarding" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/10">
+                                        <CheckCircle size={16} />
+                                        <span className="text-sm">Onboarding</span>
+                                    </Link>
+                                )}
+
                                 <Link to="/portal/my-courses/in-progress" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/5">
                                     <Play size={16} />
                                     <span className="text-sm">In Progress</span>
+                                </Link>
+
+                                <Link to="/portal/profile" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/5">
+                                    <User size={16} />
+                                    <span className="text-sm">Profile</span>
                                 </Link>
 
                                 <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400">

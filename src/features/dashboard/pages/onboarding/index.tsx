@@ -12,46 +12,20 @@ import {
   upsertProfile,
   RoleTrack,
 } from "../../../learner/services/learnerProfileService";
-
-const ROLE_OPTIONS: { label: string; value: RoleTrack }[] = [
-  { label: "Digital Worker", value: "digital_worker" },
-  { label: "Leader", value: "leader" },
-];
-
-const GOAL_OPTIONS = [
-  "Career growth",
-  "Upskill quickly",
-  "Lead teams better",
-  "Improve productivity",
-  "Learn AI/automation",
-  "Prepare for promotion",
-  "Build confidence",
-  "Explore new topics",
-];
-
-const PREFERENCE_OPTIONS = [
-  "Data",
-  "AI",
-  "Automation",
-  "Leadership",
-  "Project management",
-  "Communication",
-  "Digital tools",
-  "Strategy",
-  "Innovation",
-  "Operations",
-  "Customer experience",
-  "Finance",
-];
-
-const MIN_GOALS = 3;
-const MAX_GOALS = 8;
-const MAX_PREFERENCES = 12;
+import {
+  ROLE_OPTIONS,
+  GOAL_OPTIONS,
+  PREFERENCE_OPTIONS,
+  MIN_GOALS,
+  MAX_GOALS,
+  MAX_PREFERENCES,
+} from "../../../learner/constants/profileOptions";
 
 export const LearnerOnboarding: React.FC<{
-  setIsOpen: (isOpen: boolean) => void;
-  isLoggedIn: boolean;
-}> = ({ setIsOpen, isLoggedIn }) => {
+  setIsOpen?: (isOpen: boolean) => void;
+  isLoggedIn?: boolean;
+  layout?: "dashboard" | "portal";
+}> = ({ setIsOpen, isLoggedIn, layout = "dashboard" }) => {
   const navigate = useNavigate();
   const { databaseUser, isDatabaseUserLoading } = useAuth();
 
@@ -180,7 +154,7 @@ export const LearnerOnboarding: React.FC<{
       return;
     }
 
-    navigate("/portal");
+    navigate("/portal/my-courses/in-progress");
   };
 
   const renderStepOne = () => (
@@ -321,6 +295,46 @@ export const LearnerOnboarding: React.FC<{
     </div>
   );
 
+  const content = (
+    <div className="w-full max-w-3xl mx-auto px-4 lg:px-6 pb-10">
+      <PageSection>
+        <SectionContent>
+          {isLoading || isDatabaseUserLoading ? (
+            <div className="py-16 text-center text-gray-500">Loading onboarding...</div>
+          ) : (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 text-sm text-gray-500">
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    step === 1 ? "bg-[#1839AD]" : "bg-gray-300"
+                  }`}
+                ></span>
+                <span>Step {step} of 2</span>
+              </div>
+              {step === 1 ? renderStepOne() : renderStepTwo()}
+            </div>
+          )}
+        </SectionContent>
+      </PageSection>
+    </div>
+  );
+
+  if (layout === "portal") {
+    return (
+      <div className="p-3 md:p-4 w-full">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Learner Onboarding</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Tell us a bit about your goals so we can personalize your learning.
+            </p>
+          </div>
+          {content}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <PageLayout
       title="Learner Onboarding"
@@ -329,27 +343,7 @@ export const LearnerOnboarding: React.FC<{
       setIsOpen={setIsOpen}
       isLoggedIn={isLoggedIn}
     >
-      <div className="w-full max-w-3xl mx-auto px-4 lg:px-6 pb-10">
-        <PageSection>
-          <SectionContent>
-            {isLoading || isDatabaseUserLoading ? (
-              <div className="py-16 text-center text-gray-500">Loading onboarding...</div>
-            ) : (
-              <div className="space-y-6">
-                <div className="flex items-center gap-3 text-sm text-gray-500">
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      step === 1 ? "bg-[#1839AD]" : "bg-gray-300"
-                    }`}
-                  ></span>
-                  <span>Step {step} of 2</span>
-                </div>
-                {step === 1 ? renderStepOne() : renderStepTwo()}
-              </div>
-            )}
-          </SectionContent>
-        </PageSection>
-      </div>
+      {content}
     </PageLayout>
   );
 };

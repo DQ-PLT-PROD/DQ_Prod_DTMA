@@ -311,16 +311,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isLoading, accounts.length, inProgress, useMockAuth, bypassMode, accounts, instance]);
 
-    // Redirect flow with onboarding gate:
+  // Redirect flow with onboarding gate:
   // - Default landing after login is /portal
-  // - If onboarding is incomplete, redirect to /dashboard/onboarding first
+  // - If onboarding is incomplete, redirect to /portal/onboarding first
   useEffect(() => {
     if (!user || isLoading || isDatabaseUserLoading) {
       return;
     }
 
     const currentPath = location.pathname;
-    const isOnboardingRoute = currentPath.startsWith('/dashboard/onboarding');
+    const isOnboardingRoute = currentPath.startsWith('/portal/onboarding')
+      || currentPath.startsWith('/dashboard/onboarding');
     const isPortalRoute = currentPath === '/portal' || currentPath.startsWith('/portal/');
     const isSigninRoute = currentPath === '/' || currentPath.includes('signin');
 
@@ -335,7 +336,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const azureUserId = databaseUser?.azure_user_id;
     if (!azureUserId) {
       if (isSigninRoute) {
-        navigate('/portal', { replace: true });
+        navigate('/portal/my-courses/in-progress', { replace: true });
       }
       return;
     }
@@ -351,19 +352,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         console.warn('Onboarding gate: profile fetch failed, allowing portal access.', error);
         if (isSigninRoute) {
-          navigate('/portal', { replace: true });
+          navigate('/portal/my-courses/in-progress', { replace: true });
         }
         return;
       }
 
       const onboardingComplete = Boolean(profile?.onboardingCompleted);
       if (!onboardingComplete) {
-        navigate('/dashboard/onboarding', { replace: true });
+        navigate('/portal/onboarding', { replace: true });
         return;
       }
 
       if (isSigninRoute) {
-        navigate('/portal', { replace: true });
+        navigate('/portal/my-courses/in-progress', { replace: true });
       }
     };
 

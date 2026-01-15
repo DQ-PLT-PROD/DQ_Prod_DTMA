@@ -132,3 +132,10 @@ export async function upsertProfile(
         return null;
     }
 }
+
+export async function upsertLearnerProfile(
+    azureUserId: string,
+    input: UpsertProfileInput
+): Promise<LearnerProfile | null> {
+    return upsertProfile(azureUserId, input);
+}
