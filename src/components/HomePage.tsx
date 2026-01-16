@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Header } from '../components/Header';
-import { Footer } from '../components/Footer';
-import HeroSection from '../features/landing/HeroSection';
-import ProofAndTrust from '../features/landing/ProofAndTrust';
-import D6CategoriesSection from '../features/landing/D6CategoriesSection';
-import HowYouLearn from '../features/landing/HowYouLearn';
-
-import Home from '../features/landing/Home';
-import CallToAction from '../features/landing/CallToAction';
-import KhalifaFundAttribution from '../features/landing/KhalifaFundAttribution';
-import { PageLoader } from './loading';
+import React, { useEffect, useState } from "react";
+import { Header } from "../components/Header";
+import { Footer } from "../components/Footer";
+import HeroSection from "../features/landing/HeroSection";
+import ProofAndTrust from "../features/landing/ProofAndTrust";
+import D6CategoriesSection from "../features/landing/D6CategoriesSection";
+import HowYouLearn from "../features/landing/HowYouLearn";
+import PublicLandingPage from "../features/landing/PublicLandingPage";
+import CallToAction from "../features/landing/CallToAction";
+import KhalifaFundAttribution from "../features/landing/KhalifaFundAttribution";
+import { PageLoader } from "./loading";
 
 const HomePage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -44,7 +43,9 @@ const HomePage: React.FC = () => {
         <D6CategoriesSection />
         <HowYouLearn />
 
-        <Home />
+        {/* Dev D Feature D1: Public Landing Page with Featured Courses */}
+        <PublicLandingPage />
+
         <CallToAction />
       </main>
       <Footer isLoggedIn={false} />
