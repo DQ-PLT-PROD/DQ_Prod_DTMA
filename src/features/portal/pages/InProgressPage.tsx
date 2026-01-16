@@ -9,7 +9,7 @@ import {
     BookOpen,
     ChevronRight
 } from "lucide-react";
-import { LoadingSpinner } from "../../../components/loading";
+import { PageLoader } from "../../../components/loading";
 import { useAuth } from "../../../components/Header";
 import { getUserEnrollments, getActualProgressStats, Enrollment } from "../services/progressService";
 import { fetchFullCourse } from "../../courses/services/courseService";
@@ -131,7 +131,7 @@ const InProgressPage: React.FC = () => {
 
                     {isLoading ? (
                         <div className="flex items-center justify-center py-12">
-                            <LoadingSpinner size="lg" label="Loading courses..." />
+                            <PageLoader size="lg" label="Loading courses..." />
                         </div>
                     ) : !user ? (
                         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">

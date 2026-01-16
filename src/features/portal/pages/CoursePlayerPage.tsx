@@ -7,7 +7,7 @@ import {
     ChevronRight,
     ChevronLeft,
 } from "lucide-react";
-import { LoadingSpinner } from "../../../components/loading";
+import { PageLoader } from "../../../components/loading";
 import { useAuth } from "../../../components/Header";
 import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
@@ -464,7 +464,7 @@ const CoursePlayerPage: React.FC = () => {
             <main className={`flex-1 min-w-0 ${isTheater ? "p-0 h-full" : "p-3 md:p-4"} overflow-y-auto`}>
                 {isLoading ? (
                     <div className="flex h-full items-center justify-center">
-                        <LoadingSpinner size="xl" label="Loading course..." />
+                        <PageLoader size="xl" label="Loading course..." />
                     </div>
                 ) : !activeLesson ? (
                     <div className="flex h-full items-center justify-center">
