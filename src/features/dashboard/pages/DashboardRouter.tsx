@@ -18,7 +18,9 @@ const DashboardRouter = () => {
       if (typeof window !== 'undefined') {
         return window.innerWidth >= 1024; // lg and up open by default
       }
-    } catch { }
+    } catch (error) {
+      console.warn("Failed to read initial window size.", error);
+    }
     return true;
   });
 

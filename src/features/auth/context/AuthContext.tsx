@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { loginRequest, interactiveLoginRequest } from '../../../services/auth/msal';
 import { mockAuthService, MockUser } from '../../../services/auth/mockAuth';
 import { validateAndLogClaims, extractUserProfile } from '../../../utils/claimsValidator';
-import { fetchUserFromGraph, mergeGraphUserData } from '../services/graphService';
+import { fetchUserFromGraph, mergeGraphUserData, GraphUser } from '../services/graphService';
 import { logAuthenticationState, validateTokenResponse } from '../../../utils/authTester';
 import { syncUserWithDatabase, getUserByAzureId, updateUserLastLogin, updateUserProfile, DatabaseUser } from '../services/userService';
 import { getLearnerProfile } from '../../learner/services/learnerProfileService';
@@ -297,6 +297,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Redirect flow with onboarding gate:
   // - Default landing after login is /portal
   // - If onboarding is incomplete, redirect to /portal/onboarding first
+  const isDatabaseUserLoading = databaseUser === null && user !== null;
   useEffect(() => {
     if (!user || isLoading || isDatabaseUserLoading) {
       return;

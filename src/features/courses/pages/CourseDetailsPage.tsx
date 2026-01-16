@@ -207,7 +207,9 @@ const CourseDetailsPage: React.FC = () => {
     if (itemId) {
       try {
         refetch?.();
-      } catch { }
+      } catch (error) {
+        console.warn("Failed to refetch course details.", error);
+      }
     }
   };
 
