@@ -10,8 +10,8 @@ import { useAuth } from '../context/AuthContext';
  */
 export const AuthRedirectHandler: React.FC = () => {
     const { user, isLoading } = useAuth();
-    const location = useLocation();
-    const navigate = useNavigate();
+    // const location = useLocation();
+    // const navigate = useNavigate();
     const [showTransition, setShowTransition] = useState(false);
     const [wasUnauthenticated, setWasUnauthenticated] = useState(false);
 
