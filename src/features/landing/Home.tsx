@@ -6,6 +6,8 @@ import { CourseTile } from "../courses/components/CourseTile";
 import { fetchCourses } from "../courses/services/courseService";
 
 
+import { PageContainer } from "../../components/layouts/PageContainer";
+
 const FeaturedCoursesSection: React.FC = () => {
   const [startIndex, setStartIndex] = useState(0);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -106,8 +108,8 @@ const FeaturedCoursesSection: React.FC = () => {
   }
 
   return (
-    <section className="bg-gray-50 pt-14 pb-12 sm:pb-16" style={{ paddingBottom: "56px" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full h-full flex flex-col justify-center py-16">
+      <PageContainer>
         <FadeInUpOnScroll className="text-center max-w-3xl mx-auto space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold text-[#030C2B]">
             Featured Courses
@@ -181,8 +183,8 @@ const FeaturedCoursesSection: React.FC = () => {
             })}
           </div>
         </StaggeredFadeIn>
-      </div>
-    </section>
+      </PageContainer>
+    </div>
   );
 };
 

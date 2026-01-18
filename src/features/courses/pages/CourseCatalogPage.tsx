@@ -12,6 +12,7 @@ import { Header } from "../../../components/Header";
 import { Footer } from "../../../components/Footer";
 import { fetchCourses, fetchCategories } from "../services/courseService";
 import { fetchIndustryTree, NestedFilterOption as IndustryNode } from "../services/filterService";
+import { PageContainer } from "../../../components/layouts/PageContainer";
 
 // Get config once at module level to avoid recreation on every render
 const courseConfig = getCourseConfig();
@@ -293,8 +294,8 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
             <Header />
 
             {/* Hero Section */}
-            <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-8 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-7xl mx-auto">
+            <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-8">
+                <PageContainer>
                     {/* Breadcrumb */}
                     <Breadcrumb
                         variant="default"
@@ -307,11 +308,11 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
 
                     <h1 className="text-2xl sm:text-3xl font-bold mb-2">{heroTitle}</h1>
                     <p className="text-blue-100 max-w-2xl">{heroDescription}</p>
-                </div>
+                </PageContainer>
             </div>
 
             {/* Main Content */}
-            <div className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+            <PageContainer className="flex-grow py-6">
                 {/* Search and Filter Controls */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                     <div className="flex-grow">
@@ -455,9 +456,8 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
                         )}
                     </div>
                 </div>
-            </div>
+            </PageContainer>
             <Footer />
         </div>
     );
 };
-

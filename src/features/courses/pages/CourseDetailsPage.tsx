@@ -14,6 +14,7 @@ import { Header } from "../../../components/Header";
 import { useAuth } from "@/lib/auth";
 import { Footer } from "../../../components/Footer";
 import RequiredDocumentsTab from "../components/details/tabs/RequiredDocumentsTab";
+import { PageContainer } from "../../../components/layouts/PageContainer";
 
 import AboutTab from "../components/details/tabs/AboutTab";
 import ScheduleTab from "../components/details/tabs/ScheduleTab";
@@ -480,7 +481,7 @@ const CourseDetailsPage: React.FC = () => {
           />
 
           {/* Content Overlay Layer */}
-          <div className="container mx-auto px-4 absolute inset-0 flex flex-col pt-20 pointer-events-none z-10">
+          <PageContainer className="absolute inset-0 flex flex-col pt-20 pointer-events-none z-10">
             {/* Breadcrumbs - Fixed at top */}
             <div className="pb-4 pointer-events-auto flex-none">
               <Breadcrumb
@@ -563,7 +564,7 @@ const CourseDetailsPage: React.FC = () => {
                 <ChevronDown size={32} className="text-white/70 drop-shadow-md" />
               </div>
             </div>
-          </div>
+          </PageContainer>
         </div>
 
         {/* Tabs Navigation */}
@@ -593,9 +594,9 @@ const CourseDetailsPage: React.FC = () => {
         </div>
 
         {/* Main content area - full width */}
-        <div
+        <PageContainer
           ref={mainContentRef}
-          className="container mx-auto px-4 md:px-6 max-w-7xl py-8"
+          className="py-8"
         >
           {/* Tab Content - Full width */}
           <div className="mb-8">
@@ -611,11 +612,11 @@ const CourseDetailsPage: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
+        </PageContainer>
 
         {/* Related Items */}
         <section ref={relatedRef} className="bg-gray-50 py-10 border-t border-gray-200">
-          <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+          <PageContainer>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
                 Related {config.itemNamePlural}
@@ -654,7 +655,7 @@ const CourseDetailsPage: React.FC = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </PageContainer>
         </section>
 
         {/* Sticky mobile CTA */}
@@ -679,9 +680,9 @@ const CourseDetailsPage: React.FC = () => {
             </div>
           )
         }
-      </main>
+      </main >
       <Footer isLoggedIn={false} />
-    </div>
+    </div >
   );
 };
 

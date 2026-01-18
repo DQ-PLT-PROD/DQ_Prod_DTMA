@@ -1,4 +1,5 @@
 import React from "react";
+import { PageContainer } from "../../components/layouts/PageContainer";
 
 const steps = [
   {
@@ -21,8 +22,8 @@ const steps = [
 
 const HowYouLearn: React.FC = () => {
   return (
-    <section className="bg-[#f7f9fc] pt-0 pb-8 sm:pb-10">
-      <div className="w-full">
+    <div className="w-full h-full flex flex-col justify-center py-16">
+      <PageContainer>
         <div className="flex flex-col md:flex-row w-full min-h-[170px] sm:min-h-[200px] shadow-lg sm:shadow-xl overflow-hidden bg-white">
           <div
             className="relative px-8 sm:px-12 md:px-14 py-8 sm:py-10 text-white overflow-hidden flex items-center md:w-7/12"
@@ -88,8 +89,8 @@ const HowYouLearn: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </PageContainer>
+    </div>
   );
 };
 

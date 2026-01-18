@@ -4,6 +4,7 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   safelist: [
     // Colors for map markers and categories
+    "bg-primary-100", // Adapted to new system if needed, but keeping legacy safelist for now to prevent breakage
     "bg-blue-100",
     "bg-blue-500",
     "bg-blue-700",
@@ -39,10 +40,32 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#0030E3",
+          DEFAULT: "#0030E3", // Digital Blue
           dark: "#002080",
-          light: "#99B2FF",
+          light: "#99B2FF", // Legacy support
+          container: "#DDE3FF",
+          "on-container": "#000E44",
         },
+        secondary: {
+          DEFAULT: "#1839AD",
+          dark: "#0F2573",
+        },
+        surface: {
+          DEFAULT: "#FFFFFF",
+          variant: "#F3F4F6", // Gray-100
+        },
+        error: {
+          DEFAULT: "#BA1A1A",
+          container: "#FFDAD6",
+        },
+        neutral: {
+          900: "#1F2937", // Gray-800: High-emphasis
+          700: "#374151", // Gray-700: Medium-emphasis
+          500: "#6B7280", // Gray-500: Disabled/Icons
+          200: "#E5E7EB", // Gray-200: Borders
+          100: "#F3F4F6", // Gray-100: Backgrounds
+        },
+        // Legacy Brand palette - keeping for backward compatibility but mapped closer to system where possible
         brand: {
           50: "#eff6ff",
           100: "#dbeafe",
@@ -71,10 +94,17 @@ module.exports = {
         display: ["Roboto", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
         body: ["Roboto", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
       },
+      borderRadius: {
+        sm: "4px",
+        md: "8px",
+        lg: "12px",
+        xl: "16px",
+        full: "9999px",
+      },
       boxShadow: {
-        "md-1": "var(--md-elevation-1)",
-        "md-2": "var(--md-elevation-2)",
-        "md-3": "var(--md-elevation-3)",
+        "md-1": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)", // shadow-sm equivalent
+        "md-2": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)", // shadow-md equivalent
+        "md-3": "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04)", // shadow-xl equivalent
       },
       zIndex: {
         400: 400,

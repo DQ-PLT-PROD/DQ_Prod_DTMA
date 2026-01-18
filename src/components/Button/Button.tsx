@@ -21,20 +21,21 @@ export const Button: React.FC<ButtonProps> = ({
     className = '',
     ...props
 }) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-[var(--md-radius-md)] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--md-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--md-surface)] disabled:opacity-60 disabled:cursor-not-allowed';
+    // Base styles: pill shape by default for buttons, flex center, transition
+    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60 disabled:cursor-not-allowed';
 
     const variantStyles = {
-        primary: 'bg-[color:var(--md-primary)] text-white shadow-md-1 hover:bg-[color:var(--md-primary-hover)] hover:shadow-md-2 active:bg-[color:var(--md-primary-active)]',
-        secondary: 'bg-[color:var(--md-primary-container)] text-[color:var(--md-on-primary-container)] hover:bg-[color:var(--md-primary-container-hover)]',
-        ghost: 'bg-transparent text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant-hover)]',
-        danger: 'bg-red-600 text-white hover:bg-red-700 shadow-md-1',
-        outline: 'border border-[color:var(--md-outline)] text-[color:var(--md-on-surface)] hover:bg-[color:var(--md-surface-variant)]',
+        primary: 'bg-primary text-white shadow-md hover:bg-primary-dark hover:shadow-lg active:bg-primary-dark',
+        secondary: 'bg-primary-container text-on-primary-container hover:bg-neutral-200',
+        ghost: 'bg-transparent text-neutral-700 hover:bg-neutral-100',
+        danger: 'bg-error text-white hover:bg-red-700 shadow-sm',
+        outline: 'border border-neutral-200 text-primary hover:bg-surface-variant',
     };
 
     const sizeStyles = {
-        sm: 'px-3.5 py-2 text-xs gap-1.5',
-        md: 'px-4.5 py-2.5 text-sm gap-2',
-        lg: 'px-6 py-3 text-base gap-2.5',
+        sm: 'px-4 py-1.5 text-xs gap-1.5', // Compact
+        md: 'px-6 py-2.5 text-sm gap-2',   // Standard
+        lg: 'px-8 py-3 text-base gap-2.5', // Large/Hero
     };
 
     return (

@@ -9,6 +9,7 @@ import {
     BookOpen,
     ChevronRight
 } from "lucide-react";
+import { PageContainer } from "../../../components/layouts/PageContainer";
 import { PageLoader } from "../../../components/loading";
 import { useAuth } from "@/lib/auth";
 import { getUserEnrollments, getActualProgressStats, Enrollment } from "../services/progressService";
@@ -101,7 +102,7 @@ const InProgressPage: React.FC = () => {
     };
 
     return (
-        <div className="p-3 md:p-4 w-full">
+        <PageContainer className="py-4 w-full">
             <div className="max-w-4xl mx-auto">
                 {/* Welcome Header */}
                 <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
@@ -233,7 +234,7 @@ const InProgressPage: React.FC = () => {
                     )}
                 </div>
             </div>
-        </div>
+        </PageContainer>
     );
 };
 

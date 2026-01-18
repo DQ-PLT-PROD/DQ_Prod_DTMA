@@ -32,22 +32,53 @@ const HomePage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
-            <Header
-                toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-                sidebarOpen={sidebarOpen}
-            />
-            <main className="flex-grow">
-                <HeroSection />
-                <ProofAndTrust />
-                <D6CategoriesSection />
-                <HowYouLearn />
+        <div className="h-screen w-full overflow-y-scroll snap-y snap-mandatory bg-gray-50 relative scroll-smooth">
+            {/* Fixed Header */}
+            <div className="fixed top-0 left-0 right-0 z-50">
+                <Header
+                    toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+                    sidebarOpen={sidebarOpen}
+                    transparent={true}
+                />
+            </div>
 
-                <Home />
-                <CallToAction />
+            <main>
+                {/* Hero Section */}
+                <section className="h-screen w-full snap-start relative">
+                    <HeroSection />
+                </section>
+
+                {/* Proof & Trust */}
+                <section className="min-h-screen w-full snap-start flex flex-col justify-center relative bg-gray-50">
+                    <ProofAndTrust />
+                </section>
+
+                {/* Categories */}
+                <section className="min-h-screen w-full snap-start flex flex-col justify-center relative bg-white">
+                    <D6CategoriesSection />
+                </section>
+
+                {/* How You Learn */}
+                <section className="min-h-screen w-full snap-start flex flex-col justify-center relative bg-[#f7f9fc]">
+                    <HowYouLearn />
+                </section>
+
+                {/* Featured Courses (Home component) */}
+                <section className="min-h-screen w-full snap-start flex flex-col justify-center relative bg-gray-50">
+                    <Home />
+                </section>
+
+                {/* CTA & Footer */}
+                {/* Combine CTA and Footer or separate? Footer is usually small. snap-start for footer? */}
+                <section className="min-h-screen w-full snap-start flex flex-col justify-between relative bg-white">
+                    <div className="flex-grow flex flex-col justify-center">
+                        <CallToAction />
+                    </div>
+                    <div className="w-full">
+                        <Footer isLoggedIn={false} />
+                    </div>
+                </section>
             </main>
-            <Footer isLoggedIn={false} />
-            {/* <KhalifaFundAttribution /> */}
         </div>
     );
 };

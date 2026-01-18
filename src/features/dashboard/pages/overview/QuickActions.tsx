@@ -25,25 +25,6 @@ export const QuickActions: React.FC = () => {
       to: "/",
       customHandler: true,
     },
-
-    {
-      id: "view-requests",
-      label: "View Requests",
-      icon: <ClipboardListIcon className="h-5 w-5" />,
-      onClick: () => console.log("View Requests clicked"),
-      primary: false,
-      to: "/dashboard/requests",
-      customHandler: false,
-    },
-    {
-      id: "contact-support",
-      label: "Contact Support",
-      icon: <HelpCircleIcon className="h-5 w-5" />,
-      onClick: () => console.log("Contact Support clicked"),
-      primary: false,
-      to: "/dashboard/support",
-      customHandler: false,
-    },
   ];
 
   return (

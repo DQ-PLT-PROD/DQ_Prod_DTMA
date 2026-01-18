@@ -13,6 +13,7 @@ import {
   MAX_GOALS,
   MAX_PREFERENCES,
 } from "../../learner/constants/profileOptions";
+import { PageContainer } from "../../../components/layouts/PageContainer";
 
 const ProfilePage: React.FC = () => {
   const { databaseUser, isDatabaseUserLoading } = useAuth();
@@ -146,7 +147,7 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="p-3 md:p-4 w-full">
+    <PageContainer className="py-4 w-full">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
@@ -179,8 +180,8 @@ const ProfilePage: React.FC = () => {
                         type="button"
                         onClick={() => setRoleTrack(option.value)}
                         className={`p-4 rounded-lg border text-left transition ${isSelected
-                            ? "border-[#1839AD] bg-[#1839AD]/5"
-                            : "border-gray-200 hover:border-[#1839AD]/40"
+                          ? "border-[#1839AD] bg-[#1839AD]/5"
+                          : "border-gray-200 hover:border-[#1839AD]/40"
                           }`}
                       >
                         <div className="text-lg font-semibold text-gray-900">{option.label}</div>
@@ -212,8 +213,8 @@ const ProfilePage: React.FC = () => {
                         type="button"
                         onClick={() => toggleSelection(goal, goals, setGoals, MAX_GOALS)}
                         className={`px-3 py-2 rounded-full text-sm border transition ${isSelected
-                            ? "border-[#1839AD] bg-[#1839AD]/10 text-[#1839AD]"
-                            : "border-gray-200 text-gray-600 hover:border-[#1839AD]/40"
+                          ? "border-[#1839AD] bg-[#1839AD]/10 text-[#1839AD]"
+                          : "border-gray-200 text-gray-600 hover:border-[#1839AD]/40"
                           }`}
                       >
                         {goal}
@@ -242,8 +243,8 @@ const ProfilePage: React.FC = () => {
                           toggleSelection(preference, preferences, setPreferences, MAX_PREFERENCES)
                         }
                         className={`px-3 py-2 rounded-full text-sm border transition ${isSelected
-                            ? "border-[#1839AD] bg-[#1839AD]/10 text-[#1839AD]"
-                            : "border-gray-200 text-gray-600 hover:border-[#1839AD]/40"
+                          ? "border-[#1839AD] bg-[#1839AD]/10 text-[#1839AD]"
+                          : "border-gray-200 text-gray-600 hover:border-[#1839AD]/40"
                           }`}
                       >
                         {preference}
@@ -271,7 +272,7 @@ const ProfilePage: React.FC = () => {
         </div>
       </div>
       {ToastComponent}
-    </div>
+    </PageContainer>
   );
 };
 

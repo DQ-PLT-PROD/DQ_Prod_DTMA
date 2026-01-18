@@ -90,13 +90,13 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-[color:var(--md-outline-variant)]">
-                    <h2 className="text-xl font-semibold text-[color:var(--md-on-surface)]">
+                <div className="flex items-center justify-between p-6 border-b border-outline-variant">
+                    <h2 className="text-xl font-semibold text-on-surface">
                         Enroll in Course
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-full text-[color:var(--md-on-surface-variant)] hover:text-[color:var(--md-on-surface)] hover:bg-[color:var(--md-surface-variant)] transition-colors"
+                        className="p-2 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-colors"
                         disabled={isEnrolling}
                     >
                         <X size={24} />
@@ -114,10 +114,10 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                             />
                         )}
                         <div className="flex-1">
-                            <h3 className="font-semibold text-[color:var(--md-on-surface)] mb-2">
+                            <h3 className="font-semibold text-on-surface mb-2">
                                 {course.title}
                             </h3>
-                            <p className="text-sm text-[color:var(--md-on-surface-variant)] line-clamp-2">
+                            <p className="text-sm text-on-surface-variant line-clamp-2">
                                 {course.shortDescription}
                             </p>
                         </div>
@@ -125,17 +125,19 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
 
                     {/* Course Details */}
                     <div className="grid grid-cols-2 gap-4 mb-6">
-                        <div className="flex items-center gap-2 text-sm text-[color:var(--md-on-surface-variant)]">
+                        <div className="flex items-center gap-2 text-sm text-on-surface-variant">
                             <Clock size={16} />
-                            <span>{calculatedDuration || `${course.estimatedDurationMinutes} min`}</span>
+                            <span>
+                                {calculatedDuration || (course.estimatedDurationMinutes ? `${course.estimatedDurationMinutes} min` : "Duration N/A")}
+                            </span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-[color:var(--md-on-surface-variant)]">
+                        <div className="flex items-center gap-2 text-sm text-on-surface-variant">
                             <BookOpen size={16} />
-                            <span>{calculatedLessonCount ?? course.lessonCount} lessons</span>
+                            <span>{calculatedLessonCount ?? (course.lessonCount || 0)} lessons</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-[color:var(--md-on-surface-variant)]">
+                        <div className="flex items-center gap-2 text-sm text-on-surface-variant">
                             <Users size={16} />
-                            <span>{course.audienceLevel}</span>
+                            <span>{course.audienceLevel || "All Levels"}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-green-600">
                             <CheckCircle size={16} />
@@ -144,11 +146,11 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                     </div>
 
                     {/* Enrollment Benefits */}
-                    <div className="bg-[color:var(--md-primary-container)] rounded-[var(--md-radius-md)] p-4 mb-6">
-                        <h4 className="font-medium text-[color:var(--md-on-primary-container)] mb-2">
+                    <div className="bg-primary-container rounded-lg p-4 mb-6">
+                        <h4 className="font-medium text-on-primary-container mb-2">
                             What you'll get:
                         </h4>
-                        <ul className="text-sm text-[color:var(--md-on-primary-container)] space-y-1">
+                        <ul className="text-sm text-on-primary-container space-y-1">
                             <li>• Access to all course lessons</li>
                             <li>• Progress tracking across devices</li>
                             <li>• Course completion certificate</li>
@@ -159,23 +161,23 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 p-6 border-t border-[color:var(--md-outline-variant)] bg-[color:var(--md-surface-variant)] rounded-b-[var(--md-radius-lg)]">
+                <div className="flex gap-3 p-6 border-t border-outline-variant bg-surface-variant rounded-b-lg">
                     <button
                         onClick={onClose}
                         disabled={isEnrolling}
-                        className="flex-1 px-4 py-2 text-[color:var(--md-on-surface)] bg-[color:var(--md-surface)] border border-[color:var(--md-outline)] rounded-full hover:bg-[color:var(--md-surface-variant)] transition-colors disabled:opacity-50"
+                        className="flex-1 px-4 py-2 text-on-surface bg-surface border border-outline rounded-full hover:bg-surface-variant transition-colors disabled:opacity-50"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleConfirm}
                         disabled={isEnrolling}
-                        className="flex-1 px-4 py-2 bg-[color:var(--md-primary)] text-white rounded-full hover:bg-[color:var(--md-primary-hover)] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-md-1"
+                        className="flex-1 px-4 py-2 bg-primary text-white rounded-full hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-md"
                     >
                         {isEnrolling ? (
                             <>
                                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                Enrolling...
+                                <span className="text-white">Enrolling...</span>
                             </>
                         ) : (
                             'Enroll Now'

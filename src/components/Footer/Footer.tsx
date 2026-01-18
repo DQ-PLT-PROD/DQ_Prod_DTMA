@@ -61,9 +61,6 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
             <span>(c) 2025 DTMA</span>
             <span className="hidden sm:inline">v2.1.0</span>
           </div>
-          <a href="/dashboard/support" className="text-xs text-[color:var(--md-on-surface-variant)] hover:text-[color:var(--md-on-surface)] transition-colors">
-            Support
-          </a>
         </div>
       </footer>
     );
@@ -154,9 +151,8 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
               </div>
               {message && (
                 <p
-                  className={`text-xs ${
-                    status === "success" ? "text-green-100" : "text-red-100"
-                  }`}
+                  className={`text-xs ${status === "success" ? "text-green-100" : "text-red-100"
+                    }`}
                 >
                   {message}
                 </p>
