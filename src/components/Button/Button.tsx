@@ -21,20 +21,20 @@ export const Button: React.FC<ButtonProps> = ({
     className = '',
     ...props
 }) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-[var(--md-radius-md)] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--md-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--md-surface)] disabled:opacity-60 disabled:cursor-not-allowed';
 
     const variantStyles = {
-        primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-sm',
-        secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500',
-        ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
-        danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-        outline: 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500',
+        primary: 'bg-[color:var(--md-primary)] text-white shadow-md-1 hover:bg-[color:var(--md-primary-hover)] hover:shadow-md-2 active:bg-[color:var(--md-primary-active)]',
+        secondary: 'bg-[color:var(--md-primary-container)] text-[color:var(--md-on-primary-container)] hover:bg-[color:var(--md-primary-container-hover)]',
+        ghost: 'bg-transparent text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant-hover)]',
+        danger: 'bg-red-600 text-white hover:bg-red-700 shadow-md-1',
+        outline: 'border border-[color:var(--md-outline)] text-[color:var(--md-on-surface)] hover:bg-[color:var(--md-surface-variant)]',
     };
 
     const sizeStyles = {
-        sm: 'px-3 py-1.5 text-sm gap-1.5',
-        md: 'px-4 py-2 text-sm gap-2',
-        lg: 'px-6 py-3 text-base gap-2',
+        sm: 'px-3.5 py-2 text-xs gap-1.5',
+        md: 'px-4.5 py-2.5 text-sm gap-2',
+        lg: 'px-6 py-3 text-base gap-2.5',
     };
 
     return (

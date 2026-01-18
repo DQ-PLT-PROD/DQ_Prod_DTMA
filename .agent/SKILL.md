@@ -15,6 +15,21 @@ Use this skill when the user asks to "fix the folder structure," "audit dependen
 - New features being created
 - Any file moves or refactoring
 
+- Any file moves or refactoring
+
+# 🆕 New File Protocol (CRITICAL)
+**Before creating ANY new file**, you must determine its correct location based on its scope:
+
+1.  **Is it used by multiple features?** (e.g., `Button`, `authService`)
+    -   👉 **MUST** go in `src/components/` or `src/lib/` (SHARED)
+2.  **Is it specific to ONE feature?** (e.g., `CourseCard`, `enrollmentLogic`)
+    -   👉 **MUST** go in `src/features/<feature>/` (FEATURE)
+3.  **Is it a page that combines features?** (e.g., `DashboardPage`)
+    -   👉 **MUST** go in `src/features/<feature>/pages/` or `src/pages/` (APP)
+
+**🛑 NEVER create files in the root `src/` folder (except config/types).**
+**🛑 NEVER create "orphaned" folders outside of the 3 zones.**
+
 # The Architecture Rules
 This architecture divides code into three distinct zones with strict **One-Way Data Flow**:
 

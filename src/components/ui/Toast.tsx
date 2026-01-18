@@ -37,21 +37,21 @@ export const Toast: React.FC<ToastProps> = ({
   if (!isVisible && !isAnimating) return null;
 
   const getToastStyles = () => {
-    const baseStyles = "fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border transition-all duration-300 max-w-md";
-    
+    const baseStyles = "fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-[var(--md-radius-md)] shadow-md-2 border transition-all duration-300 max-w-md bg-[color:var(--md-surface)]";
+
     if (type === 'success') {
-      return `${baseStyles} bg-green-50 border-green-200 text-green-800`;
+      return `${baseStyles} border-green-200 text-green-800`;
     }
     if (type === 'error') {
-      return `${baseStyles} bg-red-50 border-red-200 text-red-800`;
+      return `${baseStyles} border-red-200 text-red-800`;
     }
-    return `${baseStyles} bg-blue-50 border-blue-200 text-blue-800`;
+    return `${baseStyles} border-[color:var(--md-outline-variant)] text-[color:var(--md-on-surface-variant)]`;
   };
 
   const getIcon = () => {
     if (type === 'success') return <CheckCircle size={20} className="text-green-600" />;
     if (type === 'error') return <AlertCircle size={20} className="text-red-600" />;
-    return <AlertCircle size={20} className="text-blue-600" />;
+    return <AlertCircle size={20} className="text-[color:var(--md-primary)]" />;
   };
 
   return (
@@ -67,7 +67,7 @@ export const Toast: React.FC<ToastProps> = ({
           setIsAnimating(false);
           setTimeout(onClose, 300);
         }}
-        className="p-1 rounded hover:bg-black/10 transition-colors"
+        className="p-1 rounded-full hover:bg-[color:var(--md-surface-variant)] transition-colors"
       >
         <X size={16} />
       </button>

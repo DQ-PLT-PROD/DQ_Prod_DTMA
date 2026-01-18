@@ -24,18 +24,18 @@ export function Breadcrumbs({ items, 'data-id': dataId }: BreadcrumbsProps) {
     >
       {items.map((item, index) => (
         <Fragment key={index}>
-          {index > 0 && <ChevronRight className="w-3 h-3 shrink-0 text-gray-400" />}
+          {index > 0 && <ChevronRight className="w-3 h-3 shrink-0 text-[color:var(--md-on-surface-variant)]" />}
           {item.current ? (
-            <span className="text-gray-900 font-medium flex items-center min-w-0 truncate">
-              {index === 0 && <Home className="w-4 h-4 shrink-0 text-gray-400 mr-1" />}
+            <span className="text-[color:var(--md-on-surface)] font-medium flex items-center min-w-0 truncate">
+              {index === 0 && <Home className="w-4 h-4 shrink-0 text-[color:var(--md-on-surface-variant)] mr-1" />}
               <span className="truncate">{item.label}</span>
             </span>
           ) : (
             <a
               href={item.href || '#'}
-              className="text-gray-600 hover:text-gray-800 flex items-center min-w-0 truncate"
+              className="text-[color:var(--md-on-surface-variant)] hover:text-[color:var(--md-on-surface)] flex items-center min-w-0 truncate"
             >
-              {index === 0 && <Home className="w-4 h-4 shrink-0 text-gray-400 mr-1" />}
+              {index === 0 && <Home className="w-4 h-4 shrink-0 text-[color:var(--md-on-surface-variant)] mr-1" />}
               <span className="truncate">{item.label}</span>
             </a>
           )}
@@ -59,7 +59,7 @@ export function PageHeader({
   breadcrumbs,
   'data-id': dataId,
   headerClassName = 'pb-4',
-  titleClassName = 'text-3xl font-bold text-gray-900 mb-2',
+  titleClassName = 'text-3xl font-semibold text-[color:var(--md-on-surface)] mb-2',
 }: PageHeaderProps) {
   return (
     <div className={headerClassName} data-id={dataId}>
@@ -94,7 +94,7 @@ export function PageLayout({
 }: PageLayoutProps) {
   return (
     <main
-      className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50"
+      className="flex-1 overflow-y-auto overflow-x-hidden bg-[color:var(--md-background)]"
       style={{ width: '100%', maxWidth: '100dvw', overscrollBehaviorX: 'contain' }}
       data-id={dataId}
     >
@@ -133,7 +133,7 @@ interface PageSectionProps {
 export function PageSection({ children, className = '', 'data-id': dataId }: PageSectionProps) {
   return (
     <div
-      className={`bg-white rounded-lg shadow-sm border border-gray-200 w-full min-w-0 max-w-full overflow-x-hidden overscroll-x-contain ${className}`}
+      className={`md-card w-full min-w-0 max-w-full overflow-x-hidden overscroll-x-contain ${className}`}
       data-id={dataId}
     >
       {children}
@@ -198,9 +198,9 @@ export function PrimaryButton({
       onClick={onClick}
       disabled={disabled}
       className={`
-                inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md
-                text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 
-                focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors
+            inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full
+                text-white bg-[color:var(--md-primary)] hover:bg-[color:var(--md-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--md-primary)] focus-visible:ring-offset-2 
+                focus-visible:ring-offset-[color:var(--md-surface)] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-md-1
                 ${className}
             `}
       data-id={dataId}

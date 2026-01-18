@@ -214,24 +214,24 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
     };
 
     const getButtonStyles = () => {
-        const baseStyles = "flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
+        const baseStyles = "flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold transition-all duration-200 shadow-md-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--md-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--md-surface)] disabled:opacity-60 disabled:cursor-not-allowed";
 
         if (variant === 'secondary') {
-            return `${baseStyles} bg-white text-blue-700 border-2 border-blue-600 hover:bg-blue-50 hover:text-blue-800 shadow-sm`;
+            return `${baseStyles} bg-[color:var(--md-surface)] text-[color:var(--md-primary)] border border-[color:var(--md-primary)] hover:bg-[color:var(--md-primary-container)]`;
         }
 
         // Primary variant - enrolled state
         if (enrollmentStatus === 'enrolled') {
-            return `${baseStyles} bg-green-600 text-white hover:bg-green-700 shadow-md`;
+            return `${baseStyles} bg-green-600 text-white hover:bg-green-700`;
         }
 
         // Primary variant - cancelled/expired state
         if (enrollmentStatus === 'cancelled' || enrollmentStatus === 'expired') {
-            return `${baseStyles} bg-orange-600 text-white hover:bg-orange-700 shadow-md`;
+            return `${baseStyles} bg-orange-600 text-white hover:bg-orange-700`;
         }
 
         // Primary variant - default state (not enrolled)
-        return `${baseStyles} bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-md`;
+        return `${baseStyles} bg-[color:var(--md-primary)] text-white hover:bg-[color:var(--md-primary-hover)] active:bg-[color:var(--md-primary-active)]`;
     };
 
     return (

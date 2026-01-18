@@ -8,8 +8,7 @@ interface FooterProps {
   isLoggedIn?: boolean;
 }
 
-const FOOTER_GRADIENT =
-  "linear-gradient(90deg, #0a32a0 0%, #2a4090 40%, #4e5a8b 70%, #8b90a3 100%)";
+const FOOTER_GRADIENT = "var(--brand-gradient)";
 
 const ABOUT_TEXT = [
   "DTMA (Digital Transformation and Management Academy) equips professionals and organizations with essential digital skills through AI-driven, bite-sized learning paths. Using the 6XD framework, we offer practical, personalized courses for digital workers and leaders across six key digital economy perspectives.",
@@ -56,13 +55,13 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
 
   if (isLoggedIn) {
     return (
-      <footer data-id={dataId} className="bg-gray-50 border-t border-gray-100 w-full h-10">
+      <footer data-id={dataId} className="bg-[color:var(--md-background)] border-t border-[color:var(--md-outline-variant)] w-full h-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
-          <div className="flex items-center space-x-3 text-xs text-gray-500">
+          <div className="flex items-center space-x-3 text-xs text-[color:var(--md-on-surface-variant)]">
             <span>(c) 2025 DTMA</span>
             <span className="hidden sm:inline">v2.1.0</span>
           </div>
-          <a href="/dashboard/support" className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+          <a href="/dashboard/support" className="text-xs text-[color:var(--md-on-surface-variant)] hover:text-[color:var(--md-on-surface)] transition-colors">
             Support
           </a>
         </div>
@@ -134,7 +133,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
               from DTMA.
             </p>
             <form onSubmit={handleSubscribe} className="space-y-2">
-              <div className="bg-white rounded-md flex items-center justify-between px-4 py-3 text-gray-900 shadow-sm">
+              <div className="bg-white rounded-full flex items-center justify-between px-4 py-2.5 text-gray-900 shadow-md-1">
                 <input
                   type="email"
                   placeholder="Enter your email"
@@ -147,7 +146,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
                 <button
                   type="submit"
                   disabled={status === "loading"}
-                  className="bg-[#0a32a0] text-white p-2 rounded-md hover:bg-[#2a4090] focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="bg-[color:var(--md-primary)] text-white p-2 rounded-full hover:bg-[color:var(--md-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                   aria-label="Subscribe to newsletter"
                 >
                   <ArrowRight size={16} />

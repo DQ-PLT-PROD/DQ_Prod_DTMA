@@ -5,8 +5,83 @@
 /* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL */
 
 :root {
-  --brand-gradient: linear-gradient(90deg, #868B9E 0%, #7E8398 8.12%, #737A96 14.47%, #677195 19.42%, #5E6996 23.32%, #596594 26.54%, #566293 29.42%, #556293 32.34%, #525F91 35.66%, #4C5A8E 39.72%, #495995 44.89%, #3C4E8F 51.54%, #33478E 60.01%, #2D4492 70.67%, #1A3592 83.88%, #092893 100%);
+  --brand-gradient: linear-gradient(90deg, #1a4fd8 0%, #1839ad 45%, #0f2b7a 100%);
   --brand-primary: #1839AD;
+  --md-primary: #1839AD;
+  --md-primary-hover: #132b7c;
+  --md-primary-active: #0f2366;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #e8edff;
+  --md-primary-container-hover: #dde4ff;
+  --md-on-primary-container: #0a1f5c;
+  --md-surface: #ffffff;
+  --md-surface-variant: #f4f6fb;
+  --md-surface-variant-hover: #edf0f7;
+  --md-background: #f6f7fb;
+  --md-on-surface: #101218;
+  --md-on-surface-variant: #4b5563;
+  --md-outline: #d7dbe5;
+  --md-outline-variant: #e3e7f2;
+  --md-elevation-1: 0 1px 2px rgba(16, 18, 24, 0.08), 0 1px 3px rgba(16, 18, 24, 0.06);
+  --md-elevation-2: 0 6px 14px rgba(16, 18, 24, 0.12), 0 3px 8px rgba(16, 18, 24, 0.08);
+  --md-elevation-3: 0 14px 30px rgba(16, 18, 24, 0.18);
+  --md-radius-sm: 10px;
+  --md-radius-md: 14px;
+  --md-radius-lg: 20px;
+}
+
+@layer base {
+  html {
+    font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background-color: var(--md-background);
+    color: var(--md-on-surface);
+  }
+
+  body {
+    background-color: var(--md-background);
+    color: var(--md-on-surface);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: var(--md-primary);
+  }
+
+  ::selection {
+    background: rgba(24, 57, 173, 0.18);
+  }
+}
+
+@layer components {
+  .md-surface {
+    background-color: var(--md-surface);
+    color: var(--md-on-surface);
+  }
+
+  .md-surface-variant {
+    background-color: var(--md-surface-variant);
+    color: var(--md-on-surface);
+  }
+
+  .md-card {
+    background-color: var(--md-surface);
+    border: 1px solid var(--md-outline-variant);
+    border-radius: var(--md-radius-lg);
+    box-shadow: var(--md-elevation-1);
+  }
+
+  .md-card-elevated {
+    background-color: var(--md-surface);
+    border: 1px solid var(--md-outline-variant);
+    border-radius: var(--md-radius-lg);
+    box-shadow: var(--md-elevation-2);
+  }
+
+  .md-focus-ring {
+    outline: 2px solid rgba(24, 57, 173, 0.28);
+    outline-offset: 2px;
+  }
 }
 
 .no-scroll {
@@ -87,7 +162,7 @@ html, body, #root {
 
 .typing-word {
   display: inline-block;
-  color: #1839AD;
+  color: var(--md-primary);
   white-space: nowrap;
   padding-right: 0;
   min-height: 1em;
@@ -102,7 +177,7 @@ html, body, #root {
     border-color: transparent;
   }
   50% {
-    border-color: #1839AD;
+    border-color: var(--md-primary);
   }
 }
 
@@ -152,7 +227,7 @@ html, body, #root {
   left: 0;
   right: 0;
   height: 1px;
-  background-image: linear-gradient(to right, #d4d4d4 50%, transparent 50%);
+  background-image: linear-gradient(to right, var(--md-outline) 50%, transparent 50%);
   background-size: 8px 1px;
   z-index: 0;
 }
@@ -160,7 +235,7 @@ html, body, #root {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 2px solid #1839AD;
+  border: 2px solid var(--md-primary);
   text-align: center;
   display: flex;
   justify-content: center;
@@ -168,7 +243,7 @@ html, body, #root {
   position: relative;
   z-index: 1;
   background: #fff;
-  color: #1839AD;
+  color: var(--md-primary);
   font-weight: 600;
   margin-bottom: 6px;
 }

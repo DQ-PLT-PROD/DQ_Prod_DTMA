@@ -12,8 +12,7 @@ import { ExploreDropdown } from "./components/ExploreDropdown";
 import { BRAND_BACKDROP_BLUR } from "../../constants/branding";
 import { FEATURES } from "../../config/features";
 
-const HEADER_GRADIENT =
-  "linear-gradient(90deg, #0a32a0 0%, #2a4090 40%, #4e5a8b 70%, #8b90a3 100%)";
+const HEADER_GRADIENT = "var(--brand-gradient)";
 
 interface HeaderProps {
   toggleSidebar?: () => void;
@@ -129,7 +128,7 @@ export function Header({
     <>
       <header
         className={`w-full transition-all duration-300 ${isSticky
-          ? "fixed top-0 left-0 right-0 z-50 shadow-lg"
+          ? "fixed top-0 left-0 right-0 z-50 shadow-md-2"
           : isTransparent
             ? "absolute top-0 left-0 right-0 z-50"
             : "relative z-50"
@@ -168,10 +167,10 @@ export function Header({
             ) : (
               <div className="hidden lg:flex items-center gap-2 text-sm font-medium">
                 <button
-                  className="flex items-center gap-2 rounded-full px-5 py-2.5 h-11 bg-white text-[#1839AD] font-medium hover:bg-white/90 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white/40"
+                  className="flex items-center gap-2 rounded-full px-5 py-2.5 h-11 bg-[color:var(--md-surface)] text-[color:var(--md-primary)] font-medium hover:bg-[color:var(--md-surface-variant)] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 shadow-md-1"
                   onClick={handleSignIn}
                 >
-                  <UserIcon size={18} className="text-[#1839AD]" />
+                  <UserIcon size={18} className="text-[color:var(--md-primary)]" />
                   <span>Sign In</span>
                 </button>
               </div>

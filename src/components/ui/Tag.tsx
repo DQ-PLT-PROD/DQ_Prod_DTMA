@@ -11,11 +11,11 @@ interface TagProps {
 }
 
 const variants: Record<TagVariant, string> = {
-  category: "bg-blue-50 text-blue-700 border-blue-100",
-  topic: "bg-gray-50 text-gray-600 border-gray-200",
-  level: "bg-green-50 text-green-700 border-green-100",
-  audience: "bg-purple-50 text-purple-700 border-purple-100",
-  meta: "bg-transparent text-gray-500 border-transparent px-0",
+  category: "bg-[color:var(--md-primary-container)] text-[color:var(--md-on-primary-container)] border-[color:var(--md-outline-variant)]",
+  topic: "bg-[color:var(--md-surface-variant)] text-[color:var(--md-on-surface-variant)] border-[color:var(--md-outline-variant)]",
+  level: "bg-[color:var(--md-surface-variant)] text-[color:var(--md-on-surface-variant)] border-[color:var(--md-outline-variant)]",
+  audience: "bg-[color:var(--md-surface-variant)] text-[color:var(--md-on-surface-variant)] border-[color:var(--md-outline-variant)]",
+  meta: "bg-transparent text-[color:var(--md-on-surface-variant)] border-transparent px-0",
 };
 
 export function Tag({ children, variant = "topic", className, onClick }: TagProps) {

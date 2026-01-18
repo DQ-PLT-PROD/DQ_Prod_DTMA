@@ -68,8 +68,13 @@ module.exports = {
         },
       },
       fontFamily: {
-        display: ["Palatino", "serif"],
-        body: ["Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        display: ["Roboto", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        body: ["Roboto", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+      },
+      boxShadow: {
+        "md-1": "var(--md-elevation-1)",
+        "md-2": "var(--md-elevation-2)",
+        "md-3": "var(--md-elevation-3)",
       },
       zIndex: {
         400: 400,

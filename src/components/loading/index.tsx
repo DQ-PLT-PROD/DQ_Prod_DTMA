@@ -20,8 +20,8 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
     if (variant === 'minimal') {
         return (
             <div className="flex flex-col items-center justify-center p-8">
-                <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-                {message && <p className="mt-4 text-gray-600 text-sm">{message}</p>}
+                <div className="w-10 h-10 border-4 border-[color:var(--md-outline-variant)] border-t-[color:var(--md-primary)] rounded-full animate-spin" />
+                {message && <p className="mt-4 text-[color:var(--md-on-surface-variant)] text-sm">{message}</p>}
             </div>
         );
     }
@@ -30,8 +30,8 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
         return (
             <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
                 <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-                    {message && <p className="mt-4 text-gray-700 font-medium">{message}</p>}
+                    <div className="w-12 h-12 border-4 border-[color:var(--md-outline-variant)] border-t-[color:var(--md-primary)] rounded-full animate-spin" />
+                    {message && <p className="mt-4 text-[color:var(--md-on-surface-variant)] font-medium">{message}</p>}
                 </div>
             </div>
         );
@@ -39,8 +39,8 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
 
     return (
         <div className="min-h-[400px] flex flex-col items-center justify-center">
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-            {message && <p className="mt-4 text-gray-600">{message}</p>}
+            <div className="w-12 h-12 border-4 border-[color:var(--md-outline-variant)] border-t-[color:var(--md-primary)] rounded-full animate-spin" />
+            {message && <p className="mt-4 text-[color:var(--md-on-surface-variant)]">{message}</p>}
         </div>
     );
 };
@@ -90,7 +90,7 @@ export const Spinner: React.FC<SpinnerProps> = ({
 
     return (
         <div
-            className={`${sizeClasses[size]} border-blue-200 border-t-blue-600 rounded-full animate-spin ${className}`}
+            className={`${sizeClasses[size]} border-[color:var(--md-outline-variant)] border-t-[color:var(--md-primary)] rounded-full animate-spin ${className}`}
         />
     );
 };
@@ -100,7 +100,7 @@ export const Spinner: React.FC<SpinnerProps> = ({
 // ============================================================================
 export const CardSkeleton: React.FC<{ className?: string }> = ({ className = '' }) => {
     return (
-        <div className={`bg-white rounded-lg shadow overflow-hidden animate-pulse ${className}`}>
+        <div className={`md-card overflow-hidden animate-pulse ${className}`}>
             <div className="h-40 bg-gray-200" />
             <div className="p-4 space-y-3">
                 <div className="h-4 bg-gray-200 rounded w-3/4" />
@@ -135,9 +135,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     return (
         <div className={`flex flex-col items-center justify-center gap-3 ${className}`}>
             <div
-                className={`${sizeClasses[size]} border-blue-200 border-t-[#1839AD] rounded-full animate-spin`}
+                className={`${sizeClasses[size]} border-[color:var(--md-outline-variant)] border-t-[color:var(--md-primary)] rounded-full animate-spin`}
             />
-            {label && <p className="text-gray-600 text-sm font-medium">{label}</p>}
+            {label && <p className="text-[color:var(--md-on-surface-variant)] text-sm font-medium">{label}</p>}
         </div>
     );
 };
