@@ -10,7 +10,7 @@ import {
   Loader2,
   Download,
 } from "lucide-react";
-import { useAuth } from "../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../../portal/components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
@@ -22,7 +22,7 @@ import {
   updateEnrollmentProgress,
   syncLocalProgressToServer,
 } from "../services/progressService";
-import { isUserEnrolled, canAccessLesson } from "../../courses/services/enrollmentService";
+import { isUserEnrolled, canAccessLesson } from "@/lib/enrollment";
 import { PreviewContentGate } from "../../portal/components/PreviewContentGate";
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
 import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";
@@ -543,27 +543,27 @@ const LearningScreen: React.FC = () => {
                         }
                       }}
                     >
-                    <VideoPlayer
-                      src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
-                      poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
-                      isPlaying={isPlaying}
-                      volume={volume}
-                      playbackRate={playbackRate}
-                      currentTime={currentTime}
-                      duration={duration}
-                      captionsEnabled={captionsEnabled}
-                      onPlayPause={handlePlayPause}
-                      onVolumeChange={handleVolume}
-                      onSpeedChange={handleSpeedChange}
-                      onSeek={handleSeek}
-                      onToggleCaptions={handleToggleCaptions}
-                      onFullscreen={handleFullscreen}
-                      onTimeUpdate={handleTimeUpdate}
-                      onLoadedMetadata={handleLoadedMetadata}
-                      onEnded={() => setIsPlaying(false)}
-                      className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
-                    />
-                  </PreviewContentGate>
+                      <VideoPlayer
+                        src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
+                        poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
+                        isPlaying={isPlaying}
+                        volume={volume}
+                        playbackRate={playbackRate}
+                        currentTime={currentTime}
+                        duration={duration}
+                        captionsEnabled={captionsEnabled}
+                        onPlayPause={handlePlayPause}
+                        onVolumeChange={handleVolume}
+                        onSpeedChange={handleSpeedChange}
+                        onSeek={handleSeek}
+                        onToggleCaptions={handleToggleCaptions}
+                        onFullscreen={handleFullscreen}
+                        onTimeUpdate={handleTimeUpdate}
+                        onLoadedMetadata={handleLoadedMetadata}
+                        onEnded={() => setIsPlaying(false)}
+                        className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
+                      />
+                    </PreviewContentGate>
                   )}
                 </div>
 

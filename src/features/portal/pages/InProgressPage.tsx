@@ -10,7 +10,7 @@ import {
     ChevronRight
 } from "lucide-react";
 import { PageLoader } from "../../../components/loading";
-import { useAuth } from "../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import { getUserEnrollments, getActualProgressStats, Enrollment } from "../services/progressService";
 import { fetchFullCourse } from "../../courses/services/courseService";
 import { Course } from "../../../types/dtma-lms";

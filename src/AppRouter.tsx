@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./components/Header";
+import { AuthProvider } from "@/lib/auth";
 import { App } from "./App";
 import { CourseCatalogPage } from "./features/courses/pages/CourseCatalogPage";
 import CourseDetailsPage from "./features/courses/pages/CourseDetailsPage";
@@ -13,7 +13,6 @@ import LearnerOnboarding from "./features/dashboard/pages/onboarding";
 import ProfilePage from "./features/portal/pages/ProfilePage";
 import { QuizAuditPage } from "./features/portal/pages/QuizAuditPage";
 import { ComingSoon } from "./features/app/pages/ComingSoon";
-import { AuthCallback } from "./features/auth/components/AuthCallback";
 import { AuthDebugPanel } from "./features/auth/components/AuthDebugPanel";
 import { EnrollmentGuard } from "./features/courses/components/guards/EnrollmentGuard";
 import { PaymentSuccessHandler } from "./features/courses/components/payment/PaymentSuccessHandler";
@@ -28,7 +27,7 @@ export function AppRouter() {
           {/* Course routes */}
           <Route path="/courses" element={<CourseCatalogPage />} />
           <Route path="/courses/:itemId" element={<CourseDetailsPage />} />
-          
+
           {/* Payment success handler */}
           <Route path="/payment/success" element={<PaymentSuccessHandler />} />
 

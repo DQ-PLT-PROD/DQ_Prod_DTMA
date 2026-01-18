@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Send, ChevronDown, ArrowRight, Layers } from 'lucide-react';
 import { AnimatedText, FadeInUpOnScroll, StaggeredFadeIn } from '../../components/AnimationUtils';
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from '../auth/context/AuthContext';
+import { useAuth } from '@/lib/auth';
 import { BRAND_BACKDROP_BLUR, BRAND_GRADIENT, BRAND_PRIMARY } from '../../constants/branding';
 
 interface HeroSectionProps {

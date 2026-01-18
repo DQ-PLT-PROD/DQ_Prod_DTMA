@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, BookOpen, Clock, Users, CheckCircle } from 'lucide-react';
-import { Course } from '../../../../types/dtma-lms';
+import { Course } from '../../types/dtma-lms';
 
 interface EnrollmentModalProps {
     isOpen: boolean;

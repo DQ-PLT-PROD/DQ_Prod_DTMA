@@ -10,7 +10,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../auth/context/AuthContext";
+import { useAuth } from "@/lib/auth";
 
 // Animated shape component
 const FloatingShape = ({ size, color, delay, duration, className = "" }) => {

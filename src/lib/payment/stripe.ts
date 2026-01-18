@@ -6,7 +6,7 @@
  * For MVP, we use Stripe Checkout (hosted payment page) to minimize PCI compliance scope.
  */
 
-import { PaymentPlan } from './paymentService';
+import { PaymentPlan } from './service';
 
 // Stripe configuration from environment
 const STRIPE_PUBLIC_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY || '';

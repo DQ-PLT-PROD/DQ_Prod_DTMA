@@ -6,12 +6,12 @@ import {
   SectionContent,
   PrimaryButton,
 } from "../../../../components/PageLayout";
-import { useAuth } from "../../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import {
   getProfile,
   upsertProfile,
   RoleTrack,
-} from "../../../learner/services/learnerProfileService";
+} from "@/lib/learner";
 import {
   ROLE_OPTIONS,
   GOAL_OPTIONS,
@@ -173,11 +173,10 @@ export const LearnerOnboarding: React.FC<{
               key={option.value}
               type="button"
               onClick={() => setRoleTrack(option.value)}
-              className={`p-4 rounded-lg border text-left transition ${
-                isSelected
+              className={`p-4 rounded-lg border text-left transition ${isSelected
                   ? "border-[#1839AD] bg-[#1839AD]/5"
                   : "border-gray-200 hover:border-[#1839AD]/40"
-              }`}
+                }`}
             >
               <div className="text-lg font-semibold text-gray-900">{option.label}</div>
               <div className="text-sm text-gray-500 mt-1">
@@ -215,11 +214,10 @@ export const LearnerOnboarding: React.FC<{
                 key={goal}
                 type="button"
                 onClick={() => toggleSelection(goal, goals, setGoals, MAX_GOALS)}
-                className={`px-3 py-2 rounded-full text-sm border transition ${
-                  isSelected
+                className={`px-3 py-2 rounded-full text-sm border transition ${isSelected
                     ? "border-[#1839AD] bg-[#1839AD]/10 text-[#1839AD]"
                     : "border-gray-200 text-gray-600 hover:border-[#1839AD]/40"
-                }`}
+                  }`}
               >
                 {goal}
               </button>
@@ -262,11 +260,10 @@ export const LearnerOnboarding: React.FC<{
                 onClick={() =>
                   toggleSelection(preference, preferences, setPreferences, MAX_PREFERENCES)
                 }
-                className={`px-3 py-2 rounded-full text-sm border transition ${
-                  isSelected
+                className={`px-3 py-2 rounded-full text-sm border transition ${isSelected
                     ? "border-[#1839AD] bg-[#1839AD]/10 text-[#1839AD]"
                     : "border-gray-200 text-gray-600 hover:border-[#1839AD]/40"
-                }`}
+                  }`}
               >
                 {preference}
               </button>
@@ -305,9 +302,8 @@ export const LearnerOnboarding: React.FC<{
             <div className="space-y-6">
               <div className="flex items-center gap-3 text-sm text-gray-500">
                 <span
-                  className={`h-2 w-2 rounded-full ${
-                    step === 1 ? "bg-[#1839AD]" : "bg-gray-300"
-                  }`}
+                  className={`h-2 w-2 rounded-full ${step === 1 ? "bg-[#1839AD]" : "bg-gray-300"
+                    }`}
                 ></span>
                 <span>Step {step} of 2</span>
               </div>

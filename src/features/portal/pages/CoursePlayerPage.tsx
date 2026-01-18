@@ -8,7 +8,7 @@ import {
     ChevronLeft,
 } from "lucide-react";
 import { PageLoader } from "../../../components/loading";
-import { useAuth } from "../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
@@ -22,7 +22,7 @@ import {
     getUserCourseProgress,
     Enrollment,
 } from "../services/progressService";
-import { isUserEnrolled } from "../../courses/services/enrollmentService";
+import { isUserEnrolled } from "@/lib/enrollment";
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
 
 // Defined so we can pass context up to the layout if we needed to (e.g. theater mode)

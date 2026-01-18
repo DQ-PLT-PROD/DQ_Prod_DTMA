@@ -13,14 +13,14 @@
  * - Refunds, proration, coupons
  */
 
-import { 
-    createCheckoutSession, 
-    verifyCheckoutSession, 
+import {
+    createCheckoutSession,
+    verifyCheckoutSession,
     isStripeConfigured,
     mockStripeCheckout,
     mockVerifySession,
-    CreateCheckoutSessionParams 
-} from './stripeService';
+    CreateCheckoutSessionParams
+} from './stripe';
 
 // Use mock mode if Stripe is not configured
 const USE_MOCK_MODE = !isStripeConfigured();
@@ -143,10 +143,10 @@ export const initiatePayment = async (
 
     try {
         console.log('💳 Initiating payment for plan:', plan.name);
-        
+
         // Use mock mode if Stripe not configured
         const checkoutFn = USE_MOCK_MODE ? mockStripeCheckout : createCheckoutSession;
-        
+
         const result = await checkoutFn({
             planId,
             plan,
@@ -165,7 +165,7 @@ export const initiatePayment = async (
         }
 
         console.log('✅ Payment session created:', result.session.id);
-        
+
         return {
             success: true,
             redirectUrl: result.session.url,
@@ -198,9 +198,9 @@ export const handlePaymentSuccess = async (
         const verification = await verifyFn(sessionId);
 
         if (!verification.success || !verification.paid) {
-            return { 
-                success: false, 
-                error: verification.error || 'Payment not completed' 
+            return {
+                success: false,
+                error: verification.error || 'Payment not completed'
             };
         }
 
@@ -226,7 +226,7 @@ export const handlePaymentCancel = async (
 ): Promise<{ success: boolean }> => {
     // Log cancellation for analytics
     console.log('Payment cancelled:', { sessionId });
-    
+
     // No action needed for cancellation
     return { success: true };
 };

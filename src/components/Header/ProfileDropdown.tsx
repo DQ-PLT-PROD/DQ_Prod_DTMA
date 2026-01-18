@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LogOutIcon, ChevronDownIcon, UserIcon } from 'lucide-react';
-import { useAuth } from '../../features/auth/context/AuthContext';
+import { useAuth } from '@/lib/auth';
+
 // Simplified for MVP - removed notifications.
 export function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);

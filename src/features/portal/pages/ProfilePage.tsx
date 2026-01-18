@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "../../../components/ui/Toast";
-import { useAuth } from "../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import {
   getLearnerProfile,
   upsertLearnerProfile,
   RoleTrack,
-} from "../../learner/services/learnerProfileService";
+} from "@/lib/learner";
 import {
   ROLE_OPTIONS,
   GOAL_OPTIONS,
@@ -178,11 +178,10 @@ const ProfilePage: React.FC = () => {
                         key={option.value}
                         type="button"
                         onClick={() => setRoleTrack(option.value)}
-                        className={`p-4 rounded-lg border text-left transition ${
-                          isSelected
+                        className={`p-4 rounded-lg border text-left transition ${isSelected
                             ? "border-[#1839AD] bg-[#1839AD]/5"
                             : "border-gray-200 hover:border-[#1839AD]/40"
-                        }`}
+                          }`}
                       >
                         <div className="text-lg font-semibold text-gray-900">{option.label}</div>
                         <div className="text-sm text-gray-500 mt-1">
@@ -212,11 +211,10 @@ const ProfilePage: React.FC = () => {
                         key={goal}
                         type="button"
                         onClick={() => toggleSelection(goal, goals, setGoals, MAX_GOALS)}
-                        className={`px-3 py-2 rounded-full text-sm border transition ${
-                          isSelected
+                        className={`px-3 py-2 rounded-full text-sm border transition ${isSelected
                             ? "border-[#1839AD] bg-[#1839AD]/10 text-[#1839AD]"
                             : "border-gray-200 text-gray-600 hover:border-[#1839AD]/40"
-                        }`}
+                          }`}
                       >
                         {goal}
                       </button>
@@ -243,11 +241,10 @@ const ProfilePage: React.FC = () => {
                         onClick={() =>
                           toggleSelection(preference, preferences, setPreferences, MAX_PREFERENCES)
                         }
-                        className={`px-3 py-2 rounded-full text-sm border transition ${
-                          isSelected
+                        className={`px-3 py-2 rounded-full text-sm border transition ${isSelected
                             ? "border-[#1839AD] bg-[#1839AD]/10 text-[#1839AD]"
                             : "border-gray-200 text-gray-600 hover:border-[#1839AD]/40"
-                        }`}
+                          }`}
                       >
                         {preference}
                       </button>

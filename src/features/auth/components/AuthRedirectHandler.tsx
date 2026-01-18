@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 // import { useLocation, useNavigate } from 'react-router-dom';  // no react-router imports needed
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/lib/auth';
 
 /**
  * AuthRedirectHandler - Provides a smooth transition overlay during post-login redirects.

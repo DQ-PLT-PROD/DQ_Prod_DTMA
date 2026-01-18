@@ -138,7 +138,7 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
 
               return (
                 <a
-                  key={category.id}
+                  key={category.slug}
                   ref={(el) => { itemRefs.current[index] = el; }}
                   href={category.href}
                   target={external ? "_blank" : undefined}
@@ -161,7 +161,7 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
                   </div>
                   <div className="ml-3 flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900">
-                      {category.name}
+                      {category.title}
                     </p>
                     {category.description && (
                       <p className="text-xs text-gray-500 mt-1 line-clamp-2">

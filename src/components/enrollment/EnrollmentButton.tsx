@@ -5,13 +5,13 @@
  */
 import React, { useState, useEffect } from 'react';
 import { BookOpen, CheckCircle, Loader2, RotateCcw } from 'lucide-react';
-import { useAuth } from '../../../../components/Header';
-import { isUserEnrolled, enrollInCourse, getEnrollment } from '../../services/enrollmentService';
+import { useAuth } from '@/lib/auth';
+import { isUserEnrolled, enrollInCourse, getEnrollment } from '@/lib/enrollment';
 import { EnrollmentModal } from './EnrollmentModal';
 import { PlanSelectionModal } from './PlanSelectionModal';
-import { courseRequiresPayment } from '../../services/paymentService';
-import { Course } from '../../../../types/dtma-lms';
-import { useToast } from '../../../../components/ui/Toast';
+import { courseRequiresPayment } from '@/lib/payment';
+import { Course } from '../../types/dtma-lms';
+import { useToast } from '../ui/Toast';
 
 interface EnrollmentButtonProps {
     course: Course;
@@ -63,11 +63,11 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
                 // Use slug if available, otherwise fall back to id
                 const courseIdentifier = course.slug || course.id;
                 console.log('🔍 Checking enrollment with identifier:', courseIdentifier);
-                
+
                 // Get full enrollment details to check status
                 const enrollment = await getEnrollment(databaseUser.id, courseIdentifier);
                 console.log('✅ Enrollment check result:', enrollment);
-                
+
                 if (!enrollment) {
                     setEnrollmentStatus('not-enrolled');
                 } else if (enrollment.status === 'active') {
@@ -79,7 +79,7 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
                 } else {
                     setEnrollmentStatus('not-enrolled');
                 }
-                
+
                 // Check if course requires payment
                 const needsPayment = courseRequiresPayment(courseIdentifier);
                 setRequiresPayment(needsPayment);
@@ -131,19 +131,19 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
             console.log('🚀 Starting enrollment for user:', databaseUser.id);
             const courseIdentifier = course.slug || course.id;
             const result = await enrollInCourse(databaseUser.id, courseIdentifier, 'explicit');
-            
+
             if (result.success) {
                 setEnrollmentStatus('enrolled');
                 setShowModal(false);
-                
+
                 console.log('✅ Successfully enrolled in course:', course.title);
-                
+
                 // Show success toast
                 showToast(
                     `🎉 Successfully enrolled in "${course.title}"! You now have full access to all course content.`,
                     'success'
                 );
-                
+
                 if (onEnrollmentSuccess) {
                     // Small delay to let user see the success message
                     setTimeout(() => {
@@ -215,7 +215,7 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
 
     const getButtonStyles = () => {
         const baseStyles = "flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
-        
+
         if (variant === 'secondary') {
             return `${baseStyles} bg-white text-blue-700 border-2 border-blue-600 hover:bg-blue-50 hover:text-blue-800 shadow-sm`;
         }

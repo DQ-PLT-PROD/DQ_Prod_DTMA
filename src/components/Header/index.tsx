@@ -5,4 +5,5 @@ export { Header } from './Header';
 // export { NotificationItem } from './notifications/NotificationItem';
 // export { ExploreDropdown } from './components/ExploreDropdown';
 // export { MobileDrawer } from './components/MobileDrawer';
-export { AuthProvider, useAuth } from '../../features/auth/context/AuthContext';
+// Auth is now in @/lib/auth - import { AuthProvider, useAuth } from '@/lib/auth'
+

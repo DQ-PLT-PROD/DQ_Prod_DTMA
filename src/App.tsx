@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './components/Header';
-import HomePage from './components/HomePage';
+import { useAuth } from '@/lib/auth';
+import HomePage from '@/features/landing/pages/HomePage';
 
 export function App() {
   const navigate = useNavigate();

@@ -5,9 +5,9 @@
  * Uses Supabase service role for database operations to bypass RLS
  * since we're using Azure AD authentication instead of Supabase auth.
  */
-import { getSupabaseForEnrollment, isServiceRoleConfigured } from "../../../lib/supabase/serviceClient";
-import { isSupabaseConfigured } from "../../../lib/supabase/client";
-import type { Database } from "../../../lib/supabase/types";
+import { getSupabaseForEnrollment, isServiceRoleConfigured } from "../supabase/serviceClient";
+import { isSupabaseConfigured } from "../supabase/client";
+import type { Database } from "../supabase/types";
 
 // Type aliases for better readability
 type UserEnrollmentRow = Database['public']['Tables']['user_enrollments']['Row'];
@@ -69,15 +69,6 @@ const mapRowToEnrollment = (row: UserEnrollmentRow): CourseEnrollment => ({
     enrollmentMethod: (row.enrollment_method as 'explicit' | 'auto') || 'auto',
     cancelledAt: (row as any).cancelled_at || null,
 });
-
-/**
- * Get current user from auth context
- */
-const getCurrentUser = () => {
-    // This will be called from components that have access to auth context
-    // For now, we'll require userId to be passed in
-    return null;
-};
 
 /**
  * Check if user is enrolled in a course
@@ -177,7 +168,7 @@ export const enrollInCourse = async (
         console.log('User ID:', userId);
         console.log('Course Slug:', courseSlug);
         console.log('Method:', method);
-        
+
         const supabase = getEnrollmentSupabase();
         console.log('✅ Got Supabase client for enrollment');
 
@@ -315,7 +306,7 @@ export const validateEnrollmentEligibility = async (
     // - Audience level validation
     // - Course capacity limits
     // - Enrollment periods
-    
+
     if (!userId) {
         return {
             eligible: false,
@@ -443,7 +434,7 @@ export const cancelEnrollment = async (
 
         const { data, error } = await supabase
             .from("user_enrollments")
-            .update({ 
+            .update({
                 status: 'cancelled',
                 cancelled_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
@@ -493,12 +484,12 @@ export const reEnrollInCourse = async (
 
         // Check if there's a cancelled or expired enrollment
         const existingEnrollment = await getEnrollment(userId, courseSlug);
-        
+
         if (existingEnrollment && (existingEnrollment.status === 'cancelled' || existingEnrollment.status === 'expired')) {
             // Reactivate existing enrollment
             const { data, error } = await supabase
                 .from("user_enrollments")
-                .update({ 
+                .update({
                     status: 'active',
                     cancelled_at: null,
                     updated_at: new Date().toISOString()

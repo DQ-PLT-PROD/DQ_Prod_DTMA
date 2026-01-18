@@ -10,7 +10,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Breadcrumb } from "../../../components/ui/Breadcrumb";
-import { Header, useAuth } from "../../../components/Header";
+import { Header } from "../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import { Footer } from "../../../components/Footer";
 import RequiredDocumentsTab from "../components/details/tabs/RequiredDocumentsTab";
 
@@ -30,7 +31,7 @@ import { CourseMeta } from "../../../components/ui/CourseMeta";
 import { Tag } from "../../../components/ui/Tag";
 import { AudienceFitIndicator } from "../components/details/AudienceFitIndicator";
 import { CourseTile } from "../components/CourseTile";
-import { EnrollmentButton } from "../components/enrollment/EnrollmentButton";
+import { EnrollmentButton } from "@/components/enrollment/EnrollmentButton";
 
 
 const CourseDetailsPage: React.FC = () => {

@@ -5,8 +5,8 @@
  */
 import React, { useState } from 'react';
 import { X, Check, Loader2 } from 'lucide-react';
-import { PaymentPlan, getAllPlans, initiatePayment } from '../../services/paymentService';
-import { Course } from '../../../../types/dtma-lms';
+import { PaymentPlan, getAllPlans, initiatePayment } from '@/lib/payment';
+import { Course } from '../../types/dtma-lms';
 
 interface PlanSelectionModalProps {
     isOpen: boolean;
@@ -159,11 +159,10 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, isSelected, onSelect, disable
         <button
             onClick={onSelect}
             disabled={disabled}
-            className={`relative p-6 rounded-xl border-2 transition-all text-left ${
-                isSelected
+            className={`relative p-6 rounded-xl border-2 transition-all text-left ${isSelected
                     ? 'border-blue-600 bg-blue-50 shadow-lg scale-105'
                     : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-md'
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         >
             {/* Popular Badge */}
             {isPopular && (
