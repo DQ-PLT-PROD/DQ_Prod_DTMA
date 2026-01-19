@@ -13,7 +13,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Clock, Lock } from "lucide-react";
-import { useAuth } from "../../../features/auth/context/AuthContext";
+import { useAuth } from "@/lib/auth";
 import {
   getAccessContract,
   AccessContract,

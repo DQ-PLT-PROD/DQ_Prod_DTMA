@@ -14,7 +14,7 @@ import {
 import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";
 import { ProfileDropdown } from "../../../components/Header/ProfileDropdown";
 import { FEATURES } from "../../../config/features";
-import { useAuth } from "../../../features/auth/context/AuthContext";
+import { useAuth } from "@/lib/auth";
 import { getLearnerProfile } from "@/lib/learner";
 
 interface PortalLayoutProps {

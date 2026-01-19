@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Breadcrumb } from "../../../components/ui/Breadcrumb";
 import { Header } from "../../../components/Header";
-import { useAuth } from "../../../features/auth/context/AuthContext";
+import { useAuth } from "@/lib/auth";
 import { Footer } from "../../../components/Footer";
 import RequiredDocumentsTab from "../components/details/tabs/RequiredDocumentsTab";
 import { PageContainer } from "../../../components/layouts/PageContainer";
