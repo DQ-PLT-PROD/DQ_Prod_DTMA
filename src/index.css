@@ -5,29 +5,17 @@
 /* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL */
 
 :root {
+  /* State Layer Opacities */
+  --state-hover: 0.08;
+  --state-focus: 0.12;
+  --state-pressed: 0.12;
+  --state-dragged: 0.16;
+
+  /* Scrim */
+  --scrim: #000000;
+  
+  /* Brand Gradient (Legacy support) */
   --brand-gradient: linear-gradient(90deg, #0030E3 0%, #1839AD 100%);
-  --brand-primary: #0030E3;
-  --md-primary: #0030E3;
-  --md-primary-hover: #002080;
-  --md-primary-active: #000E44;
-  --md-on-primary: #ffffff;
-  --md-primary-container: #DDE3FF;
-  --md-primary-container-hover: #C5CAE9;
-  --md-on-primary-container: #000E44;
-  --md-surface: #FFFFFF;
-  --md-surface-variant: #F3F4F6;
-  --md-surface-variant-hover: #E5E7EB;
-  --md-background: #FFFFFF;
-  --md-on-surface: #1F2937;
-  --md-on-surface-variant: #374151;
-  --md-outline: #E5E7EB;
-  --md-outline-variant: #F3F4F6;
-  --md-elevation-1: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --md-elevation-2: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --md-elevation-3: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
-  --md-radius-sm: 4px;
-  --md-radius-md: 8px;
-  --md-radius-lg: 12px;
 }
 
 @layer base {

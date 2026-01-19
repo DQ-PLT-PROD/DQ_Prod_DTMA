@@ -4,6 +4,7 @@ import { Lock } from "lucide-react";
 import { Tag } from "../../../components/ui/Tag";
 import { CourseMeta } from "../../../components/ui/CourseMeta";
 import { getCoursePoster } from "../../../utils/courseMedia";
+import { Card } from "../../../components/ui/Card";
 
 interface CourseTileProps {
   // Course data - can be passed individually or as an item object
@@ -153,7 +154,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   // Coming Soon Card
   if (variant === "coming-soon") {
     return (
-      <div className="group relative flex flex-col h-full bg-surface rounded-lg shadow-md-1 border border-outline-variant overflow-hidden cursor-default">
+      <Card variant="filled" className="h-full cursor-default opacity-80" padding="none">
         {/* Image Section - Muted */}
         <div className="relative w-full aspect-video bg-surface-variant overflow-hidden">
           <div className="absolute inset-0 z-10 bg-white/10 mix-blend-overlay" />
@@ -167,7 +168,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
 
           {/* Coming Soon Badge */}
           <div className="absolute top-3 right-3 z-20">
-            <span className="px-3 py-1.5 bg-amber-50/90 backdrop-blur-sm text-amber-700 text-xs font-bold uppercase tracking-wider rounded-full border border-amber-200 shadow-sm flex items-center gap-1.5">
+            <span className="px-3 py-1.5 bg-tertiary-container/90 backdrop-blur-sm text-on-tertiary-container text-label-sm font-bold uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1.5">
               <Lock size={12} /> Coming Soon
             </span>
           </div>
@@ -177,50 +178,53 @@ export const CourseTile: React.FC<CourseTileProps> = ({
         <div className="p-5 flex flex-col flex-1 opacity-60">
           <div className="flex items-center justify-between mb-2">
             {category && (
-              <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+              <span className="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant">
                 {category}
               </span>
             )}
             {levelTag && (
-              <span className="text-[10px] font-medium text-neutral-400 bg-surface-variant px-2 py-0.5 rounded-full">
+              <span className="text-label-sm font-medium text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded-full">
                 {levelTag}
               </span>
             )}
           </div>
 
-          <h3 className="text-lg font-bold text-neutral-700 leading-tight line-clamp-2 mb-2">
+          <h3 className="text-title-lg font-bold text-on-surface leading-tight line-clamp-2 mb-2">
             {title}
           </h3>
 
-          <p className="text-sm text-neutral-500 leading-relaxed line-clamp-2 mb-4">
+          <p className="text-body-md text-on-surface-variant leading-relaxed line-clamp-2 mb-4">
             {description}
           </p>
 
           <div className="mt-auto pt-3 border-t border-outline-variant flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-medium text-neutral-400">
+            <div className="flex items-center gap-2 text-label-sm font-medium text-on-surface-variant">
               <span>{lessonCount ? `${lessonCount} Lessons` : 'Coming Soon'}</span>
             </div>
           </div>
         </div>
 
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px] z-30 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
-          <div className="p-4 bg-white rounded-full shadow-md-2 mb-3">
-            <Lock className="w-6 h-6 text-amber-500" />
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px] z-30 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none">
+          <div className="p-4 bg-surface rounded-full shadow-elevation-2 mb-3">
+            <Lock className="w-6 h-6 text-tertiary" />
           </div>
-          <span className="text-lg font-bold text-neutral-800">Coming Soon</span>
-          <p className="text-sm text-neutral-500 mt-1">Stay tuned for updates</p>
+          <span className="text-title-lg font-bold text-on-surface">Coming Soon</span>
+          <p className="text-body-md text-on-surface-variant mt-1">Stay tuned for updates</p>
         </div>
-      </div>
+      </Card>
     );
   }
 
   // Classic Card (Financial/Non-Financial Services)
   if (variant === "classic") {
     return (
-      <div
-        className="group relative flex flex-col bg-surface rounded-lg shadow-md-1 border border-outline-variant overflow-hidden hover:shadow-md-3 transition-all duration-300 h-full cursor-pointer"
+      <Card
+        variant="elevated"
+        interactive
         onClick={handleClick}
+        className="h-full flex flex-col"
+        padding="none"
       >
         <div className="p-5 flex flex-col gap-4 flex-1">
           <div className="flex flex-col gap-3">
@@ -229,13 +233,13 @@ export const CourseTile: React.FC<CourseTileProps> = ({
                 {category ? <Tag variant="category">{category}</Tag> : null}
                 {levelTag ? <Tag variant="level">{levelTag}</Tag> : null}
               </div>
-              <h3 className="font-semibold text-neutral-900 leading-snug line-clamp-2 text-base">
+              <h3 className="font-bold text-title-lg text-on-surface leading-snug line-clamp-2">
                 {title}
               </h3>
             </div>
           </div>
 
-          <p className="text-sm text-neutral-600 leading-relaxed line-clamp-3">
+          <p className="text-body-md text-on-surface-variant leading-relaxed line-clamp-3">
             {description}
           </p>
 
@@ -245,22 +249,22 @@ export const CourseTile: React.FC<CourseTileProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      </Card>
     );
   }
 
-  // Course Card (Modern / Airbnb-like) - with optional hover effects
+  // Course Card (Modern / Airbnb-like)
   const cardContent = (
-    <div
-      className={`
-        group relative flex flex-col h-full bg-surface rounded-lg shadow-md-1 border border-outline-variant overflow-hidden cursor-pointer
-        ${isHovered ? 'shadow-md-3' : ''}
-      `}
+    <Card
+      variant="elevated"
+      interactive
       onClick={handleClick}
+      className={`h-full flex flex-col ${isHovered ? 'shadow-elevation-3' : ''}`}
+      padding="none"
     >
       {/* Thumbnail Section */}
       <div className="relative w-full aspect-[5/3] sm:aspect-[16/9] bg-surface-variant overflow-hidden">
-        <div className="absolute inset-0 z-10 bg-primary/15 mix-blend-multiply pointer-events-none" />
+        <div className="absolute inset-0 z-10 bg-primary/10 mix-blend-multiply pointer-events-none" />
         {heroSrc && (
           <img
             src={heroSrc}
@@ -286,7 +290,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
         {/* Overlay Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2 items-start z-10">
           {audienceLevel && (
-            <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-primary text-[10px] font-bold uppercase tracking-wider rounded-md shadow-sm border border-outline-variant">
+            <span className="px-2 py-1 bg-surface/90 backdrop-blur-sm text-primary text-label-xs font-bold uppercase tracking-wider rounded-md shadow-sm border border-outline-variant">
               {audienceLevel}
             </span>
           )}
@@ -297,22 +301,22 @@ export const CourseTile: React.FC<CourseTileProps> = ({
       <div className="p-5 flex flex-col flex-1">
         <div className="flex items-center justify-between mb-2">
           {category && (
-            <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
+            <span className="text-label-sm font-bold uppercase tracking-wider text-primary">
               {category}
             </span>
           )}
           {levelTag && (
-            <span className="text-[10px] font-medium text-neutral-500 bg-surface-variant px-2 py-0.5 rounded-full">
+            <span className="text-label-sm font-medium text-on-surface-variant bg-surface-variant px-2 py-0.5 rounded-full">
               {levelTag}
             </span>
           )}
         </div>
 
-        <h3 className="text-xl font-bold text-neutral-900 leading-tight line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+        <h3 className="text-title-lg font-bold text-on-surface leading-tight line-clamp-2 mb-2 group-hover:text-primary transition-colors">
           {title}
         </h3>
 
-        <p className={`text-sm text-neutral-600 leading-relaxed mb-4 ${isHovered ? '' : 'line-clamp-2'}`}>
+        <p className={`text-body-md text-on-surface-variant leading-relaxed mb-4 ${isHovered ? '' : 'line-clamp-2'}`}>
           {description}
         </p>
 
@@ -320,10 +324,14 @@ export const CourseTile: React.FC<CourseTileProps> = ({
           <CourseMeta duration={duration} lessonCount={lessonCount} />
         </div>
       </div>
-    </div>
+    </Card>
   );
 
-  // If hover effects are enabled, wrap with hover container
+  // If hover effects are enabled, custom logic for scale works better outside of Card's native styles?
+  // Our Card component handles standard hover elevation, but for grid scaling we might want this wrapper.
+  // Actually, let's trust Card's interactive prop for now or keep this if scaling is essential.
+  // M3 doesn't typically scale cards on hover, just elevation lift. I'll stick to elevation.
+
   if (enableHoverEffects) {
     return (
       <div
@@ -335,8 +343,8 @@ export const CourseTile: React.FC<CourseTileProps> = ({
       >
         <div
           className={`
-            transition-all duration-300 ease-out
-            ${isHovered ? 'absolute top-0 left-0 w-full z-50 transform scale-105 shadow-md-3' : 'h-full'}
+            transition-all duration-200 ease-out
+            ${isHovered ? 'absolute top-0 left-0 w-full z-50 transform scale-105' : 'h-full'}
           `}
         >
           {cardContent}

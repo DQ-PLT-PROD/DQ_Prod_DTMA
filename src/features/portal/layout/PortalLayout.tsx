@@ -61,7 +61,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
     }, [databaseUser?.azure_user_id, isDatabaseUserLoading]);
 
     return (
-        <div className="min-h-screen bg-gray-100 text-gray-900 font-sans flex flex-col">
+        <div className="min-h-screen bg-surface-container-low text-on-surface font-sans flex flex-col">
             {/* Full-Width Header with Gradient - hidden in theater mode when requested. */}
             {!isTheaterMode && (
                 <header
@@ -94,20 +94,20 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                 {/* Minimal Side Navigation - Portal Sidebar */}
                 {!isTheaterMode && (
                     <aside
-                        className={`bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${sidebarOpen ? "w-56" : "w-14"
+                        className={`bg-surface border-r border-outline-variant transition-all duration-300 ease-in-out ${sidebarOpen ? "w-56" : "w-14"
                             } hidden lg:flex flex-col shrink-0`}
                     >
                         {/* Sidebar Header - Hamburger menu */}
                         <div
-                            className={`flex items-center justify-center px-3 py-3 bg-gray-50 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition`}
+                            className={`flex items-center justify-center px-3 py-3 bg-surface border-b border-outline-variant cursor-pointer hover:bg-surface-container-high transition`}
                             onClick={() => setSidebarOpen(!sidebarOpen)}
                             title={sidebarOpen ? "Collapse menu" : "Expand menu"}
                         >
-                            <span className="w-8 flex items-center justify-center text-[#1839AD]">
+                            <span className="w-8 flex items-center justify-center text-primary">
                                 <Menu size={20} />
                             </span>
                             {sidebarOpen && (
-                                <ChevronLeft size={16} className="ml-auto text-gray-400" />
+                                <ChevronLeft size={16} className="ml-auto text-on-surface-variant" />
                             )}
                         </div>
 
@@ -115,14 +115,14 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                         <nav className="flex-1 py-3 overflow-y-auto">
                             {/* My Courses Section */}
                             <div className="mx-2 space-y-1">
-                                <div className="px-2 py-1 text-xs text-gray-400 uppercase font-semibold tracking-wide">
+                                <div className="px-2 py-1 text-label-sm text-on-surface-variant uppercase font-bold tracking-wide">
                                     {sidebarOpen ? "My Courses" : ""}
                                 </div>
 
                                 {showOnboarding && (
                                     <Link
                                         to="/portal/onboarding"
-                                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/10 transition ${!sidebarOpen ? 'justify-center' : ''}`}
+                                        className={`flex items-center gap-3 px-3 py-2 rounded-full text-primary bg-primary-container/20 hover:bg-primary-container/30 transition ${!sidebarOpen ? 'justify-center' : ''}`}
                                         title="Onboarding"
                                     >
                                         <CheckCircle size={16} className="shrink-0" />
@@ -135,7 +135,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                                 {/* In Progress */}
                                 <Link
                                     to="/portal/my-courses/in-progress"
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isMyCoursesActive ? 'text-[#1839AD] bg-[#1839AD]/10' : 'text-[#1839AD] bg-[#1839AD]/5 hover:bg-[#1839AD]/10'} transition ${!sidebarOpen ? 'justify-center' : ''}`}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-full ${isMyCoursesActive ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-container-highest'} transition ${!sidebarOpen ? 'justify-center' : ''}`}
                                     title="In Progress"
                                 >
                                     <Play size={16} className="shrink-0" />
@@ -150,7 +150,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
 
                                 {/* Profile - now disabled/coming soon */}
                                 <div
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-full text-on-surface-variant/60 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
                                     title="Profile - Coming Soon"
                                 >
                                     <User size={16} className="shrink-0" />
@@ -164,7 +164,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
 
                                 {/* Saved */}
                                 <div
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-full text-on-surface-variant/60 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
                                     title="Saved - Coming Soon"
                                 >
                                     <Bookmark size={16} className="shrink-0" />
@@ -178,7 +178,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                             </div>
 
                             {/* Divider */}
-                            <div className="my-3 mx-3 border-t border-gray-200" />
+                            <div className="my-3 mx-3 border-t border-outline-variant" />
 
                             {/* Badges - Coming Soon */}
                             <div
@@ -232,49 +232,49 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                 {/* Mobile sidebar */}
                 {!isTheaterMode && (
                     <aside
-                        className={`fixed inset-y-0 left-0 z-30 bg-white w-56 transform transition-transform duration-300 ease-in-out lg:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+                        className={`fixed inset-y-0 left-0 z-30 bg-surface w-56 transform transition-transform duration-300 ease-in-out lg:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
                             }`}
                         style={{ top: '56px' }}
                     >
                         {/* Mobile Nav Header */}
-                        <div className="flex items-center justify-between px-3 py-3 bg-gray-50 border-b border-gray-200">
-                            <span className="text-sm font-semibold text-gray-700">Menu</span>
-                            <button onClick={() => setSidebarOpen(false)} className="p-1 rounded hover:bg-gray-200">
-                                <X size={18} className="text-gray-500" />
+                        <div className="flex items-center justify-between px-3 py-3 bg-surface border-b border-outline-variant">
+                            <span className="text-sm font-semibold text-on-surface">Menu</span>
+                            <button onClick={() => setSidebarOpen(false)} className="p-1 rounded hover:bg-surface-container-high">
+                                <X size={18} className="text-on-surface-variant" />
                             </button>
                         </div>
 
                         <nav className="py-3 overflow-y-auto">
                             {/* My Courses */}
                             <div className="mx-2 space-y-1">
-                                <div className="px-2 py-1 text-xs text-gray-400 uppercase font-semibold tracking-wide">My Courses</div>
+                                <div className="px-2 py-1 text-label-sm text-on-surface-variant uppercase font-bold tracking-wide">My Courses</div>
 
                                 {showOnboarding && (
-                                    <Link to="/portal/onboarding" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/10">
+                                    <Link to="/portal/onboarding" className="flex items-center gap-3 px-3 py-2 rounded-full text-primary bg-primary-container/20">
                                         <CheckCircle size={16} />
                                         <span className="text-sm">Onboarding</span>
                                     </Link>
                                 )}
 
-                                <Link to="/portal/my-courses/in-progress" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/5">
+                                <Link to="/portal/my-courses/in-progress" className="flex items-center gap-3 px-3 py-2 rounded-full text-primary bg-primary-container/20">
                                     <Play size={16} />
                                     <span className="text-sm">In Progress</span>
                                 </Link>
 
-                                <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed">
+                                <div className="flex items-center gap-3 px-3 py-2 rounded-full text-gray-400 cursor-not-allowed">
                                     <User size={16} />
                                     <span className="text-sm">Profile</span>
-                                    <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
+                                    <span className="ml-auto text-[10px] bg-surface-container-highest text-on-surface-variant px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                                 </div>
 
-                                <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed">
+                                <div className="flex items-center gap-3 px-3 py-2 rounded-full text-gray-400 cursor-not-allowed">
                                     <Bookmark size={16} />
                                     <span className="text-sm">Saved</span>
-                                    <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
+                                    <span className="ml-auto text-[10px] bg-surface-container-highest text-on-surface-variant px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                                 </div>
                             </div>
 
-                            <div className="my-3 mx-3 border-t border-gray-200" />
+                            <div className="my-3 mx-3 border-t border-outline-variant" />
 
                             <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed">
                                 <Award size={16} />

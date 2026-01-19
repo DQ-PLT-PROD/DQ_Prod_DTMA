@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { PageContainer } from "../../../components/layouts/PageContainer";
 import { CourseListSkeleton } from "../../../components/loading/CourseListSkeleton";
+import { Button } from "../../../components/Button/Button";
 import { useAuth } from "@/lib/auth";
 import { getUserEnrollments, getActualProgressStats, Enrollment } from "../services/progressService";
 import { fetchFullCourse } from "../../courses/services/courseService";
@@ -105,27 +106,27 @@ const InProgressPage: React.FC = () => {
         <PageContainer className="py-4 w-full">
             <div className="max-w-4xl mx-auto">
                 {/* Welcome Header */}
-                <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
-                    <p className="text-sm text-gray-500">
+                <div className="mb-4 rounded-xl border border-outline-variant bg-surface p-4">
+                    <p className="text-body-sm text-on-surface-variant">
                         Welcome{user?.name ? `, ${user.name}` : ""}.
                     </p>
-                    <h1 className="text-lg font-semibold text-gray-900">
+                    <h1 className="text-title-lg font-bold text-on-surface">
                         Continue where you left off
                     </h1>
                 </div>
 
                 {/* Page Title */}
                 <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">My Courses</h2>
-                    <p className="text-gray-500 text-sm mt-1">In progress and ready to resume</p>
+                    <h2 className="text-headline-md font-bold text-on-surface">My Courses</h2>
+                    <p className="text-on-surface-variant text-body-md mt-1">In progress and ready to resume</p>
                 </div>
 
                 {/* In Progress Section */}
                 <div className="mb-8">
                     <div className="flex items-center gap-2 mb-4">
-                        <Play size={18} className="text-[#1839AD]" />
-                        <h2 className="text-lg font-semibold text-gray-900">In Progress</h2>
-                        <span className="text-xs font-bold bg-[#1839AD] text-white px-2 py-0.5 rounded-full">
+                        <Play size={18} className="text-primary" />
+                        <h2 className="text-title-lg font-bold text-on-surface">In Progress</h2>
+                        <span className="text-label-sm font-bold bg-primary text-on-primary px-2 py-0.5 rounded-full">
                             {enrollments.length}
                         </span>
                     </div>
@@ -135,28 +136,28 @@ const InProgressPage: React.FC = () => {
                             <CourseListSkeleton />
                         </div>
                     ) : !user ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                            <BookOpen className="mx-auto mb-4 text-gray-400" size={48} />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">Sign in to see your courses</h3>
-                            <p className="text-gray-500 mb-4">Track your progress and continue learning</p>
-                            <button
+                        <div className="bg-surface rounded-xl border border-outline-variant p-8 text-center">
+                            <BookOpen className="mx-auto mb-4 text-outline" size={48} />
+                            <h3 className="text-title-lg font-medium text-on-surface mb-2">Sign in to see your courses</h3>
+                            <p className="text-on-surface-variant mb-4">Track your progress and continue learning</p>
+                            <Button
                                 onClick={() => navigate("/courses")}
-                                className="px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition"
+                                variant="filled"
                             >
                                 Browse Courses
-                            </button>
+                            </Button>
                         </div>
                     ) : enrollments.length === 0 ? (
-                        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                            <BookOpen className="mx-auto mb-4 text-gray-400" size={48} />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No courses in progress</h3>
-                            <p className="text-gray-500 mb-4">Start learning by enrolling in a course</p>
-                            <button
+                        <div className="bg-surface rounded-xl border border-outline-variant p-8 text-center">
+                            <BookOpen className="mx-auto mb-4 text-outline" size={48} />
+                            <h3 className="text-title-lg font-medium text-on-surface mb-2">No courses in progress</h3>
+                            <p className="text-on-surface-variant mb-4">Start learning by enrolling in a course</p>
+                            <Button
                                 onClick={() => navigate("/courses")}
-                                className="px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition"
+                                variant="filled"
                             >
                                 Browse Courses
-                            </button>
+                            </Button>
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -170,7 +171,7 @@ const InProgressPage: React.FC = () => {
                                 return (
                                     <div
                                         key={enrollment.id}
-                                        className="w-full text-left bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md hover:border-[#1839AD]/30 transition group"
+                                        className="w-full text-left bg-surface rounded-xl border border-outline-variant p-4 hover:shadow-elevation-1 hover:border-primary/30 transition group"
                                     >
                                         <div className="flex items-start gap-4">
                                             {/* Course Thumbnail */}
@@ -182,33 +183,33 @@ const InProgressPage: React.FC = () => {
                                                         className="w-full h-full object-cover"
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-[#1839AD]/10">
-                                                        <BookOpen className="text-[#1839AD]" size={24} />
+                                                    <div className="w-full h-full flex items-center justify-center bg-primary-container/30">
+                                                        <BookOpen className="text-primary" size={24} />
                                                     </div>
                                                 )}
                                             </div>
 
                                             {/* Course Info */}
                                             <div className="flex-1 min-w-0">
-                                                <h3 className="font-medium text-gray-900 group-hover:text-[#1839AD] transition truncate">
+                                                <h3 className="font-bold text-title-md text-on-surface group-hover:text-primary transition truncate">
                                                     {enrollment.course?.title || enrollment.courseSlug}
                                                 </h3>
 
                                                 {/* Progress Bar - uses actual lesson completion count as source of truth */}
                                                 <div className="flex items-center gap-3 mt-2">
-                                                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div className="flex-1 h-2 bg-surface-container-highest rounded-full overflow-hidden">
                                                         <div
-                                                            className="h-full bg-[#1839AD] rounded-full transition-all"
+                                                            className="h-full bg-primary rounded-full transition-all"
                                                             style={{ width: `${progressPct}%` }}
                                                         />
                                                     </div>
-                                                    <span className="text-sm font-semibold text-[#1839AD]">
+                                                    <span className="text-label-md font-bold text-primary">
                                                         {progressPct}%
                                                     </span>
                                                 </div>
 
                                                 {/* Meta Info */}
-                                                <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                                <div className="flex items-center gap-4 mt-2 text-label-sm text-on-surface-variant">
                                                     <span className="flex items-center gap-1">
                                                         <Clock size={12} />
                                                         {lastAccessedLabel}
@@ -217,15 +218,15 @@ const InProgressPage: React.FC = () => {
                                             </div>
 
                                             {/* Continue CTA */}
-                                            <button
-                                                type="button"
+                                            <Button
+                                                variant="filled"
                                                 onClick={() => handleCourseResume(enrollment.courseSlug)}
                                                 disabled={isResuming}
-                                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1839AD] text-white text-sm font-semibold hover:bg-[#132b7c] disabled:opacity-60 disabled:cursor-not-allowed transition shrink-0"
+                                                className="shrink-0 rounded-full"
+                                                rightIcon={<ChevronRight size={16} />}
                                             >
                                                 {isResuming ? "Continuing..." : "Continue"}
-                                                <ChevronRight size={16} />
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>
                                 );

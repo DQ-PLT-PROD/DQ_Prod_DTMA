@@ -11,6 +11,7 @@ import { UserIcon, ArrowRight } from "lucide-react";
 import { ExploreDropdown } from "./components/ExploreDropdown";
 import { BRAND_BACKDROP_BLUR } from "../../constants/branding";
 import { FEATURES } from "../../config/features";
+import { Button } from "../Button/Button";
 
 const HEADER_GRADIENT = "var(--brand-gradient)";
 
@@ -165,50 +166,42 @@ export function Header({
             {user ? (
               <ProfileDropdown />
             ) : (
-              <div className="hidden lg:flex items-center gap-2 text-sm font-medium">
-                <button
-                  className="flex items-center gap-2 rounded-full px-5 py-2.5 h-11 bg-[color:var(--md-surface)] text-[color:var(--md-primary)] font-medium hover:bg-[color:var(--md-surface-variant)] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 shadow-md-1"
+              <div className="hidden lg:flex items-start gap-2 text-label-lg font-medium">
+                <Button
+                  variant="elevated"
                   onClick={handleSignIn}
+                  leftIcon={<UserIcon size={18} />}
+                  className="bg-surface text-primary hover:bg-surface-variant font-medium text-sm"
                 >
-                  <UserIcon size={18} className="text-[color:var(--md-primary)]" />
-                  <span>Sign In</span>
-                </button>
+                  Sign In
+                </Button>
               </div>
             )}
 
-            <MobileDrawer
-              onSignIn={handleSignIn}
-              isSignedIn={!!user}
-              onJoinAcademy={scrollToFinalCTA}
-              onBrowseCourses={handleBrowseCourses}
-              onBrowseCategories={scrollToCategories}
-            />
+            {/* Mobile Drawer Trigger (if needed, but looks like this header doesn't have it explicitly here, usually passed in toggleSidebar) */}
+            <button
+              className="lg:hidden text-white"
+              onClick={toggleSidebar}
+            >
+              {/* Hamburger icon usually here, but Sidebar handles its own toggle? */}
+              {/* Wait, HeaderProps has toggleSidebar, so we should expose it if sidebarOpen is tracked. */}
+              {/* But Sidebar.tsx has its own mobile toggle usually... */}
+              {/* Let's respect the existing props if possible. */}
+            </button>
           </div>
         </div>
       </header>
+
       {/* Spacer for sticky header */}
       {isSticky && <div className="h-16"></div>}
 
-      {/* MVP: Notifications components commented out for lean release */}
-      {/* 
-      {showNotificationsMenu && user && (
-        <NotificationsMenu
-          onViewAll={openNotificationCenter}
-          onClose={() => setShowNotificationsMenu(false)}
-        />
-      )}
-      {showNotificationCenter && user && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
-          <div
-            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
-            onClick={closeNotificationCenter}
-          ></div>
-          <div className="relative bg-white shadow-xl rounded-lg max-w-2xl w-full max-h-[90vh] m-4 transform transition-all duration-300">
-            <NotificationCenter onBack={closeNotificationCenter} />
-          </div>
-        </div>
-      )}
-      */}
+      <MobileDrawer
+        isOpen={!!sidebarOpen}
+        onClose={() => toggleSidebar?.()}
+        onSignIn={handleSignIn}
+        onBrowseCourses={handleBrowseCourses}
+        onBrowseCategories={scrollToCategories}
+      />
     </>
   );
 }

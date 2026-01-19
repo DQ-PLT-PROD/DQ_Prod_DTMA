@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Trophy, Medal, Award, X, Share2, ArrowRight, Sparkles, Star } from "lucide-react";
+import { Dialog } from "./ui/Dialog";
 
 interface AchievementModalProps {
   isOpen: boolean;
@@ -54,12 +55,10 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+    <>
       {showConfetti && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-[60]">
           {[...Array(40)].map((_, i) => (
             <div
               key={i}
@@ -72,35 +71,25 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
               }}
             >
               <div
-                className={`w-2 h-2 rounded-full ${
-                  ["bg-yellow-400", "bg-blue-400", "bg-green-400", "bg-red-400", "bg-purple-400"][Math.floor(Math.random() * 5)]
-                }`}
+                className={`w-2 h-2 rounded-full ${["bg-yellow-400", "bg-blue-400", "bg-green-400", "bg-red-400", "bg-purple-400"][Math.floor(Math.random() * 5)]
+                  }`}
               />
             </div>
           ))}
         </div>
       )}
 
-      <div
-        className={`md-card-elevated max-w-lg w-full mx-4 relative overflow-hidden transform transition-all duration-500 ${
-          animationPhase >= 1 ? "scale-100 opacity-100" : "scale-75 opacity-0"
-        }`}
-        style={{ maxHeight: "90vh" }}
+      <Dialog
+        open={isOpen}
+        onClose={onClose}
+        headline="Congratulations!"
+        icon={null} // We render custom icon in children for animation
       >
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-br from-[#1839AD] via-[#2e469e] to-[#4a5fc7] opacity-10" />
-
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-[color:var(--md-surface-variant)] hover:bg-[color:var(--md-surface-variant-hover)] flex items-center justify-center transition-colors"
-        >
-          <X size={16} className="text-[color:var(--md-on-surface-variant)]" />
-        </button>
-
-        <div className="relative p-6 text-center overflow-y-auto" style={{ maxHeight: "90vh" }}>
+        <div className="flex flex-col items-center text-center">
+          {/* Animated Icon */}
           <div
-            className={`mb-4 transform transition-all duration-700 delay-300 ${
-              animationPhase >= 2 ? "scale-100 rotate-0" : "scale-0 rotate-180"
-            }`}
+            className={`mb-4 transform transition-all duration-700 delay-300 ${animationPhase >= 2 ? "scale-100 rotate-0" : "scale-0 rotate-180"
+              }`}
           >
             <div
               className={`inline-flex items-center justify-center w-20 h-20 rounded-full ${badgeInfo.bgColor} ${badgeInfo.borderColor} border-4 mb-2 relative`}
@@ -112,57 +101,49 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
           </div>
 
           <div
-            className={`mb-6 transform transition-all duration-700 delay-500 ${
-              animationPhase >= 3 ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-            }`}
+            className={`flex flex-col items-center w-full transform transition-all duration-700 delay-500 ${animationPhase >= 3 ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+              }`}
           >
-            <h2 className="text-2xl font-semibold text-[color:var(--md-on-surface)] mb-3">🎉 Congratulations!</h2>
-            <p className="text-[color:var(--md-on-surface-variant)] text-lg leading-relaxed mb-5">
-              Outstanding! You're officially a Perfecting Life Transactions: A Digital Builder's Blueprint expert!
+            <p className="text-on-surface-variant text-body-lg leading-relaxed mb-6">
+              Outstanding! You're officially a <strong className="text-primary">{courseName}</strong> expert!
             </p>
-            <div className="bg-[color:var(--md-primary)] text-white rounded-[var(--md-radius-md)] p-4 mb-4 shadow-md-1">
-              <div className="text-3xl font-bold mb-1">{score}%</div>
-              <div className="text-sm opacity-90">Final Score</div>
+
+            <div className="bg-primary-container text-on-primary-container rounded-xl p-4 mb-6 shadow-sm w-full max-w-[200px]">
+              <div className="text-display-sm font-bold mb-1">{score}%</div>
+              <div className="text-label-md opacity-80">Final Score</div>
             </div>
           </div>
 
           <div
-            className={`space-y-3 transform transition-all duration-700 delay-700 ${
-              animationPhase >= 3 ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-            }`}
+            className={`w-full space-y-3 transform transition-all duration-700 delay-700 ${animationPhase >= 3 ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+              }`}
           >
             <button
               onClick={handleShare}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-full font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-md-2"
+              className="w-full bg-surface-container-highest border border-outline text-primary py-2.5 px-6 rounded-full font-medium hover:bg-surface-variant transition-all duration-200 flex items-center justify-center gap-2"
             >
-              <Share2 size={20} />
-              Share Your Achievement
+              <Share2 size={18} />
+              Share Achievement
             </button>
 
             <button
               onClick={onClose}
-              className="w-full bg-[color:var(--md-primary)] text-white py-3 px-6 rounded-full font-semibold hover:bg-[color:var(--md-primary-hover)] transition-colors flex items-center justify-center gap-2 shadow-md-1"
+              className="w-full bg-primary text-on-primary py-2.5 px-6 rounded-full font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-elevation-1"
             >
               Continue Learning
-              <ArrowRight size={20} />
+              <ArrowRight size={18} />
             </button>
           </div>
 
           <div
-            className={`mt-5 pt-5 border-t border-[color:var(--md-outline-variant)] transform transition-all duration-700 delay-900 ${
-              animationPhase >= 3 ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-            }`}
+            className={`mt-6 pt-4 border-t border-outline-variant w-full transform transition-all duration-700 delay-900 ${animationPhase >= 3 ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+              }`}
           >
-            <p className="text-sm text-[color:var(--md-on-surface-variant)] italic">"Every expert was once a beginner. Keep up the amazing work!"</p>
-            <div className="mt-3 text-xs text-[color:var(--md-on-surface-variant)]">
-              Ready for the next challenge? Check out more courses to continue your journey!
-            </div>
+            <p className="text-body-sm text-on-surface-variant italic">"Every expert was once a beginner. Keep up the amazing work!"</p>
           </div>
         </div>
-
-        <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-[#1839AD] via-[#2e469e] to-[#4a5fc7]" />
-      </div>
-    </div>
+      </Dialog>
+    </>
   );
 };
 

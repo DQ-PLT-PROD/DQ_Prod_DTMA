@@ -5,6 +5,8 @@ import { FadeInUpOnScroll, StaggeredFadeIn } from "../../components/AnimationUti
 import { CourseTile } from "../courses/components/CourseTile";
 import { fetchCourses } from "../courses/services/courseService";
 import { CourseCardSkeleton } from "../../components/SkeletonLoader";
+import { Button } from "../../components/Button/Button";
+import { IconButton } from "../../components/ui/IconButton";
 import { useAuth } from "@/lib/auth";
 import { getUserEnrollments } from "@/lib/enrollment/service";
 
@@ -133,13 +135,13 @@ const FeaturedCoursesSection: React.FC = () => {
 
   if (loading) {
     return (
-      <section className="bg-gray-50 py-14">
+      <section className="bg-surface py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#030C2B]">
+            <h2 className="text-headline-lg font-bold text-on-surface">
               Featured Courses
             </h2>
-            <p className="text-lg text-gray-600">Loading courses...</p>
+            <p className="text-body-lg text-on-surface-variant">Loading courses...</p>
           </div>
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
@@ -154,13 +156,13 @@ const FeaturedCoursesSection: React.FC = () => {
   }
 
   return (
-    <div className="w-full h-full flex flex-col justify-center py-16 relative">
+    <div className="w-full h-full flex flex-col justify-center py-16 relative bg-surface">
       <PageContainer>
         <FadeInUpOnScroll className="text-center max-w-3xl mx-auto space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#030C2B]">
+          <h2 className="text-headline-lg md:text-display-sm font-bold text-on-surface">
             Featured Courses
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-body-lg text-on-surface-variant">
             Our flagship courses translate the D6 dimensions into applied
             learning journeys.
           </p>
@@ -168,15 +170,16 @@ const FeaturedCoursesSection: React.FC = () => {
           {/* Continue Learning Button for Logged In Users */}
           {user && lastCourse && (
             <div className="mt-8 animate-in fade-in zoom-in duration-500">
-              <button
+              <Button
+                variant="filled"
+                size="lg"
                 onClick={handleContinueLearning}
-                className="group relative inline-flex items-center gap-3 px-8 py-4 bg-[#0030E3] text-white rounded-full font-semibold text-lg hover:bg-[#002080] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 overflow-hidden"
+                leftIcon={<PlayCircle className="w-6 h-6" />}
+                rightIcon={<ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
+                className="shadow-elevation-3 hover:shadow-elevation-4"
               >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                <PlayCircle className="w-6 h-6 relative z-10" />
-                <span className="relative z-10">Continue Learning: {lastCourse.title || "Your Course"}</span>
-                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-              </button>
+                Continue Learning: {lastCourse.title || "Your Course"}
+              </Button>
             </div>
           )}
 
@@ -193,7 +196,7 @@ const FeaturedCoursesSection: React.FC = () => {
                     key={course.id}
                     onMouseEnter={() => !course.isComingSoon && setHoveredId(course.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    className={`transition duration-300 ease-out ${!course.isComingSoon && isHovered ? "scale-105 z-10" : "scale-100"
+                    className={`transition duration-300 ease-out ${!course.isComingSoon && isHovered ? "z-10" : "z-0"
                       }`}
                   >
                     <CourseTile
@@ -210,25 +213,32 @@ const FeaturedCoursesSection: React.FC = () => {
                       variant={course.isComingSoon ? "coming-soon" : "course"}
                       onCardClick={course.isComingSoon ? undefined : () => handleViewDetails(course.id)}
                       isHovered={isHovered}
+                      enableHoverEffects={true}
                     />
                   </div>
                 );
               })}
             </div>
-            <button
-              onClick={handlePrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow hover:bg-gray-50 z-20"
-              aria-label="Previous courses"
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <button
-              onClick={handleNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow hover:bg-gray-50 z-20"
-              aria-label="Next courses"
-            >
-              <ArrowRight size={18} />
-            </button>
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-20">
+              <IconButton
+                variant="filled"
+                onClick={handlePrev}
+                className="bg-surface-container-high text-on-surface hover:bg-surface-container-highest shadow-elevation-2"
+                aria-label="Previous courses"
+              >
+                <ArrowLeft size={18} />
+              </IconButton>
+            </div>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-20">
+              <IconButton
+                variant="filled"
+                onClick={handleNext}
+                className="bg-surface-container-high text-on-surface hover:bg-surface-container-highest shadow-elevation-2"
+                aria-label="Next courses"
+              >
+                <ArrowRight size={18} />
+              </IconButton>
+            </div>
           </div>
           <div className="flex justify-center items-center gap-3 mt-6">
             {Array.from({ length: totalSlides }).map((_, idx) => {
@@ -238,7 +248,7 @@ const FeaturedCoursesSection: React.FC = () => {
                   key={idx}
                   onClick={() => setStartIndex(Math.min(idx, maxStartIndex))}
                   aria-label={`Go to slide ${idx + 1}`}
-                  className={`h-2 rounded-full transition-all duration-200 ${isActive ? "w-8 bg-[#1839AD]/30" : "w-2 bg-gray-300"
+                  className={`h-2 rounded-full transition-all duration-200 ${isActive ? "w-8 bg-primary" : "w-2 bg-outline-variant"
                     }`}
                 ></button>
               );
