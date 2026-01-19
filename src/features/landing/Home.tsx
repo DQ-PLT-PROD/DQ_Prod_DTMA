@@ -59,7 +59,7 @@ const FeaturedCoursesSection: React.FC = () => {
           duration: course.isComingSoon ? "Coming Soon" : (course.duration || "55 mins"),
           lessonCount: course.lessonCount || 4,
           thumbnailUrl: course.heroImageUrl || course.thumbnailUrl,
-          videoUrl: course.isComingSoon ? undefined : (course.introVideoUrl || "/videos/C2-INTRO.mp4"),
+          videoUrl: course.isComingSoon ? undefined : course.introVideoUrl,
           description: course.description || "",
           isComingSoon: course.isComingSoon || false,
         }));
