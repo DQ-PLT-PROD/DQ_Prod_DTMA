@@ -10,7 +10,7 @@ import {
     ChevronRight
 } from "lucide-react";
 import { PageContainer } from "../../../components/layouts/PageContainer";
-import { PageLoader } from "../../../components/loading";
+import { CourseListSkeleton } from "../../../components/loading/CourseListSkeleton";
 import { useAuth } from "@/lib/auth";
 import { getUserEnrollments, getActualProgressStats, Enrollment } from "../services/progressService";
 import { fetchFullCourse } from "../../courses/services/courseService";
@@ -131,8 +131,8 @@ const InProgressPage: React.FC = () => {
                     </div>
 
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <PageLoader size="lg" label="Loading courses..." />
+                        <div className="py-4">
+                            <CourseListSkeleton />
                         </div>
                     ) : !user ? (
                         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">

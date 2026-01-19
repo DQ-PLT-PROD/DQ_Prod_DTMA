@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
+import { CourseDetailSkeleton } from "../../../components/loading/CourseDetailSkeleton";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import {
   ChevronRightIcon,
@@ -216,22 +217,40 @@ const CourseDetailsPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Header
-          toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          sidebarOpen={sidebarOpen}
-        />
-        <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[300px] flex-grow">
-          <div className="animate-pulse flex flex-col items-center">
-            <div className="h-8 w-32 bg-gray-200 rounded mb-4"></div>
-            <div className="h-4 w-48 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-        <Footer isLoggedIn={false} />
-      </div>
-    );
+    return <CourseDetailSkeleton />;
   }
+
+  // Helper for sharing
+  const handleShare = async () => {
+    const shareData = {
+      title: itemTitle,
+      text: itemDescription,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log("Error sharing", err);
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        // Could add a toast here, but simple alert for MVP if no toast system
+        alert("Link copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy", err);
+      }
+    }
+  };
+
+
+  // ...
+
+  // Render Share Button
+
 
   if (error) {
     return (
@@ -549,7 +568,9 @@ const CourseDetailsPage: React.FC = () => {
                   className="flex-1 sm:flex-none px-6 py-3 bg-blue-600 text-white font-bold text-base rounded-xl shadow-xl hover:bg-blue-700 transition-all transform hover:-translate-y-1"
                 />
                 <button
+                  onClick={handleShare}
                   className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
+                  aria-label="Share Course"
                 >
                   <Share2Icon size={20} />
                 </button>

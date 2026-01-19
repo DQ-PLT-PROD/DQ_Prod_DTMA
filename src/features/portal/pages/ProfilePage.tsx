@@ -1,4 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
+import { ComingSoon } from "../../app/pages/ComingSoon";
+
+/*
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "../../../components/ui/Toast";
 import { useAuth } from "@/lib/auth";
 import {
@@ -14,8 +18,12 @@ import {
   MAX_PREFERENCES,
 } from "../../learner/constants/profileOptions";
 import { PageContainer } from "../../../components/layouts/PageContainer";
+*/
 
 const ProfilePage: React.FC = () => {
+  return <ComingSoon pageName="Learner Profile" />;
+
+  /*
   const { databaseUser, isDatabaseUserLoading } = useAuth();
   const { showToast, ToastComponent } = useToast();
   const toastRef = useRef(showToast);
@@ -274,6 +282,7 @@ const ProfilePage: React.FC = () => {
       {ToastComponent}
     </PageContainer>
   );
+  */
 };
 
 export default ProfilePage;

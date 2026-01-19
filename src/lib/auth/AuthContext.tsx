@@ -307,7 +307,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const isOnboardingRoute = currentPath.startsWith('/portal/onboarding')
             || currentPath.startsWith('/dashboard/onboarding');
         const isPortalRoute = currentPath === '/portal' || currentPath.startsWith('/portal/');
-        const isSigninRoute = currentPath === '/' || currentPath.includes('signin');
+        const isSigninRoute = currentPath.includes('signin');
 
         if (currentPath.includes('auth-debug') || isOnboardingRoute) {
             return;

@@ -79,23 +79,23 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
             <a
               href="https://www.linkedin.com/company/digitalqatalyst/posts/?feedView=all"
               aria-label="LinkedIn"
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+              className="p-2 rounded-full bg-white text-[#0030E3] hover:scale-110 transition-transform shadow-md"
             >
-              <Linkedin size={18} />
+              <Linkedin size={20} className="fill-current" />
             </a>
             <a
               href="https://www.instagram.com/digitalqatalyst/"
               aria-label="Instagram"
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+              className="p-2 rounded-full bg-white text-[#0030E3] hover:scale-110 transition-transform shadow-md"
             >
-              <Instagram size={18} />
+              <Instagram size={20} className="stroke-2" />
             </a>
             <a
               href="https://x.com/drstephane_"
               aria-label="X (Twitter)"
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+              className="p-2 rounded-full bg-white text-[#0030E3] hover:scale-110 transition-transform shadow-md"
             >
-              <X size={18} strokeWidth={2} />
+              <X size={20} strokeWidth={2.5} />
             </a>
           </div>
         </div>
@@ -104,18 +104,18 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
           <div className="space-y-4 text-blue-100 text-sm leading-relaxed">
             <h3 className="font-semibold text-lg text-white">About Us</h3>
             {ABOUT_TEXT.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
+              <p key={paragraph} className="text-blue-50">{paragraph}</p>
             ))}
           </div>
 
           <div className="space-y-4 self-start">
             <h3 className="font-semibold text-lg text-white">Quick Links</h3>
-            <div className="text-blue-100 text-sm">
+            <div className="flex flex-col text-sm">
               {QUICK_LINKS.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  className="flex items-center py-2 border-b border-white/30 hover:text-white transition"
+                  className="flex items-center py-2 border-b border-white/30 text-white hover:text-white/80 transition-colors font-medium"
                 >
                   {link.label}
                 </a>
@@ -125,7 +125,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
 
           <div className="space-y-4 self-start">
             <h3 className="font-semibold text-lg text-white">Subscribe</h3>
-            <p className="text-blue-100 text-sm leading-relaxed">
+            <p className="text-blue-50 text-sm leading-relaxed">
               Stay updated with the latest insights, courses, and tools for the AI working era
               from DTMA.
             </p>
@@ -136,7 +136,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 bg-transparent outline-none placeholder-gray-500 text-sm sm:text-base"
+                  className="flex-1 bg-transparent outline-none placeholder-gray-500 text-sm sm:text-base text-gray-900"
                   aria-label="Email address"
                   required
                 />

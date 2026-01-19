@@ -24,7 +24,7 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[color:var(--md-primary-container)] to-[color:var(--md-surface-variant)]">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="text-center px-4">
         <div className="mb-8">
           <Loader2 className="w-16 h-16 animate-spin text-[color:var(--md-primary)] mx-auto" />

@@ -148,14 +148,19 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                                     )}
                                 </Link>
 
-                                <Link
-                                    to="/portal/profile"
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isProfileActive ? 'text-[#1839AD] bg-[#1839AD]/10' : 'text-[#1839AD] bg-[#1839AD]/5 hover:bg-[#1839AD]/10'} transition ${!sidebarOpen ? 'justify-center' : ''}`}
-                                    title="Profile"
+                                {/* Profile - now disabled/coming soon */}
+                                <div
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
+                                    title="Profile - Coming Soon"
                                 >
                                     <User size={16} className="shrink-0" />
-                                    {sidebarOpen && <span className="text-sm">Profile</span>}
-                                </Link>
+                                    {sidebarOpen && (
+                                        <div className="flex-1 flex items-center justify-between gap-2">
+                                            <span className="text-sm">Profile</span>
+                                            <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
+                                        </div>
+                                    )}
+                                </div>
 
                                 {/* Saved */}
                                 <div
@@ -164,9 +169,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                                 >
                                     <Bookmark size={16} className="shrink-0" />
                                     {sidebarOpen && (
-                                        <div className="flex-1 flex items-center justify-between">
+                                        <div className="flex-1 flex items-center justify-between gap-2">
                                             <span className="text-sm">Saved</span>
-                                            <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
+                                            <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                                         </div>
                                     )}
                                 </div>
@@ -182,9 +187,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                             >
                                 <Award size={16} className="shrink-0" />
                                 {sidebarOpen && (
-                                    <div className="flex-1 flex items-center justify-between">
+                                    <div className="flex-1 flex items-center justify-between gap-2">
                                         <span className="text-sm">Badges</span>
-                                        <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
+                                        <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                                     </div>
                                 )}
                             </div>
@@ -196,9 +201,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                             >
                                 <Sparkles size={16} className="shrink-0" />
                                 {sidebarOpen && (
-                                    <div className="flex-1 flex items-center justify-between">
+                                    <div className="flex-1 flex items-center justify-between gap-2">
                                         <span className="text-sm">Career Coach</span>
-                                        <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
+                                        <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                                     </div>
                                 )}
                             </div>
@@ -256,30 +261,31 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                                     <span className="text-sm">In Progress</span>
                                 </Link>
 
-                                <Link to="/portal/profile" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/5">
+                                <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed">
                                     <User size={16} />
                                     <span className="text-sm">Profile</span>
-                                </Link>
+                                    <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
+                                </div>
 
-                                <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400">
+                                <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed">
                                     <Bookmark size={16} />
                                     <span className="text-sm">Saved</span>
-                                    <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
+                                    <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                                 </div>
                             </div>
 
                             <div className="my-3 mx-3 border-t border-gray-200" />
 
-                            <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400">
+                            <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed">
                                 <Award size={16} />
                                 <span className="text-sm">Badges</span>
-                                <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
+                                <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                             </div>
 
-                            <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400">
+                            <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed">
                                 <Sparkles size={16} />
                                 <span className="text-sm">Career Coach</span>
-                                <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
+                                <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                             </div>
                         </nav>
                     </aside>

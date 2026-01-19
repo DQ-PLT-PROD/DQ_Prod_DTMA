@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogOutIcon, ChevronDownIcon, UserIcon } from 'lucide-react';
+import { LogOutIcon, ChevronDownIcon, UserIcon, BookOpenIcon } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 
 // Simplified for MVP - removed notifications.
@@ -93,6 +93,16 @@ export function ProfileDropdown() {
               <p className="text-xs text-[color:var(--md-on-surface-variant)]">{user.email}</p>
             </div>
           </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="py-1 border-b border-[color:var(--md-outline-variant)]">
+          <a href="/portal" className="flex items-center w-full text-left px-4 py-2 text-sm text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant)]">
+            <div className="mr-3 text-[color:var(--md-primary)]">
+              <BookOpenIcon size={16} className="text-[color:var(--md-primary)]" />
+            </div>
+            My Learning
+          </a>
         </div>
 
         {/* MVP: Notifications section commented out */}

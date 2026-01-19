@@ -8,28 +8,11 @@ import HowYouLearn from '../HowYouLearn';
 import Home from '../Home';
 import CallToAction from '../CallToAction';
 import KhalifaFundAttribution from '../KhalifaFundAttribution';
-import { PageLoader } from '@/components/loading';
+
 
 const HomePage: React.FC = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
 
-    // Simulate page loading
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
-
-    if (isLoading) {
-        return (
-            <PageLoader
-                message="Loading Digital Worker Academy"
-                subMessage="Your gateway to AI-era leadership and skills"
-            />
-        );
-    }
 
     return (
         <div className="h-screen w-full overflow-y-scroll snap-y snap-mandatory bg-gray-50 relative scroll-smooth">
