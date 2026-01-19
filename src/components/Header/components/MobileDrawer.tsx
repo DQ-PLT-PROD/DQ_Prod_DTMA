@@ -6,7 +6,7 @@ import {
   BRAND_BACKDROP_BLUR,
   BRAND_PRIMARY,
 } from "../../../constants/branding";
-import { useAuth } from "../../../features/auth/context/AuthContext";
+import { useAuth } from "@/lib/auth";
 import { COURSE_CATEGORIES } from "../../../constants/navigation";
 
 interface MobileDrawerProps {
@@ -79,16 +79,16 @@ export function MobileDrawer({
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-[85vw] max-w-[320px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out border-l border-gray-100 ${isDrawerOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 h-full w-[85vw] max-w-[320px] bg-[color:var(--md-surface)] shadow-md-3 z-50 transform transition-transform duration-300 ease-out border-l border-[color:var(--md-outline-variant)] ${isDrawerOpen ? "translate-x-0" : "translate-x-full"
           }`}
       >
-        <div className="flex flex-col h-full bg-[#FAFAFA]">
+        <div className="flex flex-col h-full bg-[color:var(--md-background)]">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-white">
-            <span className="font-bold text-gray-900 text-lg tracking-tight">Menu</span>
+          <div className="flex items-center justify-between px-6 py-5 border-b border-[color:var(--md-outline-variant)] bg-[color:var(--md-surface)]">
+            <span className="font-semibold text-[color:var(--md-on-surface)] text-lg tracking-tight">Menu</span>
             <button
               onClick={() => setIsDrawerOpen(false)}
-              className="p-2 -mr-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 -mr-2 text-[color:var(--md-on-surface-variant)] hover:text-[color:var(--md-on-surface)] hover:bg-[color:var(--md-surface-variant)] rounded-full transition-colors"
             >
               <XIcon size={20} />
             </button>
@@ -99,12 +99,12 @@ export function MobileDrawer({
 
             {/* Main Navigation */}
             <div className="space-y-4">
-              <div className="rounded-xl overflow-hidden bg-white border border-gray-100 shadow-sm">
-                <div className="px-4 py-3.5 bg-gray-50/50 border-b border-gray-100 flex items-center gap-3">
-                  <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+              <div className="md-card overflow-hidden">
+                <div className="px-4 py-3.5 bg-[color:var(--md-surface-variant)] border-b border-[color:var(--md-outline-variant)] flex items-center gap-3">
+                  <div className="p-1.5 bg-[color:var(--md-primary-container)] text-[color:var(--md-primary)] rounded-[var(--md-radius-sm)]">
                     <Layers size={18} />
                   </div>
-                  <span className="font-medium text-gray-900">Explore Courses</span>
+                  <span className="font-medium text-[color:var(--md-on-surface)]">Explore Courses</span>
                 </div>
 
                 <div className="py-1">
@@ -113,13 +113,13 @@ export function MobileDrawer({
                     return (
                       <button
                         key={cat.id}
-                        className="w-full text-left px-4 py-3 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50/50 flex items-center gap-3 transition-colors border-l-2 border-transparent hover:border-blue-600"
+                        className="w-full text-left px-4 py-3 text-sm text-[color:var(--md-on-surface-variant)] hover:text-[color:var(--md-primary)] hover:bg-[color:var(--md-primary-container)] flex items-center gap-3 transition-colors border-l-2 border-transparent hover:border-[color:var(--md-primary)]"
                         onClick={() => {
                           navigate(cat.href);
                           setIsDrawerOpen(false);
                         }}
                       >
-                        <Icon size={18} className="text-gray-400" />
+                        <Icon size={18} className="text-[color:var(--md-on-surface-variant)]" />
                         <span className="truncate">{cat.name}</span>
                       </button>
                     );
@@ -130,7 +130,7 @@ export function MobileDrawer({
           </div>
 
           {/* Footer / User Profile */}
-          <div className="p-5 border-t border-gray-100 bg-white">
+          <div className="p-5 border-t border-[color:var(--md-outline-variant)] bg-[color:var(--md-surface)]">
             {user ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -138,15 +138,15 @@ export function MobileDrawer({
                     {user.name ? user.name.charAt(0).toUpperCase() : <User size={18} />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">
+                    <p className="font-semibold text-[color:var(--md-on-surface)] truncate">
                       {user.name || 'Learner'}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                    <p className="text-xs text-[color:var(--md-on-surface-variant)] truncate">{user.email}</p>
                   </div>
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-colors text-sm font-medium"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-full transition-colors text-sm font-medium"
                 >
                   <LogOut size={16} />
                   Sign Out
@@ -155,12 +155,12 @@ export function MobileDrawer({
             ) : (
               <div className="space-y-3">
                 <button
-                  className="w-full px-4 py-3 bg-[#1839AD] text-white rounded-xl shadow-md hover:shadow-lg hover:bg-blue-800 transition-all duration-300 font-semibold text-sm"
+                  className="w-full px-4 py-3 bg-[color:var(--md-primary)] text-white rounded-full shadow-md-1 hover:shadow-md-2 hover:bg-[color:var(--md-primary-hover)] transition-all duration-300 font-semibold text-sm"
                   onClick={handleSignIn}
                 >
                   Sign In
                 </button>
-                <p className="text-center text-xs text-gray-400">
+                <p className="text-center text-xs text-[color:var(--md-on-surface-variant)]">
                   Join to access your personalized dashboard
                 </p>
               </div>

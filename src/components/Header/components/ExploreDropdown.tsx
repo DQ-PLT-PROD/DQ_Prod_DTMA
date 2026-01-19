@@ -104,7 +104,7 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
     <div className="relative" ref={dropdownRef}>
       <button
         ref={buttonRef}
-        className="flex items-center text-white hover:text-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white/20 rounded-md px-2 py-1"
+        className="flex items-center text-white hover:text-white/80 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 rounded-md px-2 py-1"
         onClick={() => setIsOpen((v) => !v)}
         onKeyDown={handleKeyDown}
         aria-expanded={isOpen}
@@ -120,13 +120,13 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
 
       {isOpen && (
         <div
-          className="absolute top-full left-0 mt-2 w-[32rem] max-w-[95vw] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 py-5 px-4"
+          className="absolute top-full left-0 mt-2 w-[32rem] max-w-[95vw] md-card-elevated z-50 py-5 px-4"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="explore-menu"
         >
-          <div className="px-4 py-2 border-b border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-900">
+          <div className="px-4 py-2 border-b border-[color:var(--md-outline-variant)]">
+            <h3 className="text-sm font-semibold text-[color:var(--md-on-surface)]">
               Discover Course Categories
             </h3>
           </div>
@@ -138,12 +138,12 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
 
               return (
                 <a
-                  key={category.id}
+                  key={category.slug}
                   ref={(el) => { itemRefs.current[index] = el; }}
                   href={category.href}
                   target={external ? "_blank" : undefined}
                   rel={external ? "noopener noreferrer" : undefined}
-                  className={`flex items-start px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors duration-150 ${focusedIndex === index ? "bg-gray-50" : ""
+                  className={`flex items-start px-4 py-3 text-left hover:bg-[color:var(--md-surface-variant)] focus:bg-[color:var(--md-surface-variant)] focus:outline-none transition-colors duration-150 ${focusedIndex === index ? "bg-[color:var(--md-surface-variant)]" : ""
                     }`}
                   role="menuitem"
                   tabIndex={-1}
@@ -157,19 +157,19 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
                   onFocus={() => setFocusedIndex(index)}
                 >
                   <div className="flex-shrink-0 mt-0.5">
-                    <Icon size={20} className="text-[#1839AD]" />
+                    <Icon size={20} className="text-[color:var(--md-primary)]" />
                   </div>
                   <div className="ml-3 flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">
-                      {category.name}
+                    <p className="text-sm font-medium text-[color:var(--md-on-surface)]">
+                      {category.title}
                     </p>
                     {category.description && (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                      <p className="text-xs text-[color:var(--md-on-surface-variant)] mt-1 line-clamp-2">
                         {category.description}
                       </p>
                     )}
                   </div>
-                  <span className="text-base text-gray-300">❯</span>
+                  <span className="text-base text-[color:var(--md-on-surface-variant)]">❯</span>
                 </a>
               );
             })}

@@ -5,7 +5,7 @@ import { AlertTriangleIcon, RefreshCwIcon } from 'lucide-react';
 export { ContentSkeleton as default } from './loading';
 
 export const CourseCardSkeleton: React.FC = () => {
-  return <div className="bg-white rounded-lg shadow overflow-hidden animate-pulse">
+  return <div className="md-card overflow-hidden animate-pulse">
     <div className="p-4">
       <div className="flex items-center mb-3">
         <div className="h-8 w-8 bg-gray-200 rounded-full mr-2"></div>
@@ -35,19 +35,19 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   onRetry,
   additionalMessage
 }) => {
-  return <div className="bg-white rounded-lg shadow p-6 text-center">
+  return <div className="md-card p-6 text-center">
     <div className="flex flex-col items-center">
       <div className="bg-red-50 p-3 rounded-full mb-4">
         <AlertTriangleIcon size={32} className="text-red-500" />
       </div>
-      <h3 className="text-xl font-medium text-gray-900 mb-2">{message}</h3>
-      <p className="text-gray-600 mb-5">
+      <h3 className="text-xl font-semibold text-[color:var(--md-on-surface)] mb-2">{message}</h3>
+      <p className="text-[color:var(--md-on-surface-variant)] mb-5">
         There was a problem loading the data. Please try again.
       </p>
-      {additionalMessage && <p className="text-gray-500 text-sm mb-4 italic">
+      {additionalMessage && <p className="text-[color:var(--md-on-surface-variant)] text-sm mb-4 italic">
         {additionalMessage}
       </p>}
-      {onRetry && <button onClick={onRetry} className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+      {onRetry && <button onClick={onRetry} className="inline-flex items-center px-4 py-2 bg-[color:var(--md-primary)] text-white rounded-full hover:bg-[color:var(--md-primary-hover)] transition-colors shadow-md-1">
         <RefreshCwIcon size={16} className="mr-2" />
         Try Again
       </button>}

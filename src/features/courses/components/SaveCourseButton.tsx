@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
-import { useAuth } from "../../../components/Header";
+import { useAuth } from "../../../features/auth/context/AuthContext";
 import { isCourseSaved, toggleSavedCourse } from "../utils/savedCoursesManager";
 
 interface SaveCourseButtonProps {

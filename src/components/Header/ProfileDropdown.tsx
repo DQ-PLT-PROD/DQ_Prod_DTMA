@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { LogOutIcon, ChevronDownIcon, UserIcon } from 'lucide-react';
-import { useAuth } from '../../features/auth/context/AuthContext';
-interface ProfileDropdownProps {
-  // Simplified for MVP - removed notifications
-  // onViewNotifications: () => void;
-  // unreadNotifications: number;
-}
-export function ProfileDropdown({ }: ProfileDropdownProps) {
+import { LogOutIcon, ChevronDownIcon, UserIcon, BookOpenIcon } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
+
+// Simplified for MVP - removed notifications.
+export function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const {
@@ -71,7 +68,7 @@ export function ProfileDropdown({ }: ProfileDropdownProps) {
   }
   return <div className="relative">
     <button className="flex items-center" onClick={toggleDropdown} aria-label="User menu">
-      <div className="relative w-10 h-10 rounded-full bg-white text-purple-700 flex items-center justify-center font-bold">
+      <div className="relative w-10 h-10 rounded-full bg-[color:var(--md-surface)] text-[color:var(--md-primary)] flex items-center justify-center font-bold shadow-md-1">
         {user.picture ? <img src={user.picture} alt={user.name} className="w-full h-full rounded-full object-cover" /> : getInitials()}
         {/* MVP: Removed notification indicator */}
       </div>
@@ -84,18 +81,28 @@ export function ProfileDropdown({ }: ProfileDropdownProps) {
     </button>
     {isOpen && <>
       <div className="fixed inset-0 z-30" onClick={closeDropdown}></div>
-      <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-40">
+      <div className="absolute right-0 mt-2 w-56 md-card shadow-md-2 z-40">
         {/* MVP: User info display only (no navigation) */}
-        <div className="p-3 border-b border-gray-200">
+        <div className="p-3 border-b border-[color:var(--md-outline-variant)]">
           <div className="flex items-center">
-            <UserIcon size={18} className="text-gray-500 mr-2" />
+            <UserIcon size={18} className="text-[color:var(--md-on-surface-variant)] mr-2" />
             <div className="ml-1">
-              <p className="text-sm font-medium text-gray-800">
+              <p className="text-sm font-medium text-[color:var(--md-on-surface)]">
                 {user.name}
               </p>
-              <p className="text-xs text-gray-500">{user.email}</p>
+              <p className="text-xs text-[color:var(--md-on-surface-variant)]">{user.email}</p>
             </div>
           </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="py-1 border-b border-[color:var(--md-outline-variant)]">
+          <a href="/portal" className="flex items-center w-full text-left px-4 py-2 text-sm text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant)]">
+            <div className="mr-3 text-[color:var(--md-primary)]">
+              <BookOpenIcon size={16} className="text-[color:var(--md-primary)]" />
+            </div>
+            My Learning
+          </a>
         </div>
 
         {/* MVP: Notifications section commented out */}
@@ -116,32 +123,32 @@ export function ProfileDropdown({ }: ProfileDropdownProps) {
         */}
 
         {/* Essential: Logout functionality */}
-        <div className="py-1 border-t border-gray-200">
-          <button className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={e => {
+        <div className="py-1 border-t border-[color:var(--md-outline-variant)]">
+          <button className="flex items-center w-full text-left px-4 py-2 text-sm text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant)]" onClick={e => {
             e.preventDefault();
             showLogoutConfirm();
           }}>
-            <LogOutIcon size={16} className="mr-3 text-gray-500" />
+            <LogOutIcon size={16} className="mr-3 text-[color:var(--md-on-surface-variant)]" />
             Log Out
           </button>
         </div>
       </div>
     </>}
     {/* Logout Confirmation Dialog */}
-    {showLogoutConfirmation && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+    {showLogoutConfirmation && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="md-card-elevated p-6 max-w-sm w-full mx-4">
+        <h3 className="text-lg font-semibold text-[color:var(--md-on-surface)] mb-4">
           Confirm Logout
         </h3>
-        <p className="text-sm text-gray-500 mb-5">
+        <p className="text-sm text-[color:var(--md-on-surface-variant)] mb-5">
           Are you sure you want to log out? You will need to sign in again
           to access your account.
         </p>
         <div className="flex justify-end space-x-3">
-          <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200" onClick={cancelLogout}>
+          <button className="px-4 py-2 text-sm font-medium text-[color:var(--md-on-surface)] bg-[color:var(--md-surface-variant)] rounded-full hover:bg-[color:var(--md-surface-variant-hover)]" onClick={cancelLogout}>
             Cancel
           </button>
-          <button className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700" onClick={handleLogout}>
+          <button className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-full hover:bg-red-700" onClick={handleLogout}>
             Confirm
           </button>
         </div>

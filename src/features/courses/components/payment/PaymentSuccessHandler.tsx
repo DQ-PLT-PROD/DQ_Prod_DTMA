@@ -6,9 +6,9 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, Loader2, XCircle } from 'lucide-react';
-import { useAuth } from '../../../../components/Header';
-import { handlePaymentSuccess } from '../../services/paymentService';
-import { enrollInCourse } from '../../services/enrollmentService';
+import { useAuth } from '@/lib/auth';
+import { handlePaymentSuccess } from '@/lib/payment';
+import { enrollInCourse } from '@/lib/enrollment';
 
 export const PaymentSuccessHandler: React.FC = () => {
     const [searchParams] = useSearchParams();

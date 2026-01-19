@@ -22,7 +22,7 @@ import {
     enrollInCourse,
     canAccessLesson,
     validateEnrollmentEligibility
-} from '../enrollmentService';
+} from '../../../../lib/enrollment/service';
 import { getSupabaseForEnrollment } from '../../../../lib/supabase/serviceClient';
 
 describe('EnrollmentService', () => {
@@ -184,7 +184,8 @@ describe('EnrollmentService', () => {
                 courseSlug: courseSlug,
                 enrolledAt: '2025-01-13T00:00:00Z',
                 status: 'active',
-                enrollmentMethod: 'explicit'
+                enrollmentMethod: 'explicit',
+                cancelledAt: null
             });
         });
 

@@ -52,14 +52,18 @@ const whyHighlights = [
   },
 ];
 
+import { PageContainer } from "../../components/layouts/PageContainer";
+
 const ProofAndTrust: React.FC = () => {
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  // ... (state hooks) ...
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const activeStory = stories[activeStoryIndex];
 
   useEffect(() => {
+    // ... (keep useEffect logic) ...
     const currentWord = typingWords[currentWordIndex];
     const letterDelay = Math.max(1000 / currentWord.length, 60);
     let timeout: ReturnType<typeof setTimeout>;
@@ -95,8 +99,8 @@ const ProofAndTrust: React.FC = () => {
   };
 
   return (
-    <section className="bg-gray-50 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+    <div className="w-full h-full flex flex-col justify-center py-16">
+      <PageContainer className="space-y-16">
         <div className="max-w-5xl mx-auto grid grid-cols-1 gap-8 lg:grid-cols-2 items-center">
           <FadeInUpOnScroll className="space-y-6 text-left flex flex-col items-start">
             <img
@@ -209,8 +213,8 @@ const ProofAndTrust: React.FC = () => {
           </FadeInUpOnScroll>
         </div>
 
-      </div>
-    </section>
+      </PageContainer>
+    </div>
   );
 };
 

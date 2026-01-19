@@ -4,10 +4,10 @@
  */
 import React from 'react';
 import { Lock, BookOpen, Play } from 'lucide-react';
-import { useAuth } from '../../../components/Header';
-import { EnrollmentButton } from '../../courses/components/enrollment/EnrollmentButton';
-import { Course } from '../../../types/dtma-lms';
-import { useToast } from '../../../components/ui/Toast';
+import { useAuth } from '@/lib/auth';
+import { EnrollmentButton } from '@/components/enrollment/EnrollmentButton';
+import { Course } from '@/types/dtma-lms';
+import { useToast } from '@/components/ui/Toast';
 
 interface PreviewContentGateProps {
     course: Course;
@@ -38,7 +38,7 @@ export const PreviewContentGate: React.FC<PreviewContentGateProps> = ({
             `🎓 Welcome to "${course.title}"! You can now access all lessons and start learning.`,
             'success'
         );
-        
+
         // Call the parent callback after a brief delay
         if (onEnrollmentSuccess) {
             setTimeout(() => {
@@ -72,20 +72,20 @@ export const PreviewContentGate: React.FC<PreviewContentGateProps> = ({
                 <div className="filter blur-sm pointer-events-none">
                     {children}
                 </div>
-                
+
                 {/* Overlay with enrollment CTA */}
                 <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
                     <div className="bg-white rounded-xl p-8 max-w-md mx-4 text-center">
                         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Lock size={24} className="text-blue-600" />
                         </div>
-                        
+
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">
                             Full Content Locked
                         </h3>
-                        
+
                         <p className="text-gray-600 mb-6">
-                            {user 
+                            {user
                                 ? "Enroll in this course to access all lessons and resources."
                                 : "Sign in and enroll to access the complete course content."
                             }
@@ -97,7 +97,7 @@ export const PreviewContentGate: React.FC<PreviewContentGateProps> = ({
                                 onEnrollmentSuccess={handleEnrollmentSuccess}
                                 className="w-full"
                             />
-                            
+
                             {/* Preview lessons available notice */}
                             <p className="text-sm text-gray-500">
                                 You can still access preview lessons without enrolling

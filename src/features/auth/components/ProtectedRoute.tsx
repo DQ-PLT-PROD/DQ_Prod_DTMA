@@ -1,7 +1,7 @@
 import { PropsWithChildren, useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/lib/auth';
 
 /**
  * Guards routes behind MSAL auth. If unauthenticated, triggers login and

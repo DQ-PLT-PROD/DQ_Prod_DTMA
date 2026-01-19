@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/lib/auth';
 import { testSupabaseConnection, createTestUser, cleanupTestUser } from '../../../utils/testSupabaseConnection';
 import { useMsal } from '@azure/msal-react';
 import { emailFixUtils } from '../../../utils/fixUserEmails';

@@ -15,9 +15,11 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Breadcrumb } from "../../../components/ui/Breadcrumb";
-import { Header, useAuth } from "../../../components/Header";
+import { Header } from "../../../components/Header";
+import { useAuth } from "../../../features/auth/context/AuthContext";
 import { Footer } from "../../../components/Footer";
 import RequiredDocumentsTab from "../components/details/tabs/RequiredDocumentsTab";
+import { PageContainer } from "../../../components/layouts/PageContainer";
 
 import AboutTab from "../components/details/tabs/AboutTab";
 import ScheduleTab from "../components/details/tabs/ScheduleTab";
@@ -35,8 +37,9 @@ import { CourseMeta } from "../../../components/ui/CourseMeta";
 import { Tag } from "../../../components/ui/Tag";
 import { AudienceFitIndicator } from "../components/details/AudienceFitIndicator";
 import { CourseTile } from "../components/CourseTile";
-import { EnrollmentButton } from "../components/enrollment/EnrollmentButton";
-import { SaveCourseFullButton } from "../components/SaveCourseButton";
+import { EnrollmentButton } from "@/components/enrollment/EnrollmentButton";
+import { CourseDetailSkeleton } from "@/components/loading/CourseDetailSkeleton.tsx";
+import { SaveCourseFullButton } from "@/features/courses/components/SaveCourseButton.tsx";
 
 const CourseDetailsPage: React.FC = () => {
   const { itemId } = useParams<{
@@ -199,27 +202,45 @@ const CourseDetailsPage: React.FC = () => {
     if (itemId) {
       try {
         refetch?.();
-      } catch {}
+      } catch (error) {
+        console.warn("Failed to refetch course details.", error);
+      }
     }
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Header
-          toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          sidebarOpen={sidebarOpen}
-        />
-        <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[300px] flex-grow">
-          <div className="animate-pulse flex flex-col items-center">
-            <div className="h-8 w-32 bg-gray-200 rounded mb-4"></div>
-            <div className="h-4 w-48 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-        <Footer isLoggedIn={false} />
-      </div>
-    );
+    return <CourseDetailSkeleton />;
   }
+
+  // Helper for sharing
+  const handleShare = async () => {
+    const shareData = {
+      title: itemTitle,
+      text: itemDescription,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log("Error sharing", err);
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        // Could add a toast here, but simple alert for MVP if no toast system
+        alert("Link copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy", err);
+      }
+    }
+  };
+
+  // ...
+
+  // Render Share Button
 
   if (error) {
     return (
@@ -474,7 +495,7 @@ const CourseDetailsPage: React.FC = () => {
           />
 
           {/* Content Overlay Layer */}
-          <div className="container mx-auto px-4 absolute inset-0 flex flex-col pt-20 pointer-events-none z-10">
+          <PageContainer className="absolute inset-0 flex flex-col pt-20 pointer-events-none z-10">
             {/* Breadcrumbs - Fixed at top */}
             <div className="pb-4 pointer-events-auto flex-none">
               <Breadcrumb
@@ -565,8 +586,9 @@ const CourseDetailsPage: React.FC = () => {
                   />
                 )}
                 <button
+                  onClick={handleShare}
                   className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
-                  title="Share course"
+                  aria-label="Share Course"
                 >
                   <Share2Icon size={20} />
                 </button>
@@ -588,7 +610,7 @@ const CourseDetailsPage: React.FC = () => {
                 />
               </div>
             </div>
-          </div>
+          </PageContainer>
         </div>
 
         {/* Tabs Navigation */}
@@ -620,10 +642,7 @@ const CourseDetailsPage: React.FC = () => {
         </div>
 
         {/* Main content area - full width */}
-        <div
-          ref={mainContentRef}
-          className="container mx-auto px-4 md:px-6 max-w-7xl py-8"
-        >
+        <PageContainer ref={mainContentRef} className="py-8">
           {/* Tab Content - Full width */}
           <div className="mb-8">
             {config.tabs.map((tab) => (
@@ -638,14 +657,14 @@ const CourseDetailsPage: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
+        </PageContainer>
 
         {/* Related Items */}
         <section
           ref={relatedRef}
           className="bg-gray-50 py-10 border-t border-gray-200"
         >
-          <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+          <PageContainer>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
                 Related {config.itemNamePlural}
@@ -692,7 +711,7 @@ const CourseDetailsPage: React.FC = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </PageContainer>
         </section>
 
         {/* Sticky mobile CTA */}

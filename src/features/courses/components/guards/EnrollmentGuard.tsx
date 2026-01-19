@@ -10,8 +10,8 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { useAuth } from '../../../../components/Header';
-import { getAccessContract, AccessContract } from '../../services/enrollmentService';
+import { useAuth } from '@/lib/auth';
+import { getAccessContract, AccessContract } from '@/lib/enrollment';
 
 interface EnrollmentGuardProps {
     children: React.ReactNode;
@@ -113,7 +113,7 @@ export const EnrollmentGuard: React.FC<EnrollmentGuardProps> = ({
     // Access denied - redirect to course details for enrollment
     const redirectPath = redirectTo || `/courses/${encodeURIComponent(courseSlug)}`;
     console.log('🚫 Access denied - redirecting to:', redirectPath);
-    
+
     return <Navigate to={redirectPath} replace />;
 };
 

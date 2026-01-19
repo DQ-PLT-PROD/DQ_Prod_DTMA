@@ -53,10 +53,12 @@ const categories = [
   },
 ];
 
+import { PageContainer } from "../../components/layouts/PageContainer";
+
 const D6CategoriesSection: React.FC = () => {
   return (
-    <section id="d6-categories" className="bg-white pt-16 pb-4">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div id="d6-categories" className="w-full h-full flex flex-col justify-center py-16">
+      <PageContainer>
         <FadeInUpOnScroll className="text-center max-w-3xl mx-auto space-y-4">
           <h2
             className="text-3xl md:text-4xl font-bold text-gray-900"
@@ -109,8 +111,8 @@ const D6CategoriesSection: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
-    </section>
+      </PageContainer>
+    </div>
   );
 };
 

@@ -233,70 +233,70 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div
-      className={`fixed lg:static left-0 top-16 bottom-0 z-40 w-64 bg-gray-50 border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      className={`fixed lg:static left-0 top-16 bottom-0 z-40 w-64 bg-[color:var(--md-surface)] border-r border-[color:var(--md-outline-variant)] transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         } lg:w-60 overflow-y-auto`}
       data-id={dataId}
     >
       {/* Header with Company Switcher */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-[color:var(--md-outline-variant)]">
         <div className="flex justify-between items-center mb-3">
-          <button className="lg:hidden text-gray-500" onClick={onClose}>
+          <button className="lg:hidden text-[color:var(--md-on-surface-variant)]" onClick={onClose}>
             <X size={20} />
           </button>
         </div>
         <div className="relative" ref={dropdownRef}>
           <button
-            className="w-full flex items-center justify-between text-left p-3 rounded-md hover:bg-gray-100 transition-colors"
+            className="w-full flex items-center justify-between text-left p-3 rounded-[var(--md-radius-md)] hover:bg-[color:var(--md-surface-variant)] transition-colors"
             onClick={() => setCompanyDropdownOpen(!companyDropdownOpen)}
           >
             <div className="flex-1 min-w-0">
-              <h2 className="text-blue-800 font-bold text-lg leading-tight truncate">
+              <h2 className="text-[color:var(--md-primary)] font-semibold text-lg leading-tight truncate">
                 {activeCompany.name}
               </h2>
               {activeCompany.badge && (
-                <span className="text-xs text-gray-500 font-medium mt-0.5 block">
+                <span className="text-xs text-[color:var(--md-on-surface-variant)] font-medium mt-0.5 block">
                   {activeCompany.badge}
                 </span>
               )}
             </div>
             <ChevronDown
               size={18}
-              className={`text-gray-500 transition-transform ml-2 flex-shrink-0 ${companyDropdownOpen ? "rotate-180" : ""
+              className={`text-[color:var(--md-on-surface-variant)] transition-transform ml-2 flex-shrink-0 ${companyDropdownOpen ? "rotate-180" : ""
                 }`}
             />
           </button>
           {companyDropdownOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-[color:var(--md-surface)] border border-[color:var(--md-outline-variant)] rounded-[var(--md-radius-md)] shadow-md-2 z-50">
               <div className="py-1">
                 {companies.map((company) => (
                   <button
                     key={company.id}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center justify-between"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-[color:var(--md-surface-variant)] flex items-center justify-between"
                     onClick={() => onCompanyChange?.(company.id)}
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 truncate">
+                      <div className="font-medium text-[color:var(--md-on-surface)] truncate">
                         {company.name}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-[color:var(--md-on-surface-variant)]">
                         {company.role}
                       </div>
                     </div>
                     <div className="flex items-center ml-2 flex-shrink-0">
                       {company.badge && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded mr-2">
+                        <span className="text-xs bg-[color:var(--md-primary-container)] text-[color:var(--md-on-primary-container)] px-2 py-0.5 rounded-full mr-2">
                           {company.badge}
                         </span>
                       )}
                       {company.isActive && (
-                        <Check size={16} className="text-blue-600" />
+                        <Check size={16} className="text-[color:var(--md-primary)]" />
                       )}
                     </div>
                   </button>
                 ))}
-                <div className="border-t border-gray-100 mt-1 pt-1">
+                <div className="border-t border-[color:var(--md-outline-variant)] mt-1 pt-1">
                   <button
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center text-blue-600"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-[color:var(--md-surface-variant)] flex items-center text-[color:var(--md-primary)]"
                     onClick={onAddNewEnterprise}
                   >
                     <Plus size={16} className="mr-2 flex-shrink-0" />
@@ -331,7 +331,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           if (item.category === "category") {
             return (
               <div key={item.id} className="px-4 pt-6 pb-2">
-                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 pb-2">
+                <div className="text-xs font-semibold text-[color:var(--md-on-surface-variant)] uppercase tracking-wider border-b border-[color:var(--md-outline-variant)] pb-2">
                   {item.label}
                 </div>
               </div>
@@ -342,10 +342,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           const isActive = activeSection === item.id;
 
           const baseClasses = `flex items-center px-4 py-3 relative transition-colors ${isActive
-            ? "bg-blue-700 text-white"
+            ? "bg-[color:var(--md-primary)] text-white"
             : isDisabled
               ? "text-gray-400 cursor-not-allowed"
-              : "text-gray-700 hover:bg-gray-200 cursor-pointer"
+              : "text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant)] cursor-pointer"
             }`;
 
           const content = (

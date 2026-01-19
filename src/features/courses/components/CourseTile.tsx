@@ -153,9 +153,9 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   // Coming Soon Card
   if (variant === "coming-soon") {
     return (
-      <div className="group relative flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-default">
+      <div className="group relative flex flex-col h-full bg-surface rounded-lg shadow-md-1 border border-outline-variant overflow-hidden cursor-default">
         {/* Image Section - Muted */}
-        <div className="relative w-full aspect-video bg-gray-100 overflow-hidden">
+        <div className="relative w-full aspect-video bg-surface-variant overflow-hidden">
           <div className="absolute inset-0 z-10 bg-white/10 mix-blend-overlay" />
           {heroSrc && (
             <img
@@ -177,39 +177,39 @@ export const CourseTile: React.FC<CourseTileProps> = ({
         <div className="p-5 flex flex-col flex-1 opacity-60">
           <div className="flex items-center justify-between mb-2">
             {category && (
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
                 {category}
               </span>
             )}
             {levelTag && (
-              <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-medium text-neutral-400 bg-surface-variant px-2 py-0.5 rounded-full">
                 {levelTag}
               </span>
             )}
           </div>
 
-          <h3 className="text-lg font-bold text-gray-700 leading-tight line-clamp-2 mb-2">
+          <h3 className="text-lg font-bold text-neutral-700 leading-tight line-clamp-2 mb-2">
             {title}
           </h3>
 
-          <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-4">
+          <p className="text-sm text-neutral-500 leading-relaxed line-clamp-2 mb-4">
             {description}
           </p>
 
-          <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-medium text-gray-400">
+          <div className="mt-auto pt-3 border-t border-outline-variant flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-medium text-neutral-400">
               <span>{lessonCount ? `${lessonCount} Lessons` : 'Coming Soon'}</span>
             </div>
           </div>
         </div>
 
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px] z-30 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl">
-          <div className="p-4 bg-white rounded-full shadow-lg mb-3">
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px] z-30 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
+          <div className="p-4 bg-white rounded-full shadow-md-2 mb-3">
             <Lock className="w-6 h-6 text-amber-500" />
           </div>
-          <span className="text-lg font-bold text-slate-800">Coming Soon</span>
-          <p className="text-sm text-slate-500 mt-1">Stay tuned for updates</p>
+          <span className="text-lg font-bold text-neutral-800">Coming Soon</span>
+          <p className="text-sm text-neutral-500 mt-1">Stay tuned for updates</p>
         </div>
       </div>
     );
@@ -219,7 +219,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   if (variant === "classic") {
     return (
       <div
-        className="group relative flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 h-full cursor-pointer"
+        className="group relative flex flex-col bg-surface rounded-lg shadow-md-1 border border-outline-variant overflow-hidden hover:shadow-md-3 transition-all duration-300 h-full cursor-pointer"
         onClick={handleClick}
       >
         <div className="p-5 flex flex-col gap-4 flex-1">
@@ -229,13 +229,13 @@ export const CourseTile: React.FC<CourseTileProps> = ({
                 {category ? <Tag variant="category">{category}</Tag> : null}
                 {levelTag ? <Tag variant="level">{levelTag}</Tag> : null}
               </div>
-              <h3 className="font-semibold text-gray-900 leading-snug line-clamp-2 text-base">
+              <h3 className="font-semibold text-neutral-900 leading-snug line-clamp-2 text-base">
                 {title}
               </h3>
             </div>
           </div>
 
-          <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+          <p className="text-sm text-neutral-600 leading-relaxed line-clamp-3">
             {description}
           </p>
 
@@ -253,14 +253,14 @@ export const CourseTile: React.FC<CourseTileProps> = ({
   const cardContent = (
     <div
       className={`
-        group relative flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer
-        ${isHovered ? 'shadow-xl' : ''}
+        group relative flex flex-col h-full bg-surface rounded-lg shadow-md-1 border border-outline-variant overflow-hidden cursor-pointer
+        ${isHovered ? 'shadow-md-3' : ''}
       `}
       onClick={handleClick}
     >
       {/* Thumbnail Section */}
-      <div className="relative w-full aspect-[5/3] sm:aspect-[16/9] bg-gray-100 overflow-hidden">
-        <div className="absolute inset-0 z-10 bg-[#1839AD]/15 mix-blend-multiply pointer-events-none" />
+      <div className="relative w-full aspect-[5/3] sm:aspect-[16/9] bg-surface-variant overflow-hidden">
+        <div className="absolute inset-0 z-10 bg-primary/15 mix-blend-multiply pointer-events-none" />
         {heroSrc && (
           <img
             src={heroSrc}
@@ -286,7 +286,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
         {/* Overlay Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2 items-start z-10">
           {audienceLevel && (
-            <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-purple-700 text-[10px] font-bold uppercase tracking-wider rounded-md shadow-sm border border-purple-100">
+            <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-primary text-[10px] font-bold uppercase tracking-wider rounded-md shadow-sm border border-outline-variant">
               {audienceLevel}
             </span>
           )}
@@ -297,26 +297,26 @@ export const CourseTile: React.FC<CourseTileProps> = ({
       <div className="p-5 flex flex-col flex-1">
         <div className="flex items-center justify-between mb-2">
           {category && (
-            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
               {category}
             </span>
           )}
           {levelTag && (
-            <span className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-medium text-neutral-500 bg-surface-variant px-2 py-0.5 rounded-full">
               {levelTag}
             </span>
           )}
         </div>
 
-        <h3 className="text-xl font-bold text-gray-900 leading-tight line-clamp-2 mb-2 group-hover:text-blue-700 transition-colors">
+        <h3 className="text-xl font-bold text-neutral-900 leading-tight line-clamp-2 mb-2 group-hover:text-primary transition-colors">
           {title}
         </h3>
 
-        <p className={`text-sm text-gray-600 leading-relaxed mb-4 ${isHovered ? '' : 'line-clamp-2'}`}>
+        <p className={`text-sm text-neutral-600 leading-relaxed mb-4 ${isHovered ? '' : 'line-clamp-2'}`}>
           {description}
         </p>
 
-        <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
+        <div className="mt-auto pt-3 border-t border-outline-variant flex items-center justify-between">
           <CourseMeta duration={duration} lessonCount={lessonCount} />
         </div>
       </div>
@@ -336,7 +336,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
         <div
           className={`
             transition-all duration-300 ease-out
-            ${isHovered ? 'absolute top-0 left-0 w-full z-50 transform scale-105 shadow-2xl' : 'h-full'}
+            ${isHovered ? 'absolute top-0 left-0 w-full z-50 transform scale-105 shadow-md-3' : 'h-full'}
           `}
         >
           {cardContent}

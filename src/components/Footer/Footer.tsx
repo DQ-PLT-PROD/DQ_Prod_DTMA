@@ -8,8 +8,7 @@ interface FooterProps {
   isLoggedIn?: boolean;
 }
 
-const FOOTER_GRADIENT =
-  "linear-gradient(90deg, #0a32a0 0%, #2a4090 40%, #4e5a8b 70%, #8b90a3 100%)";
+const FOOTER_GRADIENT = "var(--brand-gradient)";
 
 const ABOUT_TEXT = [
   "DTMA (Digital Transformation and Management Academy) equips professionals and organizations with essential digital skills through AI-driven, bite-sized learning paths. Using the 6XD framework, we offer practical, personalized courses for digital workers and leaders across six key digital economy perspectives.",
@@ -56,15 +55,12 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
 
   if (isLoggedIn) {
     return (
-      <footer data-id={dataId} className="bg-gray-50 border-t border-gray-100 w-full h-10">
+      <footer data-id={dataId} className="bg-[color:var(--md-background)] border-t border-[color:var(--md-outline-variant)] w-full h-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
-          <div className="flex items-center space-x-3 text-xs text-gray-500">
+          <div className="flex items-center space-x-3 text-xs text-[color:var(--md-on-surface-variant)]">
             <span>(c) 2025 DTMA</span>
             <span className="hidden sm:inline">v2.1.0</span>
           </div>
-          <a href="/dashboard/support" className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
-            Support
-          </a>
         </div>
       </footer>
     );
@@ -83,23 +79,23 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
             <a
               href="https://www.linkedin.com/company/digitalqatalyst/posts/?feedView=all"
               aria-label="LinkedIn"
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+              className="p-2 rounded-full bg-white text-[#0030E3] hover:scale-110 transition-transform shadow-md"
             >
-              <Linkedin size={18} />
+              <Linkedin size={20} className="fill-current" />
             </a>
             <a
               href="https://www.instagram.com/digitalqatalyst/"
               aria-label="Instagram"
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+              className="p-2 rounded-full bg-white text-[#0030E3] hover:scale-110 transition-transform shadow-md"
             >
-              <Instagram size={18} />
+              <Instagram size={20} className="stroke-2" />
             </a>
             <a
               href="https://x.com/drstephane_"
               aria-label="X (Twitter)"
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+              className="p-2 rounded-full bg-white text-[#0030E3] hover:scale-110 transition-transform shadow-md"
             >
-              <X size={18} strokeWidth={2} />
+              <X size={20} strokeWidth={2.5} />
             </a>
           </div>
         </div>
@@ -108,18 +104,18 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
           <div className="space-y-4 text-blue-100 text-sm leading-relaxed">
             <h3 className="font-semibold text-lg text-white">About Us</h3>
             {ABOUT_TEXT.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
+              <p key={paragraph} className="text-blue-50">{paragraph}</p>
             ))}
           </div>
 
           <div className="space-y-4 self-start">
             <h3 className="font-semibold text-lg text-white">Quick Links</h3>
-            <div className="text-blue-100 text-sm">
+            <div className="flex flex-col text-sm">
               {QUICK_LINKS.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  className="flex items-center py-2 border-b border-white/30 hover:text-white transition"
+                  className="flex items-center py-2 border-b border-white/30 text-white hover:text-white/80 transition-colors font-medium"
                 >
                   {link.label}
                 </a>
@@ -129,25 +125,25 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
 
           <div className="space-y-4 self-start">
             <h3 className="font-semibold text-lg text-white">Subscribe</h3>
-            <p className="text-blue-100 text-sm leading-relaxed">
+            <p className="text-blue-50 text-sm leading-relaxed">
               Stay updated with the latest insights, courses, and tools for the AI working era
               from DTMA.
             </p>
             <form onSubmit={handleSubscribe} className="space-y-2">
-              <div className="bg-white rounded-md flex items-center justify-between px-4 py-3 text-gray-900 shadow-sm">
+              <div className="bg-white rounded-full flex items-center justify-between px-4 py-2.5 text-gray-900 shadow-md-1">
                 <input
                   type="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 bg-transparent outline-none placeholder-gray-500 text-sm sm:text-base"
+                  className="flex-1 bg-transparent outline-none placeholder-gray-500 text-sm sm:text-base text-gray-900"
                   aria-label="Email address"
                   required
                 />
                 <button
                   type="submit"
                   disabled={status === "loading"}
-                  className="bg-[#0a32a0] text-white p-2 rounded-md hover:bg-[#2a4090] focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="bg-[color:var(--md-primary)] text-white p-2 rounded-full hover:bg-[color:var(--md-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                   aria-label="Subscribe to newsletter"
                 >
                   <ArrowRight size={16} />
@@ -155,9 +151,8 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
               </div>
               {message && (
                 <p
-                  className={`text-xs ${
-                    status === "success" ? "text-green-100" : "text-red-100"
-                  }`}
+                  className={`text-xs ${status === "success" ? "text-green-100" : "text-red-100"
+                    }`}
                 >
                   {message}
                 </p>

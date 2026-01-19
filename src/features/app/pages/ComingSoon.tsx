@@ -24,11 +24,11 @@ const FEATURE_LABELS: Record<string, string> = {
   "help-center": "Help Center",
 };
 
-export const ComingSoon: React.FC = () => {
+export const ComingSoon: React.FC<{ pageName?: string }> = ({ pageName }) => {
   const navigate = useNavigate();
   const { feature } = useParams();
 
-  const label = feature ? FEATURE_LABELS[feature] || "This Page" : "Help Center";
+  const label = pageName || (feature ? FEATURE_LABELS[feature] || "This Page" : "Help Center");
 
   return (
     <div

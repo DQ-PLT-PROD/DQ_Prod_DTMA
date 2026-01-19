@@ -65,12 +65,6 @@ export const ObligationsDeadlines: React.FC<ObligationsDeadlinesProps> = ({
             >
               Due Date
             </th>
-            <th
-              scope="col"
-              className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Action
-            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -82,11 +76,10 @@ export const ObligationsDeadlines: React.FC<ObligationsDeadlinesProps> = ({
                     {getStatusIcon(obligation.status)}
                   </div>
                   <span
-                    className={`text-sm font-medium ${
-                      obligation.status === "overdue"
+                    className={`text-sm font-medium ${obligation.status === "overdue"
                         ? "text-red-600"
                         : "text-gray-700"
-                    }`}
+                      }`}
                   >
                     {obligation.title}
                   </span>
@@ -99,14 +92,6 @@ export const ObligationsDeadlines: React.FC<ObligationsDeadlinesProps> = ({
                     {obligation.dueDate}
                   </span>
                 </div>
-              </td>
-              <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
-                <Link
-                  to="/dashboard/reporting-obligations"
-                  className="px-3 py-1 border border-gray-300 rounded-md text-xs text-gray-600 hover:text-blue-600 hover:border-blue-300 inline-block"
-                >
-                  Take Action
-                </Link>
               </td>
             </tr>
           ))}

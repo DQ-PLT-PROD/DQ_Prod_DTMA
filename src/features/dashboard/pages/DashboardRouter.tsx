@@ -6,7 +6,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { useAuth } from "../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import { FEATURES } from "../../../config/features";
 import DashboardLayout from "./DashboardLayout";
 import { Overview } from "./overview";
@@ -18,7 +18,9 @@ const DashboardRouter = () => {
       if (typeof window !== 'undefined') {
         return window.innerWidth >= 1024; // lg and up open by default
       }
-    } catch { }
+    } catch (error) {
+      console.warn("Failed to read initial window size.", error);
+    }
     return true;
   });
 

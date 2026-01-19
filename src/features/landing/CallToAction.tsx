@@ -10,7 +10,8 @@ import {
   Briefcase,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../auth/context/AuthContext";
+import { useAuth } from "@/lib/auth";
+import { PageContainer } from "../../components/layouts/PageContainer";
 
 // Animated shape component
 const FloatingShape = ({ size, color, delay, duration, className = "" }) => {
@@ -542,9 +543,9 @@ const CallToAction: React.FC = () => {
   }, [location.hash]);
 
   return (
-    <section
+    <div
       id="final-cta"
-      className="relative overflow-hidden pt-16 md:pt-20 pb-4 md:pb-6 bg-white"
+      className="w-full h-full flex flex-col justify-center py-16 relative overflow-hidden"
     >
       <div
         aria-hidden="true"
@@ -553,7 +554,7 @@ const CallToAction: React.FC = () => {
         <div className="absolute -top-10 -left-24 h-40 w-40 rounded-full border-4 border-white/60" />
         <div className="absolute -top-16 -right-24 h-48 w-48 rounded-full border-4 border-white/60" />
       </div>
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <PageContainer className="relative">
         <div className="text-center mb-8">
           <FadeInUpOnScroll className="space-y-4">
             <h2 className="text-3xl md:text-4xl font-bold leading-tight text-[#030C2B]">
@@ -576,8 +577,8 @@ const CallToAction: React.FC = () => {
             />
           </div>
         </div>
-      </div>
-    </section>
+      </PageContainer>
+    </div>
   );
 };
 

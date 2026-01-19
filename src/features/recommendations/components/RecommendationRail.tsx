@@ -15,7 +15,7 @@ import {
   Target,
   Star,
 } from "lucide-react";
-import { useAuth } from "../../../components/Header";
+import { useAuth } from "../../../features/auth/context/AuthContext";
 import { fetchCourses } from "../../courses/services/courseService";
 import { getProfile } from "../../learner/services/learnerProfileService";
 import { EnhancedCourseCard } from "../../courses/components/EnhancedCourseCard";

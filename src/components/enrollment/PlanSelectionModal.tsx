@@ -5,8 +5,8 @@
  */
 import React, { useState } from 'react';
 import { X, Check, Loader2 } from 'lucide-react';
-import { PaymentPlan, getAllPlans, initiatePayment } from '../../services/paymentService';
-import { Course } from '../../../../types/dtma-lms';
+import { PaymentPlan, getAllPlans, initiatePayment } from '@/lib/payment';
+import { Course } from '../../types/dtma-lms';
 
 interface PlanSelectionModalProps {
     isOpen: boolean;
@@ -77,20 +77,20 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <div className="md-card-elevated max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                 {/* Header */}
-                <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                <div className="sticky top-0 md-surface border-b border-[color:var(--md-outline-variant)] px-6 py-4 flex items-center justify-between rounded-t-[var(--md-radius-lg)]">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900">Choose Your Plan</h2>
-                        <p className="text-sm text-gray-600 mt-1">Select a plan to enroll in "{course.title}"</p>
+                        <h2 className="text-2xl font-semibold text-[color:var(--md-on-surface)]">Choose Your Plan</h2>
+                        <p className="text-sm text-[color:var(--md-on-surface-variant)] mt-1">Select a plan to enroll in "{course.title}"</p>
                     </div>
                     <button
                         onClick={onClose}
                         disabled={isProcessing}
-                        className="p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+                        className="p-2 rounded-full hover:bg-[color:var(--md-surface-variant)] transition-colors disabled:opacity-50"
                     >
-                        <X size={24} className="text-gray-500" />
+                        <X size={24} className="text-[color:var(--md-on-surface-variant)]" />
                     </button>
                 </div>
 
@@ -110,7 +110,7 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
 
                     {/* Error Message */}
                     {error && (
-                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-[var(--md-radius-md)]">
                             <p className="text-sm text-red-800">{error}</p>
                         </div>
                     )}
@@ -120,14 +120,14 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
                         <button
                             onClick={onClose}
                             disabled={isProcessing}
-                            className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            className="px-6 py-3 rounded-full border border-[color:var(--md-outline)] text-[color:var(--md-on-surface)] font-medium hover:bg-[color:var(--md-surface-variant)] transition-colors disabled:opacity-50"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleContinue}
                             disabled={isProcessing || !selectedPlan}
-                            className="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="px-6 py-3 rounded-full bg-[color:var(--md-primary)] text-white font-semibold hover:bg-[color:var(--md-primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md-1"
                         >
                             {isProcessing ? (
                                 <>
@@ -159,16 +159,15 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, isSelected, onSelect, disable
         <button
             onClick={onSelect}
             disabled={disabled}
-            className={`relative p-6 rounded-xl border-2 transition-all text-left ${
-                isSelected
-                    ? 'border-blue-600 bg-blue-50 shadow-lg scale-105'
-                    : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-md'
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            className={`relative p-6 transition-all text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--md-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--md-surface)] ${isSelected
+                    ? 'md-card-elevated border-[color:var(--md-primary)] bg-[color:var(--md-primary-container)] scale-[1.02]'
+                    : 'md-card hover:shadow-md-2'
+                } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         >
             {/* Popular Badge */}
             {isPopular && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full">
+                    <span className="px-3 py-1 bg-[color:var(--md-primary)] text-white text-xs font-bold rounded-full">
                         RECOMMENDED
                     </span>
                 </div>
@@ -177,32 +176,32 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, isSelected, onSelect, disable
             {/* Selected Indicator */}
             {isSelected && (
                 <div className="absolute top-4 right-4">
-                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                    <div className="w-6 h-6 bg-[color:var(--md-primary)] rounded-full flex items-center justify-center">
                         <Check size={16} className="text-white" />
                     </div>
                 </div>
             )}
 
             {/* Plan Name */}
-            <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+            <h3 className="text-xl font-semibold text-[color:var(--md-on-surface)] mb-2">{plan.name}</h3>
 
             {/* Price */}
             <div className="mb-4">
-                <span className="text-3xl font-bold text-gray-900">
+                <span className="text-3xl font-semibold text-[color:var(--md-on-surface)]">
                     ${plan.price}
                 </span>
                 {plan.interval !== 'one-time' && (
-                    <span className="text-gray-600 ml-2">/ {plan.interval}</span>
+                    <span className="text-[color:var(--md-on-surface-variant)] ml-2">/ {plan.interval}</span>
                 )}
             </div>
 
             {/* Description */}
-            <p className="text-sm text-gray-600 mb-4">{plan.description}</p>
+            <p className="text-sm text-[color:var(--md-on-surface-variant)] mb-4">{plan.description}</p>
 
             {/* Features */}
             <ul className="space-y-2">
                 {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
+                    <li key={index} className="flex items-start gap-2 text-sm text-[color:var(--md-on-surface-variant)]">
                         <Check size={16} className="text-green-600 mt-0.5 flex-shrink-0" />
                         <span>{feature}</span>
                     </li>

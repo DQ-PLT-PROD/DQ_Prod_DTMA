@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Send, ChevronDown, ArrowRight, Layers } from 'lucide-react';
 import { AnimatedText, FadeInUpOnScroll, StaggeredFadeIn } from '../../components/AnimationUtils';
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from '../auth/context/AuthContext';
+import { useAuth } from '@/lib/auth';
+import { PageContainer } from '../../components/layouts/PageContainer';
 import { BRAND_BACKDROP_BLUR, BRAND_GRADIENT, BRAND_PRIMARY } from '../../constants/branding';
 
 interface HeroSectionProps {
@@ -277,7 +278,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         }}
       ></div>
 
-      <div className="container mx-auto px-4 h-full py-16 md:py-24 flex flex-col justify-center items-center gap-8 relative z-10 text-center">
+      <PageContainer className="h-full py-16 md:py-24 flex flex-col justify-center items-center gap-8 relative z-10 text-center">
         <FadeInUpOnScroll className="space-y-5 w-full flex flex-col items-center">
           <div className="space-y-5 w-full flex flex-col items-center text-center">
             <h1 className="text-[48px] md:text-[56px] leading-[1.2] font-bold text-white tracking-[-0.5px] max-w-3xl mx-auto">
@@ -291,21 +292,19 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
         {/* AI Prompt Interface removed as requested */}
 
-        <StaggeredFadeIn staggerDelay={0.2} className="flex justify-center w-full mt-5">
-          <button
-            onClick={handleHeroAction}
-            className="px-10 py-4 text-white font-semibold text-lg rounded-full shadow-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:opacity-90 text-center flex items-center justify-center overflow-hidden group tracking-wide min-w-[260px]"
-            style={{ backgroundColor: BRAND_PRIMARY }}
-          >
-            <span className="relative z-10">
-              {user ? (hasStarted ? "Resume Course" : "Start Course") : "Get Started"}
-            </span>
-            <span className="absolute inset-0 overflow-hidden rounded-lg">
-              <span className="absolute inset-0 bg-white/20 transform scale-0 opacity-0 group-hover:scale-[2.5] group-hover:opacity-100 rounded-full transition-all duration-700 origin-center"></span>
-            </span>
-          </button>
-        </StaggeredFadeIn>
-      </div>
+        <button
+          onClick={handleHeroAction}
+          className="px-10 py-4 text-white font-semibold text-lg bg-primary rounded-full shadow-lg transform transition-all duration-300 hover:bg-primary-dark hover:-translate-y-1 hover:shadow-xl text-center flex items-center justify-center overflow-hidden group tracking-wide min-w-[260px]"
+        >
+          <span className="relative z-10">
+            {user ? (hasStarted ? "Resume Course" : "Start Course") : "Get Started"}
+          </span>
+          <span className="absolute inset-0 overflow-hidden rounded-lg">
+            <span className="absolute inset-0 bg-white/20 transform scale-0 opacity-0 group-hover:scale-[2.5] group-hover:opacity-100 rounded-full transition-all duration-700 origin-center"></span>
+          </span>
+        </button>
+
+      </PageContainer>
 
       {/* Scroll indicator with animation */}
       <div
@@ -335,7 +334,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           }
         }
       `}</style>
-    </div>
+    </div >
   );
 };
 

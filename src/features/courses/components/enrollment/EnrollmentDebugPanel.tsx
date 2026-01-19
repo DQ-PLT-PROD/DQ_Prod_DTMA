@@ -3,14 +3,14 @@
  * Testing component for enrollment functionality
  */
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../Header';
-import { 
-    isUserEnrolled, 
-    enrollInCourse, 
-    getEnrollment, 
+import { useAuth } from '@/lib/auth';
+import {
+    isUserEnrolled,
+    enrollInCourse,
+    getEnrollment,
     unenrollFromCourse,
-    getUserEnrollments 
-} from '../../services/enrollmentService';
+    getUserEnrollments
+} from '@/lib/enrollment';
 import { CheckCircle, XCircle, Loader2, User, BookOpen } from 'lucide-react';
 
 const DEFAULT_COURSE_SLUG = 'perfecting-life-transactions';
@@ -39,10 +39,10 @@ export const EnrollmentDebugPanel: React.FC = () => {
         try {
             const enrolled = await isUserEnrolled(databaseUser.id, courseSlug);
             setEnrollmentStatus(enrolled);
-            
+
             const details = await getEnrollment(databaseUser.id, courseSlug);
             setEnrollmentDetails(details);
-            
+
             showMessage(`Enrollment status: ${enrolled ? 'Enrolled' : 'Not enrolled'}`);
         } catch (error) {
             showMessage('Error checking enrollment status', 'error');
@@ -174,7 +174,7 @@ export const EnrollmentDebugPanel: React.FC = () => {
                         {loading ? <Loader2 size={14} className="animate-spin" /> : 'Refresh'}
                     </button>
                 </div>
-                
+
                 <div className="flex items-center gap-2 mb-2">
                     {enrollmentStatus === true ? (
                         <CheckCircle size={16} className="text-green-600" />
@@ -184,8 +184,8 @@ export const EnrollmentDebugPanel: React.FC = () => {
                         <Loader2 size={16} className="animate-spin text-gray-400" />
                     )}
                     <span className="text-sm">
-                        {enrollmentStatus === true ? 'Enrolled' : 
-                         enrollmentStatus === false ? 'Not Enrolled' : 'Checking...'}
+                        {enrollmentStatus === true ? 'Enrolled' :
+                            enrollmentStatus === false ? 'Not Enrolled' : 'Checking...'}
                     </span>
                 </div>
 
@@ -231,11 +231,10 @@ export const EnrollmentDebugPanel: React.FC = () => {
                                             Enrolled: {new Date(enrollment.enrolledAt).toLocaleDateString()}
                                         </p>
                                     </div>
-                                    <span className={`px-2 py-1 rounded text-xs ${
-                                        enrollment.status === 'active' 
-                                            ? 'bg-green-100 text-green-800' 
-                                            : 'bg-red-100 text-red-800'
-                                    }`}>
+                                    <span className={`px-2 py-1 rounded text-xs ${enrollment.status === 'active'
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-red-100 text-red-800'
+                                        }`}>
                                         {enrollment.status}
                                     </span>
                                 </div>
@@ -249,11 +248,10 @@ export const EnrollmentDebugPanel: React.FC = () => {
 
             {/* Message */}
             {message && (
-                <div className={`p-3 rounded-lg text-sm ${
-                    message.includes('Error') || message.includes('failed')
-                        ? 'bg-red-50 text-red-800 border border-red-200'
-                        : 'bg-green-50 text-green-800 border border-green-200'
-                }`}>
+                <div className={`p-3 rounded-lg text-sm ${message.includes('Error') || message.includes('failed')
+                    ? 'bg-red-50 text-red-800 border border-red-200'
+                    : 'bg-green-50 text-green-800 border border-green-200'
+                    }`}>
                     {message}
                 </div>
             )}
