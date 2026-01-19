@@ -28,6 +28,7 @@ import {
   fetchIndustryTree,
   NestedFilterOption as IndustryNode,
 } from "../services/filterService";
+import { AIWidgetStandalone } from "../../ai-widget/components/AIWidgetStandalone";
 
 // Get config once at module level to avoid recreation on every render
 const courseConfig = getCourseConfig();
@@ -516,6 +517,9 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
         </div>
       </div>
       <Footer />
+
+      {/* AI Widget */}
+      <AIWidgetStandalone />
     </div>
   );
 };
