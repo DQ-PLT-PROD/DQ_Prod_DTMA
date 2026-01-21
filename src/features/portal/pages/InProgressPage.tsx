@@ -175,7 +175,7 @@ const InProgressPage: React.FC = () => {
                                     >
                                         <div className="flex items-start gap-4">
                                             {/* Course Thumbnail */}
-                                            <div className="w-24 h-16 rounded-lg bg-gray-200 overflow-hidden shrink-0">
+                                            <div className="w-24 h-16 rounded-lg bg-surface-container-highest overflow-hidden shrink-0">
                                                 {enrollment.course?.heroImageUrl ? (
                                                     <img
                                                         src={enrollment.course.heroImageUrl}

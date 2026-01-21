@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Send, ChevronDown, ArrowRight, Layers } from 'lucide-react';
+import { Button } from '../../components/Button/Button';
 import { AnimatedText, FadeInUpOnScroll, StaggeredFadeIn } from '../../components/AnimationUtils';
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from '@/lib/auth';
@@ -263,20 +264,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         }}
       ></div>
       {/* Deep navy tint to boost readability */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundColor: "#030C2B",
-          opacity: 0.4,
-        }}
-      ></div>
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundColor: "#000000",
-          opacity: 0.1,
-        }}
-      ></div>
+      <div className="absolute inset-0 pointer-events-none bg-[#030C2B]/40"></div>
+      <div className="absolute inset-0 pointer-events-none bg-black/10"></div>
 
       <PageContainer className="h-full py-16 md:py-24 flex flex-col justify-center items-center gap-8 relative z-10 text-center">
         <FadeInUpOnScroll className="space-y-5 w-full flex flex-col items-center">
@@ -292,17 +281,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
         {/* AI Prompt Interface removed as requested */}
 
-        <button
+        <Button
+          variant="primary"
+          size="lg"
           onClick={handleHeroAction}
-          className="px-10 py-4 text-white font-semibold text-lg bg-primary rounded-full shadow-lg transform transition-all duration-300 hover:bg-primary-dark hover:-translate-y-1 hover:shadow-xl text-center flex items-center justify-center overflow-hidden group tracking-wide min-w-[260px]"
+          className="min-w-[200px] text-lg font-semibold py-6"
+          rightIcon={<ArrowRight size={20} />}
         >
-          <span className="relative z-10">
-            {user ? (hasStarted ? "Resume Course" : "Start Course") : "Get Started"}
-          </span>
-          <span className="absolute inset-0 overflow-hidden rounded-lg">
-            <span className="absolute inset-0 bg-white/20 transform scale-0 opacity-0 group-hover:scale-[2.5] group-hover:opacity-100 rounded-full transition-all duration-700 origin-center"></span>
-          </span>
-        </button>
+          {user ? (hasStarted ? "Resume Course" : "Start Course") : "Get Started"}
+        </Button>
 
       </PageContainer>
 

@@ -157,7 +157,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
       <Card variant="filled" className="h-full cursor-default opacity-80" padding="none">
         {/* Image Section - Muted */}
         <div className="relative w-full aspect-video bg-surface-variant overflow-hidden">
-          <div className="absolute inset-0 z-10 bg-white/10 mix-blend-overlay" />
+          <div className="absolute inset-0 z-10 bg-surface/10 mix-blend-overlay" />
           {heroSrc && (
             <img
               src={heroSrc}
@@ -205,7 +205,7 @@ export const CourseTile: React.FC<CourseTileProps> = ({
         </div>
 
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px] z-30 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none">
+        <div className="absolute inset-0 bg-surface/90 backdrop-blur-[2px] z-30 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none">
           <div className="p-4 bg-surface rounded-full shadow-elevation-2 mb-3">
             <Lock className="w-6 h-6 text-tertiary" />
           </div>

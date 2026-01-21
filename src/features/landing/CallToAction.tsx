@@ -40,12 +40,12 @@ const FormInput = ({
 }) => {
   return (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-label-md font-medium text-on-surface mb-1">
         {label}
       </label>
       <input
         type={type}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+        className="w-full px-3 py-2 border border-outline rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all bg-surface text-on-surface placeholder:text-on-surface-variant/60"
         placeholder={placeholder}
         value={value}
         onChange={onChange}
@@ -59,11 +59,11 @@ const FormInput = ({
 const FormSelect = ({ label, options, value, onChange, required = false }) => {
   return (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-label-md font-medium text-on-surface mb-1">
         {label}
       </label>
       <select
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+        className="w-full px-3 py-2 border border-outline rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all bg-surface text-on-surface"
         value={value}
         onChange={onChange}
         required={required}
@@ -89,11 +89,11 @@ const FormTextarea = ({
 }) => {
   return (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-label-md font-medium text-on-surface mb-1">
         {label}
       </label>
       <textarea
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+        className="w-full px-3 py-2 border border-outline rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all bg-surface text-on-surface placeholder:text-on-surface-variant/60"
         placeholder={placeholder}
         value={value}
         onChange={onChange}
@@ -116,19 +116,19 @@ const Toast = ({ message, type = "success", onClose }) => {
     <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
       <div
         className={`rounded-lg shadow-lg p-4 flex items-start ${type === "success"
-          ? "bg-green-50 border-l-4 border-green-500"
-          : "bg-red-50 border-l-4 border-red-500"
+          ? "bg-primary-container/20 border-l-4 border-primary"
+          : "bg-error-container/20 border-l-4 border-error"
           }`}
       >
         <div
-          className={`flex-shrink-0 mr-3 ${type === "success" ? "text-green-500" : "text-red-500"
+          className={`flex-shrink-0 mr-3 ${type === "success" ? "text-primary" : "text-error"
             }`}
         >
           {type === "success" ? <CheckCircle size={20} /> : <X size={20} />}
         </div>
         <div className="flex-1">
           <p
-            className={`text-sm font-medium ${type === "success" ? "text-green-800" : "text-red-800"
+            className={`text-body-sm font-medium ${type === "success" ? "text-on-surface" : "text-on-surface"
               }`}
           >
             {message}
@@ -136,7 +136,7 @@ const Toast = ({ message, type = "success", onClose }) => {
         </div>
         <button
           onClick={onClose}
-          className="ml-4 text-gray-400 hover:text-gray-500 focus:outline-none"
+          className="ml-4 text-on-surface-variant/60 hover:text-on-surface-variant focus:outline-none"
         >
           <X size={16} />
         </button>
@@ -217,7 +217,7 @@ const CTACard: React.FC<CTACardProps> = ({
       <div className="relative z-10">
         {!isExpanded ? (
           <div className="flex flex-col items-center text-center">
-            <p className="text-gray-600 mb-6">{description}</p>
+            <p className="text-on-surface-variant mb-6">{description}</p>
             <div className="flex justify-center w-full">
               <button
                 onClick={(e) => {
@@ -256,23 +256,23 @@ const CTACard: React.FC<CTACardProps> = ({
         ) : (
           <>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+              <h3 className="text-xl font-bold text-on-surface">{title}</h3>
               <button
                 onClick={onExpand}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-on-surface-variant/60 hover:text-on-surface-variant transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
             {isSuccess ? (
               <div className="text-center py-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                  <CheckCircle size={32} className="text-green-600" />
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-container rounded-full mb-4">
+                  <CheckCircle size={32} className="text-primary" />
                 </div>
-                <h4 className="text-lg font-medium text-gray-900 mb-2">
+                <h4 className="text-lg font-medium text-on-surface mb-2">
                   Thank you!
                 </h4>
-                <p className="text-gray-600">We'll be in touch soon!</p>
+                <p className="text-on-surface-variant">We'll be in touch soon!</p>
               </div>
             ) : (
               children

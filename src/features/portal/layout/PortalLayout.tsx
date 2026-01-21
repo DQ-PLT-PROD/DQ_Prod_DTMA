@@ -157,7 +157,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                                     {sidebarOpen && (
                                         <div className="flex-1 flex items-center justify-between gap-2">
                                             <span className="text-sm">Profile</span>
-                                            <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
+                                            <span className="text-[10px] bg-surface-container-highest text-on-surface-variant px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                                         </div>
                                     )}
                                 </div>
@@ -171,7 +171,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                                     {sidebarOpen && (
                                         <div className="flex-1 flex items-center justify-between gap-2">
                                             <span className="text-sm">Saved</span>
-                                            <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
+                                            <span className="text-[10px] bg-surface-container-highest text-on-surface-variant px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                                         </div>
                                     )}
                                 </div>
@@ -182,28 +182,28 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
 
                             {/* Badges - Coming Soon */}
                             <div
-                                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
+                                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-on-surface-variant/38 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
                                 title="Badges - Coming Soon"
                             >
                                 <Award size={16} className="shrink-0" />
                                 {sidebarOpen && (
                                     <div className="flex-1 flex items-center justify-between gap-2">
                                         <span className="text-sm">Badges</span>
-                                        <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
+                                        <span className="text-[10px] bg-surface-container-highest text-on-surface-variant px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                                     </div>
                                 )}
                             </div>
 
                             {/* Career Coach - Coming Soon */}
                             <div
-                                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
+                                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-on-surface-variant/38 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
                                 title="AI Career Coach - Coming Soon"
                             >
                                 <Sparkles size={16} className="shrink-0" />
                                 {sidebarOpen && (
                                     <div className="flex-1 flex items-center justify-between gap-2">
                                         <span className="text-sm">Career Coach</span>
-                                        <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
+                                        <span className="text-[10px] bg-surface-container-highest text-on-surface-variant px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                                     </div>
                                 )}
                             </div>
@@ -276,16 +276,16 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
 
                             <div className="my-3 mx-3 border-t border-outline-variant" />
 
-                            <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed">
+                            <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-on-surface-variant/38 cursor-not-allowed">
                                 <Award size={16} />
                                 <span className="text-sm">Badges</span>
-                                <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
+                                <span className="ml-auto text-[10px] bg-surface-container-highest text-on-surface-variant px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                             </div>
 
-                            <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed">
+                            <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-on-surface-variant/38 cursor-not-allowed">
                                 <Sparkles size={16} />
                                 <span className="text-sm">Career Coach</span>
-                                <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
+                                <span className="ml-auto text-[10px] bg-surface-container-highest text-on-surface-variant px-1.5 py-0.5 rounded-full whitespace-nowrap">Coming Soon</span>
                             </div>
                         </nav>
                     </aside>
