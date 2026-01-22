@@ -5,7 +5,7 @@
 | Field | Value |
 |-------|-------|
 | **Feature Name** | Learner Progress Persistence |
-| **Spec Reference** | [feature-01-learner-progress.md](file:///c:/Users/user/OneDrive/Documents/DQ_Prod_DTMA/DTMA%20Specs/feature-01-learner-progress.md) |
+| **Spec Reference** | [feature-01-learner-progress.md](../../DTMA Specs/feature-01-learner-progress.md) |
 | **Target Delivery** | Jan 16 |
 | **Status** | Planned |
 
@@ -143,6 +143,6 @@ const mockLessonProgress = [
 
 ## Related Files
 
-- **Service Implementation**: [progressService.ts](file:///c:/Users/user/OneDrive/Documents/DQ_Prod_DTMA/src/features/portal/services/progressService.ts)
-- **Test Implementation**: [progressService.test.ts](file:///c:/Users/user/OneDrive/Documents/DQ_Prod_DTMA/src/features/portal/services/progressService.test.ts)
-- **Test Config**: [vitest.config.ts](file:///c:/Users/user/OneDrive/Documents/DQ_Prod_DTMA/vitest.config.ts)
+- **Service Implementation**: [progressService.ts](../../src/features/portal/services/progressService.ts)
+- **Test Implementation**: [progressService.test.ts](../../src/features/portal/services/progressService.test.ts)
+- **Test Config**: [vitest.config.ts](../../vitest.config.ts)

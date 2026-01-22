@@ -133,6 +133,6 @@ supabase.from(...).select(...).eq(...).eq is not a function
 
 ## Evidence
 
-- Test output: [test-output-progress.txt](file:///c:/Users/user/OneDrive/Documents/DQ_Prod_DTMA/test-output-progress.txt)
-- Lint output: [lint-output.txt](file:///c:/Users/user/OneDrive/Documents/DQ_Prod_DTMA/lint-output.txt)
-- Build output: [build-output.txt](file:///c:/Users/user/OneDrive/Documents/DQ_Prod_DTMA/build-output.txt)
+- Test output: [test-output-progress.txt](../../test-output-progress.txt)
+- Lint output: [lint-output.txt](../../lint-output.txt)
+- Build output: [build-output.txt](../../build-output.txt)
