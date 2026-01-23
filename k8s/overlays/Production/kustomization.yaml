@@ -1,0 +1,6 @@
+namespace: dtma
+
+resources:
+  - ../../base
+  - deployment.yaml
+  - ingress.yaml
