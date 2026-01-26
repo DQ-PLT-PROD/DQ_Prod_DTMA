@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    base: '/dtma/',
     server: {
       port: 3000,
       strictPort: true,

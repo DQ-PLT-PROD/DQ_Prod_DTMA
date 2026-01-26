@@ -90,7 +90,7 @@ const ComingSoonPage: React.FC = () => {
                 >
                     {/* DTMA Logo */}
                     <img
-                        src="/logo/dtma-logo-white.svg"
+                        src="logo/dtma-logo-white.svg"
                         alt="Digital Transformation Management Academy"
                         className="h-20 md:h-28 w-auto"
                     />

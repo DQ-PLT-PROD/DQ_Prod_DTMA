@@ -11,7 +11,7 @@ RUN npm install
 
 COPY . .
 
-ENV VITE_BASE_PATH=/dtma
+#ENV VITE_BASE_PATH=/dtma
 
 RUN npm run build  --no-lint
 
@@ -28,12 +28,12 @@ RUN apk add --no-cache gettext
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 # Copy built assets
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html/dtma
 
 # Copy runtime template & entrypoint
-COPY env.template.js /usr/share/nginx/html/env.template.js
+COPY env.template.js /usr/share/nginx/html/dtma/env.template.js
 COPY entrypoint.sh /entrypoint.sh
-#COPY default.conf /etc/nginx/conf.d/default.conf
+COPY default.conf /etc/nginx/conf.d/default.conf
 
 # Permissions: allow non-root user to read/serve files
 RUN mkdir -p /var/cache/nginx/pids && \
