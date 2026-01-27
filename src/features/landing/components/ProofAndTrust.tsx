@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ArrowRight, ArrowLeft } from "lucide-react";
-import { FadeInUpOnScroll } from "../../components/AnimationUtils";
+import { FadeInUpOnScroll } from "@/components/AnimationUtils";
 
 const stats = [
   {
@@ -52,7 +52,7 @@ const whyHighlights = [
   },
 ];
 
-import { PageContainer } from "../../components/layouts/PageContainer";
+import { PageContainer } from "@/components/layouts/PageContainer";
 
 const ProofAndTrust: React.FC = () => {
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);

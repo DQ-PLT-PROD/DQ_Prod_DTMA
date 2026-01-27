@@ -16,8 +16,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
   loginRequest,
   interactiveLoginRequest,
-} from "../../services/auth/msal";
-import { mockAuthService, MockUser } from "../../services/auth/mockAuth";
+  msalInstance,
+} from "./msal";
+import { mockAuthService, MockUser } from "./mockAuth";
 import {
   validateAndLogClaims,
   extractUserProfile,
@@ -103,10 +104,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setMockUser(
             user
               ? {
-                  id: user.id,
-                  name: user.name,
-                  email: user.email,
-                }
+                id: user.id,
+                name: user.name,
+                email: user.email,
+              }
               : null
           );
         }
@@ -120,10 +121,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isLoading = useMockAuth
     ? false
     : inProgress === "startup" ||
-      inProgress === "handleRedirect" ||
-      inProgress === "login" ||
-      inProgress === "ssoSilent" ||
-      inProgress === "acquireToken";
+    inProgress === "handleRedirect" ||
+    inProgress === "login" ||
+    inProgress === "ssoSilent" ||
+    inProgress === "acquireToken";
 
   const fetchGraphUserForAccount = async (
     account: any
@@ -290,8 +291,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const user: UserProfile | null = useMockAuth
     ? mockUser
     : bypassMode
-    ? bypassUser
-    : currentUser;
+      ? bypassUser
+      : currentUser;
 
   // Debug user detection
   console.log("👤 User Detection Debug:", {

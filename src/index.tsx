@@ -3,7 +3,7 @@ import "./index.css";
 import { AppRouter } from "./AppRouter";
 import { createRoot } from "react-dom/client";
 import { MsalProvider } from "@azure/msal-react";
-import { msalInstance } from "./services/auth/msal";
+import { msalInstance } from "@/lib/auth/msal";
 import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
 import { ApolloProvider } from "@apollo/client/react";
 

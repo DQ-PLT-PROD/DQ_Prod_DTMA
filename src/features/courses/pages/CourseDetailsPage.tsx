@@ -32,11 +32,11 @@ import { getCourseConfig } from "../../../utils/courseConfig";
 import { getCourseMedia } from "../../../utils/courseMedia";
 
 import { ErrorDisplay } from "../../../components/SkeletonLoader";
-import { useProductDetails } from "../../../hooks/useProductDetails";
+import { useProductDetails } from "../hooks/useProductDetails";
 import { CourseMeta } from "../../../components/ui/CourseMeta";
 import { Tag } from "../../../components/ui/Tag";
 import { AudienceFitIndicator } from "../components/details/AudienceFitIndicator";
-import { CourseTile } from "../components/CourseTile";
+import { CourseTile } from "@/components/courses/CourseTile";
 import { EnrollmentButton } from "@/components/enrollment/EnrollmentButton";
 import { CourseDetailSkeleton } from "@/components/loading/CourseDetailSkeleton.tsx";
 import { SaveCourseFullButton } from "@/features/courses/components/SaveCourseButton.tsx";
@@ -557,11 +557,10 @@ const CourseDetailsPage: React.FC = () => {
 
               {/* Description with Collapse Animation */}
               <div
-                className={`overflow-hidden transition-all duration-1000 ease-in-out ${
-                  showDescription
-                    ? "max-h-[300px] opacity-100 mb-8"
-                    : "max-h-0 opacity-0 mb-4"
-                }`}
+                className={`overflow-hidden transition-all duration-1000 ease-in-out ${showDescription
+                  ? "max-h-[300px] opacity-100 mb-8"
+                  : "max-h-0 opacity-0 mb-4"
+                  }`}
                 onMouseEnter={() => setShowDescription(true)}
               >
                 <p className="text-white text-base leading-relaxed max-w-2xl font-light drop-shadow-md">
@@ -597,11 +596,10 @@ const CourseDetailsPage: React.FC = () => {
 
             {/* Scroll Indicator */}
             <div
-              className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-none transition-all duration-500 ${
-                showScrollIndicator
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-4"
-              }`}
+              className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-none transition-all duration-500 ${showScrollIndicator
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-4"
+                }`}
             >
               <div className="animate-bounce">
                 <ChevronDown
@@ -626,7 +624,7 @@ const CourseDetailsPage: React.FC = () => {
             containerRef={containerRef as React.RefObject<HTMLDivElement>}
             scrollLeft={scrollLeft}
             scrollRight={scrollRight}
-            onCheckOverflow={() => {}}
+            onCheckOverflow={() => { }}
             rightContent={
               showStickyHeaderCTA ? (
                 <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -703,9 +701,9 @@ const CourseDetailsPage: React.FC = () => {
                       relatedItem.isComingSoon
                         ? undefined
                         : () => {
-                            navigate(`/courses/${relatedItem.id}`);
-                            window.scrollTo({ top: 0, behavior: "smooth" });
-                          }
+                          navigate(`/courses/${relatedItem.id}`);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }
                     }
                   />
                 </div>

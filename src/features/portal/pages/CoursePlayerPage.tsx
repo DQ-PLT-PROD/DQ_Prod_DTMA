@@ -13,7 +13,7 @@ import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
 import { Lesson, toUILesson } from "../../../types/course";
-import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
+import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "@/services/courseService";
 import {
     getOrCreateEnrollment,
     updateLessonProgress,

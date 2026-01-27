@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Send, ChevronDown, ArrowRight, Layers } from 'lucide-react';
-import { AnimatedText, FadeInUpOnScroll, StaggeredFadeIn } from '../../components/AnimationUtils';
+import { AnimatedText, FadeInUpOnScroll, StaggeredFadeIn } from "@/components/AnimationUtils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from '@/lib/auth';
-import { PageContainer } from '../../components/layouts/PageContainer';
-import { BRAND_BACKDROP_BLUR, BRAND_GRADIENT, BRAND_PRIMARY } from '../../constants/branding';
+import { PageContainer } from "@/components/layouts/PageContainer";
+import { BRAND_BACKDROP_BLUR, BRAND_GRADIENT, BRAND_PRIMARY } from "@/constants/branding";
 
 interface HeroSectionProps {
   'data-id'?: string;

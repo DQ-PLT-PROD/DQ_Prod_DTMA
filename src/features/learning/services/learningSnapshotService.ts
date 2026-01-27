@@ -1,7 +1,7 @@
 import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
 import { isSupabaseConfigured } from "../../../lib/supabase/client";
 import { Course, Lesson as DbLesson, LessonType } from "../../../types/dtma-lms";
-import { CourseResource } from "../../courses/services/courseService";
+import { CourseResource } from "@/services/courseService";
 import type { Enrollment, LessonProgress } from "./progressService";
 
 export interface LearningSnapshot {

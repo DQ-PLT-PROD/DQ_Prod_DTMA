@@ -10,10 +10,10 @@ import { ErrorDisplay, CourseCardSkeleton } from "../../../components/SkeletonLo
 import { getCourseConfig } from "../../../utils/courseConfig";
 import { Header } from "../../../components/Header";
 import { Footer } from "../../../components/Footer";
-import { fetchCourses, fetchCategories } from "../services/courseService";
+import { fetchCourses, fetchCategories } from "@/services/courseService";
 import { fetchIndustryTree, NestedFilterOption as IndustryNode } from "../services/filterService";
 import { PageContainer } from "../../../components/layouts/PageContainer";
-import {AIWidgetStandalone} from "@/features/ai-widget";
+import { AIWidgetStandalone } from "@/lib/ai-widget";
 
 // Get config once at module level to avoid recreation on every render
 const courseConfig = getCourseConfig();

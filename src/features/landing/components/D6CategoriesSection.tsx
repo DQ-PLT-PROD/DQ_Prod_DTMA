@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { FadeInUpOnScroll } from "../../components/AnimationUtils";
-import { BRAND_PRIMARY } from "../../constants/branding";
+import { FadeInUpOnScroll } from "@/components/AnimationUtils";
+import { BRAND_PRIMARY } from "@/constants/branding";
 
 /**
  * Category data with slugs matching the database course_categories table.
@@ -53,7 +53,7 @@ const categories = [
   },
 ];
 
-import { PageContainer } from "../../components/layouts/PageContainer";
+import { PageContainer } from "@/components/layouts/PageContainer";
 
 const D6CategoriesSection: React.FC = () => {
   return (

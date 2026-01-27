@@ -14,9 +14,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, BookOpen, Clock } from "lucide-react";
-import { fetchCourses } from "../courses/services/courseService";
-import { AIWidgetStandalone } from "../ai-widget/components/AIWidgetStandalone";
-import type { Course } from "../../types/dtma-lms";
+import { fetchCourses } from "@/services/courseService";
+import { AIWidgetStandalone } from "@/lib/ai-widget";
+import type { Course } from "@/types/dtma-lms";
 
 interface FeaturedCourse {
   id: string;

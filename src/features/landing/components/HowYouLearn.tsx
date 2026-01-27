@@ -1,5 +1,5 @@
 import React from "react";
-import { PageContainer } from "../../components/layouts/PageContainer";
+import { PageContainer } from "@/components/layouts/PageContainer";
 
 const steps = [
   {
