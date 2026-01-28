@@ -9,7 +9,7 @@ import { BrowserRouter, MemoryRouter } from "react-router-dom";
 import { CourseCatalogPage } from "../CourseCatalogPage";
 
 // Mock MSAL config before other imports
-vi.mock("../../../../services/auth/msal", () => ({
+vi.mock("@/lib/auth/msal", () => ({
   msalConfig: {
     auth: {
       clientId: "test-client-id",
@@ -23,7 +23,7 @@ vi.mock("../../../../services/auth/msal", () => ({
 }));
 
 // Mock services
-vi.mock("../../services/courseService", () => ({
+vi.mock("@/services/courseService", () => ({
   fetchCourses: vi.fn(() =>
     Promise.resolve([
       {
@@ -124,7 +124,7 @@ describe("CourseCatalogPage Integration (D2)", () => {
   });
 
   it("should show empty state when no courses match filters", async () => {
-    const { fetchCourses } = await import("../../services/courseService");
+    const { fetchCourses } = await import("@/services/courseService");
     vi.mocked(fetchCourses).mockResolvedValueOnce([]);
 
     render(

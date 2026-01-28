@@ -10,7 +10,10 @@ import {
   CheckCircle,
   User,
   ChevronLeft,
+  Search,
+  ChevronDown,
 } from "lucide-react";
+import { COURSE_CATEGORIES } from "../../../constants/navigation";
 import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";
 import { ProfileDropdown } from "../../../components/Header/ProfileDropdown";
 import { FEATURES } from "../../../config/features";
@@ -28,6 +31,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [exploreOpen, setExploreOpen] = useState(false);
   const location = useLocation();
   const { databaseUser, isDatabaseUserLoading } = useAuth();
 
@@ -72,7 +76,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 font-sans flex flex-col">
-      {/* Full-Width Header with Gradient - hidden in theater mode when requested. */}
+      {/* ... header ... */}
+
       {!isTheaterMode && (
         <header
           className="sticky top-0 z-30 shadow-md"
@@ -106,18 +111,16 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
       {/* Content Area Below Header */}
       <div
-        className={`flex-1 flex ${
-          isTheaterMode
-            ? "h-[calc(100vh-140px)] max-h-[calc(100vh-140px)] w-full"
-            : ""
-        }`}
+        className={`flex-1 flex ${isTheaterMode
+          ? "h-[calc(100vh-140px)] max-h-[calc(100vh-140px)] w-full"
+          : ""
+          }`}
       >
         {/* Minimal Side Navigation - Portal Sidebar */}
         {!isTheaterMode && (
           <aside
-            className={`bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${
-              sidebarOpen ? "w-56" : "w-14"
-            } hidden lg:flex flex-col shrink-0`}
+            className={`bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${sidebarOpen ? "w-56" : "w-14"
+              } hidden lg:flex flex-col shrink-0`}
           >
             {/* Sidebar Header - Hamburger menu */}
             <div
@@ -144,9 +147,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
                 {showOnboarding && (
                   <Link
                     to="/portal/onboarding"
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/10 transition ${
-                      !sidebarOpen ? "justify-center" : ""
-                    }`}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/10 transition ${!sidebarOpen ? "justify-center" : ""
+                      }`}
                     title="Onboarding"
                   >
                     <CheckCircle size={16} className="shrink-0" />
@@ -157,11 +159,10 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
                 {/* In Progress */}
                 <Link
                   to="/portal/my-courses/in-progress"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-                    isMyCoursesActive
-                      ? "text-[#1839AD] bg-[#1839AD]/10"
-                      : "text-[#1839AD] bg-[#1839AD]/5 hover:bg-[#1839AD]/10"
-                  } transition ${!sidebarOpen ? "justify-center" : ""}`}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isMyCoursesActive
+                    ? "text-[#1839AD] bg-[#1839AD]/10"
+                    : "text-[#1839AD] bg-[#1839AD]/5 hover:bg-[#1839AD]/10"
+                    } transition ${!sidebarOpen ? "justify-center" : ""}`}
                   title="In Progress"
                 >
                   <Play size={16} className="shrink-0" />
@@ -176,9 +177,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
                 {/* Profile - now disabled/coming soon */}
                 <div
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed ${
-                    !sidebarOpen ? "justify-center" : ""
-                  }`}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? "justify-center" : ""
+                    }`}
                   title="Profile - Coming Soon"
                 >
                   <User size={16} className="shrink-0" />
@@ -194,9 +194,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
                 {/* Saved */}
                 <div
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed ${
-                    !sidebarOpen ? "justify-center" : ""
-                  }`}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? "justify-center" : ""
+                    }`}
                   title="Saved - Coming Soon"
                 >
                   <Bookmark size={16} className="shrink-0" />
@@ -216,9 +215,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
               {/* Badges - Coming Soon */}
               <div
-                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed ${
-                  !sidebarOpen ? "justify-center" : ""
-                }`}
+                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? "justify-center" : ""
+                  }`}
                 title="Badges - Coming Soon"
               >
                 <Award size={16} className="shrink-0" />
@@ -234,9 +232,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
               {/* Career Coach - Coming Soon */}
               <div
-                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed ${
-                  !sidebarOpen ? "justify-center" : ""
-                }`}
+                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? "justify-center" : ""
+                  }`}
                 title="AI Career Coach - Coming Soon"
               >
                 <Sparkles size={16} className="shrink-0" />
@@ -274,9 +271,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
         {/* Mobile sidebar */}
         {!isTheaterMode && (
           <aside
-            className={`fixed inset-y-0 left-0 z-30 bg-white w-56 transform transition-transform duration-300 ease-in-out lg:hidden ${
-              sidebarOpen ? "translate-x-0" : "-translate-x-full"
-            }`}
+            className={`fixed inset-y-0 left-0 z-30 bg-white w-56 transform transition-transform duration-300 ease-in-out lg:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+              }`}
             style={{ top: "56px" }}
           >
             {/* Mobile Nav Header */}
@@ -291,6 +287,44 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
             </div>
 
             <nav className="py-3 overflow-y-auto">
+              {/* Explore Courses - Mobile Only */}
+              {FEATURES.COURSE_MARKETPLACE && (
+                <div className="mx-2 mb-4 space-y-1">
+                  <div className="px-2 py-1 text-xs text-gray-400 uppercase font-semibold tracking-wide">
+                    Explore
+                  </div>
+                  <button
+                    onClick={() => setExploreOpen(!exploreOpen)}
+                    className="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Search size={16} />
+                      <span className="text-sm">Browse Courses</span>
+                    </div>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-200 ${exploreOpen ? "rotate-180" : ""
+                        }`}
+                    />
+                  </button>
+
+                  {exploreOpen && (
+                    <div className="pl-4 space-y-1 mt-1">
+                      {COURSE_CATEGORIES.map((category) => (
+                        <Link
+                          key={category.slug}
+                          to={category.href}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 hover:text-[#1839AD] hover:bg-[#1839AD]/5 text-sm"
+                          onClick={() => setSidebarOpen(false)}
+                        >
+                          <category.icon size={14} />
+                          <span className="truncate">{category.title}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
               {/* My Courses */}
               <div className="mx-2 space-y-1">
                 <div className="px-2 py-1 text-xs text-gray-400 uppercase font-semibold tracking-wide">

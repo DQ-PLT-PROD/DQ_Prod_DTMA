@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchFullCourse, fetchRelatedCourses } from '../services/courseService';
+import { fetchFullCourse, fetchRelatedCourses } from '@/services/courseService';
 import { Course } from '@/types/dtma-lms';
 
 interface UseCourseDetailsParams {

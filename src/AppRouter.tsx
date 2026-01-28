@@ -4,7 +4,7 @@ import { App } from "./App";
 import { CourseCatalogPage } from "./features/courses/pages/CourseCatalogPage";
 import CourseDetailsPage from "./features/courses/pages/CourseDetailsPage";
 import DashboardRouter from "./features/dashboard/pages/DashboardRouter";
-import ProtectedRoute from "./features/auth/components/ProtectedRoute";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import NotFound from "./features/app/pages/NotFound";
 import { PortalLayout } from "./features/portal/layout/PortalLayout";
 import InProgressPage from "./features/portal/pages/InProgressPage";
@@ -13,7 +13,7 @@ import LearnerOnboarding from "./features/dashboard/pages/onboarding";
 import ProfilePage from "./features/portal/pages/ProfilePage";
 import { QuizAuditPage } from "./features/portal/pages/QuizAuditPage";
 import { ComingSoon } from "./features/app/pages/ComingSoon";
-import { AuthDebugPanel } from "./features/auth/components/AuthDebugPanel";
+import { AuthDebugPanel } from "@/components/auth/AuthDebugPanel";
 import { EnrollmentGuard } from "./features/courses/components/guards/EnrollmentGuard";
 import { PaymentSuccessHandler } from "./features/courses/components/payment/PaymentSuccessHandler";
 

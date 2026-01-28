@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchCourses, fetchCourseQuizzes } from "../../courses/services/courseService";
+import { fetchCourses, fetchCourseQuizzes } from "@/services/courseService";
 
 interface AuditQuizItem {
     courseSlug: string;
