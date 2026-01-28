@@ -29,6 +29,8 @@ Use this skill when the user asks to "fix the folder structure," "audit dependen
 
 **🛑 NEVER create files in the root `src/` folder (except config/types).**
 **🛑 NEVER create "orphaned" folders outside of the 3 zones.**
+**🛑 NEVER leave log files in the repository root. Move them to `docs/reports/logs/`.**
+**🛑 NEVER write to repository root unless the file is an allowed config (e.g., `package.json`, `vite.config.ts`, `.env`). All other files must be categorized.**
 
 # The Architecture Rules
 This architecture divides code into three distinct zones with strict **One-Way Data Flow**:
@@ -86,7 +88,7 @@ This architecture divides code into three distinct zones with strict **One-Way D
 * **Role:** Wires features together, defines routes, composes layouts.
 
 # Steps
-1.  **Audit**: Run `scripts/audit.py` to scan for architectural violations.
+1.  **Audit**: Run `python .agent/skills/feature-architect/scripts/audit.py` to scan for architectural violations.
 2.  **Deep Audit**: Also scan for **relative imports** (audit.py may miss these):
     - `from '../features/...'` in SHARED code = 🚨 Pollution
     - `from '../../<other-feature>/...'` in a feature = 🚨 Cross-Feature
@@ -96,7 +98,7 @@ This architecture divides code into three distinct zones with strict **One-Way D
 4.  **Refactor Strategy**:
     * If **Feature A** needs **Feature B**: Suggest moving the shared logic to `src/lib` (Shared).
     * If **Shared** needs **Feature A**: This is a design flaw. Suggest dependency injection or passing data as props.
-5.  **Cleanup**: Run `scripts/cleanup.py` to remove empty folders and zero-byte files automatically.
+5.  **Cleanup**: Run `python .agent/skills/feature-architect/scripts/cleanup.py` to remove empty folders (which audit.py creates/checks).
 
 # Proactive Integration Checklist
 When creating or modifying ANY file, ask yourself:
@@ -165,4 +167,85 @@ These active tasks were paused to resolve the build errors:
 
 ## 🔮 3. Future Architectural Improvements
 - **Strict Linting**: Add ESLint rules to enforce the `@/lib` vs `@/features` import constraints automatically.
-- **Unit Tests**: Add tests for the newly moved `src/lib/enrollment` and `src/lib/payment` services.
+- **Unit Tests**: Add tests for the newly newly moved `src/lib/enrollment` and `src/lib/payment` services.
+
+# 📜 Repository File Placement & Agent Behavior Rules
+
+## 1. Documentation Organization & Feature Specs
+
+### A. General Documentation (Root `docs/`)
+**Rule**: The `docs/` root directory must remain clean. **No loose files** are allowed in `docs/`.
+You **MUST** categorize any new documentation into one of the following subdirectories:
+
+| Folder | Purpose | Examples |
+|--------|---------|----------|
+| `docs/architecture/` | High-level technical design, auth patterns, schemas. | `database_schema.md` |
+| `docs/planning/` | Active plans, roadmaps, MVP scopes. | `execution_plan.md` |
+| `docs/guides/` | How-to guides, setup instructions, developer workflows. | `setup_guide.md` |
+| `docs/reports/` | Audits, implementation logs, status reports. | `technical_audit.md` |
+| `docs/reference/` | Static data reference, seed data lists. | `course_categories.md` |
+| `docs/system-specs/` | System-wide specifications (PRD, ERD, CI/CD). | `system_prd.md` |
+| `docs/archive/` | Historical or deprecated documents. | `old_v1_specs.md` |
+
+### B. Feature-Specific Documentation
+**Rule**: Must live in `docs/features/`.
+- **Nesting Logic**:
+  - **1 File**: Place directly in `docs/features/` (e.g., `docs/features/feature-X.md`).
+  - **>1 File**: REQUIRED nesting in `docs/features/<feature>/` (e.g., `docs/features/learning/spec.md`, `.../test_plan.md`).
+- **Required Metadata**: Every feature spec **MUST** start with:
+  - `**Source Code Path**`: Path to the implementation.
+  - `**Dependencies**`: List of dependent features/services.
+
+### C. Write Protocol
+Before creating a new documentation file:
+1.  **Search**: Check if a relevant file already exists using `find_by_name`.
+2.  **Categorize**: Determine the correct subdirectory based on the table above.
+3.  **Enforce**: Do NOT write to `docs/` root. Write to `docs/<category>/<filename>`.
+
+## 2. Skill Files
+- **Location**: All skill-related files must be stored in the `.agent/` directory.
+- **Purpose**: Define rules, validation logic, and enforcement for AI agents.
+- **Source of Truth**: *This file* (`.agent/SKILL.md`) is the master rulebook.
+
+## 3. Write vs Modify Protocol
+Before performing any action, you **MUST**:
+1.  **Analyze**: Is this a modification or a new creation?
+2.  **Locate**: Attempt to find the relevant existing file (use `find_by_name` or `grep_search`).
+3.  **Decide**:
+    - **Found?** -> Treat as **Modification**.
+    - **Not Found?** -> Treat as **Creation** (Write).
+
+## 4. Pre-Write Dependency Checks (MANDATORY)
+**TRIGGER**: Before any `write_to_file` call to create a NEW file, you **MUST** run the dependency check.
+
+**Command**:
+```bash
+python .agent/dependency_check.py "<proposed_file_path>"
+```
+
+**Reason**: This ensures that:
+- Documentation lands in the correct zone (`docs/` vs `features/`).
+- Code adheres to the Feature-Based Architecture.
+- No "orphaned" files pollute the repository root.
+
+**Enforcement**:
+- If the script returns `❌ FAILED`, you **MUST NOT** create the file.
+- You must adjust the path to satisfy the rules and run the check again.
+
+## 5. Feature Specification Synchronization (MANDATORY)
+**TRIGGER**: Whenever you make **MAJOR modifications** to a feature.
+
+**Definition of "Major Modification"**:
+- Changing the feature's status (e.g., Planned -> Implemented).
+- Moving core feature services (e.g., relocating specific logic to `src/lib/` or `src/shared/`).
+- Changing the Data Model (e.g., renaming tables, columns, or changing source of truth).
+- Significantly changing the scope or user stories.
+
+**Action**:
+1.  **Locate** the Spec File: Usually in `src/features/<feature>/specs/` or `docs/specs/`.
+2.  **Verify**: Read the spec file to see if it contradicts your changes.
+3.  **Update**: You **MUST** update the spec file to match the new implementation reality.
+    - Update `Status`.
+    - Update paths to source code.
+    - Update Schema/Data Model descriptions.
+

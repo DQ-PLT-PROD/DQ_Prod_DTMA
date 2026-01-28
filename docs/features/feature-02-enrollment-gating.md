@@ -3,10 +3,13 @@
 ## Enrollment & Access Gating (Minimal, Rule-Based)
 
 ### Status
-Planned – Jan 16 Delivery
+Implemented – Jan 2026
 
 ### Owner
 One Developer (End-to-End Ownership)
+
+**Source Code**: `src/lib/enrollment/service.ts`
+**Dependencies**: `Supabase`, `AuthContext`
 
 ---
 
@@ -117,7 +120,7 @@ Migration file must be added under `supabase/migrations`.
 
 ## 6. Service Layer (Frontend)
 
-Implement an enrollment service (e.g. `enrollmentService.ts`) with:
+Implement an enrollment service (`src/lib/enrollment/service.ts`) with:
 
 - `getEnrollment(courseId)`
 - `enrollInCourse(courseId)`

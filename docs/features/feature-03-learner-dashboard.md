@@ -3,10 +3,13 @@
 ## Learner Dashboard (Thin but Real)
 
 ### Status
-Planned – Jan 16 Delivery
+Implemented – Jan 2026
 
 ### Owner
 One Developer (End-to-End Ownership)
+
+**Source Code**: `src/features/dashboard`
+**Dependencies**: `Feature 01 (Progress)`, `Feature 02 (Enrollment)`
 
 ---
 

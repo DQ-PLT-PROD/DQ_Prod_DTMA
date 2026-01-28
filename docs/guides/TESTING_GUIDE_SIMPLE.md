@@ -316,8 +316,8 @@ Congratulations! The enrollment feature is working correctly.
 - **Learning**: http://localhost:5173/learning?courseId=COURSE_SLUG
 
 ### Key Files
-- **Enrollment Service**: `src/features/courses/services/enrollmentService.ts`
-- **Enrollment Button**: `src/features/courses/components/enrollment/EnrollmentButton.tsx`
+- **Enrollment Service**: `src/lib/enrollment/service.ts`
+- **Enrollment Button**: `src/components/enrollment/EnrollmentButton.tsx`
 - **Route Guard**: `src/features/courses/components/guards/EnrollmentGuard.tsx`
 - **API Server**: `api/server.mjs`
 

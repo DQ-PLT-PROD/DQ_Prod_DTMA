@@ -3,10 +3,13 @@
 ## Course Completion State (Closure)
 
 ### Status
-Planned – Jan 16 Delivery
+Implemented – Jan 2026
 
 ### Owner
 One Developer (End-to-End Ownership)
+
+**Source Code**: `src/features/portal/services/progressService.ts`
+**Dependencies**: `Feature 01 (Progress Logic)`
 
 ---
 
@@ -81,7 +84,9 @@ When a learner completes a course, the system reliably marks it as completed, pe
 
 ## 4. Data Model (Supabase)
 
-### Option A (Preferred): Dedicated Table `learner_course_completion`
+### Implemented Model: `user_enrollments.completed_at`
+
+Completion is tracked directly on the `user_enrollments` table via the `completed_at` timestamp. This simplifies the architecture by keeping enrollment and completion state in a single record.
 
 | Field | Type | Notes |
 |------|-----|------|

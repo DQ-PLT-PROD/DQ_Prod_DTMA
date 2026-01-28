@@ -3,10 +3,13 @@
 ## Learner Progress Persistence (Backend)
 
 ### Status
-Planned – Jan 16 Delivery
+Implemented – Jan 2026
 
 ### Owner
 One Developer (End-to-End Ownership)
+
+**Source Code**: `src/features/portal/services/progressService.ts`
+**Dependencies**: `Supabase`, `AuthContext`
 
 ---
 
@@ -92,7 +95,7 @@ If backend progress fetch fails:
 
 ## 4. Data Model (Supabase)
 
-### Preferred Table: `learner_lesson_progress`
+### Preferred Table: `lesson_progress`
 
 | Field | Type | Notes |
 |------|-----|------|
@@ -126,7 +129,7 @@ Migration file must be added under `supabase/migrations`.
 
 ## 6. Service Layer (Frontend)
 
-Implement a progress service (e.g. `progressService.ts`) with:
+Implement a progress service (`src/features/portal/services/progressService.ts`) with:
 
 - `getCourseProgress(courseId)`
 - `upsertLessonProgress({ courseId, lessonId, status, progressPercent?, lastPositionSeconds? })`
