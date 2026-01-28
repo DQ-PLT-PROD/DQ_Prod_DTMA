@@ -13,7 +13,7 @@ import { PageContainer } from "../../../components/layouts/PageContainer";
 import { CourseListSkeleton } from "../../../components/loading/CourseListSkeleton";
 import { useAuth } from "@/lib/auth";
 import { getUserEnrollments, getActualProgressStats, Enrollment } from "../services/progressService";
-import { fetchFullCourse } from "../../courses/services/courseService";
+import { fetchFullCourse } from "@/services/courseService";
 import { Course } from "../../../types/dtma-lms";
 import { getLearningSnapshot } from "../../learning/services/learningSnapshotService";
 import { RecommendationRail } from "../../recommendations/components/RecommendationRail";
@@ -217,38 +217,38 @@ const InProgressPage: React.FC = () => {
                                                 </div>
                                             </div>
 
-                      {/* Continue CTA */}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleCourseResume(enrollment.courseSlug)
-                        }
-                        disabled={isResuming}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1839AD] text-white text-sm font-semibold hover:bg-[#132b7c] disabled:opacity-60 disabled:cursor-not-allowed transition shrink-0"
-                      >
-                        {isResuming ? "Continuing..." : "Continue"}
-                        <ChevronRight size={16} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                                            {/* Continue CTA */}
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleCourseResume(enrollment.courseSlug)
+                                                }
+                                                disabled={isResuming}
+                                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1839AD] text-white text-sm font-semibold hover:bg-[#132b7c] disabled:opacity-60 disabled:cursor-not-allowed transition shrink-0"
+                                            >
+                                                {isResuming ? "Continuing..." : "Continue"}
+                                                <ChevronRight size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
 
-        {/* Recommendations Section */}
-        <RecommendationRail
-          className="mb-8"
-          maxRecommendations={5}
-          onRecommendationClick={(course, reason) => {
-            // Navigate to course details page
-            navigate(`/courses/${course.slug}`);
-          }}
-        />
-      </div>
+                {/* Recommendations Section */}
+                <RecommendationRail
+                    className="mb-8"
+                    maxRecommendations={5}
+                    onRecommendationClick={(course, reason) => {
+                        // Navigate to course details page
+                        navigate(`/courses/${course.slug}`);
+                    }}
+                />
+            </div>
         </PageContainer>
-  );
+    );
 };
 
 export default InProgressPage;

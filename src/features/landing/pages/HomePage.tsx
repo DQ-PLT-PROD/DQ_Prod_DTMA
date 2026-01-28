@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import HeroSection from "../HeroSection";
-import ProofAndTrust from "../ProofAndTrust";
-import D6CategoriesSection from "../D6CategoriesSection";
-import HowYouLearn from "../HowYouLearn";
-import Home from "../Home";
-import CallToAction from "../CallToAction";
-import KhalifaFundAttribution from "../KhalifaFundAttribution";
-import { AIWidgetStandalone } from "../../ai-widget/components/AIWidgetStandalone";
+import HeroSection from "../components/HeroSection";
+import ProofAndTrust from "../components/ProofAndTrust";
+import D6CategoriesSection from "../components/D6CategoriesSection";
+import HowYouLearn from "../components/HowYouLearn";
+import Home from "../components/Home";
+import CallToAction from "../components/CallToAction";
+import KhalifaFundAttribution from "../components/KhalifaFundAttribution";
+import { AIWidgetStandalone } from "@/lib/ai-widget";
 
 const HomePage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);

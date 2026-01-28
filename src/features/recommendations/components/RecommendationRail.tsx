@@ -16,7 +16,7 @@ import {
   Star,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { fetchCourses } from "../../courses/services/courseService";
+import { fetchCourses } from "@/services/courseService";
 import { getProfile } from "../../learner/services/learnerProfileService";
 import { EnhancedCourseCard } from "../../courses/components/EnhancedCourseCard";
 import {
@@ -200,11 +200,10 @@ export const RecommendationRail: React.FC<RecommendationRailProps> = ({
               <button
                 onClick={scrollLeft}
                 disabled={!canScrollLeft}
-                className={`p-2 rounded-full border transition-colors ${
-                  canScrollLeft
+                className={`p-2 rounded-full border transition-colors ${canScrollLeft
                     ? "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                     : "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
+                  }`}
                 aria-label="Scroll left"
               >
                 <ChevronLeft size={20} />
@@ -212,11 +211,10 @@ export const RecommendationRail: React.FC<RecommendationRailProps> = ({
               <button
                 onClick={scrollRight}
                 disabled={!canScrollRight}
-                className={`p-2 rounded-full border transition-colors ${
-                  canScrollRight
+                className={`p-2 rounded-full border transition-colors ${canScrollRight
                     ? "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                     : "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
+                  }`}
                 aria-label="Scroll right"
               >
                 <ChevronRight size={20} />
@@ -300,8 +298,8 @@ export const RecommendationRail: React.FC<RecommendationRailProps> = ({
                       audienceLevel: recommendation.course.audienceLevel,
                       duration: recommendation.course.estimatedDurationMinutes
                         ? `${Math.ceil(
-                            recommendation.course.estimatedDurationMinutes / 60
-                          )} hr`
+                          recommendation.course.estimatedDurationMinutes / 60
+                        )} hr`
                         : undefined,
                       durationMinutes:
                         recommendation.course.estimatedDurationMinutes,

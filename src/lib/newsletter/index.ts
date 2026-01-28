@@ -1,0 +1,1 @@
+export { subscribeToNewsletter } from "./service";

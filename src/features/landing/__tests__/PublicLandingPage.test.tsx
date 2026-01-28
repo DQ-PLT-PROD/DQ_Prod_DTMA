@@ -13,11 +13,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
-import { PublicLandingPage } from "../PublicLandingPage";
-import * as courseService from "../../courses/services/courseService";
+import { PublicLandingPage } from "../components/PublicLandingPage";
+import * as courseService from "@/services/courseService";
 
 // Mock the course service
-vi.mock("../../courses/services/courseService");
+vi.mock("@/services/courseService");
 
 const mockFetchCourses = vi.mocked(courseService.fetchCourses);
 
@@ -180,7 +180,7 @@ describe("PublicLandingPage", () => {
 
   describe("FR3: Fallbacks", () => {
     it("should show loading skeletons while fetching", () => {
-      mockFetchCourses.mockImplementation(() => new Promise(() => {})); // Never resolves
+      mockFetchCourses.mockImplementation(() => new Promise(() => { })); // Never resolves
 
       renderComponent();
 

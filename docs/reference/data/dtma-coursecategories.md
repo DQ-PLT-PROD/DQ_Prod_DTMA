@@ -1,0 +1,884 @@
+Got you — no more “talk to Codex”, just **give me the `.md`**.
+
+Below is a **single Markdown file** you can paste into your content repo.
+It defines:
+
+* 6 Categories (D1–D6)
+* All 32 courses under D1–D3
+* D4–D6 as *“coming soon”* categories with no courses yet
+
+You can trim or tweak text later; this is a solid v1.
+
+---
+
+```md
+# Category
+id: cat-economy-4-0
+slug: economy-4-0
+name: Economy 4.0
+description: Big-picture context for the digital economy, from Perfect Life Transactions to platforms and AI.
+
+## Course
+id: course-understanding-economy-4-0
+slug: understanding-economy-4-0
+title: Understanding Economy 4.0
+shortDescription: Get a clear, practical introduction to Economy 4.0 and why it matters.
+longDescription: Get a clear, practical introduction to what Economy 4.0 is, how it differs from previous eras, and why it matters for organizations today. By the end of this course, you’ll be able to explain Economy 4.0 to others and recognize its core drivers in your industry.
+categorySlug: economy-4-0
+audienceLevel: Digital Leaders          # Digital Leaders | Digital Workers
+topicTags: [Economy 4.0, Macro Context, Foundations]
+levelTag: Beginner                      # Beginner | Intermediate | Advanced
+estimatedDurationMinutes: 55
+lessonCount: 4
+deliveryMode: Online                    # Online | Hybrid | In-person
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Explain what Economy 4.0 is and how it evolved.
+  - Identify the core drivers of Economy 4.0 in your context.
+skillsGained:
+  - Macro digital economy awareness
+  - Strategic framing of Economy 4.0
+uponCompletion: You will be able to confidently introduce Economy 4.0 to leaders and teams.
+
+## Course
+id: course-connecting-e4-dco
+slug: connecting-economy-4-0-and-dco
+title: Connecting Economy 4.0 and Digital Cognitive Organizations
+shortDescription: Link Economy 4.0 trends to the design of Digital Cognitive Organizations.
+longDescription: Explore how Digital Cognitive Organizations are the native operating model of Economy 4.0. You’ll learn how DCOs create value and how to connect macro economic trends to concrete organizational design choices.
+categorySlug: economy-4-0
+audienceLevel: Digital Leaders
+topicTags: [Economy 4.0, DCO, Operating Model]
+levelTag: Intermediate
+estimatedDurationMinutes: 60
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Describe the characteristics of a Digital Cognitive Organization.
+  - Map Economy 4.0 trends to DCO design choices.
+skillsGained:
+  - DCO conceptual understanding
+  - Operating model mapping
+uponCompletion: You will be able to frame why your organization needs to evolve toward a DCO model.
+
+## Course
+id: course-designing-plt-e4
+slug: designing-perfect-life-transactions-economy-4-0
+title: Designing Perfect Life Transactions in Economy 4.0
+shortDescription: Learn to design Perfect Life Transactions that create value for customers and citizens.
+longDescription: Learn the concept of Perfect Life Transactions and why they sit at the center of Economy 4.0. You’ll practice mapping critical transactions, defining what “perfect” means in your context, and spotting gaps your teams can close.
+categorySlug: economy-4-0
+audienceLevel: Digital Leaders
+topicTags: [PLT, Customer Value, Journey Design]
+levelTag: Intermediate
+estimatedDurationMinutes: 65
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Explain the Perfect Life Transactions concept.
+  - Map and prioritize critical transactions in your organization.
+skillsGained:
+  - Transaction design
+  - Journey mapping
+uponCompletion: You will leave with a PLT map and a shortlist of improvement opportunities.
+
+## Course
+id: course-building-dbp-e4
+slug: building-digital-business-platforms-economy-4-0
+title: Building Digital Business Platforms for Economy 4.0
+shortDescription: Understand how Digital Business Platforms underpin modern Economy 4.0 business models.
+longDescription: Understand what a Digital Business Platform is, how it differs from traditional IT, and how it enables new products, services, and ecosystems in Economy 4.0. You’ll connect platform thinking to your own context and identify where a DBP could unlock value.
+categorySlug: economy-4-0
+audienceLevel: Digital Leaders
+topicTags: [DBP, Platform Strategy, Architecture]
+levelTag: Intermediate
+estimatedDurationMinutes: 58
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Differentiate DBPs from traditional systems.
+  - Identify where platform thinking applies in your organization.
+skillsGained:
+  - Platform literacy
+  - Opportunity framing
+uponCompletion: You will be able to outline where a platform could create value in your organization.
+
+## Course
+id: course-leading-workforce-4-0
+slug: leading-workforce-4-0
+title: Leading Workforce 4.0: People and Machines at Work
+shortDescription: Learn how roles and teams evolve when people and intelligent systems work together.
+longDescription: Discover how roles, skills, and teams change when humans and intelligent systems collaborate. You’ll learn how to frame Workforce 4.0, identify capability gaps, and lead more confident conversations about reskilling and redesigning work.
+categorySlug: economy-4-0
+audienceLevel: Digital Leaders
+topicTags: [Workforce 4.0, People, Automation]
+levelTag: Beginner
+estimatedDurationMinutes: 62
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Describe Workforce 4.0 in clear, practical terms.
+  - Identify key capability gaps in your workforce.
+skillsGained:
+  - Workforce framing
+  - Strategic reskilling planning
+uponCompletion: You will be able to guide leadership conversations about Workforce 4.0.
+
+## Course
+id: course-accelerating-dt-e4
+slug: accelerating-digital-transformation-economy-4-0
+title: Accelerating Digital Transformation in Economy 4.0
+shortDescription: Move from slogans to concrete levers that speed up digital transformation.
+longDescription: Move beyond vague transformation slogans and focus on concrete levers that actually speed up change in Economy 4.0. You’ll learn how to prioritize initiatives, remove blockers, and sequence efforts for momentum.
+categorySlug: economy-4-0
+audienceLevel: Digital Leaders
+topicTags: [Transformation, Prioritization, Execution]
+levelTag: Intermediate
+estimatedDurationMinutes: 70
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Identify the levers that accelerate digital transformation.
+  - Prioritize transformation initiatives for impact.
+skillsGained:
+  - Transformation planning
+  - Execution sequencing
+uponCompletion: You will be able to design a more realistic and accelerated transformation roadmap.
+
+## Course
+id: course-using-ai-for-advantage-e4
+slug: using-ai-for-advantage-economy-4-0
+title: Using AI for Advantage in Economy 4.0
+shortDescription: Go beyond AI hype and focus on competitive advantage.
+longDescription: Go beyond AI hype and focus on how AI creates real competitive advantage in Economy 4.0. You’ll learn to spot high-value use cases, distinguish automation from augmentation, and connect AI initiatives to business outcomes.
+categorySlug: economy-4-0
+audienceLevel: Digital Leaders
+topicTags: [AI Strategy, Use Cases, Advantage]
+levelTag: Advanced
+estimatedDurationMinutes: 52
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Identify high-value AI use cases.
+  - Connect AI initiatives to measurable business outcomes.
+skillsGained:
+  - AI opportunity framing
+  - Business/AI alignment
+uponCompletion: You will be able to evaluate AI ideas through a strategic lens.
+
+## Course
+id: course-trust-security-e4
+slug: protecting-trust-and-security-economy-4-0
+title: Protecting Trust and Security in Economy 4.0
+shortDescription: Balance cybersecurity and innovation in a hyper-connected economy.
+longDescription: Explore how trust, cybersecurity, privacy, and resilience work together in a hyper-connected economy. You’ll learn simple frameworks to help your organization protect digital assets while still enabling innovation.
+categorySlug: economy-4-0
+audienceLevel: Digital Leaders
+topicTags: [Cybersecurity, Trust, Resilience]
+levelTag: Advanced
+estimatedDurationMinutes: 68
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Explain the key components of digital trust.
+  - Identify security gaps that impact innovation.
+skillsGained:
+  - Cyber risk framing
+  - Trust-by-design thinking
+uponCompletion: You will be able to discuss security and trust without blocking innovation.
+
+## Course
+id: course-strategic-ai-advantage
+slug: applying-strategic-ai-for-competitive-advantage
+title: Applying Strategic AI for Competitive Advantage
+shortDescription: Treat AI as a strategic capability, not a one-off project.
+longDescription: Learn how to treat AI as a strategic capability instead of a series of disconnected experiments. You’ll align AI investments with strategy, choose where to play, and monitor whether AI initiatives are moving the needle.
+categorySlug: economy-4-0
+audienceLevel: Digital Leaders
+topicTags: [AI Strategy, Portfolio, Competitiveness]
+levelTag: Advanced
+estimatedDurationMinutes: 57
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Align AI initiatives with business strategy.
+  - Define a simple AI portfolio and success measures.
+skillsGained:
+  - Strategic AI roadmapping
+  - Outcome-based AI planning
+uponCompletion: You will be able to discuss AI in the same language as strategy and value.
+
+## Course
+id: course-culture-innovation-e4
+slug: building-a-culture-of-innovation-economy-4-0
+title: Building a Culture of Innovation in Economy 4.0
+shortDescription: Make innovation stick inside real organizations.
+longDescription: Understand what makes innovation stick inside real organizations, not just in slide decks. You’ll learn how to create conditions for experimentation, reduce fear of failure, and align innovation efforts with customer and economic value.
+categorySlug: economy-4-0
+audienceLevel: Digital Leaders
+topicTags: [Innovation, Culture, Experimentation]
+levelTag: Intermediate
+estimatedDurationMinutes: 63
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Identify barriers to innovation in your context.
+  - Design simple practices that encourage experimentation.
+skillsGained:
+  - Innovation culture design
+  - Experimentation practices
+uponCompletion: You will be able to propose concrete steps to strengthen innovation culture.
+
+## Course
+id: course-measuring-success-e4
+slug: measuring-success-in-economy-4-0
+title: Measuring Success in Economy 4.0
+shortDescription: Focus on metrics that matter in a digital economy.
+longDescription: Explore which metrics matter in a digital, platform-driven, data-rich economy. You’ll learn how to move beyond vanity metrics, design a simple measurement stack, and connect leading indicators to long-term value.
+categorySlug: economy-4-0
+audienceLevel: Digital Leaders
+topicTags: [Metrics, KPIs, Measurement]
+levelTag: Beginner
+estimatedDurationMinutes: 54
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Differentiate between vanity and value metrics.
+  - Design a simple measurement stack for Economy 4.0.
+skillsGained:
+  - KPI design
+  - Value-based measurement
+uponCompletion: You will be able to propose smarter metrics for digital initiatives.
+
+# Category
+id: cat-digital-cognitive-organization
+slug: digital-cognitive-organization
+name: Digital Cognitive Organization
+description: How modern organizations think, decide, and operate as intelligent, adaptive systems.
+
+## Course
+id: course-building-dco
+slug: building-digital-cognitive-organizations
+title: Building Digital Cognitive Organizations
+shortDescription: Learn the core building blocks of Digital Cognitive Organizations.
+longDescription: Get a structured overview of what defines a Digital Cognitive Organization and how it operates. You’ll explore the key building blocks—strategy, platforms, data, AI, and culture—and how they interlock to create an intelligent, adaptive enterprise.
+categorySlug: digital-cognitive-organization
+audienceLevel: Digital Leaders
+topicTags: [DCO, Operating Model, Blueprint]
+levelTag: Beginner
+estimatedDurationMinutes: 66
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Define the concept of a Digital Cognitive Organization.
+  - Identify the core building blocks of a DCO.
+skillsGained:
+  - DCO literacy
+  - High-level organization design
+uponCompletion: You will be able to explain what it means to become a Digital Cognitive Organization.
+
+## Course
+id: course-designing-plt-org
+slug: designing-life-perfect-transactions-organization
+title: Designing Life-Perfect Transactions in Your Organization
+shortDescription: Apply the PLT concept to real organizational journeys.
+longDescription: Apply the Perfect Life Transactions concept to your own organization by mapping, assessing, and improving the transactions that matter most. You’ll connect PLTs to customer experience, operations, and value.
+categorySlug: digital-cognitive-organization
+audienceLevel: Digital Leaders
+topicTags: [PLT, Transactions, Optimization]
+levelTag: Intermediate
+estimatedDurationMinutes: 59
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Map high-value transactions in your organization.
+  - Identify improvement opportunities for PLTs.
+skillsGained:
+  - Transaction mapping
+  - Journey optimization
+uponCompletion: You will leave with a prioritized PLT improvement backlog.
+
+## Course
+id: course-dbp-as-dco-backbone
+slug: using-dbp-as-dco-backbone
+title: Using Digital Business Platforms as a DCO Backbone
+shortDescription: See how Digital Business Platforms act as the backbone of a DCO.
+longDescription: Understand how Digital Business Platforms act as the backbone of a DCO, connecting experiences, intelligence, and operations. You’ll learn how different towers and components fit together and what this means for your roadmap.
+categorySlug: digital-cognitive-organization
+audienceLevel: Digital Leaders
+topicTags: [DBP, Enablement, Architecture]
+levelTag: Intermediate
+estimatedDurationMinutes: 61
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Describe how DBPs support DCOs.
+  - Map DBP towers to organization needs.
+skillsGained:
+  - Platform mapping
+  - DCO/DBP alignment
+uponCompletion: You will be able to frame DBPs as core infrastructure for DCOs.
+
+## Course
+id: course-building-ai-driven-orgs
+slug: building-ai-driven-organizations
+title: Building AI-Driven Organizations
+shortDescription: Embed AI into processes and decisions across the organization.
+longDescription: Learn what it really means to embed AI into the organization rather than bolt it on. You’ll explore patterns for AI-enabled processes, decision support, and automation, and how to manage the change that comes with them.
+categorySlug: digital-cognitive-organization
+audienceLevel: Digital Leaders
+topicTags: [AI Operations, Automation, Decisions]
+levelTag: Advanced
+estimatedDurationMinutes: 69
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Identify processes suitable for AI enablement.
+  - Plan for change when introducing AI at scale.
+skillsGained:
+  - AI-enabled process design
+  - Change planning for AI
+uponCompletion: You will be able to sketch a roadmap for becoming more AI-driven.
+
+## Course
+id: course-monetizing-data
+slug: monetizing-data-data-capitalism
+title: Monetizing Data: Practicing Data Capitalism
+shortDescription: Treat data as a true asset, not just exhaust.
+longDescription: Discover how to treat data as a true asset rather than a by-product of operations. You’ll learn data value patterns—products, services, insights—and how to design pathways from raw data to revenue and impact.
+categorySlug: digital-cognitive-organization
+audienceLevel: Digital Leaders
+topicTags: [Data Value, Monetization, Products]
+levelTag: Advanced
+estimatedDurationMinutes: 56
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Identify potential data value streams.
+  - Outline simple data-to-value pathways.
+skillsGained:
+  - Data product thinking
+  - Data monetization framing
+uponCompletion: You will be able to explain how data can directly contribute to revenue or impact.
+
+## Course
+id: course-behavioral-economics-ai
+slug: applying-behavioral-economics-and-ai
+title: Applying Behavioral Economics and AI to Decisions
+shortDescription: Design decision flows that combine human and machine intelligence.
+longDescription: Explore how human biases and machine intelligence interact in decision-making. You’ll learn how to design decision flows that use nudges, feedback, and AI recommendations to improve choices.
+categorySlug: digital-cognitive-organization
+audienceLevel: Digital Leaders
+topicTags: [Behavioral AI, Decisions, Nudges]
+levelTag: Advanced
+estimatedDurationMinutes: 60
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Recognize common decision biases in your context.
+  - Design AI-assisted decision flows.
+skillsGained:
+  - Behavioral design
+  - Decision-flow design
+uponCompletion: You will be able to propose improvements to how key decisions are made.
+
+## Course
+id: course-designing-digital-workforce
+slug: designing-the-digital-workforce
+title: Designing the Digital Workforce: People, Process and Automation
+shortDescription: Redesign roles and workflows so people and automation support each other.
+longDescription: Learn how to design roles, workflows, and automation so they support each other rather than clash. You’ll map current work, identify automation opportunities, and redesign roles around higher-value tasks.
+categorySlug: digital-cognitive-organization
+audienceLevel: Digital Workers
+topicTags: [Digital Workforce, Roles, Automation]
+levelTag: Beginner
+estimatedDurationMinutes: 55
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Map current work and identify automation candidates.
+  - Redesign roles to focus on higher-value tasks.
+skillsGained:
+  - Workflow mapping
+  - Role redesign
+uponCompletion: You will have a clearer view of how your own work can evolve.
+
+## Course
+id: course-api-economy-growth
+slug: leveraging-the-api-economy-for-growth
+title: Leveraging the API Economy for Growth
+shortDescription: Use APIs as business building blocks, not just technical interfaces.
+longDescription: Understand APIs as business building blocks instead of just technical interfaces. You’ll learn how API strategies open new channels, partnerships, and products, and how DCOs use them to move faster and scale.
+categorySlug: digital-cognitive-organization
+audienceLevel: Digital Leaders
+topicTags: [API Economy, Partnerships, Growth]
+levelTag: Intermediate
+estimatedDurationMinutes: 58
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Explain the business value of APIs.
+  - Identify potential API-based opportunities.
+skillsGained:
+  - API strategy thinking
+  - Ecosystem design
+uponCompletion: You will be able to propose API-related growth opportunities.
+
+## Course
+id: course-automating-grc-ai
+slug: automating-grc-with-ai
+title: Automating Governance, Risk and Compliance with AI
+shortDescription: Shift GRC from manual policing to embedded intelligent safeguards.
+longDescription: Explore how GRC can shift from manual policing to embedded, intelligent safeguards. You’ll learn patterns for monitoring, alerts, controls, and evidence that reduce risk while speeding up delivery.
+categorySlug: digital-cognitive-organization
+audienceLevel: Digital Leaders
+topicTags: [GRC, Automation, Controls]
+levelTag: Advanced
+estimatedDurationMinutes: 62
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Identify GRC processes suitable for automation.
+  - Design simple AI-supported control patterns.
+skillsGained:
+  - GRC process design
+  - Control automation framing
+uponCompletion: You will be able to suggest smarter, automated GRC patterns.
+
+## Course
+id: course-scaling-strategy-tmaas
+slug: scaling-strategy-execution-with-tmaas
+title: Scaling Strategy Execution with TMaaS
+shortDescription: Turn strategy into a repeatable transformation engine.
+longDescription: Learn how Transformation Management as a Service (TMaaS) turns strategy into a repeatable execution engine. You’ll explore how to structure portfolios, track value, and support teams so execution becomes continuous rather than one-off.
+categorySlug: digital-cognitive-organization
+audienceLevel: Digital Leaders
+topicTags: [TMaaS, Execution, Portfolio]
+levelTag: Advanced
+estimatedDurationMinutes: 67
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Explain the TMaaS concept.
+  - Outline a simple TMaaS-based execution model.
+skillsGained:
+  - Portfolio thinking
+  - Transformation management
+uponCompletion: You will be able to connect strategy to a concrete execution model.
+
+## Course
+id: course-using-dco-canvas
+slug: using-the-dco-canvas
+title: Using the DCO Canvas to Design Your Organization
+shortDescription: Use the DCO Canvas as a practical design tool.
+longDescription: Get hands-on with the DCO Canvas as a practical design tool. You’ll use it to capture your current state, design a target state, and facilitate structured conversations with leaders and teams.
+categorySlug: digital-cognitive-organization
+audienceLevel: Digital Leaders
+topicTags: [DCO Canvas, Design, Blueprint]
+levelTag: Intermediate
+estimatedDurationMinutes: 53
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Capture your organization on the DCO Canvas.
+  - Use the canvas to structure design discussions.
+skillsGained:
+  - Visual organization design
+  - Facilitation using the canvas
+uponCompletion: You will have a first version of your organization’s DCO Canvas.
+
+# Category
+id: cat-digital-business-platform
+slug: digital-business-platform
+name: Digital Business Platform
+description: The platform and towers that connect experiences, intelligence, and operations.
+
+## Course
+id: course-getting-value-dbp
+slug: getting-value-from-digital-business-platforms
+title: Getting Value from Digital Business Platforms
+shortDescription: Learn what makes a Digital Business Platform different and valuable.
+longDescription: Learn what makes a Digital Business Platform different from traditional IT and why it matters for value creation. You’ll be able to explain DBPs in simple language and identify where a platform approach could unlock new revenue or efficiency.
+categorySlug: digital-business-platform
+audienceLevel: Digital Leaders
+topicTags: [DBP Value, Strategy, Enablement]
+levelTag: Beginner
+estimatedDurationMinutes: 57
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Explain DBPs in simple, non-technical language.
+  - Identify where a DBP approach might apply.
+skillsGained:
+  - Platform value framing
+  - Opportunity spotting
+uponCompletion: You will be able to communicate DBP value to business and tech stakeholders.
+
+## Course
+id: course-operational-excellence-dbp
+slug: driving-operational-excellence-with-dbps
+title: Driving Operational Excellence with Digital Business Platforms
+shortDescription: Use DBPs to support reliable and scalable operations.
+longDescription: Explore how Digital Business Platforms support reliable, predictable, and scalable operations. You’ll learn how to use platform capabilities to reduce errors, shorten cycle times, and improve service levels.
+categorySlug: digital-business-platform
+audienceLevel: Digital Workers
+topicTags: [Operations, Excellence, Reliability]
+levelTag: Beginner
+estimatedDurationMinutes: 64
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Identify operational pain points that DBPs can address.
+  - Connect DBP capabilities to performance improvements.
+skillsGained:
+  - Operational improvement framing
+  - DBP operations literacy
+uponCompletion: You will see how your day-to-day work fits into platform-enabled operations.
+
+## Course
+id: course-designing-experiences-dbp
+slug: designing-seamless-digital-experiences-on-dbp
+title: Designing Seamless Digital Experiences on the DBP
+shortDescription: Use the Experience Tower to orchestrate consistent journeys.
+longDescription: Focus on the Experience Tower and how it shapes customer and employee journeys. You’ll learn how to connect channels, orchestrate journeys, and use the platform to deliver consistent, personalized experiences.
+categorySlug: digital-business-platform
+audienceLevel: Digital Workers
+topicTags: [Experience Design, Journeys, Channels]
+levelTag: Intermediate
+estimatedDurationMinutes: 52
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Map experiences across channels using the platform.
+  - Spot breaks and friction in current journeys.
+skillsGained:
+  - Journey mapping on DBP
+  - Experience orchestration
+uponCompletion: You will be able to propose improvements to key digital journeys.
+
+## Course
+id: course-building-intelligence-dbp
+slug: building-data-and-insights-on-dbp-intelligence-tower
+title: Building Data and Insights on the DBP Intelligence Tower
+shortDescription: Turn raw data into actionable insights on the platform.
+longDescription: Understand how the Intelligence Tower turns raw data into actionable insight. You’ll learn basic patterns for ingestion, modeling, analytics, and AI, and how they plug back into experiences and operations.
+categorySlug: digital-business-platform
+audienceLevel: Digital Workers
+topicTags: [Analytics, Intelligence, Insights]
+levelTag: Advanced
+estimatedDurationMinutes: 59
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Describe the main components of the Intelligence Tower.
+  - Connect analytics outputs back into business workflows.
+skillsGained:
+  - Analytics literacy
+  - Insight-to-action thinking
+uponCompletion: You will see how data work supports better decisions and journeys.
+
+## Course
+id: course-modernizing-core-operations
+slug: modernizing-core-operations-with-digital-platforms
+title: Modernizing Core Operations with Digital Platforms
+shortDescription: Move from fragile legacy systems to platform-based core operations.
+longDescription: Learn how to move from fragile legacy systems to modern, platform-based core operations. You’ll explore migration patterns, risk considerations, and how to sequence change without breaking the business.
+categorySlug: digital-business-platform
+audienceLevel: Digital Workers
+topicTags: [Core Systems, Modernization, Migration]
+levelTag: Advanced
+estimatedDurationMinutes: 70
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Explain the risks and benefits of core modernization.
+  - Identify candidate systems and migration patterns.
+skillsGained:
+  - Modernization planning
+  - Migration pattern selection
+uponCompletion: You will be able to support modernization conversations with practical options.
+
+## Course
+id: course-trust-framework-security-tower
+slug: digital-trust-framework-dbp-security-tower
+title: Building a Digital Trust Framework on the DBP Security Tower
+shortDescription: Use the Security Tower to protect assets without blocking innovation.
+longDescription: Dive into the Security Tower and its role in trust, compliance, and resilience. You’ll learn how identity, access, monitoring, and policy are woven into the platform to protect assets without blocking innovation.
+categorySlug: digital-business-platform
+audienceLevel: Digital Leaders
+topicTags: [Security, Trust, Compliance]
+levelTag: Advanced
+estimatedDurationMinutes: 54
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Understand the main components of the Security Tower.
+  - Balance security requirements with innovation needs.
+skillsGained:
+  - Security-by-design framing
+  - Risk/innovation balancing
+uponCompletion: You will be able to discuss trust and security in platform terms.
+
+## Course
+id: course-scaling-capabilities-dbp
+slug: scaling-business-capabilities-with-dbps
+title: Scaling Business Capabilities with Digital Business Platforms
+shortDescription: Package and reuse capabilities across products, services, and markets.
+longDescription: Explore how Digital Business Platforms help organizations package and reuse capabilities across products, services, and markets. You’ll learn how to think in terms of modular business capabilities and design for reuse at scale.
+categorySlug: digital-business-platform
+audienceLevel: Digital Leaders
+topicTags: [Capabilities, Scaling, Reuse]
+levelTag: Advanced
+estimatedDurationMinutes: 63
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Describe business capabilities in modular terms.
+  - Identify where capability reuse is possible.
+skillsGained:
+  - Capability thinking
+  - Reuse/scale framing
+uponCompletion: You will be able to outline a capability-based view of your platform.
+
+## Course
+id: course-interoperability-dbp
+slug: interoperability-on-the-dbp
+title: Making Systems Talk: Interoperability on the DBP
+shortDescription: Connect systems, data, and processes on the platform.
+longDescription: Focus on how the platform connects systems, data, and processes internally and externally. You’ll learn key integration patterns and how interoperability unlocks new combinations of services and partnerships.
+categorySlug: digital-business-platform
+audienceLevel: Digital Workers
+topicTags: [Interoperability, Integration, Connectivity]
+levelTag: Advanced
+estimatedDurationMinutes: 51
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Describe basic integration and interoperability patterns.
+  - Recognize where poor interoperability is hurting value.
+skillsGained:
+  - Integration literacy
+  - Interoperability mapping
+uponCompletion: You will see how better connections improve both internal and external experiences.
+
+## Course
+id: course-enabling-digital-workforce-workspace-tower
+slug: enabling-digital-workforce-with-dbp-workspace-tower
+title: Enabling the Digital Workforce with the DBP Workspace Tower
+shortDescription: Support digital workers with the right tools, workflows, and data.
+longDescription: Understand how the Workspace Tower supports the people who run and grow the business. You’ll learn how tools, workflows, and data come together to empower digital workers and teams.
+categorySlug: digital-business-platform
+audienceLevel: Digital Workers
+topicTags: [Workspace, Tools, Productivity]
+levelTag: Beginner
+estimatedDurationMinutes: 56
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Describe the purpose of the Workspace Tower.
+  - Identify gaps in current digital work tooling.
+skillsGained:
+  - Digital workspace literacy
+  - Work tooling evaluation
+uponCompletion: You will be able to suggest improvements to your digital work environment.
+
+## Course
+id: course-designing-plt-on-dbp
+slug: designing-perfect-life-transactions-on-dbp
+title: Designing Perfect Life Transactions on a Digital Business Platform
+shortDescription: Bring PLT and DBP concepts together on the platform.
+longDescription: Bring PLT and DBP concepts together by designing and improving critical transactions on the platform. You’ll translate a transaction blueprint into concrete platform components, measure quality, and continuously improve the journeys that matter most.
+categorySlug: digital-business-platform
+audienceLevel: Digital Leaders
+topicTags: [PLT, Orchestration, Journeys]
+levelTag: Advanced
+estimatedDurationMinutes: 68
+lessonCount: 4
+deliveryMode: Online
+status: published
+providerName: DTMA Academy
+providerDescription: Digital Qatalyst’s academy for digital transformation leaders and workers.
+providerUrl: https://dtma.example.com
+enrollmentUrl: /forms/dtma-needs-assessment
+learningOutcomes:
+  - Map PLTs onto DBP components.
+  - Define measures of transaction quality on the platform.
+skillsGained:
+  - PLT/platform mapping
+  - Transaction orchestration
+uponCompletion: You will be able to design PLTs directly on the Digital Business Platform.
+
+# Category
+id: cat-digital-transformation-2-0
+slug: digital-transformation-2-0
+name: Digital Transformation 2.0 (DT2.0)
+description: Coming Soon – Architectural data and effective digital transition for the next wave of transformation.
+
+# Category
+id: cat-digital-worker-workspace
+slug: digital-worker-workspace
+name: Digital Worker & Digital Workspace (DW.DWS)
+description: Coming Soon – Redesigning work, tools, and environments for Economy 4.0.
+
+# Category
+id: cat-digital-accelerators-tools
+slug: digital-accelerators-tools
+name: Digital Accelerators (Tools)
+description: Coming Soon – Tooling, playbooks, and accelerators for timely and efficient transformation management.
+```
+
+If you want, next we can **slim this down** (e.g. remove learningOutcomes/skillsGained) or add a `### Lessons` block for just 1–2 flagship courses.

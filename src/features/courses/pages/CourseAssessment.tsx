@@ -13,7 +13,7 @@ import {
   Square
 } from "lucide-react";
 import AchievementModal from "../../../components/AchievementModal";
-import { fetchCourseQuizzes } from "../services/courseService";
+import { fetchCourseQuizzes } from "@/services/courseService";
 
 type QuizOption = {
   id: string;

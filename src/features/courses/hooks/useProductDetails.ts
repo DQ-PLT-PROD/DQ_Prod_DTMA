@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchCourseWithContent, fetchRelatedCourses, fetchCourseLessons, fetchCategories } from "../services/courseService";
+import { fetchCourseWithContent, fetchRelatedCourses, fetchCourseLessons, fetchCategories } from "@/services/courseService";
 import { Course, Category } from "@/types/dtma-lms";
 
 export interface UseProductDetailsArgs {
