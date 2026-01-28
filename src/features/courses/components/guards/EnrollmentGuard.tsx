@@ -1,6 +1,7 @@
 /**
  * Enrollment Guard Component
  * Route-level access enforcement per DTMA Spec (Jan 29)
+ * Updated for Feature 02.1 - Server-side access enforcement
  * 
  * Spec requirement: "Access checks are enforced at route level (not UI hints)"
  * 
@@ -11,7 +12,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
-import { getAccessContract, AccessContract } from '@/lib/enrollment';
+import { lessonAccessApiClient } from '@/lib/api/lessonAccessApiClient';
 
 interface EnrollmentGuardProps {
     children: React.ReactNode;
@@ -28,7 +29,7 @@ export const EnrollmentGuard: React.FC<EnrollmentGuardProps> = ({
 }) => {
     const { user, databaseUser } = useAuth();
     const [searchParams] = useSearchParams();
-    const [accessContract, setAccessContract] = useState<AccessContract | null>(null);
+    const [accessSummary, setAccessSummary] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -44,40 +45,30 @@ export const EnrollmentGuard: React.FC<EnrollmentGuardProps> = ({
                 return;
             }
 
-            // If preview is allowed and user is not authenticated, allow access
-            if (allowPreview && !user) {
-                setAccessContract({
-                    isEnrolled: false,
-                    enrollmentStatus: null,
-                    subscriptionStatus: null,
-                });
-                setIsLoading(false);
-                return;
-            }
-
-            // Must be authenticated for enrollment check
-            if (!databaseUser?.id) {
-                setAccessContract({
-                    isEnrolled: false,
-                    enrollmentStatus: null,
-                    subscriptionStatus: null,
-                });
-                setIsLoading(false);
-                return;
-            }
-
             try {
-                // Get authoritative access contract
-                const contract = await getAccessContract(databaseUser.id, courseSlug);
-                setAccessContract(contract);
+                // Get course access summary from server
+                const summary = await lessonAccessApiClient.getCourseAccessSummary(courseSlug);
+                
+                if (!summary) {
+                    setError('Failed to verify access');
+                    setIsLoading(false);
+                    return;
+                }
+
+                setAccessSummary(summary);
+
+                // If preview is allowed and user has access to preview content, allow access
+                if (allowPreview && summary.summary.previewLessons > 0) {
+                    setIsLoading(false);
+                    return;
+                }
+
             } catch (err) {
                 console.error('Error checking enrollment access:', err);
                 setError('Failed to verify access');
-                // Default to deny access on error
-                setAccessContract({
+                setAccessSummary({
                     isEnrolled: false,
-                    enrollmentStatus: null,
-                    subscriptionStatus: null,
+                    summary: { accessibleLessons: 0 }
                 });
             } finally {
                 setIsLoading(false);
@@ -105,8 +96,8 @@ export const EnrollmentGuard: React.FC<EnrollmentGuardProps> = ({
         return <Navigate to={fallbackRedirect} replace />;
     }
 
-    // Access granted - user is enrolled
-    if (accessContract?.isEnrolled) {
+    // Access granted - user is enrolled or has preview access
+    if (accessSummary?.isEnrolled || (allowPreview && accessSummary?.summary?.previewLessons > 0)) {
         return <>{children}</>;
     }
 
@@ -119,34 +110,35 @@ export const EnrollmentGuard: React.FC<EnrollmentGuardProps> = ({
 
 /**
  * Hook for checking enrollment access in components
- * Use this when you need access info but don't want to redirect
+ * Updated to use server-side access control
  */
 export const useEnrollmentAccess = (courseSlug: string | null) => {
     const { databaseUser } = useAuth();
-    const [accessContract, setAccessContract] = useState<AccessContract | null>(null);
+    const [accessSummary, setAccessSummary] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const checkAccess = async () => {
-            if (!courseSlug || !databaseUser?.id) {
-                setAccessContract({
+            if (!courseSlug) {
+                setAccessSummary({
                     isEnrolled: false,
-                    enrollmentStatus: null,
-                    subscriptionStatus: null,
+                    summary: { accessibleLessons: 0 }
                 });
                 setIsLoading(false);
                 return;
             }
 
             try {
-                const contract = await getAccessContract(databaseUser.id, courseSlug);
-                setAccessContract(contract);
+                const summary = await lessonAccessApiClient.getCourseAccessSummary(courseSlug);
+                setAccessSummary(summary || {
+                    isEnrolled: false,
+                    summary: { accessibleLessons: 0 }
+                });
             } catch (err) {
                 console.error('Error checking enrollment access:', err);
-                setAccessContract({
+                setAccessSummary({
                     isEnrolled: false,
-                    enrollmentStatus: null,
-                    subscriptionStatus: null,
+                    summary: { accessibleLessons: 0 }
                 });
             } finally {
                 setIsLoading(false);
@@ -157,10 +149,12 @@ export const useEnrollmentAccess = (courseSlug: string | null) => {
     }, [courseSlug, databaseUser?.id]);
 
     return {
-        accessContract,
+        accessSummary,
         isLoading,
-        isEnrolled: accessContract?.isEnrolled || false,
-        enrollmentStatus: accessContract?.enrollmentStatus,
-        subscriptionStatus: accessContract?.subscriptionStatus,
+        isEnrolled: accessSummary?.isEnrolled || false,
+        enrollmentStatus: accessSummary?.enrollmentStatus,
+        accessibleLessons: accessSummary?.summary?.accessibleLessons || 0,
+        totalLessons: accessSummary?.summary?.totalLessons || 0,
+        previewLessons: accessSummary?.summary?.previewLessons || 0
     };
 };
