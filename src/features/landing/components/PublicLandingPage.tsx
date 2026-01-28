@@ -353,7 +353,7 @@ export const PublicLandingPage: React.FC = () => {
       </section>
 
       {/* AI Widget */}
-      <AIWidgetStandalone />
+      {/* <AIWidgetStandalone /> */}
     </>
   );
 };

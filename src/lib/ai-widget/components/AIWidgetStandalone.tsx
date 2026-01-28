@@ -8,8 +8,8 @@
  */
 
 import React, { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, ExternalLink, HelpCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { MessageCircle, X, Send, ExternalLink, HelpCircle, Minus } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   matchIntent,
   getFallbackResponse,
@@ -36,6 +36,7 @@ export const AIWidgetStandalone: React.FC<AIWidgetStandaloneProps> = ({
   showOnPages = [], // Empty array means show on all pages
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -44,10 +45,24 @@ export const AIWidgetStandalone: React.FC<AIWidgetStandaloneProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Check if widget should be visible on current page
-  const currentPath = window.location.pathname;
+  const currentPath = location.pathname;
   const shouldShow =
     showOnPages.length === 0 ||
     showOnPages.some((page) => currentPath.includes(page));
+
+  // Determine positioning class based on route
+  // Portal pages have a bottom nav on mobile (~70px height + padding)
+  const isPortalPage = currentPath.includes("/portal");
+  const defaultPosition = isPortalPage
+    ? "bottom-[90px] right-4" // Higher on portal mobile to clear nav
+    : "bottom-4 right-4"; // Default position
+
+  // Use passed className if provided, otherwise use calculated default
+  // Just appending calculated class might not work if className has conflicting values
+  // detailed strategy: use style for bottom if portal, OR rely on this string. 
+  // Let's use the string + className but make sure to include defaultPosition.
+  const finalClassName = className ? `${defaultPosition} ${className}` : defaultPosition;
+
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -195,7 +210,7 @@ export const AIWidgetStandalone: React.FC<AIWidgetStandaloneProps> = ({
   }
 
   return (
-    <div className={`fixed bottom-4 right-4 z-50 ${className}`}>
+    <div className={`fixed z-50 ${finalClassName}`}>
       {/* Chat Widget */}
       {isOpen && (
         <div className="mb-4 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
@@ -212,13 +227,24 @@ export const AIWidgetStandalone: React.FC<AIWidgetStandaloneProps> = ({
                 </p>
               </div>
             </div>
-            <button
-              onClick={toggleWidget}
-              className="text-white/80 hover:text-white transition-colors p-1"
-              aria-label="Close chat"
-            >
-              <X size={20} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={toggleWidget}
+                className="text-white/80 hover:text-white transition-colors p-1 rounded hover:bg-white/10"
+                aria-label="Minimize chat"
+                title="Minimize chat"
+              >
+                <Minus size={20} />
+              </button>
+              <button
+                onClick={toggleWidget}
+                className="text-white/80 hover:text-white transition-colors p-1 rounded hover:bg-white/10"
+                aria-label="Close chat"
+                title="Close chat"
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
@@ -226,16 +252,14 @@ export const AIWidgetStandalone: React.FC<AIWidgetStandaloneProps> = ({
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${
-                  message.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex ${message.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                    message.type === "user"
+                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${message.type === "user"
                       ? "bg-blue-600 text-white"
                       : "bg-white text-gray-800 shadow-sm border border-gray-100"
-                  }`}
+                    }`}
                 >
                   <p className="text-sm whitespace-pre-line">
                     {message.content}
@@ -249,11 +273,10 @@ export const AIWidgetStandalone: React.FC<AIWidgetStandaloneProps> = ({
                     </div>
                   )}
                   <p
-                    className={`text-xs mt-1 ${
-                      message.type === "user"
+                    className={`text-xs mt-1 ${message.type === "user"
                         ? "text-blue-100"
                         : "text-gray-400"
-                    }`}
+                      }`}
                   >
                     {formatTimestamp(message.timestamp)}
                   </p>
@@ -341,9 +364,8 @@ export const AIWidgetStandalone: React.FC<AIWidgetStandaloneProps> = ({
       {/* Chat Bubble */}
       <button
         onClick={toggleWidget}
-        className={`w-14 h-14 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group ${
-          isOpen ? "rotate-0" : "hover:scale-110"
-        }`}
+        className={`w-14 h-14 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group ${isOpen ? "rotate-0" : "hover:scale-110"
+          }`}
         aria-label={isOpen ? "Close chat" : "Open chat assistant"}
       >
         {isOpen ? (

@@ -36,10 +36,18 @@ export const AIWidgetContainer: React.FC<AIWidgetContainerProps> = ({
   }, [aiWidget.messages.length, aiWidget.addMessage]);
 
   // Handle page visibility
-  const currentPath = window.location.pathname;
+  const location = useLocation();
+  const currentPath = location.pathname; // use location hook for reactivity
   const shouldShow =
     showOnPages.length === 0 ||
     showOnPages.some((page) => currentPath.includes(page));
+
+  // Determine positioning class based on route
+  // Portal pages have a bottom nav on mobile (~70px height + padding)
+  const isPortalPage = currentPath.includes("/portal");
+  const positionClass = isPortalPage
+    ? "bottom-[90px] right-4" // Higher on portal mobile to clear nav
+    : "bottom-4 right-4"; // Default position
 
   if (!shouldShow) {
     return null;
@@ -56,9 +64,8 @@ export const AIWidgetContainer: React.FC<AIWidgetContainerProps> = ({
 
       aiWidget.addMessage({
         type: "user",
-        content: `Quick action: ${
-          matchedIntent?.response.split(".")[0] || intentId
-        }`,
+        content: `Quick action: ${matchedIntent?.response.split(".")[0] || intentId
+          }`,
       });
     } else {
       // Process user input
@@ -114,7 +121,7 @@ export const AIWidgetContainer: React.FC<AIWidgetContainerProps> = ({
 
   return (
     <AIWidget
-      className={className}
+      className={`${className} ${positionClass}`}
       isOpen={aiWidget.isOpen}
       messages={aiWidget.messages}
       isTyping={aiWidget.isTyping}
