@@ -4,7 +4,7 @@
  * Replaces direct Supabase calls with API calls
  */
 
-import { msalInstance } from '../../services/auth/msal'
+import { msalInstance } from '../auth/msal'
 
 const API_BASE = 'http://localhost:3001/api'
 

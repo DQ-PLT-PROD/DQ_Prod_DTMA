@@ -309,6 +309,18 @@ export const enforceLessonAccess = (options = {}) => {
         lessonId
       )
 
+      // If allowPreview is false, deny access to preview content for unauthenticated users
+      if (!allowPreview && !user && accessResult.accessType === 'preview') {
+        res.statusCode = 401
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({
+          error: 'Authentication required',
+          message: 'Preview access disabled - authentication required',
+          accessType: 'denied'
+        }))
+        return
+      }
+
       if (!accessResult.canAccess) {
         // Different status codes based on access type
         let statusCode = 403

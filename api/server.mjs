@@ -6,6 +6,8 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { authenticateUser, getCurrentUser, isAuthenticated } from './middleware/auth.mjs'
 import { checkLessonAccess, getCourseAccessSummary, enforceLessonAccess } from './middleware/lessonAccess.mjs'
+import { applyRateLimit, applyStrictRateLimit } from './middleware/rateLimiter.mjs'
+import { logRequest, logAuthEvent, logEnrollmentEvent, logAccessEvent } from './middleware/requestLogger.mjs'
 
 // Load environment variables from .env file
 const __filename = fileURLToPath(import.meta.url)
@@ -475,6 +477,10 @@ const enrollmentHandlers = {
 
       // Security check: authenticated users can only enroll themselves
       if (authenticatedUser && body.userId && body.userId !== authenticatedUser.azureUserId) {
+        logAccessEvent('enrollment_attempt', `course:${body.courseSlug}`, authenticatedUser.azureUserId, 'denied', { 
+          reason: 'attempted_to_enroll_other_user',
+          targetUserId: body.userId 
+        });
         return sendError(res, 403, 'Cannot enroll other users')
       }
 
@@ -490,6 +496,7 @@ const enrollmentHandlers = {
       }
 
       console.log(`🎯 Starting enrollment process for user ${targetUserId} in course ${courseSlug}`)
+      logEnrollmentEvent('enrollment_attempt', courseSlug, targetUserId, { method });
 
       // Check if already enrolled
       const { data: existingData, error: checkError } = await supabaseClient
@@ -501,12 +508,14 @@ const enrollmentHandlers = {
 
       if (checkError && checkError.code !== 'PGRST116') {
         console.error('Error checking existing enrollment:', checkError)
+        logEnrollmentEvent('enrollment_error', courseSlug, targetUserId, { error: checkError.message });
         return sendError(res, 500, 'Failed to check existing enrollment', checkError.message)
       }
 
       // If already enrolled and active, return existing enrollment
       if (existingData && existingData.status === 'active') {
         console.log('✅ User already enrolled')
+        logEnrollmentEvent('enrollment_duplicate', courseSlug, targetUserId, { status: existingData.status });
         return sendJSON(res, 200, {
           success: true,
           enrollment: mapRowToEnrollment(existingData),
@@ -534,10 +543,16 @@ const enrollmentHandlers = {
 
       if (error) {
         console.error('❌ Error creating enrollment:', error)
+        logEnrollmentEvent('enrollment_failed', courseSlug, targetUserId, { error: error.message });
         return sendError(res, 500, 'Failed to create enrollment', error.message)
       }
 
       console.log('✅ Enrollment created successfully')
+      logEnrollmentEvent('enrollment_success', courseSlug, targetUserId, { 
+        enrollmentId: data.id,
+        method: method 
+      });
+      
       return sendJSON(res, 201, {
         success: true,
         enrollment: mapRowToEnrollment(data),
@@ -545,6 +560,9 @@ const enrollmentHandlers = {
       })
     } catch (err) {
       console.error('Unexpected error in enrollment:', err)
+      logEnrollmentEvent('enrollment_error', body?.courseSlug || 'unknown', targetUserId || 'unknown', { 
+        error: err.message 
+      });
       return sendError(res, 500, 'Internal server error')
     }
   },
@@ -779,6 +797,13 @@ const enrollmentHandlers = {
 
 const server = http.createServer(async (req, res) => {
   try {
+    // Apply request logging middleware
+    await applyMiddleware(logRequest, req, res);
+    await applyMiddleware(logAuthEvent, req, res);
+    
+    // Apply rate limiting middleware
+    await applyMiddleware(applyRateLimit, req, res);
+    
     const { pathname, query } = parse(req.url || '', true)
     
     // Enable CORS
@@ -865,6 +890,7 @@ const server = http.createServer(async (req, res) => {
       
       // POST /api/enrollment/enroll
       if (pathParts[3] === 'enroll' && req.method === 'POST') {
+        await applyMiddleware(applyStrictRateLimit, req, res);
         return await enrollmentHandlers.enrollInCourse(req, res)
       }
       
@@ -880,6 +906,7 @@ const server = http.createServer(async (req, res) => {
       
       // POST /api/enrollment/cancel
       if (pathParts[3] === 'cancel' && req.method === 'POST') {
+        await applyMiddleware(applyStrictRateLimit, req, res);
         return await enrollmentHandlers.cancelEnrollment(req, res)
       }
       

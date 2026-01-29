@@ -1,6 +1,6 @@
 /**
  * Setup Test Data for Lesson Access Testing
- * Creates test user and enrollment for testing server-side access control
+ * Creates test users, enrollments, and lesson data
  */
 
 import { readFileSync } from 'fs'
@@ -30,9 +30,11 @@ try {
 }
 
 const API_BASE = 'http://localhost:3001/api'
+const TEST_TOKEN = 'test-token' // Special token for test mode
+const TEST_USER_ID = '12345678-1234-1234-1234-123456789abc' // Valid UUID format for test user
 
 // Test helper function
-async function makeRequest(method, endpoint, body = null, token = null) {
+async function makeRequest(method, endpoint, body = null, useAuth = true) {
   const options = {
     method,
     headers: {
@@ -40,8 +42,8 @@ async function makeRequest(method, endpoint, body = null, token = null) {
     },
   }
 
-  if (token) {
-    options.headers['Authorization'] = `Bearer ${token}`
+  if (useAuth) {
+    options.headers['Authorization'] = `Bearer ${TEST_TOKEN}`
   }
 
   if (body) {
@@ -69,88 +71,97 @@ async function makeRequest(method, endpoint, body = null, token = null) {
 async function setupTestData() {
   console.log('🔧 Setting up test data for lesson access testing...')
   
-  // 1. Create test user
-  console.log('\n👤 Creating test user...')
+  // Check if API server is running
+  try {
+    const healthCheck = await makeRequest('GET', '/health', null, false)
+    if (!healthCheck.ok) {
+      console.log('❌ API server is not running')
+      console.log('   Please start the server with: npm run dev:api')
+      return false
+    }
+    console.log('✅ API server is running')
+  } catch (error) {
+    console.log('❌ Cannot connect to API server')
+    console.log('   Please start the server with: npm run dev:api')
+    return false
+  }
+
+  // Test authentication with test token
+  console.log('\n🧪 Testing authentication with test token...')
+  const authTest = await makeRequest('GET', '/enrollment/status/perfecting-life-transactions', null, true)
+  
+  if (authTest.ok) {
+    console.log('✅ Test token authentication working')
+  } else {
+    console.log('❌ Test token authentication failed:', authTest.data)
+    return false
+  }
+
+  // Create test user in database
+  console.log('\n👤 Creating test user in database...')
   const userResult = await makeRequest('POST', '/test/create-user', {
-    userId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', // Valid UUID format
-    azureUserId: 'test-user-123',
+    userId: TEST_USER_ID,
+    azureUserId: TEST_USER_ID,
     email: 'test@example.com',
     name: 'Test User'
-  })
-  
+  }, false)
+
   if (userResult.ok) {
-    console.log('✅ Test user created/verified')
+    console.log('✅ Test user created in database')
   } else {
     console.log('❌ Failed to create test user:', userResult.data)
     return false
   }
-  
-  // 2. Enroll test user in PLT course
-  console.log('\n🎓 Enrolling test user in PLT course...')
-  const enrollResult = await makeRequest('POST', '/enrollment/enroll', {
+
+  // Create test enrollment
+  console.log('\n🎓 Creating test enrollment...')
+  const enrollmentResult = await makeRequest('POST', '/enrollment/enroll', {
     courseSlug: 'perfecting-life-transactions',
     method: 'explicit'
-  }, 'test-token')
-  
-  if (enrollResult.ok) {
-    console.log('✅ Test user enrolled in course')
-    console.log(`   Enrollment ID: ${enrollResult.data.enrollment?.id}`)
-    console.log(`   Status: ${enrollResult.data.enrollment?.status}`)
+  }, true)
+
+  if (enrollmentResult.ok) {
+    console.log('✅ Test enrollment created successfully')
+    console.log('   Enrollment ID:', enrollmentResult.data.enrollment?.id)
+  } else if (enrollmentResult.data?.message === 'Already enrolled') {
+    console.log('✅ Test user already enrolled (existing enrollment found)')
   } else {
-    console.log('❌ Failed to enroll test user:', enrollResult.data)
+    console.log('❌ Failed to create test enrollment:', enrollmentResult.data)
     return false
   }
+
+  // Verify course access
+  console.log('\n📚 Verifying course access...')
+  const accessResult = await makeRequest('GET', '/lessons/course-access/perfecting-life-transactions', null, true)
   
-  // 3. Verify enrollment
-  console.log('\n🔍 Verifying enrollment...')
-  const statusResult = await makeRequest('GET', '/enrollment/status/perfecting-life-transactions', null, 'test-token')
-  
-  if (statusResult.ok && statusResult.data.isEnrolled) {
-    console.log('✅ Enrollment verified')
-    console.log(`   Is Enrolled: ${statusResult.data.isEnrolled}`)
-    console.log(`   Status: ${statusResult.data.enrollmentStatus}`)
+  if (accessResult.ok) {
+    console.log('✅ Course access verified')
+    console.log('   Is Enrolled:', accessResult.data.isEnrolled)
+    console.log('   Total Lessons:', accessResult.data.summary?.totalLessons)
+    console.log('   Accessible Lessons:', accessResult.data.summary?.accessibleLessons)
   } else {
-    console.log('❌ Enrollment verification failed:', statusResult.data)
+    console.log('❌ Failed to verify course access:', accessResult.data)
     return false
   }
-  
-  console.log('\n🎉 Test data setup complete!')
-  console.log('You can now run: node test-lesson-access-api.mjs')
-  
+
+  console.log('\n🎉 Test data setup completed successfully!')
+  console.log('✅ Ready to run all test suites')
   return true
 }
 
-// Check if API server is running
-async function checkServerStatus() {
-  console.log('🔍 Checking if API server is running...')
-  
-  try {
-    const response = await fetch(`${API_BASE}/health`)
-    if (response.ok) {
-      console.log('✅ API server is running')
-      return true
-    } else {
-      console.log('❌ API server responded with error:', response.status)
-      return false
-    }
-  } catch (error) {
-    console.log('❌ API server is not running or not accessible')
-    console.log('   Please start the server with: npm run dev:api')
-    return false
-  }
-}
-
-// Main function
-async function main() {
-  const serverRunning = await checkServerStatus()
-  
-  if (serverRunning) {
-    await setupTestData()
+// Run setup
+setupTestData().then(success => {
+  if (success) {
+    console.log('\n🚀 You can now run the test suites:')
+    console.log('   node test-auth-api.mjs')
+    console.log('   node test-lesson-access-api.mjs') 
+    console.log('   node test-e2e-lesson-access.mjs')
+    console.log('   node test-hardening-simple.mjs')
   } else {
-    console.log('\n🚨 Cannot setup test data - API server is not accessible')
-    console.log('Please start the API server first:')
-    console.log('   npm run dev:api')
+    console.log('\n❌ Test data setup failed')
+    process.exit(1)
   }
-}
-
-main().catch(console.error)
+}).catch(error => {
+  console.error('❌ Setup error:', error)
+  process.exit(1)
+})

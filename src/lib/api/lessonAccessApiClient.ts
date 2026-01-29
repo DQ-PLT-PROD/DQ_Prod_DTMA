@@ -4,7 +4,7 @@
  * Feature 02.1 - Day 3 Implementation
  */
 
-import { msalInstance } from '../../services/auth/msal'
+import { msalInstance } from '../auth/msal'
 
 const API_BASE = 'http://localhost:3001/api'
 

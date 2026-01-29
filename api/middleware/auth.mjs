@@ -220,7 +220,7 @@ export const authenticateUser = (options = {}) => {
       if (allowTestMode && token === 'test-token') {
         console.log('🧪 Test mode: Using mock authentication');
         req.user = {
-          azureUserId: 'test-user-123',
+          azureUserId: '12345678-1234-1234-1234-123456789abc',
           email: 'test@example.com',
           name: 'Test User',
           tenantId: 'test-tenant',
