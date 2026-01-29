@@ -1,18 +1,23 @@
 /**
- * Enhanced Course Card Component (Dev D - Feature D2)
+ * Course Card Component
  *
+ * The canonical course card component used across the platform.
  * Displays course information with:
  * - Dynamic CTA based on enrollment status
  * - Save/bookmark functionality
  * - Coming soon indicator
- * - Instructor placeholder
+ * - Video preview on hover
+ * - Instructor display
+ *
+ * Used in: Landing Page, Catalog, Course Details (Related Courses)
  *
  * @see docs/DTMA_DevD_Technical_Audit.md
  */
 
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Clock, Lock } from "lucide-react";
+import { BookOpen, Clock, Lock, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import {
   getAccessContract,
@@ -21,7 +26,7 @@ import {
 import { getCtaState, CtaConfig } from "../utils/ctaStateManager";
 import { SaveCourseIconButton } from "./SaveCourseButton";
 
-interface EnhancedCourseCardProps {
+interface CourseCardProps {
   course: {
     id: string;
     slug: string;
@@ -35,13 +40,14 @@ interface EnhancedCourseCardProps {
     lessonCount?: number;
     thumbnailUrl?: string;
     heroImageUrl?: string;
+    introVideoUrl?: string;
     isComingSoon?: boolean;
   };
   showSaveButton?: boolean;
   className?: string;
 }
 
-export const EnhancedCourseCard: React.FC<EnhancedCourseCardProps> = ({
+export const CourseCard: React.FC<CourseCardProps> = ({
   course,
   showSaveButton = true,
   className = "",
@@ -53,6 +59,8 @@ export const EnhancedCourseCard: React.FC<EnhancedCourseCardProps> = ({
   );
   const [ctaConfig, setCtaConfig] = useState<CtaConfig | null>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Fetch access contract on mount
   useEffect(() => {
@@ -84,9 +92,24 @@ export const EnhancedCourseCard: React.FC<EnhancedCourseCardProps> = ({
     setCtaConfig(config);
   }, [course.isComingSoon, accessContract]);
 
+  // Handle video play/pause on hover
+  useEffect(() => {
+    if (videoRef.current) {
+      if (isHovered && course.introVideoUrl) {
+        videoRef.current.play().catch((e) => {
+          // Auto-play might be blocked, usually requires user interaction or mute
+          console.debug("Video playback failed/blocked:", e);
+        });
+      } else {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      }
+    }
+  }, [isHovered, course.introVideoUrl]);
+
   // Format duration
   const formatDuration = (minutes?: number): string => {
-    if (!minutes) return "Self-paced";
+    if (!minutes) return "";
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     if (hours === 0) return `${mins} min`;
@@ -121,15 +144,19 @@ export const EnhancedCourseCard: React.FC<EnhancedCourseCardProps> = ({
     }
   };
 
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMuted(!isMuted);
+  };
+
   return (
     <div
       className={`
         group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden
         transition-all duration-300 h-full flex flex-col
-        ${
-          course.isComingSoon
-            ? "cursor-default"
-            : "cursor-pointer hover:shadow-lg"
+        ${course.isComingSoon
+          ? "cursor-default"
+          : "cursor-pointer hover:shadow-lg"
         }
         ${isHovered && !course.isComingSoon ? "transform scale-105" : ""}
         ${className}
@@ -138,17 +165,35 @@ export const EnhancedCourseCard: React.FC<EnhancedCourseCardProps> = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Course Image */}
+      {/* Course Image / Video */}
       <div className="relative w-full aspect-video bg-gray-100 overflow-hidden">
+        {/* Video Player */}
+        {course.introVideoUrl && isHovered && !course.isComingSoon && (
+          <video
+            ref={videoRef}
+            src={course.introVideoUrl}
+            poster={course.heroImageUrl || course.thumbnailUrl}
+            className="absolute inset-0 w-full h-full object-cover z-20"
+            muted={isMuted}
+            loop
+            playsInline
+            autoPlay
+            preload="none"
+          />
+        )}
+
+        {/* Video Overlay Gradient (when video is showing) - optional, for text legibility if needed */}
+
         <div className="absolute inset-0 z-10 bg-[#1839AD]/15 mix-blend-multiply pointer-events-none" />
 
         {course.heroImageUrl || course.thumbnailUrl ? (
           <img
             src={course.heroImageUrl || course.thumbnailUrl}
             alt={`${course.title} thumbnail`}
-            className={`h-full w-full object-cover ${
-              course.isComingSoon ? "grayscale opacity-75" : ""
-            }`}
+            loading="lazy"
+            decoding="async"
+            className={`absolute inset-0 w-full h-full object-cover z-0 ${course.isComingSoon ? "grayscale opacity-75" : ""
+              }`}
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
@@ -165,28 +210,34 @@ export const EnhancedCourseCard: React.FC<EnhancedCourseCardProps> = ({
           )}
         </div>
 
-        {/* Coming Soon Badge */}
-        {course.isComingSoon && (
-          <div className="absolute top-3 right-3 z-20">
-            <span className="px-3 py-1.5 bg-amber-50/90 backdrop-blur-sm text-amber-700 text-xs font-bold uppercase tracking-wider rounded-full border border-amber-200 shadow-sm flex items-center gap-1.5">
-              <Lock size={12} /> Coming Soon
-            </span>
-          </div>
-        )}
+        {/* Coming Soon Badge - Removed as per design request */}
 
         {/* Save Button */}
         {showSaveButton && !course.isComingSoon && (
-          <div className="absolute top-3 right-3 z-20">
+          <div className="absolute top-3 right-3 z-30">
             <SaveCourseIconButton
               courseSlug={course.slug}
               courseTitle={course.title}
             />
           </div>
         )}
+
+        {/* Mute Toggle Button */}
+        {course.introVideoUrl && isHovered && !course.isComingSoon && (
+          <div className="absolute bottom-3 right-3 z-30">
+            <button
+              onClick={toggleMute}
+              className="p-1.5 bg-black/50 hover:bg-black/70 backdrop-blur-sm rounded-full text-white transition-colors"
+              aria-label={isMuted ? "Unmute video" : "Mute video"}
+            >
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Course Content */}
-      <div className="p-5 flex flex-col flex-1">
+      <div className="p-5 flex flex-col flex-1 relative z-10 bg-white">
         {/* Category and Level */}
         <div className="flex items-center justify-between mb-2">
           {course.categoryName && (
@@ -205,11 +256,10 @@ export const EnhancedCourseCard: React.FC<EnhancedCourseCardProps> = ({
         <h3
           className={`
           text-xl font-bold leading-tight line-clamp-2 mb-2
-          ${
-            course.isComingSoon
+          ${course.isComingSoon
               ? "text-gray-700"
               : "text-gray-900 group-hover:text-blue-700"
-          }
+            }
           transition-colors
         `}
         >
@@ -222,23 +272,25 @@ export const EnhancedCourseCard: React.FC<EnhancedCourseCardProps> = ({
         </p>
 
         {/* Instructor (Static Placeholder) */}
-        <div className="text-xs text-gray-500 mb-3">
-          <span className="font-medium">Instructor:</span> DTMA Academy
-        </div>
+
 
         {/* Meta Information */}
         <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between text-sm text-gray-600 mb-3">
-          <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4" />
-            <span>{duration}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <BookOpen className="w-4 h-4" />
-            <span>
-              {course.lessonCount || 0}{" "}
-              {course.lessonCount === 1 ? "Lesson" : "Lessons"}
-            </span>
-          </div>
+          {course.lessonCount && course.lessonCount > 0 ? (
+            <div className="flex items-center gap-1">
+              <BookOpen className="w-4 h-4" />
+              <span>
+                {course.lessonCount}{" "}
+                {course.lessonCount === 1 ? "Lesson" : "Lessons"}
+              </span>
+            </div>
+          ) : null}
+          {duration ? (
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              <span>{duration}</span>
+            </div>
+          ) : null}
         </div>
 
         {/* CTA Button */}
@@ -249,10 +301,9 @@ export const EnhancedCourseCard: React.FC<EnhancedCourseCardProps> = ({
             className={`
               w-full py-2.5 px-4 rounded-lg font-semibold text-sm
               transition-all duration-200
-              ${
-                ctaConfig.disabled
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : ctaConfig.variant === "primary"
+              ${ctaConfig.disabled
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : ctaConfig.variant === "primary"
                   ? "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
                   : "bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50"
               }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowRight, ArrowLeft, PlayCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { FadeInUpOnScroll, StaggeredFadeIn } from "@/components/AnimationUtils";
-import { CourseTile } from "@/components/courses/CourseTile";
+import { CourseCard } from "@/features/courses/components/CourseCard";
 import { fetchCourses } from "@/services/courseService";
 import { CourseCardSkeleton } from "@/components/SkeletonLoader";
 import { useAuth } from "@/lib/auth";
@@ -47,7 +47,7 @@ const FeaturedCoursesSection: React.FC = () => {
     const loadCourses = async () => {
       try {
         setLoading(true);
-        const dbCourses = await fetchCourses();
+        const dbCourses = await fetchCourses({ featured: true, excludeHeavyFields: true });
 
         // Map DB courses to our display format
         const mappedCourses = dbCourses.map((course: any) => ({
@@ -57,7 +57,7 @@ const FeaturedCoursesSection: React.FC = () => {
           levelTag: course.levelTag || "Beginner",
           audienceLevel: course.audienceLevel?.toUpperCase() || "DIGITAL LEADERS",
           duration: course.isComingSoon ? "Coming Soon" : (course.duration || "55 mins"),
-          lessonCount: course.lessonCount || 4,
+          lessonCount: course.lessonCount,
           thumbnailUrl: course.heroImageUrl || course.thumbnailUrl,
           videoUrl: course.isComingSoon ? undefined : (course.introVideoUrl || "/videos/C2-INTRO.mp4"),
           description: course.description || "",
@@ -196,20 +196,23 @@ const FeaturedCoursesSection: React.FC = () => {
                     className={`transition duration-300 ease-out ${!course.isComingSoon && isHovered ? "scale-105 z-10" : "scale-100"
                       }`}
                   >
-                    <CourseTile
-                      title={course.title}
-                      description={course.description}
-                      category={course.category}
-                      levelTag={course.levelTag}
-                      audienceLevel={course.audienceLevel}
-                      duration={course.duration}
-                      lessonCount={course.lessonCount}
-                      thumbnailUrl={course.thumbnailUrl}
-                      videoUrl={course.videoUrl}
-
-                      variant={course.isComingSoon ? "coming-soon" : "course"}
-                      onCardClick={course.isComingSoon ? undefined : () => handleViewDetails(course.id)}
-                      isHovered={isHovered}
+                    <CourseCard
+                      course={{
+                        id: course.id,
+                        slug: course.id,
+                        title: course.title,
+                        shortDescription: course.description,
+                        categoryName: course.category,
+                        levelTag: course.levelTag,
+                        audienceLevel: course.audienceLevel,
+                        duration: course.duration,
+                        lessonCount: course.lessonCount,
+                        thumbnailUrl: course.thumbnailUrl,
+                        heroImageUrl: course.thumbnailUrl,
+                        introVideoUrl: course.videoUrl,
+                        isComingSoon: course.isComingSoon,
+                      }}
+                      showSaveButton={false}
                     />
                   </div>
                 );

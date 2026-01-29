@@ -68,7 +68,7 @@
 ## 📚 Documentation (3/3)
 - ✅ `FINAL_DELIVERY_SUMMARY.md` (comprehensive delivery report)
 - ✅ `TESTING_GUIDE_SIMPLE.md` (step-by-step testing guide)
-- ✅ `DTMA_Enrollment_Access_Gating_Report.md` (original analysis)
+- ✅ `docs/features/feature-02-enrollment-gating.md` (canonical spec)
 
 ---
 

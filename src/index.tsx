@@ -143,3 +143,14 @@ async function initializeApp() {
 
 console.log('🎯 Starting app initialization...');
 initializeApp();
+
+// Register service worker for PWA support and offline caching
+if (process.env.NODE_ENV === 'production') {
+  import('./lib/serviceWorker').then(({ registerServiceWorker }) => {
+    registerServiceWorker({
+      onSuccess: () => console.log('✅ Service worker registered - offline support enabled'),
+      onUpdate: () => console.log('🔄 New content available - please refresh'),
+      onError: (error) => console.error('❌ Service worker registration failed:', error),
+    });
+  });
+}

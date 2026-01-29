@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { PromoCard } from "../../../components/PromoCard";
-import { EnhancedCourseCard } from "./EnhancedCourseCard";
+import { CourseCard } from "./CourseCard";
 
 interface CourseItem {
   id: string;
@@ -17,6 +17,7 @@ interface CourseItem {
   lessonCount?: number;
   thumbnailUrl?: string;
   heroImageUrl?: string;
+  introVideoUrl?: string;
   isComingSoon?: boolean;
   [key: string]: any;
 }
@@ -126,7 +127,7 @@ export const CourseGrid: React.FC<CourseGridProps> = ({
           if (entry.type === "item") {
             const item = entry.data as CourseItem;
             return (
-              <EnhancedCourseCard
+              <CourseCard
                 key={`item-${item.id || idx}`}
                 course={{
                   id: item.id,
@@ -141,6 +142,7 @@ export const CourseGrid: React.FC<CourseGridProps> = ({
                   lessonCount: item.lessonCount,
                   thumbnailUrl: item.thumbnailUrl,
                   heroImageUrl: item.heroImageUrl,
+                  introVideoUrl: item.introVideoUrl,
                   isComingSoon: item.isComingSoon,
                 }}
                 showSaveButton={showSaveButton}

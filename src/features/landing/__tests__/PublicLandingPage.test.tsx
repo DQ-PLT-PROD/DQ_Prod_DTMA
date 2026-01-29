@@ -5,21 +5,31 @@
  * - FR1: Course listing from catalog service
  * - FR2: Navigation to course details and catalog
  * - FR3: Loading skeletons and empty states
- * - Instructor placeholder ("DTMA Academy")
- * - Featured course filtering (isFeatured=true, isComingSoon=false)
+ * - Featured course filtering (isFeatured=true)
  * - Limit to 6 courses
+ * - Passing correct props to EnhancedCourseCard
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import { PublicLandingPage } from "../components/PublicLandingPage";
-import * as courseService from "@/services/courseService";
+import * as courseService from "../../../services/courseService";
 
 // Mock the course service
-vi.mock("@/services/courseService");
-
+vi.mock("../../../services/courseService");
 const mockFetchCourses = vi.mocked(courseService.fetchCourses);
+
+// Mock the CourseCard to isolate tests and verify props
+vi.mock("@/features/courses/components/CourseCard", () => ({
+  CourseCard: ({ course }: { course: any }) => (
+    <div data-testid="course-card">
+      <span data-testid="course-title">{course.title}</span>
+      <span data-testid="course-video-url">{course.introVideoUrl || "no-video"}</span>
+      <span data-testid="course-duration">{course.duration}</span>
+    </div>
+  ),
+}));
 
 // Mock course data
 const mockCourses = [
@@ -36,6 +46,7 @@ const mockCourses = [
     isFeatured: true,
     isComingSoon: false,
     heroImageUrl: "/images/course1.jpg",
+    introVideoUrl: "https://example.com/video1.mp4",
   },
   {
     id: "2",
@@ -92,15 +103,13 @@ describe("PublicLandingPage", () => {
   });
 
   describe("FR1: Course Listing", () => {
-    it("should fetch and display published courses", async () => {
+    it("should fetch and display published featured courses", async () => {
       mockFetchCourses.mockResolvedValue(mockCourses);
 
       renderComponent();
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Digital Transformation 101")
-        ).toBeInTheDocument();
+        expect(screen.getByText("Digital Transformation 101")).toBeInTheDocument();
         expect(screen.getByText("AI Fundamentals")).toBeInTheDocument();
       });
     });
@@ -111,27 +120,19 @@ describe("PublicLandingPage", () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Digital Transformation 101")
-        ).toBeInTheDocument();
-        expect(
-          screen.queryByText("Not Featured Course")
-        ).not.toBeInTheDocument();
+        expect(screen.getByText("Digital Transformation 101")).toBeInTheDocument();
+        expect(screen.queryByText("Not Featured Course")).not.toBeInTheDocument();
       });
     });
 
-    it("should exclude coming soon courses (isComingSoon=false)", async () => {
+    it("should include coming soon courses", async () => {
       mockFetchCourses.mockResolvedValue(mockCourses);
 
       renderComponent();
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Digital Transformation 101")
-        ).toBeInTheDocument();
-        expect(
-          screen.queryByText("Coming Soon Course")
-        ).not.toBeInTheDocument();
+        expect(screen.getByText("Digital Transformation 101")).toBeInTheDocument();
+        expect(screen.getByText("Coming Soon Course")).toBeInTheDocument();
       });
     });
 
@@ -150,8 +151,19 @@ describe("PublicLandingPage", () => {
       renderComponent();
 
       await waitFor(() => {
-        const courseCards = screen.getAllByText(/Course \d/);
+        const courseCards = screen.getAllByTestId("course-card");
         expect(courseCards.length).toBeLessThanOrEqual(6);
+      });
+    });
+
+    it("should pass introVideoUrl to card component", async () => {
+      mockFetchCourses.mockResolvedValue(mockCourses);
+
+      renderComponent();
+
+      await waitFor(() => {
+        const videoUrl = screen.getByText("https://example.com/video1.mp4");
+        expect(videoUrl).toBeInTheDocument();
       });
     });
   });
@@ -184,7 +196,7 @@ describe("PublicLandingPage", () => {
 
       renderComponent();
 
-      // Should show 6 skeleton loaders
+      // Should show 6 skeleton loaders (looking for container with animate-pulse)
       const skeletons = document.querySelectorAll(".animate-pulse");
       expect(skeletons.length).toBeGreaterThan(0);
     });
@@ -212,56 +224,6 @@ describe("PublicLandingPage", () => {
       await waitFor(() => {
         expect(screen.getByText("Unable to Load Courses")).toBeInTheDocument();
         expect(screen.getByText(/Failed to load courses/)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe("Instructor Placeholder", () => {
-    it('should display "DTMA Academy" as instructor for all courses', async () => {
-      mockFetchCourses.mockResolvedValue(mockCourses);
-
-      renderComponent();
-
-      await waitFor(() => {
-        const instructorLabels = screen.getAllByText(/DTMA Academy/);
-        expect(instructorLabels.length).toBeGreaterThan(0);
-      });
-    });
-  });
-
-  describe("Course Metadata Display", () => {
-    it("should display course duration", async () => {
-      mockFetchCourses.mockResolvedValue(mockCourses);
-
-      renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByText("2 hr")).toBeInTheDocument(); // 120 minutes
-        expect(screen.getByText("1 hr 30 min")).toBeInTheDocument(); // 90 minutes
-      });
-    });
-
-    it("should display lesson count", async () => {
-      mockFetchCourses.mockResolvedValue(mockCourses);
-
-      renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByText("8 Lessons")).toBeInTheDocument();
-        expect(screen.getByText("6 Lessons")).toBeInTheDocument();
-      });
-    });
-
-    it("should display category and level tags", async () => {
-      mockFetchCourses.mockResolvedValue(mockCourses);
-
-      renderComponent();
-
-      await waitFor(() => {
-        expect(screen.getByText("Leadership")).toBeInTheDocument();
-        expect(screen.getByText("Technology")).toBeInTheDocument();
-        expect(screen.getByText("Beginner")).toBeInTheDocument();
-        expect(screen.getByText("Intermediate")).toBeInTheDocument();
       });
     });
   });

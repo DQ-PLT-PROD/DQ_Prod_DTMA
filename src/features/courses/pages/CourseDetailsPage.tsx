@@ -18,14 +18,11 @@ import { Breadcrumb } from "../../../components/ui/Breadcrumb";
 import { Header } from "../../../components/Header";
 import { useAuth } from "@/lib/auth";
 import { Footer } from "../../../components/Footer";
-import RequiredDocumentsTab from "../components/details/tabs/RequiredDocumentsTab";
 import { PageContainer } from "../../../components/layouts/PageContainer";
 
 import AboutTab from "../components/details/tabs/AboutTab";
 import ScheduleTab from "../components/details/tabs/ScheduleTab";
 import LearningOutcomesTab from "../components/details/tabs/LearningOutcomesTab";
-import EligibilityTermsTab from "../components/details/tabs/EligibilityTermsTab";
-import ApplicationProcessTab from "../components/details/tabs/ApplicationProcessTab";
 import ResourcesTab from "../components/details/tabs/ResourcesTab";
 import TabsNav from "../components/details/TabsNav";
 import { getCourseConfig } from "../../../utils/courseConfig";
@@ -36,7 +33,7 @@ import { useProductDetails } from "../hooks/useProductDetails";
 import { CourseMeta } from "../../../components/ui/CourseMeta";
 import { Tag } from "../../../components/ui/Tag";
 import { AudienceFitIndicator } from "../components/details/AudienceFitIndicator";
-import { CourseTile } from "@/components/courses/CourseTile";
+import { CourseCard } from "@/features/courses/components/CourseCard";
 import { EnrollmentButton } from "@/components/enrollment/EnrollmentButton";
 import { CourseDetailSkeleton } from "@/components/loading/CourseDetailSkeleton.tsx";
 import { SaveCourseFullButton } from "@/features/courses/components/SaveCourseButton.tsx";
@@ -324,7 +321,7 @@ const CourseDetailsPage: React.FC = () => {
   const itemTitle = item.title;
   const itemDescription = item.description;
   const serviceApplication = item.serviceApplication;
-  const provider = item.provider;
+
   const primaryAction = config.primaryCTA;
 
   // Extract highlights/features
@@ -343,7 +340,7 @@ const CourseDetailsPage: React.FC = () => {
             <AboutTab
               itemDescription={itemDescription}
               item={item}
-              serviceApplication={serviceApplication}
+
               config={config}
               highlights={highlights}
             />
@@ -371,17 +368,7 @@ const CourseDetailsPage: React.FC = () => {
             uponCompletion={item.uponCompletion}
           />
         );
-      case "eligibility_terms":
-        return (
-          <EligibilityTermsTab
-            item={item}
-            providerName={item.provider?.name || "Service Provider"}
-          />
-        );
-      case "application_process":
-        return <ApplicationProcessTab process={item.applicationProcess} />;
-      case "required_documents":
-        return <RequiredDocumentsTab documents={item.requiredDocuments} />;
+
 
       case "resources":
         return <ResourcesTab resources={(item as any).resources} />;
@@ -680,31 +667,23 @@ const CourseDetailsPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedItems.slice(0, 4).map((relatedItem) => (
                 <div key={relatedItem.id} className="h-full">
-                  <CourseTile
-                    title={relatedItem.title}
-                    description={relatedItem.description}
-                    thumbnailUrl={
-                      relatedItem.heroImageUrl || relatedItem.thumbnailUrl
-                    }
-                    videoUrl={relatedItem.introVideoUrl}
-                    category={relatedItem.category}
-                    levelTag={relatedItem.levelTag}
-                    audienceLevel={relatedItem.audienceLevel}
-                    duration={relatedItem.duration}
-                    lessonCount={relatedItem.lessonCount}
-                    rating={relatedItem.rating}
-                    reviewCount={relatedItem.reviewCount}
-                    variant={
-                      relatedItem.isComingSoon ? "coming-soon" : "course"
-                    }
-                    onCardClick={
-                      relatedItem.isComingSoon
-                        ? undefined
-                        : () => {
-                          navigate(`/courses/${relatedItem.id}`);
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                        }
-                    }
+                  <CourseCard
+                    course={{
+                      id: relatedItem.id,
+                      slug: relatedItem.id,
+                      title: relatedItem.title,
+                      shortDescription: relatedItem.description,
+                      categoryName: relatedItem.category,
+                      levelTag: relatedItem.levelTag,
+                      audienceLevel: relatedItem.audienceLevel,
+                      duration: relatedItem.duration,
+                      lessonCount: relatedItem.lessonCount,
+                      thumbnailUrl: relatedItem.thumbnailUrl,
+                      heroImageUrl: relatedItem.heroImageUrl,
+                      introVideoUrl: relatedItem.introVideoUrl,
+                      isComingSoon: relatedItem.isComingSoon,
+                    }}
+                    showSaveButton={false}
                   />
                 </div>
               ))}
