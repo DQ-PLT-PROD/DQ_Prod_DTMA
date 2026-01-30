@@ -30,10 +30,14 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Copy built assets
 COPY --from=build /app/dist /usr/share/nginx/html/dtma
 
-# Copy runtime template & entrypoint
+# Remove the default config provided by the image
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy runtime template & entrypoint and default nginx config.
+COPY default.conf /etc/nginx/conf.d/default.conf
 COPY env.template.js /usr/share/nginx/html/dtma/env.template.js
 COPY entrypoint.sh /entrypoint.sh
-COPY default.conf /etc/nginx/conf.d/default.conf
+
 
 # Permissions: allow non-root user to read/serve files
 RUN mkdir -p /var/cache/nginx/pids && \
