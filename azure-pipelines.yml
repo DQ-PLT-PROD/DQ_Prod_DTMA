@@ -63,7 +63,7 @@ stages:
         kubernetesServiceEndpoint: OVH-Test-Kubeconfig
         namespace: $(namespace)
         command: rollout
-        arguments: status deployment/frontend --timeout=120s
+        arguments: status deployment/dtma-frontend --timeout=120s
 
   # 3️ Rollback on failure
     - task: Kubernetes@1
@@ -74,7 +74,7 @@ stages:
         kubernetesServiceEndpoint: OVH-Test-Kubeconfig
         namespace: $(namespace)
         command: rollout
-        arguments: undo deployment/frontend
+        arguments: undo deployment/dtma-frontend
 
   # 4️ Explicit failure marker (optional but clear)
     - script: |
