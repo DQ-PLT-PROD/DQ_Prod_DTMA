@@ -24,7 +24,7 @@ steps:
 # 1. Building Vendure Image
 - task: Docker@2
   inputs:
-    containerRegistry: 'OVH -Registry'
+    containerRegistry: 'OVH-Registry'
     repository: 'dtma/frontend'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
@@ -62,7 +62,7 @@ steps:
   displayName: 'Deploy to OVH Kubernetes Cluster'
   inputs:
     connectionType: 'Kubernetes service connection'
-    kubernetesServiceEndpoint: 'kubeconfig-products.yml'  # Use your secure file path or environment variable
+    kubernetesServiceEndpoint: 'OVH-Test-Kubeconfig'  # Use your secure file path or environment variable
     command: 'apply'
     arguments: '-f k8s/overlays/release/deployment.yaml'
     # Optional: Add namespace if needed (default or specify another)
