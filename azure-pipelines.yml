@@ -1,69 +1,127 @@
-# trigger:
-#   branches:
-#     include:
-#       - Develop  # Trigger the pipeline on updates to the 'develop' branch
-
-# ✅ Use pipeline run button (manual UI or API)
 pr: none
-trigger: none  # 🔒 Explicitly disables automatic CI triggers
+trigger: none
 
 pool:
-  vmImage: 'ubuntu-latest'  # Use an Ubuntu-based agent for the pipeline.
+  vmImage: ubuntu-latest
 
 variables:
-- group: 'ovh-registry-secrets'
+- group: ovh-registry-secrets
 - name: imageName
-  value: 'frontend'  # Define the image name
+  value: frontend
 - name: registry
-  value: 'u4c2j2w9.c1.gra9.container-registry.ovh.net/dtma'  # OVH Container Registry URL
+  value: u4c2j2w9.c1.gra9.container-registry.ovh.net/dtma
 - name: imageTag
-  value: 'staging-$(Build.BuildId)'  # Use the build ID as the image tag
+  value: release-$(Build.BuildId)
+- name: namespace
+  value: dtma
+
+stages:
+- stage: Build
+  displayName: Build and Push Image
+  jobs:
+  - job: Build
+    displayName: Docker Build
+    steps:
+    - checkout: self
+
+    - task: Docker@2
+      displayName: Build & Push Frontend
+      inputs:
+        containerRegistry: OVH-Registry
+        repository: dtma/frontend
+        command: buildAndPush
+        Dockerfile: Dockerfile
+        tags: |
+          $(imageTag)
+
+- stage: Deploy
+  displayName: Deploy to OVH Kubernetes
+  dependsOn: Build
+  condition: succeeded()
+
+  jobs:
+  - job: Deploy
+    displayName: Kubernetes Deploy
+    steps:
+    - task: KubernetesManifest@1
+      displayName: Deploy Frontend
+      inputs:
+        action: deploy
+        kubernetesServiceConnection: OVH-Test-Kubeconfig
+        namespace: $(namespace)
+        manifests: |
+          k8s/overlays/release/deployment.yaml
+        containers: |
+          $(registry)/$(imageName):$(imageTag)
 
 
-steps:
-# 1. Building Vendure Image
-- task: Docker@2
-  inputs:
-    containerRegistry: 'OVH-Registry'
-    repository: 'dtma/frontend'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
-    buildContext: '**'
-    tags: |
-      $(imageTag)
 
-# 2. Setting Image with Build Id and creating secret.
-- script: |
-    echo "Injecting image tag: staging-$(Build.BuildId)"
-    sed -i "s|image: .*$|image: $(registry)/$(imageName):$(imageTag)|" k8s/overlays/release/deployment.yaml
-  displayName: 'Setting Image with BuildId'
+# # trigger:
+# #   branches:
+# #     include:
+# #       - Develop  # Trigger the pipeline on updates to the 'develop' branch
 
-# 3. Download the Kubeconfig File from Azure DevOps Secure Files
-- task: DownloadSecureFile@1
-  displayName: 'GetKubeconfig'
-  name: GetKubeconfig
-  inputs:
-    secureFile: 'kubeconfig-products.yml'  # Use the name of your Kubeconfig secure file in Azure DevOps
+# # ✅ Use pipeline run button (manual UI or API)
+# pr: none
+# trigger: none  # 🔒 Explicitly disables automatic CI triggers
+
+# pool:
+#   vmImage: 'ubuntu-latest'  # Use an Ubuntu-based agent for the pipeline.
+
+# variables:
+# - group: 'ovh-registry-secrets'
+# - name: imageName
+#   value: 'frontend'  # Define the image name
+# - name: registry
+#   value: 'u4c2j2w9.c1.gra9.container-registry.ovh.net/dtma'  # OVH Container Registry URL
+# - name: imageTag
+#   value: 'staging-$(Build.BuildId)'  # Use the build ID as the image tag
+
+
+# steps:
+# # 1. Building Vendure Image
+# - task: Docker@2
+#   inputs:
+#     containerRegistry: 'OVH-Registry'
+#     repository: 'dtma/frontend'
+#     command: 'buildAndPush'
+#     Dockerfile: '**/Dockerfile'
+#     buildContext: '**'
+#     tags: |
+#       $(imageTag)
+
+# # 2. Setting Image with Build Id and creating secret.
+# - script: |
+#     echo "Injecting image tag: staging-$(Build.BuildId)"
+#     sed -i "s|image: .*$|image: $(registry)/$(imageName):$(imageTag)|" k8s/overlays/release/deployment.yaml
+#   displayName: 'Setting Image with BuildId'
+
+# # 3. Download the Kubeconfig File from Azure DevOps Secure Files
+# - task: DownloadSecureFile@1
+#   displayName: 'GetKubeconfig'
+#   name: GetKubeconfig
+#   inputs:
+#     secureFile: 'kubeconfig-products.yml'  # Use the name of your Kubeconfig secure file in Azure DevOps
   
-#4. Authenticating Kubernetes.'
-- script: |
-      echo "Authenticating Kubernetes"
-      mkdir -p ~/.kube
-      cp $KUBECONFIG_FILE ~/.kube/config 
-      kubectl config use-context kubernetes-admin@DQ-PROD-TEST
-      kubectl config get-contexts
+# #4. Authenticating Kubernetes.'
+# - script: |
+#       echo "Authenticating Kubernetes"
+#       mkdir -p ~/.kube
+#       cp $KUBECONFIG_FILE ~/.kube/config 
+#       kubectl config use-context kubernetes-admin@DQ-PROD-TEST
+#       kubectl config get-contexts
 
-  env:
-    KUBECONFIG_FILE: $(GetKubeconfig.secureFilePath)
-  displayName: 'Authenticating Kubernetes'
+#   env:
+#     KUBECONFIG_FILE: $(GetKubeconfig.secureFilePath)
+#   displayName: 'Authenticating Kubernetes'
 
-# 5. Deploying Image to OVH
-- task: Kubernetes@1
-  displayName: 'Deploy to OVH Kubernetes Cluster'
-  inputs:
-    connectionType: 'Kubernetes service connection'
-    kubernetesServiceEndpoint: 'OVH-Test-Kubeconfig'  # Use your secure file path or environment variable
-    command: 'apply'
-    arguments: '-f k8s/overlays/release/deployment.yaml'
-    # Optional: Add namespace if needed (default or specify another)
-    namespace: 'dtma'
+# # 5. Deploying Image to OVH
+# - task: Kubernetes@1
+#   displayName: 'Deploy to OVH Kubernetes Cluster'
+#   inputs:
+#     connectionType: 'Kubernetes service connection'
+#     kubernetesServiceEndpoint: 'OVH-Test-Kubeconfig'  # Use your secure file path or environment variable
+#     command: 'apply'
+#     arguments: '-f k8s/overlays/release/deployment.yaml'
+#     # Optional: Add namespace if needed (default or specify another)
+#     namespace: 'dtma'
