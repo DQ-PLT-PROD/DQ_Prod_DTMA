@@ -6,7 +6,7 @@ import {
 } from "@azure/msal-browser";
 
 // Support both NEXT_PUBLIC_* and VITE_* envs
-const env = (import.meta as any).env as Record<string, string | undefined>;
+const env = { ...((import.meta as any).env || {}), ...window.env } as Record<string, string | undefined>;
 
 // Required environment variables - no fallbacks
 const CLIENT_ID = env.VITE_AZURE_CLIENT_ID || env.NEXT_PUBLIC_AAD_CLIENT_ID;
