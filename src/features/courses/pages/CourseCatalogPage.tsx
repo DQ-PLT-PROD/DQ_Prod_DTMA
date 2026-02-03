@@ -36,7 +36,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
     const config = courseConfig; // Use module-level config
     const heroTitle = "DTMA Courses";
     const heroDescription =
-        "Browse practical, bite-sized courses on Economy 4.0, Digital Organizations, Transformation, and Future Design.";
+        "Bridge the gap between today's skills and tomorrow's demands. Practical modules on digital-first leadership and transformation, built for the modern professional schedule";
     const allowPromoCards = config.showPromoCards !== false;
     const hasInitialized = useRef(false);
 
