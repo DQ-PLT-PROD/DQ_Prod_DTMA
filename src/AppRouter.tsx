@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/lib/auth";
+import { RoleSwitcherProvider } from "@/features/instructor-portal";
 import { App } from "./App";
 
 // Lazy load page components for code splitting
@@ -20,6 +21,12 @@ const AuthDebugPanel = lazy(() => import("@/components/auth/AuthDebugPanel").the
 const EnrollmentGuard = lazy(() => import("./features/courses/components/guards/EnrollmentGuard").then(m => ({ default: m.EnrollmentGuard })));
 const PaymentSuccessHandler = lazy(() => import("./features/courses/components/payment/PaymentSuccessHandler").then(m => ({ default: m.PaymentSuccessHandler })));
 
+// Instructor Portal lazy imports
+const InstructorLayout = lazy(() => import("./features/instructor-portal/layout/InstructorLayout").then(m => ({ default: m.InstructorLayout })));
+const InstructorDashboard = lazy(() => import("./features/instructor-portal/pages/InstructorDashboard").then(m => ({ default: m.InstructorDashboard })));
+const CourseManagementPage = lazy(() => import("./features/instructor-portal/pages/CourseManagementPage").then(m => ({ default: m.CourseManagementPage })));
+const CourseForm = lazy(() => import("./features/instructor-portal/components/course-management/CourseForm").then(m => ({ default: m.CourseForm })));
+
 // Loading fallback component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -34,71 +41,92 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<App />} />
+        <RoleSwitcherProvider>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<App />} />
 
-            {/* Course routes */}
-            <Route path="/courses" element={<CourseCatalogPage />} />
-            <Route path="/courses/:itemId" element={<CourseDetailsPage />} />
+              {/* Course routes */}
+              <Route path="/courses" element={<CourseCatalogPage />} />
+              <Route path="/courses/:itemId" element={<CourseDetailsPage />} />
 
-            {/* Payment success handler */}
-            <Route path="/payment/success" element={<PaymentSuccessHandler />} />
+              {/* Payment success handler */}
+              <Route path="/payment/success" element={<PaymentSuccessHandler />} />
 
-            {/* Legacy marketplace routes - redirect to new course routes */}
-            <Route path="/marketplace/courses" element={<Navigate to="/courses" replace />} />
-            <Route path="/marketplace/courses/:itemId" element={<Navigate to="/courses/:itemId" replace />} />
+              {/* Legacy marketplace routes - redirect to new course routes */}
+              <Route path="/marketplace/courses" element={<Navigate to="/courses" replace />} />
+              <Route path="/marketplace/courses/:itemId" element={<Navigate to="/courses/:itemId" replace />} />
 
-            {/* Dashboard */}
-            <Route
-              path="/dashboard/*"
-              element={
-                <ProtectedRoute>
-                  <DashboardRouter />
-                </ProtectedRoute>
-              }
-            />
+              {/* Dashboard */}
+              <Route
+                path="/dashboard/*"
+                element={
+                  <ProtectedRoute>
+                    <DashboardRouter />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Portal / Learning */}
-            <Route path="/portal" element={<PortalLayout />}>
-              <Route index element={<Navigate to="my-courses/in-progress" replace />} />
-              <Route path="onboarding" element={<LearnerOnboarding layout="portal" />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="my-courses/in-progress" element={<InProgressPage />} />
-              <Route path="learning/:courseId" element={<CoursePlayerPage />} />
-              {/* Backward compatibility for /learning?courseId=... */}
-            </Route>
+              {/* Portal / Learning */}
+              <Route path="/portal" element={<PortalLayout />}>
+                <Route index element={<Navigate to="my-courses/in-progress" replace />} />
+                <Route path="onboarding" element={<LearnerOnboarding layout="portal" />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="my-courses/in-progress" element={<InProgressPage />} />
+                <Route path="learning/:courseId" element={<CoursePlayerPage />} />
+                {/* Backward compatibility for /learning?courseId=... */}
+              </Route>
 
-            <Route path="/portal/admin/audit-quizzes" element={<QuizAuditPage />} />
+              <Route path="/portal/admin/audit-quizzes" element={<QuizAuditPage />} />
 
-            {/* Redirect /learning to /portal for backward compatibility */}
-            <Route path="/learning" element={<Navigate to="/portal" replace />} />
+              {/* Redirect /learning to /portal for backward compatibility */}
+              <Route path="/learning" element={<Navigate to="/portal" replace />} />
 
-            {/* Auth Debug Panel - for testing authentication and user sync */}
-            <Route path="/auth-debug" element={
-              <div className="min-h-screen bg-gray-100 py-8">
-                <AuthDebugPanel />
-              </div>
-            } />
+              {/* Auth Debug Panel - for testing authentication and user sync */}
+              <Route path="/auth-debug" element={
+                <div className="min-h-screen bg-gray-100 py-8">
+                  <AuthDebugPanel />
+                </div>
+              } />
 
-            {/* Coming Soon pages */}
-            <Route path="/coming-soon" element={<ComingSoon />} />
-            <Route path="/coming-soon/:feature" element={<ComingSoon />} />
+              {/* Instructor Portal */}
+              <Route
+                path="/instructor"
+                element={
+                  <ProtectedRoute>
+                    <InstructorLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<InstructorDashboard />} />
+                <Route path="course-management" element={<CourseManagementPage />} />
+                <Route path="course-management/course/new" element={<CourseForm />} />
+                <Route path="course-management/course/:id" element={<CourseForm />} />
+                <Route path="students" element={<ComingSoon />} />
+                <Route path="analytics" element={<ComingSoon />} />
+                <Route path="settings" element={<ComingSoon />} />
+              </Route>
 
-            {/* Legacy routes - redirect to 404 */}
-            <Route path="/growth-areas-marketplace" element={<Navigate to="/404" replace />} />
-            <Route path="/growth-areas" element={<Navigate to="/404" replace />} />
-            <Route path="/business-directory-marketplace" element={<Navigate to="/404" replace />} />
-            <Route path="/discover-abudhabi" element={<Navigate to="/404" replace />} />
-            <Route path="/forms/*" element={<Navigate to="/404" replace />} />
-            <Route path="/documentation" element={<Navigate to="/coming-soon/documentation" replace />} />
-            <Route path="/documentation/*" element={<Navigate to="/coming-soon/documentation" replace />} />
-            <Route path="/marketplace/*" element={<Navigate to="/courses" replace />} />
+              {/* Coming Soon pages */}
+              <Route path="/coming-soon" element={<ComingSoon />} />
+              <Route path="/coming-soon/:feature" element={<ComingSoon />} />
 
-            <Route path="/404" element={<NotFound />} />
-            <Route path="*" element={<Navigate to="/404" replace />} />
-          </Routes>
-        </Suspense>
+              {/* Legacy routes - redirect to 404 */}
+              <Route path="/growth-areas-marketplace" element={<Navigate to="/404" replace />} />
+              <Route path="/growth-areas" element={<Navigate to="/404" replace />} />
+              <Route path="/business-directory-marketplace" element={<Navigate to="/404" replace />} />
+              <Route path="/discover-abudhabi" element={<Navigate to="/404" replace />} />
+              <Route path="/forms/*" element={<Navigate to="/404" replace />} />
+              <Route path="/documentation" element={<Navigate to="/coming-soon/documentation" replace />} />
+              <Route path="/documentation/*" element={<Navigate to="/coming-soon/documentation" replace />} />
+              <Route path="/marketplace/*" element={<Navigate to="/courses" replace />} />
+
+              <Route path="/404" element={<NotFound />} />
+              <Route path="*" element={<Navigate to="/404" replace />} />
+            </Routes>
+          </Suspense>
+        </RoleSwitcherProvider>
       </AuthProvider>
     </BrowserRouter>
   );

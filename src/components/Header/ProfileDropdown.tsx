@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { LogOutIcon, ChevronDownIcon, UserIcon, BookOpenIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { LogOutIcon, ChevronDownIcon, UserIcon, BookOpenIcon, GraduationCapIcon, ArrowRightLeftIcon } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
+import { useRoleSwitcherOptional } from '@/features/instructor-portal';
 
 // Simplified for MVP - removed notifications.
 export function ProfileDropdown() {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const {
@@ -11,6 +14,9 @@ export function ProfileDropdown() {
     logout,
     isLoading
   } = useAuth();
+
+  // Role switcher - optional to avoid breaking if provider isn't in tree
+  const roleSwitcher = useRoleSwitcherOptional();
   // Generate initials from user name if no avatar is available
   const getInitials = () => {
     if (!user || !user.name) return '?';
@@ -105,7 +111,46 @@ export function ProfileDropdown() {
           </a>
         </div>
 
-
+        {/* Role Switcher */}
+        {roleSwitcher && (
+          <div className="py-1 border-b border-[color:var(--md-outline-variant)]">
+            <div className="px-4 py-2">
+              <p className="text-xs font-medium text-[color:var(--md-on-surface-variant)] mb-2">
+                Switch Profile
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    roleSwitcher.setRole('learner');
+                    closeDropdown();
+                    navigate('/portal');
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${roleSwitcher.isLearner
+                      ? 'bg-[var(--md-primary)] text-white'
+                      : 'bg-[color:var(--md-surface-variant)] text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant-hover)]'
+                    }`}
+                >
+                  <BookOpenIcon size={14} />
+                  Learner
+                </button>
+                <button
+                  onClick={() => {
+                    roleSwitcher.setRole('instructor');
+                    closeDropdown();
+                    navigate('/instructor');
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${roleSwitcher.isInstructor
+                      ? 'bg-[var(--md-primary)] text-white'
+                      : 'bg-[color:var(--md-surface-variant)] text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant-hover)]'
+                    }`}
+                >
+                  <GraduationCapIcon size={14} />
+                  Instructor
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* MVP: Notifications section commented out */}
         {/* 
