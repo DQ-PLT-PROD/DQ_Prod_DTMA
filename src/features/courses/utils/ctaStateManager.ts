@@ -9,7 +9,7 @@
  * @see docs/DTMA_DevD_Technical_Audit.md
  */
 
-import { AccessContract } from "../services/enrollmentService";
+import { AccessContract } from "@/lib/enrollment/service";
 
 export type CtaState =
   | "coming-soon"
@@ -24,10 +24,10 @@ export interface CtaConfig {
   disabled: boolean;
   variant: "primary" | "secondary" | "disabled";
   action:
-    | "navigate-to-player"
-    | "navigate-to-enroll"
-    | "show-certificate"
-    | "none";
+  | "navigate-to-player"
+  | "navigate-to-enroll"
+  | "show-certificate"
+  | "none";
 }
 
 /**
@@ -151,6 +151,6 @@ export function getCtaAction(
 
     case "coming-soon":
     default:
-      return () => {}; // No action
+      return () => { }; // No action
   }
 }

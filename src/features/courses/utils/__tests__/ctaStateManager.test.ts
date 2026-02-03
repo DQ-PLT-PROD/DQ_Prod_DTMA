@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from "vitest";
 import { getCtaState, getCtaLabel, isCtaDisabled } from "../ctaStateManager";
-import { AccessContract } from "../../services/enrollmentService";
+import { AccessContract } from "@/lib/enrollment/service";
 
 describe("ctaStateManager", () => {
   describe("getCtaState", () => {
