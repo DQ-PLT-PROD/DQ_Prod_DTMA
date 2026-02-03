@@ -3,20 +3,20 @@ import { PageContainer } from "@/components/layouts/PageContainer";
 
 const steps = [
   {
-    title: "Learn",
-    description: "Short, practical lessons with examples.",
+    title: "Master the Essentials",
+    description: "Bite-sized, practical lessons built for immediate clarity.",
   },
   {
-    title: "Practice",
-    description: "Guided exercises that mirror real work.",
+    title: "Simulated Real-World Mastery",
+    description: "Engage with guided exercises that mirror the actual challenges of modern work.",
   },
   {
-    title: "Apply",
-    description: "Bring a small project from your team.",
+    title: "Launch Your Project",
+    description: "Directly integrate your learning by executing a real-world initiative with your team.",
   },
   {
-    title: "Recognition",
-    description: "Earn your badge to showcase AI-era skills.",
+    title: "Claim Your Authority",
+    description: "Earn your industry-recognized certification and showcase your AI-ready expertise.",
   },
 ];
 
@@ -55,9 +55,9 @@ const HowYouLearn: React.FC = () => {
               aria-hidden
             />
             <div className="relative space-y-4 max-w-md pl-24 sm:pl-28">
-              <h2 className="text-3xl font-bold">How You Learn</h2>
+              <h2 className="text-3xl font-bold">The Roadmap to Digital Mastery</h2>
               <p className="text-blue-100 text-base leading-relaxed max-w-lg">
-                DTMA guides learners from fundamentals to real-world mastery in the AI era.
+                Our structured framework transforms technical fundamentals into high-impact leadership skills for the AI era.
               </p>
             </div>
           </div>

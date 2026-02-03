@@ -10,45 +10,45 @@ import { BRAND_PRIMARY } from "@/constants/branding";
  */
 const categories = [
   {
-    title: "Mastering Economy 4.0",
+    title: "Leading the New Economy",
     slug: "economy-4-0",
     description:
-      "Navigating the opportunities and challenges in the new economy",
+      "Equip yourself to navigate and dominate the shifts of the modern digital landscape.",
     image: "/images/landing/category-economy-4-0.png",
   },
   {
-    title: "Building Tomorrow's Organisations",
+    title: "Architecting the Future Organization",
     slug: "digital-cognitive-organization",
     description:
-      "Where organizations are headed in the age of digital transformation",
+      "Design and lead agile, tech-forward teams ready for the age of automation.",
     image: "/images/landing/category-digital-cognitive-organization.jpg",
   },
   {
-    title: "Mastering Digital Transformation",
+    title: "Mastering the Digital Pivot",
     slug: "digital-business-platform",
     description:
-      "What legacy value or orchestration engine powers the future?",
+      "Move beyond legacy systems to command the engines powering tomorrow's industries.",
     image: "/images/landing/category-digital-business-platform.jpg",
   },
   {
-    title: "Designing for the Future",
+    title: "Designing Digital Ecosystems",
     slug: "digital-transformation-2-0",
     description:
-      "How to design and deploy next-generation transformation frameworks",
+      "Master the frameworks needed to build the sustainable, next-generation infrastructures of the future.",
     image: "/images/landing/category-digital-transformation-2-0.jpg",
   },
   {
-    title: "Architecting Change",
+    title: "The Digital Architect Path",
     slug: "digital-worker-workspace",
     description:
-      "Who are the orchestrators of the new digital workspace?",
+      "Lead the transformation. Learn to orchestrate people, tools, and tech in the modern workspace.",
     image: "/images/landing/category-digital-worker-workspace.jpg",
   },
   {
-    title: "Empowering Change",
+    title: "Commanding Digital Velocity",
     slug: "digital-accelerators-tools",
     description:
-      "When will we get there? Exploring tools to accelerate transformation",
+      "Accelerate your impact. Master the high-speed tools that drive rapid organizational evolution.",
     image: "/images/landing/category-digital-accelerators-tools.jpg",
   },
 ];
@@ -64,7 +64,7 @@ const D6CategoriesSection: React.FC = () => {
             className="text-3xl md:text-4xl font-bold text-gray-900"
             style={{ textShadow: "0 8px 20px rgba(3, 12, 43, 0.1)" }}
           >
-            Discover Our Course Categories
+            Choose Your Transformation Pathway
           </h2>
           <p className="text-lg text-gray-600">
             Each category helps you step into the AI era. Pick the area that fits your goals and follow the guided courses built for your role.

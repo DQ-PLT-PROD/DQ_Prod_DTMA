@@ -282,10 +282,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         <FadeInUpOnScroll className="space-y-5 w-full flex flex-col items-center">
           <div className="space-y-5 w-full flex flex-col items-center text-center">
             <h1 className="text-[48px] md:text-[56px] leading-[1.2] font-bold text-white tracking-[-0.5px] max-w-3xl mx-auto">
-              Every Skill to Grow and Scale in the Digital Economy
+              Master the Skills That Define the Future of Work
             </h1>
             <p className="text-[18px] leading-[1.5] text-white/80 font-semibold max-w-2xl mx-auto">
-              Start your digital transformation journey with easy‑to‑follow lessons that help you understand, improve, and innovate at your own pace.
+              Join thousands of professionals mastering digital transformation through expert-led, self-paced courses. Start learning today.
             </p>
           </div>
         </FadeInUpOnScroll>
