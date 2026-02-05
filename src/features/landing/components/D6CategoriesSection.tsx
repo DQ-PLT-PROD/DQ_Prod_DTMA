@@ -13,42 +13,42 @@ const categories = [
     title: "Leading the New Economy",
     slug: "economy-4-0",
     description:
-      "Equip yourself to navigate and dominate the shifts of the modern digital landscape.",
+      "Master the digital leadership skills needed to steer teams through rapid technological shifts and market volatility.",
     image: "/images/landing/category-economy-4-0.png",
   },
   {
     title: "Architecting the Future Organization",
     slug: "digital-cognitive-organization",
     description:
-      "Design and lead agile, tech-forward teams ready for the age of automation.",
+      "Implement agile workflows and automation guidelines to build a scalable, future-ready organizational structure.",
     image: "/images/landing/category-digital-cognitive-organization.jpg",
   },
   {
     title: "Mastering the Digital Pivot",
     slug: "digital-business-platform",
     description:
-      "Move beyond legacy systems to command the engines powering tomorrow's industries.",
+      "Transition from legacy processes to high-velocity digital tools that power tomorrow's industrial standards.",
     image: "/images/landing/category-digital-business-platform.jpg",
   },
   {
-    title: "Designing Digital Ecosystems",
+    title: "Build the Future: Designing Digital Ecosystems",
     slug: "digital-transformation-2-0",
     description:
-      "Master the frameworks needed to build the sustainable, next-generation infrastructures of the future.",
+      "Build sustainable, next-gen infrastructures. Master the core frameworks to scale future-proof digital environments.",
     image: "/images/landing/category-digital-transformation-2-0.jpg",
   },
   {
-    title: "The Digital Architect Path",
+    title: "Lead Change: The Digital Architect Path",
     slug: "digital-worker-workspace",
     description:
-      "Lead the transformation. Learn to orchestrate people, tools, and tech in the modern workspace.",
+      "Orchestrate people and tech. Gain the leadership skills to manage complex digital transformations in the modern office.",
     image: "/images/landing/category-digital-worker-workspace.jpg",
   },
   {
-    title: "Commanding Digital Velocity",
+    title: "Accelerate Impact: Master Digital Velocity",
     slug: "digital-accelerators-tools",
     description:
-      "Accelerate your impact. Master the high-speed tools that drive rapid organizational evolution.",
+      "Drive rapid evolution. Master high-speed tools to increase organizational efficiency and lead market shifts.",
     image: "/images/landing/category-digital-accelerators-tools.jpg",
   },
 ];
@@ -67,7 +67,7 @@ const D6CategoriesSection: React.FC = () => {
             Choose Your Transformation Pathway
           </h2>
           <p className="text-lg text-gray-600">
-            Each category helps you step into the AI era. Pick the area that fits your goals and follow the guided courses built for your role.
+            Master the frameworks of the AI era. Choose a guided pathway designed to align your skills with modern automation and digital-first workflows.
           </p>
         </FadeInUpOnScroll>
 
@@ -93,19 +93,19 @@ const D6CategoriesSection: React.FC = () => {
                 )}
               </div>
               <div className="flex flex-col flex-1 p-6">
-                <h3 className="text-xl font-semibold text-gray-900">
+                <h3 className="text-xl font-bold text-gray-900 leading-tight">
                   {category.title}
                 </h3>
-                <p className="mt-3 text-sm text-gray-600">
+                <p className="mt-3 text-base text-gray-700 leading-relaxed">
                   {category.description}
                 </p>
                 <Link
                   to={`/courses?category=${category.slug}`}
-                  className="mt-6 inline-flex items-center text-sm font-semibold hover:underline"
-                  style={{ color: BRAND_PRIMARY }}
+                  className="mt-6 inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md"
+                  style={{ backgroundColor: BRAND_PRIMARY }}
                 >
-                  Explore Courses
-                  <ArrowRight size={16} className="ml-1" />
+                  Start Pathway
+                  <ArrowRight size={16} className="ml-2" />
                 </Link>
               </div>
             </div>

@@ -569,7 +569,7 @@ const CallToAction: React.FC = () => {
             <CTACard
               icon={<Users size={28} className="text-blue-600" />}
               title="Register Now"
-              description="Create your account and start your learning journey."
+              description="Join a network of future-ready professionals. Set up your profile in seconds and start mastering the AI era today."
               buttonText="Sign Up"
               buttonColor="blue"
               onClick={handleSignIn}

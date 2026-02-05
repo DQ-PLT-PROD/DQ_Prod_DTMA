@@ -162,7 +162,7 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
         </div>
 
         <div className="text-blue-100 text-sm">
-          <p>(c) 2025 DTMA. All rights reserved.</p>
+          <p>(c) 2026 DTMA. All rights reserved.</p>
         </div>
       </div>
     </footer>
