@@ -26,6 +26,10 @@ const InstructorLayout = lazy(() => import("./features/instructor-portal/layout/
 const InstructorDashboard = lazy(() => import("./features/instructor-portal/pages/InstructorDashboard").then(m => ({ default: m.InstructorDashboard })));
 const CourseManagementPage = lazy(() => import("./features/instructor-portal/pages/CourseManagementPage").then(m => ({ default: m.CourseManagementPage })));
 const CourseForm = lazy(() => import("./features/instructor-portal/components/course-management/CourseForm").then(m => ({ default: m.CourseForm })));
+const ModuleForm = lazy(() => import("./features/instructor-portal/components/course-management/ModuleForm").then(m => ({ default: m.ModuleForm })));
+const LessonForm = lazy(() => import("./features/instructor-portal/components/course-management/LessonForm").then(m => ({ default: m.LessonForm })));
+const MediaLibraryPage = lazy(() => import("./features/instructor-portal/pages/MediaLibraryPage").then(m => ({ default: m.MediaLibraryPage })));
+
 
 // Loading fallback component
 const PageLoader = () => (
@@ -103,7 +107,13 @@ export function AppRouter() {
                 <Route path="course-management" element={<CourseManagementPage />} />
                 <Route path="course-management/course/new" element={<CourseForm />} />
                 <Route path="course-management/course/:id" element={<CourseForm />} />
+                <Route path="course-management/module/new" element={<ModuleForm />} />
+                <Route path="course-management/module/:id" element={<ModuleForm />} />
+                <Route path="course-management/lesson/new" element={<LessonForm />} />
+                <Route path="course-management/lesson/:id" element={<LessonForm />} />
+                <Route path="media" element={<MediaLibraryPage />} />
                 <Route path="students" element={<ComingSoon />} />
+                <Route path="learning-paths" element={<ComingSoon />} />
                 <Route path="analytics" element={<ComingSoon />} />
                 <Route path="settings" element={<ComingSoon />} />
               </Route>

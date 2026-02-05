@@ -7,18 +7,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeftIcon, SaveIcon, UploadIcon } from 'lucide-react';
+import { ArrowLeftIcon, SaveIcon, UploadIcon, Image as ImageIcon } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/dbClient';
 import { uploadLMSFile } from '../../lib/storage';
 import { Toast } from '@/components/ui/Toast';
+import { MediaPickerModal } from '../../components/media/MediaPickerModal';
 import {
     DEPARTMENTS,
-    COURSE_CATEGORIES,
     LMS_ITEM_PROVIDERS,
     COURSE_TYPES,
     SFIA_LEVEL_CODES,
     AUDIENCE_OPTIONS
 } from '../../constants/courseConstants';
+import { COURSE_CATEGORIES as STANDARD_CATEGORIES } from '../../../../constants/navigation';
+import { AlertTriangleIcon, CheckIcon, XIcon } from 'lucide-react';
 
 interface CourseFormData {
     slug: string;
@@ -80,6 +82,12 @@ export function CourseForm() {
     // Image upload state
     const [uploadingImage, setUploadingImage] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [showMediaPicker, setShowMediaPicker] = useState(false);
+
+    // Custom Category State
+    const [showCustomCategoryWarn, setShowCustomCategoryWarn] = useState(false);
+    const [isCustomCategory, setIsCustomCategory] = useState(false);
+    const [customCategoryInput, setCustomCategoryInput] = useState('');
 
     useEffect(() => {
         if (isEditing && id) {
@@ -87,7 +95,19 @@ export function CourseForm() {
         }
     }, [id, isEditing]);
 
+    // Check if loaded category is custom
+    useEffect(() => {
+        if (formData.category) {
+            const isStandard = STANDARD_CATEGORIES.some(c => c.slug === formData.category);
+            setIsCustomCategory(!isStandard);
+            if (!isStandard) {
+                setCustomCategoryInput(formData.category);
+            }
+        }
+    }, [formData.category]);
+
     const loadCourse = async (courseId: string) => {
+        // ... (existing loadCourse implementation) ...
         try {
             setLoading(true);
             const supabase = getSupabaseClient();
@@ -119,6 +139,7 @@ export function CourseForm() {
         }
     };
 
+    // ... (handleImageUpload and others remain the same) ...
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -195,7 +216,7 @@ export function CourseForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-
+        // ... (existing handleSubmit implementation) ...
         try {
             const supabase = getSupabaseClient();
             if (!supabase) {
@@ -235,6 +256,27 @@ export function CourseForm() {
         }
     };
 
+
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        if (value === 'custom_new') {
+            setShowCustomCategoryWarn(true);
+        } else {
+            setFormData({ ...formData, category: value });
+            setIsCustomCategory(false);
+        }
+    };
+
+    const confirmCustomCategory = () => {
+        if (customCategoryInput.trim()) {
+            setFormData({ ...formData, category: customCategoryInput.trim() });
+            setIsCustomCategory(true);
+            setShowCustomCategoryWarn(false);
+        }
+    };
+
+    // ... (render logic) ...
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -255,7 +297,7 @@ export function CourseForm() {
                         className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
                     >
                         <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                        Back to Courses
+                        Back to Course Management
                     </button>
                     <h1 className="text-2xl font-bold text-gray-900">
                         {isEditing ? 'Edit Course' : 'Create Course'}
@@ -308,19 +350,90 @@ export function CourseForm() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                                <select
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                    value={formData.category}
-                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                >
-                                    <option value="">Select category</option>
-                                    {COURSE_CATEGORIES.map((category) => (
-                                        <option key={category} value={category}>
-                                            {category}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="space-y-3">
+                                    <select
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
+                                        value={showCustomCategoryWarn ? 'custom_new' : formData.category}
+                                        onChange={handleCategoryChange}
+                                    >
+                                        <option value="">Select category</option>
+                                        <optgroup label="Standard Categories">
+                                            {STANDARD_CATEGORIES.map((category) => (
+                                                <option key={category.slug} value={category.slug}>
+                                                    {category.title}
+                                                </option>
+                                            ))}
+                                        </optgroup>
+                                        <optgroup label="Custom">
+                                            <option value="custom_new">Create Custom Category...</option>
+                                            {/* If current category is custom, show it as an option so it's selected */}
+                                            {isCustomCategory && formData.category && (
+                                                <option value={formData.category}>{formData.category}</option>
+                                            )}
+                                        </optgroup>
+                                    </select>
+
+                                    {/* Custom Category Warning/Input */}
+                                    {showCustomCategoryWarn && (
+                                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
+                                            <div className="flex items-start gap-3">
+                                                <AlertTriangleIcon className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
+                                                <div className="flex-1">
+                                                    <h4 className="text-sm font-medium text-orange-800">Custom Category Warning</h4>
+                                                    <p className="text-xs text-orange-700 mt-1">
+                                                        Creating a custom category keeps this course outside the standard 6 Dimensions of Digital Transformation.
+                                                        It may limit discoverability in standard filters.
+                                                    </p>
+
+                                                    <div className="mt-3 flex items-center gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={customCategoryInput}
+                                                            onChange={(e) => setCustomCategoryInput(e.target.value)}
+                                                            placeholder="Enter custom category slug..."
+                                                            className="flex-1 text-sm px-3 py-1.5 border border-orange-300 rounded focus:border-orange-500 focus:outline-none"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={confirmCustomCategory}
+                                                            className="p-1.5 bg-orange-100 text-orange-700 rounded hover:bg-orange-200"
+                                                            title="Confirm"
+                                                        >
+                                                            <CheckIcon className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowCustomCategoryWarn(false)}
+                                                            className="p-1.5 text-gray-400 hover:text-gray-600"
+                                                            title="Cancel"
+                                                        >
+                                                            <XIcon className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Active Custom Category Indicator */}
+                                    {isCustomCategory && !showCustomCategoryWarn && formData.category && (
+                                        <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-50 px-3 py-2 rounded-lg border border-orange-100">
+                                            <AlertTriangleIcon className="h-3 w-3" />
+                                            <span>Using custom category: <strong>{formData.category}</strong></span>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setCustomCategoryInput(formData.category);
+                                                    setShowCustomCategoryWarn(true);
+                                                }}
+                                                className="text-orange-800 underline ml-auto"
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div>
@@ -452,6 +565,14 @@ export function CourseForm() {
                                                 disabled={uploadingImage}
                                             />
                                         </label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowMediaPicker(true)}
+                                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center transition-colors"
+                                        >
+                                            <ImageIcon className="h-4 w-4 mr-2" />
+                                            Library
+                                        </button>
                                     </div>
 
                                     {uploadingImage && uploadProgress > 0 && (
@@ -601,6 +722,16 @@ export function CourseForm() {
                     isVisible={!!toast}
                 />
             )}
+
+            <MediaPickerModal
+                isOpen={showMediaPicker}
+                onClose={() => setShowMediaPicker(false)}
+                onSelect={(url) => {
+                    setFormData({ ...formData, image_url: url });
+                    setShowMediaPicker(false);
+                }}
+                allowedTypes={['image/']}
+            />
         </div>
     );
 }

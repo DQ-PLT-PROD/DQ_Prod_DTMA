@@ -22,8 +22,7 @@ export function InstructorDashboard() {
     const stats = [
         { label: 'Total Courses', value: '—', icon: BookOpenIcon, color: 'bg-blue-500' },
         { label: 'Active Students', value: '—', icon: UsersIcon, color: 'bg-green-500' },
-        { label: 'Completion Rate', value: '—', icon: TrendingUpIcon, color: 'bg-purple-500' },
-        { label: 'Avg. Rating', value: '—', icon: AwardIcon, color: 'bg-orange-500' },
+        { label: 'Completion Rate', value: 'Soon', icon: TrendingUpIcon, color: 'bg-gray-400', comingSoon: true },
     ];
 
     const quickActions = [
@@ -39,12 +38,6 @@ export function InstructorDashboard() {
             icon: BookOpenIcon,
             action: () => navigate('/instructor/course-management')
         },
-        {
-            label: 'View Analytics',
-            description: 'Check student progress and engagement',
-            icon: BarChartIcon,
-            action: () => navigate('/instructor/analytics')
-        },
     ];
 
     return (
@@ -58,20 +51,26 @@ export function InstructorDashboard() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {stats.map((stat) => {
                     const Icon = stat.icon;
                     return (
-                        <div key={stat.label} className="bg-white rounded-xl shadow-sm p-5">
-                            <div className="flex items-center gap-3">
-                                <div className={`${stat.color} p-2 rounded-lg`}>
-                                    <Icon className="h-5 w-5 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                                    <p className="text-sm text-gray-500">{stat.label}</p>
-                                </div>
+                        <div key={stat.label} className="bg-white rounded-xl shadow-sm p-6 flex items-center gap-4 relative overflow-hidden">
+                            <div className={`${stat.color} p-3 rounded-lg flex-shrink-0`}>
+                                <Icon className="h-6 w-6 text-white" />
                             </div>
+                            <div>
+                                <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                                <p className="text-sm font-medium text-gray-500">{stat.label}</p>
+                            </div>
+                            {/* @ts-ignore - straightforward adjustment */}
+                            {stat.comingSoon && (
+                                <div className="absolute top-2 right-2">
+                                    <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
+                                        Coming Soon
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     );
                 })}
@@ -80,21 +79,21 @@ export function InstructorDashboard() {
             {/* Quick Actions */}
             <div className="bg-white rounded-xl shadow-sm p-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {quickActions.map((action) => {
                         const Icon = action.icon;
                         return (
                             <button
                                 key={action.label}
                                 onClick={action.action}
-                                className="flex items-start gap-4 p-4 rounded-lg border border-gray-200 hover:border-[var(--md-primary)] hover:bg-gray-50 transition-colors text-left"
+                                className="flex items-center gap-4 p-6 rounded-xl border border-gray-200 hover:border-[var(--md-primary)] hover:bg-[var(--md-primary)]/5 transition-all group text-left"
                             >
-                                <div className="p-2 bg-[var(--md-primary)]/10 rounded-lg">
-                                    <Icon className="h-5 w-5 text-[var(--md-primary)]" />
+                                <div className="p-3 bg-white border border-gray-100 shadow-sm rounded-lg group-hover:scale-110 transition-transform">
+                                    <Icon className="h-6 w-6 text-[var(--md-primary)]" />
                                 </div>
                                 <div>
-                                    <h3 className="font-medium text-gray-900">{action.label}</h3>
-                                    <p className="text-sm text-gray-500">{action.description}</p>
+                                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-[var(--md-primary)] transition-colors">{action.label}</h3>
+                                    <p className="text-sm text-gray-500 mt-1">{action.description}</p>
                                 </div>
                             </button>
                         );
