@@ -148,6 +148,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
                     levelTags: toArrayFilter(filters.levelTag),
                     industries: toArrayFilter(filters.industry),
                     topics: toArrayFilter(filters.topic),
+                    excludeHeavyFields: true,
                 };
 
                 // Remove empty arrays to avoid unnecessary filtering
@@ -453,6 +454,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
                                 onToggleBookmark={toggleBookmark}
                                 promoCards={allowPromoCards ? promoCards : []}
                                 onTagClick={handleTagFilter}
+                                showSaveButton={false}
                             />
                         )}
                     </div>
@@ -461,7 +463,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
             <Footer />
 
             {/* AI Widget */}
-            <AIWidgetStandalone />
+            {/* <AIWidgetStandalone /> */}
         </div>
     );
 };

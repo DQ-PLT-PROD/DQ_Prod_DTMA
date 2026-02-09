@@ -124,6 +124,10 @@ export function Header({
 
   const isTransparent = transparent && !isSticky;
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isHomeActive = location.pathname === "/";
+  const isExploreActive = location.pathname.startsWith("/courses");
+
   return (
     <>
       <header
@@ -157,23 +161,54 @@ export function Header({
             {/* Primary navigation */}
             <nav className="hidden md:flex items-center gap-8">
               {FEATURES.COURSE_MARKETPLACE && <ExploreDropdown />}
+
+              {/* Desktop Learning Link (Pre-login Access) - REMOVED per request */}
+              {/* <button
+                onClick={() => {
+                  if (user) {
+                    window.location.href = '/portal/my-courses/in-progress';
+                  } else {
+                    handleSignIn();
+                  }
+                }}
+                className="text-white/80 hover:text-white font-medium text-sm transition-colors flex items-center gap-2"
+              >
+                Learning
+              </button> */}
             </nav>
           </div>
 
           {/* Right side actions */}
+          {/* Right side actions */}
           <div className="flex items-center gap-4 relative">
-            {/* ProfileDropdown - hidden on mobile, shown on md+ */}
+            {/* User State Handling */}
             {user ? (
-              <div className="hidden md:block">
-                <ProfileDropdown />
-              </div>
-            ) : (
-              <div className="hidden lg:flex items-center gap-2 text-sm font-medium">
+              <>
+                {/* Desktop: Profile Dropdown */}
+                <div className="hidden lg:block">
+                  <ProfileDropdown />
+                </div>
+                {/* Mobile: Avatar Trigger for Drawer */}
                 <button
-                  className="flex items-center gap-2 rounded-full px-5 py-2.5 h-11 bg-[color:var(--md-surface)] text-[color:var(--md-primary)] font-medium hover:bg-[color:var(--md-surface-variant)] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 shadow-md-1"
+                  className="lg:hidden w-8 h-8 rounded-full bg-[color:var(--md-surface)] text-[color:var(--md-primary)] flex items-center justify-center font-bold shadow-sm overflow-hidden"
+                  onClick={() => setMobileMenuOpen(true)}
+                  aria-label="Open menu"
+                >
+                  {user.picture ? (
+                    <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-xs">{user.name ? user.name.charAt(0).toUpperCase() : '?'}</span>
+                  )}
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <button
+                  className="flex items-center gap-2 rounded-full px-4 py-2 h-10 bg-[color:var(--md-surface)] text-[color:var(--md-primary)] font-medium hover:bg-[color:var(--md-surface-variant)] transition-all shadow-sm"
                   onClick={handleSignIn}
                 >
                   <UserIcon size={18} className="text-[color:var(--md-primary)]" />
+                  {/* Hide text on extremely small screens if needed */}
                   <span>Sign In</span>
                 </button>
               </div>
@@ -185,6 +220,8 @@ export function Header({
               onJoinAcademy={scrollToFinalCTA}
               onBrowseCourses={handleBrowseCourses}
               onBrowseCategories={scrollToCategories}
+              isOpen={mobileMenuOpen}
+              onClose={() => setMobileMenuOpen(false)}
             />
           </div>
         </div>
@@ -192,26 +229,55 @@ export function Header({
       {/* Spacer for sticky header */}
       {isSticky && <div className="h-16"></div>}
 
-      {/* MVP: Notifications components commented out for lean release */}
-      {/* 
-      {showNotificationsMenu && user && (
-        <NotificationsMenu
-          onViewAll={openNotificationCenter}
-          onClose={() => setShowNotificationsMenu(false)}
-        />
-      )}
-      {showNotificationCenter && user && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
-          <div
-            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
-            onClick={closeNotificationCenter}
-          ></div>
-          <div className="relative bg-white shadow-xl rounded-lg max-w-2xl w-full max-h-[90vh] m-4 transform transition-all duration-300">
-            <NotificationCenter onBack={closeNotificationCenter} />
-          </div>
-        </div>
-      )}
-      */}
+      {/* Public Mobile Bottom Navigation */}
+      <div className="lg:hidden fixed bottom-6 left-4 right-4 bg-white/90 backdrop-blur-md border border-gray-200 shadow-2xl rounded-2xl z-[40] flex items-center justify-around py-2.5 safe-area-bottom">
+        {/* 1. Home */}
+        <Link
+          to="/"
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isHomeActive ? 'text-[#1839AD] bg-blue-50' : 'text-gray-500 hover:text-gray-900'}`}
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          {/* Simple Home Icon SVG since lucide imports might need check */}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          <span className="text-[10px] font-medium">Home</span>
+        </Link>
+
+        {/* 2. Explore (Catalog) */}
+        <Link
+          to="/courses"
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isExploreActive ? 'text-[#1839AD] bg-blue-50' : 'text-gray-500 hover:text-gray-900'}`}
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <span className="text-[10px] font-medium">Explore</span>
+        </Link>
+
+        {/* 3. Learning (Gatekept -> Sign In) */}
+        <button
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all text-gray-500 hover:text-gray-900`}
+          onClick={() => {
+            setMobileMenuOpen(false);
+            if (user) {
+              navigate('/portal/my-courses/in-progress');
+            } else {
+              handleSignIn();
+            }
+          }}
+        >
+          {/* Play Icon to match Portal */}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          <span className="text-[10px] font-medium">Learning</span>
+        </button>
+      </div>
+
     </>
   );
 }

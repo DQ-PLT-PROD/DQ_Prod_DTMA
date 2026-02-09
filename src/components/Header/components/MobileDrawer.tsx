@@ -16,6 +16,8 @@ interface MobileDrawerProps {
   onJoinAcademy?: () => void;
   onBrowseCourses?: () => void;
   onBrowseCategories?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export function MobileDrawer({
@@ -24,13 +26,14 @@ export function MobileDrawer({
   onJoinAcademy,
   onBrowseCourses,
   onBrowseCategories,
+  isOpen,
+  onClose,
 }: MobileDrawerProps) {
   const navigate = useNavigate();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { user, login, logout } = useAuth();
 
   useEffect(() => {
-    if (isDrawerOpen) {
+    if (isOpen) {
       const scrollY = window.scrollY;
       document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
@@ -42,17 +45,17 @@ export function MobileDrawer({
       document.body.style.top = "";
       window.scrollTo(0, parseInt(scrollY || "0") * -1);
     }
-  }, [isDrawerOpen]);
+  }, [isOpen]);
 
   const handleSignIn = () => {
     onSignIn();
-    setIsDrawerOpen(false);
+    onClose();
   };
 
   const handleSignOut = async () => {
     try {
       logout();
-      setIsDrawerOpen(false);
+      onClose();
       navigate('/');
     } catch (error) {
       console.error('Sign out error:', error);
@@ -61,29 +64,22 @@ export function MobileDrawer({
 
   return (
     <>
-      {/* Menu Toggle Button - stays in header */}
-      <button
-        className="p-2 text-white hover:bg-white/10 rounded-full transition-all duration-300 focus:outline-none md:hidden active:scale-95"
-        onClick={() => setIsDrawerOpen(true)}
-        aria-label="Open navigation menu"
-      >
-        <MenuIcon size={26} />
-      </button>
+      {/* Internal Trigger Removed - Controlled by Header/BottomNav */}
 
       {/* Portal: Backdrop and Drawer rendered at document.body to escape header's stacking context */}
       {createPortal(
         <>
           {/* Backdrop */}
-          {isDrawerOpen && (
+          {isOpen && (
             <div
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] transition-opacity duration-300"
-              onClick={() => setIsDrawerOpen(false)}
+              onClick={onClose}
             />
           )}
 
           {/* Drawer */}
           <div
-            className={`fixed top-0 right-0 h-full w-[85vw] max-w-[320px] bg-[color:var(--md-surface)] shadow-md-3 z-[101] transform transition-transform duration-300 ease-out border-l border-[color:var(--md-outline-variant)] ${isDrawerOpen ? "translate-x-0" : "translate-x-full"
+            className={`fixed top-0 right-0 h-full w-[85vw] max-w-[320px] bg-[color:var(--md-surface)] shadow-md-3 z-[101] transform transition-transform duration-300 ease-out border-l border-[color:var(--md-outline-variant)] ${isOpen ? "translate-x-0" : "translate-x-full"
               }`}
           >
             <div className="flex flex-col h-full bg-[color:var(--md-background)]">
@@ -91,7 +87,7 @@ export function MobileDrawer({
               <div className="flex items-center justify-between px-6 py-5 border-b border-[color:var(--md-outline-variant)] bg-[color:var(--md-surface)]">
                 <span className="font-semibold text-[color:var(--md-on-surface)] text-lg tracking-tight">Menu</span>
                 <button
-                  onClick={() => setIsDrawerOpen(false)}
+                  onClick={onClose}
                   className="p-2 -mr-2 text-[color:var(--md-on-surface-variant)] hover:text-[color:var(--md-on-surface)] hover:bg-[color:var(--md-surface-variant)] rounded-full transition-colors"
                 >
                   <XIcon size={20} />
@@ -123,7 +119,7 @@ export function MobileDrawer({
                   <button
                     onClick={() => {
                       navigate('/portal/my-courses/in-progress');
-                      setIsDrawerOpen(false);
+                      onClose();
                     }}
                     className="w-full flex items-center gap-3 px-4 py-3.5 bg-[color:var(--md-primary)] text-white rounded-xl shadow-md-1 hover:shadow-md-2 transition-all duration-200"
                   >
@@ -133,36 +129,7 @@ export function MobileDrawer({
                   </button>
                 )}
 
-                {/* Explore Courses */}
-                <div className="space-y-4">
-                  <div className="md-card overflow-hidden">
-                    <div className="px-4 py-3.5 bg-[color:var(--md-surface-variant)] border-b border-[color:var(--md-outline-variant)] flex items-center gap-3">
-                      <div className="p-1.5 bg-[color:var(--md-primary-container)] text-[color:var(--md-primary)] rounded-[var(--md-radius-sm)]">
-                        <Layers size={18} />
-                      </div>
-                      <span className="font-medium text-[color:var(--md-on-surface)]">Explore Courses</span>
-                    </div>
 
-                    <div className="py-1">
-                      {COURSE_CATEGORIES.map((cat) => {
-                        const Icon = cat.icon || Layers;
-                        return (
-                          <button
-                            key={cat.slug}
-                            className="w-full text-left px-4 py-3 text-sm text-[color:var(--md-on-surface-variant)] hover:text-[color:var(--md-primary)] hover:bg-[color:var(--md-primary-container)] flex items-center gap-3 transition-colors border-l-2 border-transparent hover:border-[color:var(--md-primary)]"
-                            onClick={() => {
-                              navigate(cat.href);
-                              setIsDrawerOpen(false);
-                            }}
-                          >
-                            <Icon size={18} className="text-[color:var(--md-on-surface-variant)]" />
-                            <span className="truncate">{cat.title}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Footer - Sign Out or Sign In */}

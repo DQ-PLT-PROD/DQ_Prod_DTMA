@@ -16,7 +16,7 @@ const __dirname = dirname(__filename)
 try {
   const envPath = join(__dirname, '.env')
   const envFile = readFileSync(envPath, 'utf8')
-  
+
   envFile.split('\n').forEach(line => {
     const trimmed = line.trim()
     if (trimmed && !trimmed.startsWith('#')) {
@@ -129,7 +129,7 @@ const lessonAccessHandlers = {
 
     try {
       console.log(`🔐 Checking lesson access for user ${userId} - course: ${courseSlug}, lesson: ${lessonId}`)
-      
+
       const accessResult = await checkLessonAccess(
         supabaseClient,
         userId,
@@ -171,7 +171,7 @@ const lessonAccessHandlers = {
 
     try {
       console.log(`📚 Getting course access summary for user ${userId} - course: ${courseSlug}`)
-      
+
       const accessSummary = await getCourseAccessSummary(
         supabaseClient,
         userId,
@@ -200,7 +200,7 @@ const lessonAccessHandlers = {
 
     try {
       console.log(`📖 Getting lesson content for user ${userId} - course: ${courseSlug}, lesson: ${lessonId}`)
-      
+
       // Check access first
       const accessResult = await checkLessonAccess(
         supabaseClient,
@@ -266,7 +266,7 @@ const lessonAccessHandlers = {
   // POST /api/lessons/progress/:courseSlug/:lessonId
   async updateLessonProgress(req, res, courseSlug, lessonId) {
     const authenticatedUser = getCurrentUser(req);
-    
+
     if (!authenticatedUser) {
       return sendError(res, 401, 'Authentication required')
     }
@@ -282,7 +282,7 @@ const lessonAccessHandlers = {
       const { completed = false, watchTimeSeconds = 0 } = body
 
       console.log(`📈 Updating lesson progress for user ${userId} - course: ${courseSlug}, lesson: ${lessonId}`)
-      
+
       // Check if user has access to this lesson
       const accessResult = await checkLessonAccess(
         supabaseClient,
@@ -409,7 +409,7 @@ const enrollmentHandlers = {
 
     // Get authenticated user
     const authenticatedUser = getCurrentUser(req);
-    
+
     // If user is authenticated, use their Azure user ID instead of query param
     const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : userId;
 
@@ -428,7 +428,7 @@ const enrollmentHandlers = {
 
     try {
       console.log(`🔍 Checking enrollment status for user ${targetUserId} in course ${courseSlug}`)
-      
+
       const { data, error } = await supabaseClient
         .from('user_enrollments')
         .select('id, status')
@@ -446,10 +446,10 @@ const enrollmentHandlers = {
         return sendError(res, 500, 'Failed to check enrollment status', error.message)
       }
 
-      return sendJSON(res, 200, { 
-        isEnrolled: true, 
+      return sendJSON(res, 200, {
+        isEnrolled: true,
         enrollmentStatus: data.status,
-        enrollmentId: data.id 
+        enrollmentId: data.id
       })
     } catch (err) {
       console.error('Error checking enrollment status:', err)
@@ -464,7 +464,7 @@ const enrollmentHandlers = {
 
     // Get authenticated user
     const authenticatedUser = getCurrentUser(req);
-    
+
     // If user is authenticated, use their Azure user ID instead of query param
     const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : userId;
 
@@ -483,7 +483,7 @@ const enrollmentHandlers = {
 
     try {
       console.log(`📋 Getting enrollment details for user ${targetUserId} in course ${courseSlug}`)
-      
+
       const { data, error } = await supabaseClient
         .from('user_enrollments')
         .select('*')
@@ -500,7 +500,7 @@ const enrollmentHandlers = {
         return sendError(res, 500, 'Failed to get enrollment details', error.message)
       }
 
-      return sendJSON(res, 200, { 
+      return sendJSON(res, 200, {
         success: true,
         enrollment: mapRowToEnrollment(data)
       })
@@ -514,22 +514,22 @@ const enrollmentHandlers = {
   async enrollInCourse(req, res) {
     try {
       const body = await parseBody(req)
-      
+
       // Get authenticated user
       const authenticatedUser = getCurrentUser(req);
-      
+
       // If user is authenticated, use their Azure user ID, otherwise require userId in body
       const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : body.userId;
-      
+
       if (!targetUserId) {
         return sendError(res, 400, 'User identification required')
       }
 
       // Security check: authenticated users can only enroll themselves
       if (authenticatedUser && body.userId && body.userId !== authenticatedUser.azureUserId) {
-        logAccessEvent('enrollment_attempt', `course:${body.courseSlug}`, authenticatedUser.azureUserId, 'denied', { 
+        logAccessEvent('enrollment_attempt', `course:${body.courseSlug}`, authenticatedUser.azureUserId, 'denied', {
           reason: 'attempted_to_enroll_other_user',
-          targetUserId: body.userId 
+          targetUserId: body.userId
         });
         return sendError(res, 403, 'Cannot enroll other users')
       }
@@ -598,11 +598,11 @@ const enrollmentHandlers = {
       }
 
       console.log('✅ Enrollment created successfully')
-      logEnrollmentEvent('enrollment_success', courseSlug, targetUserId, { 
+      logEnrollmentEvent('enrollment_success', courseSlug, targetUserId, {
         enrollmentId: data.id,
-        method: method 
+        method: method
       });
-      
+
       return sendJSON(res, 201, {
         success: true,
         enrollment: mapRowToEnrollment(data),
@@ -610,8 +610,8 @@ const enrollmentHandlers = {
       })
     } catch (err) {
       console.error('Unexpected error in enrollment:', err)
-      logEnrollmentEvent('enrollment_error', body?.courseSlug || 'unknown', targetUserId || 'unknown', { 
-        error: err.message 
+      logEnrollmentEvent('enrollment_error', body?.courseSlug || 'unknown', targetUserId || 'unknown', {
+        error: err.message
       });
       return sendError(res, 500, 'Internal server error')
     }
@@ -621,7 +621,7 @@ const enrollmentHandlers = {
   async getUserEnrollments(req, res, userId) {
     // Get authenticated user
     const authenticatedUser = getCurrentUser(req);
-    
+
     // If user is authenticated, use their Azure user ID instead of path param
     const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : userId;
 
@@ -636,7 +636,7 @@ const enrollmentHandlers = {
 
     try {
       console.log(`📚 Getting all enrollments for user ${targetUserId}`)
-      
+
       const { data, error } = await supabaseClient
         .from('user_enrollments')
         .select('*')
@@ -650,7 +650,7 @@ const enrollmentHandlers = {
       }
 
       const enrollments = (data || []).map(mapRowToEnrollment)
-      return sendJSON(res, 200, { 
+      return sendJSON(res, 200, {
         success: true,
         enrollments,
         count: enrollments.length
@@ -668,7 +668,7 @@ const enrollmentHandlers = {
 
     // Get authenticated user
     const authenticatedUser = getCurrentUser(req);
-    
+
     // If user is authenticated, use their Azure user ID instead of query param
     const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : userId;
 
@@ -687,7 +687,7 @@ const enrollmentHandlers = {
 
     try {
       console.log(`🔐 Getting access contract for user ${targetUserId} in course ${courseSlug}`)
-      
+
       // Get enrollment and subscription in parallel
       const [enrollmentResult, subscriptionResult] = await Promise.all([
         supabaseClient
@@ -728,13 +728,13 @@ const enrollmentHandlers = {
   async cancelEnrollment(req, res) {
     try {
       const body = await parseBody(req)
-      
+
       // Get authenticated user
       const authenticatedUser = getCurrentUser(req);
-      
+
       // If user is authenticated, use their Azure user ID, otherwise require userId in body
       const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : body.userId;
-      
+
       if (!targetUserId) {
         return sendError(res, 400, 'User identification required')
       }
@@ -794,7 +794,7 @@ const enrollmentHandlers = {
   async createTestUser(req, res) {
     try {
       const body = await parseBody(req)
-      
+
       const { userId, azureUserId, email, name } = body
 
       if (!supabaseClient) {
@@ -850,34 +850,34 @@ const server = http.createServer(async (req, res) => {
     // Apply request logging middleware
     await applyMiddleware(logRequest, req, res);
     await applyMiddleware(logAuthEvent, req, res);
-    
+
     // Apply rate limiting middleware
     await applyMiddleware(applyRateLimit, req, res);
-    
+
     const { pathname, query } = parse(req.url || '', true)
-    
+
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
+
     // Handle preflight
     if (req.method === 'OPTIONS') {
       res.statusCode = 200;
       return res.end();
     }
-    
+
     console.log(`${req.method} ${pathname}`)
-    
+
     // Health check (no auth required)
     if (pathname === '/api/health') {
-      return sendJSON(res, 200, { 
-        ok: true, 
+      return sendJSON(res, 200, {
+        ok: true,
         timestamp: new Date().toISOString(),
         supabaseConfigured: Boolean(supabaseClient)
       })
     }
-    
+
     // Lesson Access API routes (authentication required)
     if (pathname.startsWith('/api/lessons/')) {
       // Apply authentication middleware
@@ -892,22 +892,22 @@ const server = http.createServer(async (req, res) => {
       req.supabaseClient = supabaseClient;
 
       const pathParts = pathname.split('/')
-      
+
       // GET /api/lessons/access/:courseSlug/:lessonId
       if (pathParts[3] === 'access' && pathParts[4] && pathParts[5] && req.method === 'GET') {
         return await lessonAccessHandlers.checkLessonAccess(req, res, pathParts[4], pathParts[5])
       }
-      
+
       // GET /api/lessons/course-access/:courseSlug
       if (pathParts[3] === 'course-access' && pathParts[4] && req.method === 'GET') {
         return await lessonAccessHandlers.getCourseAccessSummary(req, res, pathParts[4])
       }
-      
+
       // GET /api/lessons/content/:courseSlug/:lessonId
       if (pathParts[3] === 'content' && pathParts[4] && pathParts[5] && req.method === 'GET') {
         return await lessonAccessHandlers.getLessonContent(req, res, pathParts[4], pathParts[5])
       }
-      
+
       // POST /api/lessons/progress/:courseSlug/:lessonId
       if (pathParts[3] === 'progress' && pathParts[4] && pathParts[5] && req.method === 'POST') {
         return await lessonAccessHandlers.updateLessonProgress(req, res, pathParts[4], pathParts[5])
@@ -920,7 +920,7 @@ const server = http.createServer(async (req, res) => {
       
       return sendError(res, 404, 'Lesson endpoint not found')
     }
-    
+
     // Enrollment API routes (authentication required)
     if (pathname.startsWith('/api/enrollment/')) {
       // Apply authentication middleware
@@ -932,74 +932,74 @@ const server = http.createServer(async (req, res) => {
       }
 
       const pathParts = pathname.split('/')
-      
+
       // GET /api/enrollment/status/:courseSlug
       if (pathParts[3] === 'status' && pathParts[4] && req.method === 'GET') {
         return await enrollmentHandlers.getEnrollmentStatus(req, res, pathParts[4])
       }
-      
+
       // GET /api/enrollment/details/:courseSlug
       if (pathParts[3] === 'details' && pathParts[4] && req.method === 'GET') {
         return await enrollmentHandlers.getEnrollmentDetails(req, res, pathParts[4])
       }
-      
+
       // POST /api/enrollment/enroll
       if (pathParts[3] === 'enroll' && req.method === 'POST') {
         await applyMiddleware(applyStrictRateLimit, req, res);
         return await enrollmentHandlers.enrollInCourse(req, res)
       }
-      
+
       // GET /api/enrollment/user/:userId
       if (pathParts[3] === 'user' && pathParts[4] && req.method === 'GET') {
         return await enrollmentHandlers.getUserEnrollments(req, res, pathParts[4])
       }
-      
+
       // GET /api/enrollment/access/:courseSlug
       if (pathParts[3] === 'access' && pathParts[4] && req.method === 'GET') {
         return await enrollmentHandlers.getAccessContract(req, res, pathParts[4])
       }
-      
+
       // POST /api/enrollment/cancel
       if (pathParts[3] === 'cancel' && req.method === 'POST') {
         await applyMiddleware(applyStrictRateLimit, req, res);
         return await enrollmentHandlers.cancelEnrollment(req, res)
       }
-      
+
       return sendError(res, 404, 'Enrollment endpoint not found')
     }
-    
+
     // Test API routes (for development/testing only) - no auth required in dev
     if (pathname.startsWith('/api/test/')) {
       const pathParts = pathname.split('/')
-      
+
       // POST /api/test/create-user
       if (pathParts[3] === 'create-user' && req.method === 'POST') {
         return await enrollmentHandlers.createTestUser(req, res)
       }
-      
+
       return sendError(res, 404, 'Test endpoint not found')
     }
-    
+
     // Stripe endpoints (existing) - no auth required for webhooks
     if (pathname === '/api/stripe/create-checkout-session' && req.method === 'POST') {
       const body = await parseBody(req);
       const { planId, priceAmount, currency, courseSlug, userId, successUrl, cancelUrl, metadata } = body;
-      
+
       // Mock Stripe session for development
       const mockSessionId = `mock_session_${Date.now()}`;
       const mockUrl = `${successUrl}${successUrl.includes('?') ? '&' : '?'}session_id=${mockSessionId}`;
-      
+
       return sendJSON(res, 200, {
         sessionId: mockSessionId,
         url: mockUrl,
         status: 'open',
       });
     }
-    
+
     if (pathname === '/api/stripe/verify-session' && req.method === 'POST') {
       const body = await parseBody(req);
       const { sessionId } = body;
-      
+
       // Mock verification - always return paid
       return sendJSON(res, 200, {
         paymentStatus: 'paid',
@@ -1010,7 +1010,7 @@ const server = http.createServer(async (req, res) => {
         },
       });
     }
-    
+
     return sendError(res, 404, 'Endpoint not found')
   } catch (e) {
     console.error('Server error:', e)

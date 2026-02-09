@@ -24,6 +24,28 @@ export interface CourseResource {
 
 // Helper to map Supabase row to Course type
 const mapRowToCourse = (row: any): Course & { isComingSoon?: boolean; categoryName?: string } => {
+    // Calculate stats from lessons if available
+    let calculatedDuration = row.estimated_duration_minutes || 0;
+    let calculatedLessonCount = row.lesson_count || 0;
+
+    if (Array.isArray(row.lessons) && row.lessons.length > 0) {
+        // Check if we have detailed lesson data (not just count object)
+        const hasDetails = 'type' in row.lessons[0] || 'estimated_duration_minutes' in row.lessons[0];
+
+        if (hasDetails) {
+            // Duration: Sum of all lessons
+            calculatedDuration = row.lessons.reduce((acc: number, lesson: any) =>
+                acc + (Number(lesson.estimated_duration_minutes) || 0), 0);
+
+            // Count: All lessons minus intro and outro
+            calculatedLessonCount = row.lessons.filter((l: any) =>
+                l.type !== 'intro' && l.type !== 'outro').length;
+        } else if (row.lessons[0].count) {
+            // Handle simple count query
+            calculatedLessonCount = row.lessons[0].count;
+        }
+    }
+
     return {
         id: row.id,
         slug: row.slug,
@@ -35,8 +57,8 @@ const mapRowToCourse = (row: any): Course & { isComingSoon?: boolean; categoryNa
         audienceLevel: row.audience_level as any,
         topicTags: row.topic_tags || [],
         levelTag: row.level_tag || "",
-        estimatedDurationMinutes: row.estimated_duration_minutes || 0,
-        lessonCount: row.lesson_count || 0,
+        estimatedDurationMinutes: calculatedDuration,
+        lessonCount: calculatedLessonCount,
         heroImageUrl: row.hero_image_url || undefined,
         thumbnailUrl: row.thumbnail_url || undefined,
         introVideoUrl: row.intro_video_url || undefined,
@@ -73,6 +95,7 @@ const toMarketplaceItem = (course: Course): any => {
         title: course.title,
         description: course.shortDescription,
         category: (course as any).categoryName || course.categoryId,
+        categoryName: (course as any).categoryName || course.categoryId, // Added for component compatibility
         categorySlug: course.categoryId,
         industry: course.industry,
         duration: formatDuration(course.estimatedDurationMinutes),
@@ -94,7 +117,29 @@ const toMarketplaceItem = (course: Course): any => {
     };
 };
 
+// Simple in-memory cache to prevent redundant fetches
+const coursesCache: {
+    data: any[];
+    timestamp: number;
+    filters: string;
+} = {
+    data: [],
+    timestamp: 0,
+    filters: ""
+};
+
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[]> => {
+    // 1. Check Cache
+    const filtersKey = JSON.stringify(filters || {});
+    const now = Date.now();
+    const isCacheValid = (now - coursesCache.timestamp < CACHE_TTL_MS) && coursesCache.filters === filtersKey;
+
+    if (isCacheValid && coursesCache.data.length > 0) {
+        return coursesCache.data;
+    }
+
     // If Supabase is not configured, return empty
     if (!isSupabaseConfigured()) {
         console.warn("Supabase not configured, returning empty courses list");
@@ -105,10 +150,31 @@ export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[
         const supabase = getSupabase();
         let query = supabase
             .from("courses")
-            .select("*, is_coming_soon, course_categories(name)")
+            .select("*, course_categories(name), lessons(type, estimated_duration_minutes)")
             .eq("status", "published");
 
         if (filters) {
+            // Select specific columns if heavy fields should be excluded
+            if (filters.excludeHeavyFields) {
+                const lightweightFields = [
+                    "id", "slug", "title", "short_description", "category_id",
+                    "audience_level", "topic_tags", "level_tag", "estimated_duration_minutes",
+                    "lesson_count", "hero_image_url", "intro_video_url",
+                    "intro_video_poster_url", "is_featured", "is_coming_soon", "status",
+                    "rating", "review_count", "start_date", "industry", "created_at"
+                ].join(",");
+
+                query = supabase
+                    .from("courses")
+                    .select(`${lightweightFields}, course_categories(name), lessons(type, estimated_duration_minutes)`)
+                    .eq("status", "published");
+            }
+
+            // Featured filter
+            if (filters.featured) {
+                query = query.eq("is_featured", true);
+            }
+
             // Category filter (multi-select)
             if (filters.categories && filters.categories.length > 0) {
                 query = query.in("category_id", filters.categories);
@@ -154,11 +220,18 @@ export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[
             return [];
         }
 
-        return (data || []).map((row) => {
+        const result = (data || []).map((row) => {
             const course = mapRowToCourse(row);
             const item = toMarketplaceItem(course);
             return { ...item, isComingSoon: course.isComingSoon };
         });
+
+        // Update Cache
+        coursesCache.data = result;
+        coursesCache.timestamp = Date.now();
+        coursesCache.filters = filtersKey;
+
+        return result;
     } catch (err) {
         console.error("Unexpected error fetching courses:", err);
         return [];

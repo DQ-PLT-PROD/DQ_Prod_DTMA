@@ -143,3 +143,12 @@ async function initializeApp() {
 
 console.log('🎯 Starting app initialization...');
 initializeApp();
+
+// Register service worker for PWA support and offline caching
+// Register service worker for PWA support and offline caching
+/* 
+if (process.env.NODE_ENV === 'production') {
+  // Service worker file is missing, disabling for now to fix build
+  console.log('Service worker disabled');
+} 
+*/

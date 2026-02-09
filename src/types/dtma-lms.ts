@@ -62,4 +62,6 @@ export interface CourseCatalogFilters {
   topics?: string[];
   levelTags?: string[];
   industries?: string[];
+  featured?: boolean;
+  excludeHeavyFields?: boolean;
 }

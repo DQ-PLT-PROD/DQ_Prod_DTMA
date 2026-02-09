@@ -1,13 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, PlayCircle, FileText } from "lucide-react";
-import { AudienceFitIndicator } from "../AudienceFitIndicator";
+
 
 interface ScheduleTabProps {
   item: any;
-  audienceLevel?: string;
 }
 
-const ScheduleTab: React.FC<ScheduleTabProps> = ({ item, audienceLevel }) => {
+const ScheduleTab: React.FC<ScheduleTabProps> = ({ item }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const steps: Array<{ title: string; description?: string; duration?: string; type?: 'video' | 'reading' }> = useMemo(() => {
@@ -30,13 +29,11 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ item, audienceLevel }) => {
 
   return (
     <div className="space-y-6">
-      {audienceLevel && (
-        <AudienceFitIndicator audienceLevel={audienceLevel} />
-      )}
+
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-gray-900">Course Schedule</h3>
         <div className="text-sm text-gray-500 font-medium">
-          {steps.length} Lessons • {item.duration || "55m total"}
+          {steps.length} Lessons • {item.duration || ""}
         </div>
       </div>
 

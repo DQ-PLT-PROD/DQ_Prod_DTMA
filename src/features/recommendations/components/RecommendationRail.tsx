@@ -2,7 +2,7 @@
  * Recommendation Rail Component (Dev D - Feature D4)
  *
  * Horizontal scrolling rail of recommended courses with explanations
- * Uses EnhancedCourseCard from D2 for consistent CTA states and save functionality
+ * Uses CourseCard from D2 for consistent CTA states and save functionality
  *
  * @see docs/DTMA_Jan29_DevD_Feature_Specs.md
  */
@@ -18,7 +18,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { fetchCourses } from "@/services/courseService";
 import { getProfile } from "../../learner/services/learnerProfileService";
-import { EnhancedCourseCard } from "../../courses/components/EnhancedCourseCard";
+import { CourseCard } from "../../courses/components/CourseCard";
 import {
   generateRecommendations,
   getRecommendationExplanation,
@@ -201,8 +201,8 @@ export const RecommendationRail: React.FC<RecommendationRailProps> = ({
                 onClick={scrollLeft}
                 disabled={!canScrollLeft}
                 className={`p-2 rounded-full border transition-colors ${canScrollLeft
-                    ? "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                    : "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                  ? "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  : "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                   }`}
                 aria-label="Scroll left"
               >
@@ -212,8 +212,8 @@ export const RecommendationRail: React.FC<RecommendationRailProps> = ({
                 onClick={scrollRight}
                 disabled={!canScrollRight}
                 className={`p-2 rounded-full border transition-colors ${canScrollRight
-                    ? "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                    : "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                  ? "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  : "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                   }`}
                 aria-label="Scroll right"
               >
@@ -287,7 +287,7 @@ export const RecommendationRail: React.FC<RecommendationRailProps> = ({
 
                 {/* Enhanced Course Card */}
                 <div onClick={() => handleCourseClick(recommendation)}>
-                  <EnhancedCourseCard
+                  <CourseCard
                     course={{
                       id: recommendation.course.id,
                       slug: recommendation.course.slug,
