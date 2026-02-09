@@ -5,7 +5,7 @@ import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { authenticateUser, getCurrentUser, isAuthenticated } from './middleware/auth.mjs'
-import { checkLessonAccess, getCourseAccessSummary, enforceLessonAccess } from './middleware/lessonAccess.mjs'
+import { checkLessonAccess, checkModuleAccess, getCourseAccessSummary, enforceLessonAccess } from './middleware/lessonAccess.mjs'
 import { applyRateLimit, applyStrictRateLimit } from './middleware/rateLimiter.mjs'
 import { logRequest, logAuthEvent, logEnrollmentEvent, logAccessEvent } from './middleware/requestLogger.mjs'
 
@@ -346,6 +346,56 @@ const lessonAccessHandlers = {
     } catch (err) {
       console.error('Error updating lesson progress:', err)
       return sendError(res, 500, 'Failed to update lesson progress')
+    }
+  },
+
+  // GET /api/lessons/module-intro/:courseSlug/:moduleId
+  async getModuleIntro(req, res, courseSlug, moduleId) {
+    const authenticatedUser = getCurrentUser(req);
+    const userId = authenticatedUser ? authenticatedUser.azureUserId : null;
+
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      console.log(`🎬 Getting module intro for user ${userId} - course: ${courseSlug}, module: ${moduleId}`)
+      
+      // Check module access (module intros are always accessible)
+      const accessResult = await checkModuleAccess(
+        supabaseClient,
+        userId,
+        courseSlug,
+        moduleId
+      )
+
+      if (!accessResult.canAccess) {
+        return sendError(res, 404, accessResult.reason)
+      }
+
+      const module = accessResult.module
+
+      return sendJSON(res, 200, {
+        success: true,
+        module: {
+          id: module.id,
+          title: module.title,
+          description: module.description,
+          orderIndex: module.order_index,
+          introContent: module.intro_content,
+          introVideoUrl: module.intro_video_url,
+          introPosterUrl: module.intro_poster_url,
+          hasIntroContent: accessResult.hasIntroContent
+        },
+        accessInfo: {
+          canAccess: true,
+          accessType: 'module_intro',
+          reason: 'Module intro is public content'
+        }
+      })
+    } catch (err) {
+      console.error('Error getting module intro:', err)
+      return sendError(res, 500, 'Failed to get module intro')
     }
   }
 }
@@ -861,6 +911,11 @@ const server = http.createServer(async (req, res) => {
       // POST /api/lessons/progress/:courseSlug/:lessonId
       if (pathParts[3] === 'progress' && pathParts[4] && pathParts[5] && req.method === 'POST') {
         return await lessonAccessHandlers.updateLessonProgress(req, res, pathParts[4], pathParts[5])
+      }
+      
+      // GET /api/lessons/module-intro/:courseSlug/:moduleId
+      if (pathParts[3] === 'module-intro' && pathParts[4] && pathParts[5] && req.method === 'GET') {
+        return await lessonAccessHandlers.getModuleIntro(req, res, pathParts[4], pathParts[5])
       }
       
       return sendError(res, 404, 'Lesson endpoint not found')
