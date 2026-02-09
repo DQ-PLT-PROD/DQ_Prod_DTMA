@@ -1,13 +1,12 @@
-export interface AccessContract {
-    isEnrolled: boolean;
-    enrollmentStatus: string | null;
-    subscriptionStatus: string | null;
-}
-
-export const getAccessContract = async (userId: string, courseSlug: string): Promise<AccessContract> => {
-    return Promise.resolve({
-        isEnrolled: false,
-        enrollmentStatus: null,
-        subscriptionStatus: null
-    });
-};
+// Re-export enrollment service functions
+export {
+    isUserEnrolled,
+    enrollInCourse,
+    getEnrollment,
+    unenrollFromCourse,
+    getUserEnrollments,
+    getAccessContract,
+    type CourseEnrollment,
+    type EnrollmentResult,
+    type AccessContract
+} from './enrollment/service';
