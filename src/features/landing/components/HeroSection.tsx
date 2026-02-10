@@ -280,29 +280,46 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
       <PageContainer className="h-full py-16 md:py-24 flex flex-col justify-center items-center gap-8 relative z-10 text-center">
         <FadeInUpOnScroll className="space-y-5 w-full flex flex-col items-center">
-          <div className="space-y-5 w-full flex flex-col items-center text-center">
-            <h1 className="text-[48px] md:text-[56px] leading-[1.2] font-bold text-white tracking-[-0.5px] max-w-3xl mx-auto">
-              Master the Skills That Define the Future of Work
+          <div className="space-y-6 w-full flex flex-col items-center text-center px-4">
+            <h1 className="text-[42px] md:text-[56px] leading-[1.2] font-bold text-white tracking-[-0.5px] max-w-4xl mx-auto drop-shadow-sm">
+              Understand Digital Transformation & AI
             </h1>
-            <p className="text-[18px] leading-[1.5] text-white/80 font-semibold max-w-2xl mx-auto">
-              Join thousands of professionals mastering digital transformation through expert-led, self-paced courses. Start learning today.
-            </p>
+            
+            <div className="flex flex-col gap-6 max-w-4xl mx-auto">
+              <p className="text-[18px] md:text-[22px] leading-[1.5] text-white/95 font-medium max-w-3xl mx-auto drop-shadow-sm">
+                DTMA is a curated, structured learning platform for professional workers and leaders, with guided pathways across the key dimensions of digital transformation—so learning is clear, connected, and usable in real organizations.
+              </p>
+              <p className="text-[16px] md:text-[18px] leading-[1.6] text-white/75 max-w-3xl mx-auto">
+                Practical tools, templates, and playbooks help learners apply what they learn—supporting better planning, coordination, and delivery of digital initiatives.
+              </p>
+            </div>
           </div>
         </FadeInUpOnScroll>
 
-        {/* AI Prompt Interface removed as requested */}
+        <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 w-full justify-center px-4">
+          <button
+            onClick={scrollToCategories}
+            className="px-8 py-3.5 text-white font-semibold text-lg bg-primary rounded-full shadow-lg transform transition-all duration-300 hover:bg-primary-dark hover:-translate-y-1 hover:shadow-xl text-center flex items-center justify-center overflow-hidden group tracking-wide min-w-[240px] w-full sm:w-auto"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              Explore Learning Pathways
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </span>
+            <span className="absolute inset-0 overflow-hidden rounded-lg">
+              <span className="absolute inset-0 bg-white/20 transform scale-0 opacity-0 group-hover:scale-[2.5] group-hover:opacity-100 rounded-full transition-all duration-700 origin-center"></span>
+            </span>
+          </button>
 
-        <button
-          onClick={handleHeroAction}
-          className="px-10 py-4 text-white font-semibold text-lg bg-primary rounded-full shadow-lg transform transition-all duration-300 hover:bg-primary-dark hover:-translate-y-1 hover:shadow-xl text-center flex items-center justify-center overflow-hidden group tracking-wide min-w-[260px]"
-        >
-          <span className="relative z-10">
-            {user ? (hasStarted ? "Resume Course" : "Start Course") : "Get Started"}
-          </span>
-          <span className="absolute inset-0 overflow-hidden rounded-lg">
-            <span className="absolute inset-0 bg-white/20 transform scale-0 opacity-0 group-hover:scale-[2.5] group-hover:opacity-100 rounded-full transition-all duration-700 origin-center"></span>
-          </span>
-        </button>
+          <button
+            onClick={() => {
+               const nextSection = document.querySelector('main > div:nth-child(2)');
+               nextSection?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="px-8 py-3.5 text-white font-semibold text-lg border border-white/30 bg-white/5 backdrop-blur-sm rounded-full shadow-lg transform transition-all duration-300 hover:bg-white/10 hover:border-white/50 hover:-translate-y-1 hover:shadow-xl text-center flex items-center justify-center min-w-[240px] w-full sm:w-auto"
+          >
+            See How It Works
+          </button>
+        </div>
 
       </PageContainer>
 

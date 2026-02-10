@@ -13,42 +13,42 @@ const categories = [
     title: "Leading the New Economy",
     slug: "economy-4-0",
     description:
-      "Master the digital leadership skills needed to steer teams through rapid technological shifts and market volatility.",
+      "Understand how the digital economy is reshaping value creation, competition, and organizational priorities\u2014and what this means for leaders and professionals navigating change.",
     image: "/images/landing/category-economy-4-0.png",
   },
   {
     title: "Architecting the Future Organization",
     slug: "digital-cognitive-organization",
     description:
-      "Implement agile workflows and automation guidelines to build a scalable, future-ready organizational structure.",
+      "Learn how organizations must be re-imagined to operate effectively in a digital environment, including new structures, decision models, and ways of working.",
     image: "/images/landing/category-digital-cognitive-organization.jpg",
   },
   {
-    title: "Mastering the Digital Pivot",
+    title: "Navigating the Digital Pivot",
     slug: "digital-business-platform",
     description:
-      "Transition from legacy processes to high-velocity digital tools that power tomorrow's industrial standards.",
+      "Build clarity on how organizations move from today\u2019s state to future digital states\u2014covering transformation journeys, sequencing, and change coordination.",
     image: "/images/landing/category-digital-business-platform.jpg",
   },
   {
-    title: "Build the Future: Designing Digital Ecosystems",
+    title: "Designing Digital Ecosystems",
     slug: "digital-transformation-2-0",
     description:
-      "Build sustainable, next-gen infrastructures. Master the core frameworks to scale future-proof digital environments.",
+      "Understand how digital platforms, data, and services come together to create scalable ecosystems that support products, services, and organizational growth.",
     image: "/images/landing/category-digital-transformation-2-0.jpg",
   },
   {
-    title: "Lead Change: The Digital Architect Path",
+    title: "The Digital Architect Path",
     slug: "digital-worker-workspace",
     description:
-      "Orchestrate people and tech. Gain the leadership skills to manage complex digital transformations in the modern office.",
+      "Learn how to orchestrate people, platforms, and technologies\u2014translating strategy into coherent digital operating models across the organization.",
     image: "/images/landing/category-digital-worker-workspace.jpg",
   },
   {
-    title: "Accelerate Impact: Master Digital Velocity",
+    title: "Enabling Digital Velocity",
     slug: "digital-accelerators-tools",
     description:
-      "Drive rapid evolution. Master high-speed tools to increase organizational efficiency and lead market shifts.",
+      "Explore how enabling technologies, data, and automation support faster decision-making and execution\u2014without losing alignment or control.",
     image: "/images/landing/category-digital-accelerators-tools.jpg",
   },
 ];
@@ -64,10 +64,13 @@ const D6CategoriesSection: React.FC = () => {
             className="text-3xl md:text-4xl font-bold text-gray-900"
             style={{ textShadow: "0 8px 20px rgba(3, 12, 43, 0.1)" }}
           >
-            Choose Your Transformation Pathway
+            Explore the Dimensions of Digital Transformation
           </h2>
           <p className="text-lg text-gray-600">
-            Master the frameworks of the AI era. Choose a guided pathway designed to align your skills with modern automation and digital-first workflows.
+            DTMA learning is organized into structured pathways that reflect the key dimensions of digital transformation. Each pathway helps professionals and leaders build clarity in a specific area—while staying connected to the bigger picture of how organizations evolve.
+          </p>
+          <p className="text-base text-gray-500">
+            These are not isolated topics. Together, they form a coherent view of how digital transformation actually works in real organizations.
           </p>
         </FadeInUpOnScroll>
 
@@ -104,7 +107,7 @@ const D6CategoriesSection: React.FC = () => {
                   className="mt-6 inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white rounded-lg transition-all duration-200 hover:opacity-90 hover:shadow-md"
                   style={{ backgroundColor: BRAND_PRIMARY }}
                 >
-                  Start Pathway
+                  Explore Pathway
                   <ArrowRight size={16} className="ml-2" />
                 </Link>
               </div>
@@ -117,4 +120,3 @@ const D6CategoriesSection: React.FC = () => {
 };
 
 export default D6CategoriesSection;
-
