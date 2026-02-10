@@ -1,5 +1,11 @@
-pr: none
-trigger: none
+pr: 
+  branches:
+    include:
+      - release
+trigger: 
+  branches:
+    include:
+      - release
 
 pool:
   vmImage: ubuntu-latest
