@@ -6,6 +6,7 @@
  */
 import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
 import { isSupabaseConfigured } from "../../../lib/supabase/client";
+import { recordCourseCompletion } from "./achievementService";
 
 // Types
 export interface Enrollment {
@@ -31,6 +32,106 @@ export interface LocalLesson {
     id: string | number;
     completed: boolean;
 }
+
+type ProgressQueueItem =
+    | {
+        type: "lesson_progress";
+        payload: {
+            userId: string;
+            courseSlug: string;
+            lessonId: string;
+            completed: boolean;
+            watchTimeSeconds?: number;
+        };
+    }
+    | {
+        type: "enrollment_progress";
+        payload: {
+            userId: string;
+            courseSlug: string;
+            progressPct: number;
+        };
+    };
+
+const PROGRESS_QUEUE_KEY = "dtma_progress_queue_v1";
+
+const readProgressQueue = (): ProgressQueueItem[] => {
+    if (typeof window === "undefined") {
+        return [];
+    }
+
+    try {
+        const raw = window.localStorage.getItem(PROGRESS_QUEUE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+        console.warn("Failed to read progress queue:", err);
+        return [];
+    }
+};
+
+const writeProgressQueue = (queue: ProgressQueueItem[]) => {
+    if (typeof window === "undefined") return;
+    try {
+        window.localStorage.setItem(PROGRESS_QUEUE_KEY, JSON.stringify(queue));
+    } catch (err) {
+        console.warn("Failed to persist progress queue:", err);
+    }
+};
+
+const enqueueProgress = (item: ProgressQueueItem) => {
+    const queue = readProgressQueue();
+    queue.push(item);
+    writeProgressQueue(queue);
+};
+
+export const flushProgressQueue = async (): Promise<void> => {
+    if (!isSupabaseConfigured()) {
+        return;
+    }
+
+    const queue = readProgressQueue();
+    if (queue.length === 0) {
+        return;
+    }
+
+    const remaining: ProgressQueueItem[] = [];
+    for (const item of queue) {
+        try {
+            if (item.type === "lesson_progress") {
+                const result = await updateLessonProgress(
+                    item.payload.userId,
+                    item.payload.courseSlug,
+                    item.payload.lessonId,
+                    item.payload.completed,
+                    item.payload.watchTimeSeconds
+                );
+                if (!result) {
+                    remaining.push(item);
+                }
+                continue;
+            }
+
+            if (item.type === "enrollment_progress") {
+                const result = await updateEnrollmentProgress(
+                    item.payload.userId,
+                    item.payload.courseSlug,
+                    item.payload.progressPct
+                );
+                if (!result) {
+                    remaining.push(item);
+                }
+                continue;
+            }
+        } catch (err) {
+            console.warn("Failed to flush progress queue item:", err);
+            remaining.push(item);
+        }
+    }
+
+    writeProgressQueue(remaining);
+};
 
 // Helper to map database row to Enrollment type
 const mapRowToEnrollment = (row: any): Enrollment => ({
@@ -136,6 +237,7 @@ export const getUserCourseProgress = async (
     }
 
     try {
+        await flushProgressQueue();
         const supabase = getProgressSupabase();
 
         // Get enrollment
@@ -180,6 +282,10 @@ export const updateLessonProgress = async (
     watchTimeSeconds?: number
 ): Promise<boolean> => {
     if (!isSupabaseConfigured()) {
+        enqueueProgress({
+            type: "lesson_progress",
+            payload: { userId, courseSlug, lessonId, completed, watchTimeSeconds },
+        });
         return false;
     }
 
@@ -215,12 +321,20 @@ export const updateLessonProgress = async (
 
         if (error) {
             console.error("Error updating lesson progress:", error);
+            enqueueProgress({
+                type: "lesson_progress",
+                payload: { userId, courseSlug, lessonId, completed, watchTimeSeconds },
+            });
             return false;
         }
 
         return true;
     } catch (err) {
         console.error("Unexpected error updating lesson progress:", err);
+        enqueueProgress({
+            type: "lesson_progress",
+            payload: { userId, courseSlug, lessonId, completed, watchTimeSeconds },
+        });
         return false;
     }
 };
@@ -234,6 +348,10 @@ export const updateEnrollmentProgress = async (
     progressPct: number
 ): Promise<boolean> => {
     if (!isSupabaseConfigured()) {
+        enqueueProgress({
+            type: "enrollment_progress",
+            payload: { userId, courseSlug, progressPct },
+        });
         return false;
     }
 
@@ -252,12 +370,23 @@ export const updateEnrollmentProgress = async (
 
         if (error) {
             console.error("Error updating enrollment progress:", error);
+            enqueueProgress({
+                type: "enrollment_progress",
+                payload: { userId, courseSlug, progressPct },
+            });
             return false;
         }
 
+        if (progressPct >= 100) {
+            await recordCourseCompletion(userId, courseSlug);
+        }
         return true;
     } catch (err) {
         console.error("Unexpected error updating enrollment progress:", err);
+        enqueueProgress({
+            type: "enrollment_progress",
+            payload: { userId, courseSlug, progressPct },
+        });
         return false;
     }
 };
@@ -275,6 +404,7 @@ export const syncLocalProgressToServer = async (
     }
 
     try {
+        await flushProgressQueue();
         // Update each completed lesson
         const updatePromises = localLessons
             .filter(lesson => lesson.completed)

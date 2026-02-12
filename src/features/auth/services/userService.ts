@@ -28,6 +28,14 @@ export interface DatabaseUser {
   department?: string;
   office_location?: string;
   profile_data?: any;
+  display_name?: string | null;
+  preferred_email?: string | null;
+  phone_number?: string | null;
+  country?: string | null;
+  timezone?: string | null;
+  seniority_level?: string | null;
+  weekly_learning_capacity?: string | null;
+  transformation_experience?: string | null;
   last_login: string;
   created_at: string;
   updated_at: string;

@@ -13,6 +13,10 @@ vi.mock('../../../lib/supabase/client', () => ({
     isSupabaseConfigured: vi.fn(),
 }));
 
+vi.mock('./achievementService', () => ({
+    recordCourseCompletion: vi.fn(),
+}));
+
 // Now import after mocks are set up
 import { getSupabaseForEnrollment } from '../../../lib/supabase/serviceClient';
 import { isSupabaseConfigured } from '../../../lib/supabase/client';

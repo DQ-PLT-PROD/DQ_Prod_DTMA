@@ -20,6 +20,7 @@ import {
     updateEnrollmentProgress,
     syncLocalProgressToServer,
     getUserCourseProgress,
+    flushProgressQueue,
     Enrollment,
 } from "../services/progressService";
 import { isUserEnrolled } from "../../courses/services/enrollmentService";
@@ -164,6 +165,11 @@ const CoursePlayerPage: React.FC = () => {
 
         loadCourseData();
     }, [courseId, databaseUser?.id]);
+
+    useEffect(() => {
+        if (!databaseUser?.id) return;
+        flushProgressQueue();
+    }, [databaseUser?.id]);
 
     // Preload video durations
     useEffect(() => {

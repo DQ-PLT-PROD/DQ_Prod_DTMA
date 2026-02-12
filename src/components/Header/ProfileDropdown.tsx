@@ -11,25 +11,27 @@ export function ProfileDropdown({ }: ProfileDropdownProps) {
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const {
     user,
+    databaseUser,
     logout,
     isLoading
   } = useAuth();
   // Generate initials from user name if no avatar is available
   const getInitials = () => {
-    if (!user || !user.name) return '?';
-    if (user.givenName && user.familyName) {
-      return `${user.givenName.charAt(0)}${user.familyName.charAt(0)}`;
-    }
-    const nameParts = user.name.split(' ');
+    const fallbackName = user?.name || '';
+    const displayName = databaseUser?.display_name || fallbackName;
+    if (!displayName) return '?';
+    const nameParts = displayName.split(' ').filter(Boolean);
     if (nameParts.length >= 2) {
       return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`;
     }
-    return user.name.substring(0, 2).toUpperCase();
+    return displayName.substring(0, 2).toUpperCase();
   };
   // Get user's first name for greeting
   const getFirstName = () => {
-    if (!user) return '';
-    return user.givenName || user.name.split(' ')[0];
+    const fallbackName = user?.name || '';
+    const displayName = databaseUser?.display_name || fallbackName;
+    if (!displayName) return '';
+    return displayName.split(' ')[0];
   };
   // Toggle dropdown
   const toggleDropdown = () => {

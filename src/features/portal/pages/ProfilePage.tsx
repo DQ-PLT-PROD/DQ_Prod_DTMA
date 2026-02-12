@@ -12,16 +12,27 @@ import {
   PREFERENCE_OPTIONS,
   MAX_GOALS,
   MAX_PREFERENCES,
+  SENIORITY_OPTIONS,
+  WEEKLY_CAPACITY_OPTIONS,
+  TRANSFORMATION_EXPERIENCE_OPTIONS,
 } from "../../learner/constants/profileOptions";
 
 const ProfilePage: React.FC = () => {
-  const { databaseUser, isDatabaseUserLoading } = useAuth();
+  const { databaseUser, isDatabaseUserLoading, user } = useAuth();
   const { showToast, ToastComponent } = useToast();
   const toastRef = useRef(showToast);
 
+  const [displayName, setDisplayName] = useState("");
+  const [preferredEmail, setPreferredEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [country, setCountry] = useState("");
+  const [timezone, setTimezone] = useState("");
   const [roleTrack, setRoleTrack] = useState<RoleTrack | null>(null);
   const [goals, setGoals] = useState<string[]>([]);
   const [preferences, setPreferences] = useState<string[]>([]);
+  const [seniorityLevel, setSeniorityLevel] = useState("");
+  const [weeklyLearningCapacity, setWeeklyLearningCapacity] = useState("");
+  const [transformationExperience, setTransformationExperience] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -67,9 +78,22 @@ const ProfilePage: React.FC = () => {
       }
 
       if (profile) {
+        setDisplayName(
+          profile.displayName ||
+            databaseUser?.name ||
+            user?.name ||
+            ""
+        );
+        setPreferredEmail(profile.preferredEmail || "");
+        setPhoneNumber(profile.phoneNumber || "");
+        setCountry(profile.country || "");
+        setTimezone(profile.timezone || "");
         setRoleTrack(profile.roleTrack || null);
         setGoals(profile.goals || []);
         setPreferences(profile.preferences || []);
+        setSeniorityLevel(profile.seniorityLevel || "");
+        setWeeklyLearningCapacity(profile.weeklyLearningCapacity || "");
+        setTransformationExperience(profile.transformationExperience || "");
       }
 
       loadedKeyRef.current = userKey;
@@ -81,7 +105,25 @@ const ProfilePage: React.FC = () => {
     };
 
     loadProfile();
-  }, [userKey, isDatabaseUserLoading]);
+  }, [userKey, isDatabaseUserLoading, databaseUser?.name, user?.name]);
+
+  useEffect(() => {
+    if (roleTrack !== "leader" && transformationExperience) {
+      setTransformationExperience("");
+    }
+  }, [roleTrack, transformationExperience]);
+
+  const displayNameError = displayName.trim() ? null : "Display name is required.";
+
+  const preferredEmailError = useMemo(() => {
+    if (!preferredEmail.trim()) {
+      return null;
+    }
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(preferredEmail.trim())
+      ? null
+      : "Preferred email must be a valid email address.";
+  }, [preferredEmail]);
 
   const goalsError = useMemo(() => {
     if (goals.length > MAX_GOALS) {
@@ -98,7 +140,18 @@ const ProfilePage: React.FC = () => {
   }, [preferences]);
 
   const roleError = roleTrack ? null : "Role track is required.";
-  const canSave = !roleError && !goalsError && !preferencesError;
+  const seniorityError = seniorityLevel ? null : "Seniority level is required.";
+  const transformationError =
+    roleTrack === "leader" && !transformationExperience
+      ? "Transformation experience is required for leaders."
+      : null;
+  const canSave = !roleError
+    && !displayNameError
+    && !preferredEmailError
+    && !goalsError
+    && !preferencesError
+    && !seniorityError
+    && !transformationError;
 
   const toggleSelection = (
     value: string,
@@ -125,15 +178,39 @@ const ProfilePage: React.FC = () => {
     }
 
     if (!canSave) {
-      showToast(roleError || goalsError || preferencesError || "Fix validation errors.", "error");
+      showToast(
+        roleError
+          || displayNameError
+          || preferredEmailError
+          || seniorityError
+          || transformationError
+          || goalsError
+          || preferencesError
+          || "Fix validation errors.",
+        "error"
+      );
       return;
     }
 
     setIsSaving(true);
+    const trimmedDisplayName = displayName.trim();
+    const trimmedPreferredEmail = preferredEmail.trim();
+    const trimmedPhoneNumber = phoneNumber.trim();
+    const trimmedCountry = country.trim();
+    const trimmedTimezone = timezone.trim();
     const result = await upsertLearnerProfile(userKey, {
+      displayName: trimmedDisplayName || null,
+      preferredEmail: trimmedPreferredEmail || null,
+      phoneNumber: trimmedPhoneNumber || null,
+      country: trimmedCountry || null,
+      timezone: trimmedTimezone || null,
       roleTrack,
       goals,
       preferences,
+      seniorityLevel: seniorityLevel || null,
+      weeklyLearningCapacity: weeklyLearningCapacity || null,
+      transformationExperience:
+        roleTrack === "leader" ? transformationExperience || null : null,
     });
     setIsSaving(false);
 
@@ -163,6 +240,87 @@ const ProfilePage: React.FC = () => {
               {isRefreshing && (
                 <p className="text-sm text-gray-500">Refreshing profile data...</p>
               )}
+              <section className="space-y-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Basic information</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Update how your profile appears to you and the platform.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Display name
+                    </label>
+                    <input
+                      value={displayName}
+                      onChange={(event) => setDisplayName(event.target.value)}
+                      className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1839AD]/30"
+                      placeholder="Your preferred name"
+                    />
+                    {displayNameError && (
+                      <p className="text-sm text-red-600 mt-1">{displayNameError}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Email (read-only)
+                    </label>
+                    <input
+                      value={databaseUser?.email || user?.email || ""}
+                      readOnly
+                      className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm bg-gray-50 text-gray-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Preferred email (optional)
+                    </label>
+                    <input
+                      value={preferredEmail}
+                      onChange={(event) => setPreferredEmail(event.target.value)}
+                      className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1839AD]/30"
+                      placeholder="name@company.com"
+                    />
+                    {preferredEmailError && (
+                      <p className="text-sm text-red-600 mt-1">{preferredEmailError}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Phone number (optional)
+                    </label>
+                    <input
+                      value={phoneNumber}
+                      onChange={(event) => setPhoneNumber(event.target.value)}
+                      className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1839AD]/30"
+                      placeholder="+971 50 000 0000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Country (optional)
+                    </label>
+                    <input
+                      value={country}
+                      onChange={(event) => setCountry(event.target.value)}
+                      className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1839AD]/30"
+                      placeholder="United Arab Emirates"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Timezone (optional)
+                    </label>
+                    <input
+                      value={timezone}
+                      onChange={(event) => setTimezone(event.target.value)}
+                      className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1839AD]/30"
+                      placeholder="Asia/Dubai"
+                    />
+                  </div>
+                </div>
+              </section>
               <section className="space-y-4">
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900">Role track</h2>
@@ -196,6 +354,102 @@ const ProfilePage: React.FC = () => {
                 </div>
                 {roleError && <p className="text-sm text-red-600">{roleError}</p>}
               </section>
+
+              <section className="space-y-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Seniority level</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Tell us where you are in your career.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {SENIORITY_OPTIONS.map((option) => {
+                    const isSelected = seniorityLevel === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setSeniorityLevel(option.value)}
+                        className={`p-4 rounded-lg border text-left transition ${
+                          isSelected
+                            ? "border-[#1839AD] bg-[#1839AD]/5"
+                            : "border-gray-200 hover:border-[#1839AD]/40"
+                        }`}
+                      >
+                        <div className="text-lg font-semibold text-gray-900">{option.label}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+                {seniorityError && (
+                  <p className="text-sm text-red-600">{seniorityError}</p>
+                )}
+              </section>
+
+              <section className="space-y-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Weekly learning capacity</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Optional: Let us know how much time you can commit weekly.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {WEEKLY_CAPACITY_OPTIONS.map((option) => {
+                    const isSelected = weeklyLearningCapacity === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setWeeklyLearningCapacity(option.value)}
+                        className={`p-4 rounded-lg border text-left transition ${
+                          isSelected
+                            ? "border-[#1839AD] bg-[#1839AD]/5"
+                            : "border-gray-200 hover:border-[#1839AD]/40"
+                        }`}
+                      >
+                        <div className="text-lg font-semibold text-gray-900">{option.label}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
+              {roleTrack === "leader" && (
+                <section className="space-y-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Transformation experience
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Leaders are asked to share their transformation experience.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {TRANSFORMATION_EXPERIENCE_OPTIONS.map((option) => {
+                      const isSelected = transformationExperience === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setTransformationExperience(option.value)}
+                          className={`p-4 rounded-lg border text-left transition ${
+                            isSelected
+                              ? "border-[#1839AD] bg-[#1839AD]/5"
+                              : "border-gray-200 hover:border-[#1839AD]/40"
+                          }`}
+                        >
+                          <div className="text-lg font-semibold text-gray-900">
+                            {option.label}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {transformationError && (
+                    <p className="text-sm text-red-600">{transformationError}</p>
+                  )}
+                </section>
+              )}
 
               <section className="space-y-4">
                 <div>

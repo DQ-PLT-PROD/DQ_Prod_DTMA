@@ -175,19 +175,16 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                             {/* Divider */}
                             <div className="my-3 mx-3 border-t border-gray-200" />
 
-                            {/* Badges - Coming Soon */}
-                            <div
-                                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
-                                title="Badges - Coming Soon"
+                            <Link
+                                to="/portal/badges"
+                                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-[#1839AD] bg-[#1839AD]/5 hover:bg-[#1839AD]/10 transition ${!sidebarOpen ? 'justify-center' : ''}`}
+                                title="Badges"
                             >
                                 <Award size={16} className="shrink-0" />
                                 {sidebarOpen && (
-                                    <div className="flex-1 flex items-center justify-between">
-                                        <span className="text-sm">Badges</span>
-                                        <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
-                                    </div>
+                                    <span className="text-sm">Badges</span>
                                 )}
-                            </div>
+                            </Link>
 
                             {/* Career Coach - Coming Soon */}
                             <div
@@ -270,11 +267,10 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
 
                             <div className="my-3 mx-3 border-t border-gray-200" />
 
-                            <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400">
+                            <Link to="/portal/badges" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/5">
                                 <Award size={16} />
                                 <span className="text-sm">Badges</span>
-                                <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
-                            </div>
+                            </Link>
 
                             <div className="flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-gray-400">
                                 <Sparkles size={16} />
