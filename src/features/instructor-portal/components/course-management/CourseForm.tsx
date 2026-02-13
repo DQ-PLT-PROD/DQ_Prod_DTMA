@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, SaveIcon, UploadIcon, Image as ImageIcon } from 'lucide-react';
-import { getSupabaseClient, getSupabaseClientWithRLSOverride, isRLSOverrideAvailable } from '../../lib/dbClient';
+import { getSupabaseClient } from '../../lib/dbClient';
 import { uploadLMSFile } from '../../lib/storage';
 import { Toast } from '@/components/ui/Toast';
 import { MediaPickerModal } from '../../components/media/MediaPickerModal';
@@ -257,7 +257,7 @@ export function CourseForm() {
         e.preventDefault();
         setSaving(true);
         try {
-            const supabase = getSupabaseClientWithRLSOverride();
+            const supabase = getSupabaseClient();
             if (!supabase) {
                 throw new Error('Database connection unavailable');
             }
@@ -286,12 +286,7 @@ export function CourseForm() {
             }, 1000);
         } catch (error: unknown) {
             console.error('Error saving course:', error);
-            let message = error instanceof Error ? error.message : 'Failed to save course';
-            if (message.includes('401') || message.includes('Unauthorized') || (error as { status?: number })?.status === 401) {
-                message += isRLSOverrideAvailable()
-                    ? ' Try again (service role is in use).'
-                    : ' Set VITE_SUPABASE_SERVICE_ROLE_KEY in .env to allow instructor writes (bypass RLS).';
-            }
+            const message = error instanceof Error ? error.message : 'Failed to save course';
             setToast({ type: 'error', message });
         } finally {
             setSaving(false);
