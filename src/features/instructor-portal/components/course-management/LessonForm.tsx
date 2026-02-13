@@ -63,7 +63,7 @@ export function LessonForm() {
 
         // Load Courses
         const { data: coursesData, error: coursesError } = await supabase
-            .from('lms_courses')
+            .from('courses')
             .select('id, title')
             .order('title');
 

@@ -46,7 +46,7 @@ function CategoriesSubsection() {
 
         try {
             const { data, error } = await supabase
-                .from('lms_courses')
+                .from('courses')
                 .select('category');
 
             if (error) throw error;
@@ -120,7 +120,7 @@ function CategoriesSubsection() {
             if (editingCategory) {
                 // Rename existing category (bulk update courses)
                 const { error } = await supabase
-                    .from('lms_courses')
+                    .from('courses')
                     .update({ category: newSlug })
                     .eq('category', editingCategory.slug);
 

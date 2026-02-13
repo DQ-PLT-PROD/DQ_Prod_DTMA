@@ -36,7 +36,7 @@ export function ModuleForm() {
         if (!supabase) return;
 
         const { data, error } = await supabase
-            .from('lms_courses')
+            .from('courses')
             .select('id, title')
             .order('title');
 
