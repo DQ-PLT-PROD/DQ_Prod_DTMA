@@ -91,7 +91,7 @@ const mockCourses: Course[] = [
     title: "Team Management Essentials",
     shortDescription: "Essential skills for managing teams effectively",
     categoryId: "management",
-    audienceLevel: "All Levels", // Won't match leader role
+    audienceLevel: "Digital Workers", // Won't match leader role
     topicTags: ["team-management", "communication", "leadership"],
     levelTag: "Intermediate",
     estimatedDurationMinutes: 100,

@@ -32,7 +32,7 @@ interface AIWidgetProps {
 export const AIWidget: React.FC<AIWidgetProps> = ({
   className = "bottom-4 right-4", // Default if not provided
   isOpen = false,
-  messages = [],
+  messages = [] as ChatMessage[],
   isTyping = false,
   unreadCount = 0,
   onToggle,
