@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { loginRequest, interactiveLoginRequest } from '../../../services/auth/msal';
 import { mockAuthService, MockUser } from '../../../services/auth/mockAuth';
 import { validateAndLogClaims, extractUserProfile } from '../../../utils/claimsValidator';
-import { fetchUserFromGraph, mergeGraphUserData } from '../services/graphService';
+import { fetchUserFromGraph, mergeGraphUserData, GraphUser } from '../services/graphService';
 import { logAuthenticationState, validateTokenResponse } from '../../../utils/authTester';
 import { syncUserWithDatabase, getUserByAzureId, updateUserLastLogin, updateUserProfile, DatabaseUser } from '../services/userService';
 import { getLearnerProfile } from '../../learner/services/learnerProfileService';
@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [bypassUser, setBypassUser] = useState<UserProfile | null>(null);
   const [mockUser, setMockUser] = useState<UserProfile | null>(null);
   const [databaseUser, setDatabaseUser] = useState<DatabaseUser | null>(null);
+  const [isDatabaseUserLoading, setIsDatabaseUserLoading] = useState(false);
   const [loginInProgress, setLoginInProgress] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,12 +85,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isLoading = useMockAuth
     ? false
     : (
-        inProgress === 'startup' ||
-        inProgress === 'handleRedirect' ||
-        inProgress === 'login' ||
-        inProgress === 'ssoSilent' ||
-        inProgress === 'acquireToken'
-      );
+      inProgress === 'startup' ||
+      inProgress === 'handleRedirect' ||
+      inProgress === 'login' ||
+      inProgress === 'ssoSilent' ||
+      inProgress === 'acquireToken'
+    );
 
   const fetchGraphUserForAccount = async (account: any): Promise<GraphUser | null> => {
     try {
@@ -364,7 +365,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     location.pathname,
     navigate,
   ]);
-// MSAL Event Listener - Listen for login success events to immediately update state
+  // MSAL Event Listener - Listen for login success events to immediately update state
   // This fixes the issue where users need to refresh the page after sign-in
   useEffect(() => {
     if (useMockAuth || bypassMode) return;

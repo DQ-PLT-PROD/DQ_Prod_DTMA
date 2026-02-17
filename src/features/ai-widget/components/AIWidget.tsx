@@ -32,7 +32,7 @@ interface AIWidgetProps {
 export const AIWidget: React.FC<AIWidgetProps> = ({
   className = "",
   isOpen = false,
-  messages = [],
+  messages = [] as ChatMessage[],
   isTyping = false,
   unreadCount = 0,
   onToggle,
@@ -111,16 +111,14 @@ export const AIWidget: React.FC<AIWidgetProps> = ({
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${
-                  message.type === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex ${message.type === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                    message.type === "user"
+                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${message.type === "user"
                       ? "bg-blue-600 text-white"
                       : "bg-white text-gray-800 shadow-sm border border-gray-100"
-                  }`}
+                    }`}
                 >
                   <p className="text-sm whitespace-pre-line">
                     {message.content}
@@ -134,11 +132,10 @@ export const AIWidget: React.FC<AIWidgetProps> = ({
                     </div>
                   )}
                   <p
-                    className={`text-xs mt-1 ${
-                      message.type === "user"
+                    className={`text-xs mt-1 ${message.type === "user"
                         ? "text-blue-100"
                         : "text-gray-400"
-                    }`}
+                      }`}
                   >
                     {formatTimestamp(message.timestamp)}
                   </p>
@@ -226,9 +223,8 @@ export const AIWidget: React.FC<AIWidgetProps> = ({
       {/* Chat Bubble */}
       <button
         onClick={onToggle}
-        className={`w-14 h-14 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group ${
-          isOpen ? "rotate-0" : "hover:scale-110"
-        }`}
+        className={`w-14 h-14 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group ${isOpen ? "rotate-0" : "hover:scale-110"
+          }`}
         aria-label={isOpen ? "Close chat" : "Open chat assistant"}
       >
         {isOpen ? (

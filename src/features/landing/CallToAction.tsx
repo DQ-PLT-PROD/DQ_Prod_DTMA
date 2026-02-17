@@ -168,7 +168,7 @@ const CTACard: React.FC<CTACardProps> = ({
   onClick = () => { },
   delay = 0,
   isExpanded = false,
-  onExpand = undefined,
+  onExpand,
   children = null,
   isSuccess = false,
 }) => {
@@ -224,7 +224,7 @@ const CTACard: React.FC<CTACardProps> = ({
                   if (onExpand) {
                     onExpand();
                   } else {
-                    onClick();
+                    onClick?.();
                   }
                 }}
                 className={`relative overflow-hidden font-medium transition-all duration-300 flex items-center ${buttonColor === "blue"

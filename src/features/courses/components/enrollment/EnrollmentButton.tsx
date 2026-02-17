@@ -87,7 +87,7 @@ export const EnrollmentButton: React.FC<EnrollmentButtonProps> = ({
         const config = getCtaState(
           course.isComingSoon || false,
           accessContract,
-          accessContract?.progressPct
+          (accessContract as any)?.progressPct
         );
         setCtaConfig(config);
       } catch (error) {

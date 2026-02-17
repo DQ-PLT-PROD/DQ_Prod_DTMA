@@ -9,7 +9,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AIWidget } from "./AIWidget";
 import { useAIWidget } from "../hooks/useAIWidget";
-import { getIntentById, getFallbackResponse } from "../utils/intentRegistry";
+import { getIntentById, getFallbackResponse, IntentResponse } from "../utils/intentRegistry";
 
 interface AIWidgetContainerProps {
   className?: string;
@@ -48,7 +48,7 @@ export const AIWidgetContainer: React.FC<AIWidgetContainerProps> = ({
   const handleSendMessage = async (content: string, intentId?: string) => {
     if (!content.trim() && !intentId) return;
 
-    let matchedIntent = null;
+    let matchedIntent: IntentResponse | null = null;
 
     if (intentId) {
       // Handle quick action
@@ -56,9 +56,8 @@ export const AIWidgetContainer: React.FC<AIWidgetContainerProps> = ({
 
       aiWidget.addMessage({
         type: "user",
-        content: `Quick action: ${
-          matchedIntent?.response.split(".")[0] || intentId
-        }`,
+        content: `Quick action: ${matchedIntent?.response.split(".")[0] || intentId
+          }`,
       });
     } else {
       // Process user input

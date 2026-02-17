@@ -223,9 +223,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             type="button"
             className="relative ml-1 p-1 text-gray-400 hover:text-blue-500 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
             aria-label={`${option.name} info`}
-            onMouseEnter={(event) => showTooltip(event.currentTarget, option.description)}
+            onMouseEnter={(event) => showTooltip(event.currentTarget, option.description || '')}
             onMouseLeave={hideTooltip}
-            onFocus={(event) => showTooltip(event.currentTarget, option.description)}
+            onFocus={(event) => showTooltip(event.currentTarget, option.description || '')}
             onBlur={hideTooltip}
             onClick={(event) => {
               event.preventDefault();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PromoCard } from "../../../components/PromoCard";
 import { EnhancedCourseCard } from "./EnhancedCourseCard";
 

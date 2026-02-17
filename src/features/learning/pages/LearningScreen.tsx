@@ -21,7 +21,7 @@ import {
   updateLessonProgress,
   updateEnrollmentProgress,
   syncLocalProgressToServer,
-} from "../services/progressService";
+} from "../../portal/services/progressService";
 import { isUserEnrolled, canAccessLesson } from "../../courses/services/enrollmentService";
 import { PreviewContentGate } from "../../portal/components/PreviewContentGate";
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
@@ -543,27 +543,27 @@ const LearningScreen: React.FC = () => {
                         }
                       }}
                     >
-                    <VideoPlayer
-                      src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
-                      poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
-                      isPlaying={isPlaying}
-                      volume={volume}
-                      playbackRate={playbackRate}
-                      currentTime={currentTime}
-                      duration={duration}
-                      captionsEnabled={captionsEnabled}
-                      onPlayPause={handlePlayPause}
-                      onVolumeChange={handleVolume}
-                      onSpeedChange={handleSpeedChange}
-                      onSeek={handleSeek}
-                      onToggleCaptions={handleToggleCaptions}
-                      onFullscreen={handleFullscreen}
-                      onTimeUpdate={handleTimeUpdate}
-                      onLoadedMetadata={handleLoadedMetadata}
-                      onEnded={() => setIsPlaying(false)}
-                      className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
-                    />
-                  </PreviewContentGate>
+                      <VideoPlayer
+                        src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
+                        poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
+                        isPlaying={isPlaying}
+                        volume={volume}
+                        playbackRate={playbackRate}
+                        currentTime={currentTime}
+                        duration={duration}
+                        captionsEnabled={captionsEnabled}
+                        onPlayPause={handlePlayPause}
+                        onVolumeChange={handleVolume}
+                        onSpeedChange={handleSpeedChange}
+                        onSeek={handleSeek}
+                        onToggleCaptions={handleToggleCaptions}
+                        onFullscreen={handleFullscreen}
+                        onTimeUpdate={handleTimeUpdate}
+                        onLoadedMetadata={handleLoadedMetadata}
+                        onEnded={() => setIsPlaying(false)}
+                        className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
+                      />
+                    </PreviewContentGate>
                   )}
                 </div>
 

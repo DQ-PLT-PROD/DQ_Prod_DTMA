@@ -27,7 +27,7 @@ export interface EntraIdClaims {
  */
 export function validateAndLogClaims(claims: any): EntraIdClaims {
   console.log('🔍 Raw claims received:', claims);
-  
+
   const validatedClaims: EntraIdClaims = {
     oid: claims?.oid,
     sub: claims?.sub,
@@ -49,7 +49,7 @@ export function validateAndLogClaims(claims: any): EntraIdClaims {
   };
 
   console.log('✅ Validated claims:', validatedClaims);
-  
+
   // Enhanced email claim detection
   const emailSources = [
     claims?.email,
@@ -59,11 +59,11 @@ export function validateAndLogClaims(claims: any): EntraIdClaims {
     claims?.unique_name,
     claims?.['signInNames.emailAddress']
   ].filter(Boolean);
-  
+
   console.log('📧 Available email sources:', emailSources);
-  
+
   // Check for missing essential claims
-  const missingClaims = [];
+  const missingClaims: string[] = [];
   if (!validatedClaims.oid && !validatedClaims.sub) {
     missingClaims.push('User ID (oid/sub)');
   }
@@ -88,16 +88,16 @@ export function validateAndLogClaims(claims: any): EntraIdClaims {
  */
 export function extractUserProfile(claims: EntraIdClaims) {
   const userId = claims.oid || claims.sub || 'unknown-user';
-  const userName = claims.name || 
-                   (claims.given_name && claims.family_name 
-                     ? `${claims.given_name} ${claims.family_name}` 
-                     : claims.given_name) || 
-                   claims.preferred_username || 
-                   'User';
-  
+  const userName = claims.name ||
+    (claims.given_name && claims.family_name
+      ? `${claims.given_name} ${claims.family_name}`
+      : claims.given_name) ||
+    claims.preferred_username ||
+    'User';
+
   // Enhanced email extraction with Azure B2C specific claims
   let userEmail = 'user@domain.com'; // Default fallback
-  
+
   // Try multiple email sources in order of preference
   const emailCandidates = [
     claims.email,
@@ -107,7 +107,7 @@ export function extractUserProfile(claims: EntraIdClaims) {
     claims.upn,
     claims.unique_name
   ];
-  
+
   for (const candidate of emailCandidates) {
     if (candidate && typeof candidate === 'string' && candidate.includes('@')) {
       userEmail = candidate;
@@ -115,7 +115,7 @@ export function extractUserProfile(claims: EntraIdClaims) {
       break;
     }
   }
-  
+
   if (userEmail === 'user@domain.com') {
     console.warn('⚠️ No valid email found in claims, using default');
     console.log('🔍 All email candidates checked:', emailCandidates);

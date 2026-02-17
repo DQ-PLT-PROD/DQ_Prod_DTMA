@@ -5,6 +5,21 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from '../auth/context/AuthContext';
 import { BRAND_BACKDROP_BLUR, BRAND_GRADIENT, BRAND_PRIMARY } from '../../constants/branding';
 
+// Augment Window for Voiceflow chat widget
+declare global {
+  interface Window {
+    voiceflow?: {
+      chat?: {
+        open?: () => void;
+        show?: () => void;
+        interact?: (payload: any) => void;
+        load?: (config: any) => void;
+        proactive?: { push?: (...args: any[]) => void };
+      };
+    };
+  }
+}
+
 interface HeroSectionProps {
   'data-id'?: string;
 }
