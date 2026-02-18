@@ -10,19 +10,19 @@ import {
   Loader2,
   Download,
 } from "lucide-react";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "../../../components/Header";
 import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../../portal/components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
 import { Lesson, toUILesson } from "../../../types/course";
-import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "@/services/courseService";
+import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
 import {
   getUserCourseProgress,
   updateLessonProgress,
   updateEnrollmentProgress,
   syncLocalProgressToServer,
-} from "../services/progressService";
-import { isUserEnrolled, canAccessLesson } from "@/lib/enrollment";
+} from "../../portal/services/progressService";
+import { isUserEnrolled, canAccessLesson } from "../../courses/services/enrollmentService";
 import { PreviewContentGate } from "../../portal/components/PreviewContentGate";
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
 import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";

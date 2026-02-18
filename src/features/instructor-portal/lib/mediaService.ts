@@ -60,7 +60,7 @@ export async function listLibraryFiles(folderPath: string = ''): Promise<MediaIt
         };
     });
 
-    return filesWithUrls as MediaItem[];
+    return filesWithUrls as unknown as MediaItem[];
 }
 
 export async function uploadToLibrary(file: File, folderPath: string = ''): Promise<string> {

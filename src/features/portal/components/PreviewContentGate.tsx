@@ -5,7 +5,7 @@
 import React from 'react';
 import { Lock, BookOpen, Play } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
-import { EnrollmentButton } from '@/components/enrollment/EnrollmentButton';
+import { EnrollmentButton } from '@/features/courses/components/enrollment/EnrollmentButton';
 import { Course } from '@/types/dtma-lms';
 import { useToast } from '@/components/ui/Toast';
 

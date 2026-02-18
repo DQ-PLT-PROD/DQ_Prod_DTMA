@@ -63,7 +63,7 @@ const HomePage: React.FC = () => {
       </main>
 
       {/* AI Widget */}
-      {/* <AIWidgetStandalone /> */}
+      <AIWidgetStandalone />
     </div>
   );
 };

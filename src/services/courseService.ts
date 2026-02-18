@@ -3,6 +3,7 @@ import { Course, CourseCatalogFilters, Lesson, Category } from "@/types/dtma-lms
 
 // Types for quiz and resource data
 interface Quiz {
+    id: string;
     title: string;
     orderIndex: number;
     question: string;

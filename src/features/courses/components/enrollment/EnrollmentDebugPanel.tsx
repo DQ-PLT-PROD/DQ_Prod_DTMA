@@ -3,14 +3,14 @@
  * Testing component for enrollment functionality
  */
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/auth';
+import { useAuth } from '../../../auth/context/AuthContext';
 import {
     isUserEnrolled,
     enrollInCourse,
     getEnrollment,
     unenrollFromCourse,
     getUserEnrollments
-} from '@/lib/enrollment';
+} from '../../services/enrollmentService';
 import { CheckCircle, XCircle, Loader2, User, BookOpen } from 'lucide-react';
 
 const DEFAULT_COURSE_SLUG = 'perfecting-life-transactions';
@@ -232,8 +232,8 @@ export const EnrollmentDebugPanel: React.FC = () => {
                                         </p>
                                     </div>
                                     <span className={`px-2 py-1 rounded text-xs ${enrollment.status === 'active'
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-red-100 text-red-800'
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-red-100 text-red-800'
                                         }`}>
                                         {enrollment.status}
                                     </span>
@@ -249,8 +249,8 @@ export const EnrollmentDebugPanel: React.FC = () => {
             {/* Message */}
             {message && (
                 <div className={`p-3 rounded-lg text-sm ${message.includes('Error') || message.includes('failed')
-                    ? 'bg-red-50 text-red-800 border border-red-200'
-                    : 'bg-green-50 text-green-800 border border-green-200'
+                        ? 'bg-red-50 text-red-800 border border-red-200'
+                        : 'bg-green-50 text-green-800 border border-green-200'
                     }`}>
                     {message}
                 </div>

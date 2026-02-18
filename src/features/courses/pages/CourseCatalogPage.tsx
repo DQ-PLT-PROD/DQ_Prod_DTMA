@@ -463,7 +463,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
             <Footer />
 
             {/* AI Widget */}
-            {/* <AIWidgetStandalone /> */}
+            <AIWidgetStandalone />
         </div>
     );
 };
