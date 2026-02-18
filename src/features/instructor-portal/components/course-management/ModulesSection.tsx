@@ -6,12 +6,13 @@ import { Toast } from '@/components/ui/Toast';
 
 interface Module {
     id: string;
+    course_slug: string;
     title: string;
-    description: string;
+    description?: string;
     order_index: number;
-    course_id: string;
-    course_title?: string; // joined
     created_at?: string;
+    updated_at?: string;
+    course_title?: string; // For display purposes
 }
 
 export function ModulesSection() {
@@ -31,21 +32,36 @@ export function ModulesSection() {
             const supabase = getSupabaseClient();
             if (!supabase) throw new Error('Database connection unavailable');
 
-            // Fetch modules with course info
+            // Fetch modules from the 'modules' table
             const { data, error } = await supabase
-                .from('lms_modules')
-                .select(`
-                    *,
-                    course:lms_courses(title)
-                `)
-                .order('created_at', { ascending: false });
+                .from('modules')
+                .select('*')
+                .order('order_index', { ascending: true });
 
             if (error) throw error;
 
+            // Format data - use course_slug as course_title for display
+            // Optionally, we can fetch course titles separately if needed
             const formattedData = data?.map((item: any) => ({
                 ...item,
-                course_title: item.course?.title || 'Unknown Course'
+                course_title: item.course_slug || 'Unknown Course'
             })) || [];
+
+            // Optionally fetch course titles for better display
+            if (formattedData.length > 0) {
+                const courseSlugs = [...new Set(formattedData.map(m => m.course_slug))];
+                const { data: coursesData } = await supabase
+                    .from('courses')
+                    .select('slug, title')
+                    .in('slug', courseSlugs);
+
+                if (coursesData) {
+                    const courseMap = new Map(coursesData.map(c => [c.slug, c.title]));
+                    formattedData.forEach(module => {
+                        module.course_title = courseMap.get(module.course_slug) || module.course_slug || 'Unknown Course';
+                    });
+                }
+            }
 
             setModules(formattedData);
         } catch (error: unknown) {
@@ -65,7 +81,7 @@ export function ModulesSection() {
             if (!supabase) throw new Error('Database connection unavailable');
 
             const { error } = await supabase
-                .from('lms_modules')
+                .from('modules')
                 .delete()
                 .eq('id', id);
 
@@ -82,7 +98,9 @@ export function ModulesSection() {
 
     const filteredModules = modules.filter(module =>
         module.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        module.course_title?.toLowerCase().includes(searchQuery.toLowerCase())
+        module.course_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        module.course_slug?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        module.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     if (loading) {

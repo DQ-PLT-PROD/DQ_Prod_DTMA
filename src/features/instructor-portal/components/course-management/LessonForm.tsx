@@ -6,13 +6,8 @@ import { Toast } from '@/components/ui/Toast';
 
 interface CourseOption {
     id: string;
+    slug: string;
     title: string;
-}
-
-interface ModuleOption {
-    id: string;
-    title: string;
-    course_id: string;
 }
 
 export function LessonForm() {
@@ -22,15 +17,12 @@ export function LessonForm() {
 
     const [loading, setLoading] = useState(false);
     const [courses, setCourses] = useState<CourseOption[]>([]);
-    const [allModules, setAllModules] = useState<ModuleOption[]>([]);
-    const [filteredModules, setFilteredModules] = useState<ModuleOption[]>([]);
 
-    // Form Data
+    // Form Data (aligned with public.lessons: course_slug, title, type, order_index, estimated_duration_minutes, video_url, content, is_preview)
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        course_id: '',
-        module_id: '', // optional
+        course_slug: '',
         order_index: 0,
         duration: 0,
         video_url: '',
@@ -47,37 +39,17 @@ export function LessonForm() {
         }
     }, [id, isEditing]);
 
-    // Update modules when course changes
-    useEffect(() => {
-        if (formData.course_id) {
-            const mods = allModules.filter(m => m.course_id === formData.course_id);
-            setFilteredModules(mods);
-        } else {
-            setFilteredModules([]);
-        }
-    }, [formData.course_id, allModules]);
-
     const loadDependencyData = async () => {
         const supabase = getSupabaseClient();
         if (!supabase) return;
 
-        // Load Courses
         const { data: coursesData, error: coursesError } = await supabase
-            .from('lms_courses')
-            .select('id, title')
+            .from('courses')
+            .select('id, slug, title')
             .order('title');
 
         if (coursesError) console.error('Error loading courses:', coursesError);
         else setCourses(coursesData || []);
-
-        // Load Modules (all for now, optimization: fetch only when course selected if list is huge)
-        const { data: modulesData, error: modulesError } = await supabase
-            .from('lms_modules')
-            .select('id, title, course_id')
-            .order('order_index');
-
-        if (modulesError) console.error('Error loading modules:', modulesError);
-        else setAllModules(modulesData || []);
     };
 
     const loadLesson = async (lessonId: string) => {
@@ -87,23 +59,23 @@ export function LessonForm() {
 
         try {
             const { data, error } = await supabase
-                .from('lms_lessons')
+                .from('lessons')
                 .select('*')
                 .eq('id', lessonId)
                 .single();
 
             if (error) throw error;
             if (data) {
+                const row = data as Record<string, unknown>;
                 setFormData({
-                    title: data.title,
-                    description: data.description || '',
-                    course_id: data.course_id,
-                    module_id: data.module_id || '',
-                    order_index: data.order_index || 0,
-                    duration: data.duration || 0,
-                    video_url: data.video_url || '',
-                    content: data.content || '',
-                    is_preview: data.is_preview || false
+                    title: (row.title as string) ?? '',
+                    description: (row.content as string) ?? '',
+                    course_slug: (row.course_slug as string) ?? '',
+                    order_index: Number(row.order_index) ?? 0,
+                    duration: Number(row.estimated_duration_minutes) ?? 0,
+                    video_url: (row.video_url as string) ?? '',
+                    content: (row.content as string) ?? '',
+                    is_preview: Boolean(row.is_preview),
                 });
             }
         } catch (error) {
@@ -116,7 +88,7 @@ export function LessonForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.title || !formData.course_id) {
+        if (!formData.title || !formData.course_slug) {
             setToast({ type: 'error', message: 'Title and Course are required' });
             return;
         }
@@ -126,21 +98,28 @@ export function LessonForm() {
         if (!supabase) return;
 
         const payload = {
-            ...formData,
-            module_id: formData.module_id || null // Ensure null if empty string
+            course_slug: formData.course_slug,
+            title: formData.title,
+            type: 'standard' as const,
+            order_index: formData.order_index,
+            estimated_duration_minutes: formData.duration || null,
+            video_url: formData.video_url || null,
+            content: formData.content || formData.description || null,
+            is_preview: formData.is_preview,
+            updated_at: new Date().toISOString(),
         };
 
         try {
             if (isEditing && id) {
                 const { error } = await supabase
-                    .from('lms_lessons')
+                    .from('lessons')
                     .update(payload)
                     .eq('id', id);
                 if (error) throw error;
                 setToast({ type: 'success', message: 'Lesson updated successfully' });
             } else {
                 const { error } = await supabase
-                    .from('lms_lessons')
+                    .from('lessons')
                     .insert([payload]);
                 if (error) throw error;
                 setToast({ type: 'success', message: 'Lesson created successfully' });
@@ -261,39 +240,17 @@ export function LessonForm() {
                             </label>
                             <select
                                 required
-                                value={formData.course_id}
-                                onChange={(e) => setFormData({ ...formData, course_id: e.target.value, module_id: '' })} // Reset module on course change
+                                value={formData.course_slug}
+                                onChange={(e) => setFormData({ ...formData, course_slug: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                             >
                                 <option value="">Select Course</option>
                                 {courses.map((course) => (
-                                    <option key={course.id} value={course.id}>
+                                    <option key={course.id} value={course.slug}>
                                         {course.title}
                                     </option>
                                 ))}
                             </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Module (Optional)
-                            </label>
-                            <select
-                                value={formData.module_id}
-                                onChange={(e) => setFormData({ ...formData, module_id: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                disabled={!formData.course_id}
-                            >
-                                <option value="">No Module (Direct to Course)</option>
-                                {filteredModules.map((module) => (
-                                    <option key={module.id} value={module.id}>
-                                        {module.title}
-                                    </option>
-                                ))}
-                            </select>
-                            {!formData.course_id && (
-                                <p className="mt-1 text-xs text-gray-400">Select a course first</p>
-                            )}
                         </div>
 
                         <div>
