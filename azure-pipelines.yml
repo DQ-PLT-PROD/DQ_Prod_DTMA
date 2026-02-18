@@ -71,7 +71,7 @@ stages:
       displayName: Deploy Frontend
       inputs:
         action: deploy
-        kubernetesServiceConnection: OVH-Test-Kubeconfig
+        kubernetesServiceConnection: OVH-Prod-Kubeconfig
         namespace: $(namespace)
         manifests: |
           k8s/overlays/Production/deployment.yaml
