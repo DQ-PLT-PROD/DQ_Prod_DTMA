@@ -6,18 +6,18 @@
  */
 import React, { useState, useEffect } from "react";
 import { BookOpen, CheckCircle, Loader2, RotateCcw } from "lucide-react";
-import { useAuth } from "../../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import {
   isUserEnrolled,
   enrollInCourse,
   getEnrollment,
   getAccessContract,
-} from "../../services/enrollmentService";
-import { EnrollmentModal } from "./EnrollmentModal";
-import { PlanSelectionModal } from "./PlanSelectionModal";
-import { courseRequiresPayment } from "../../services/paymentService";
-import { Course } from "../../../../types/dtma-lms";
-import { useToast } from "../../../../components/ui/Toast";
+} from "@/lib/enrollment";
+import { EnrollmentModal } from "@/components/enrollment/EnrollmentModal";
+import { PlanSelectionModal } from "@/components/enrollment/PlanSelectionModal";
+import { courseRequiresPayment } from "@/lib/payment";
+import { Course } from "@/types/dtma-lms";
+import { useToast } from "@/components/ui/Toast";
 import { getCtaState, CtaConfig } from "../../utils/ctaStateManager";
 
 interface EnrollmentButtonProps {
