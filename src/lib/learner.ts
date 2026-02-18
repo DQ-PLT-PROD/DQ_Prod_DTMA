@@ -1,8 +1,5 @@
-export const getLearnerProfile = async (userId: string) => {
-    return Promise.resolve({
-        profile: {
-            onboardingCompleted: false
-        },
-        error: null
-    });
-};
+/**
+ * Learner barrel export
+ * Re-exports all learner service functions
+ */
+export * from './learner/learnerProfileService';

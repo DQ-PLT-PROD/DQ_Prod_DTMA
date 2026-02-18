@@ -519,9 +519,9 @@ const enrollmentHandlers = {
       const authenticatedUser = getCurrentUser(req);
 
       // If user is authenticated, use their Azure user ID, otherwise require userId in body
-      const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : body.userId;
+      const azureUserId = authenticatedUser ? authenticatedUser.azureUserId : body.userId;
 
-      if (!targetUserId) {
+      if (!azureUserId) {
         return sendError(res, 400, 'User identification required')
       }
 
@@ -545,27 +545,73 @@ const enrollmentHandlers = {
         return sendError(res, 503, 'Database not configured')
       }
 
-      console.log(`🎯 Starting enrollment process for user ${targetUserId} in course ${courseSlug}`)
-      logEnrollmentEvent('enrollment_attempt', courseSlug, targetUserId, { method });
+      console.log(`🎯 Starting enrollment process for user ${azureUserId} in course ${courseSlug}`)
+      logEnrollmentEvent('enrollment_attempt', courseSlug, azureUserId, { method });
+
+      // Look up the database user ID from Azure user ID
+      const { data: userData, error: userError } = await supabaseClient
+        .from('users')
+        .select('id, azure_user_id, email, name')
+        .eq('azure_user_id', azureUserId)
+        .single()
+
+      if (userError || !userData) {
+        console.error('❌ User not found in database:', { azureUserId, error: userError })
+        
+        // Try to create the user if they don't exist
+        if (userError?.code === 'PGRST116') {
+          console.log('📝 Creating user in database...')
+          
+          const newUserData = {
+            azure_user_id: azureUserId,
+            customer_id: `CUST_${Date.now()}_${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+            email: authenticatedUser?.email || `user-${azureUserId}@temp.com`,
+            name: authenticatedUser?.name || 'User',
+            last_login: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+
+          const { data: createdUser, error: createError } = await supabaseClient
+            .from('users')
+            .insert(newUserData)
+            .select('id')
+            .single()
+
+          if (createError || !createdUser) {
+            console.error('❌ Failed to create user:', createError)
+            logEnrollmentEvent('enrollment_error', courseSlug, azureUserId, { error: 'user_creation_failed' });
+            return sendError(res, 500, 'Failed to create user account', createError?.message)
+          }
+
+          console.log('✅ User created:', createdUser.id)
+          userData.id = createdUser.id
+        } else {
+          logEnrollmentEvent('enrollment_error', courseSlug, azureUserId, { error: 'user_lookup_failed' });
+          return sendError(res, 500, 'Failed to lookup user', userError?.message)
+        }
+      }
+
+      const dbUserId = userData.id
+      console.log(`✅ Found database user ID: ${dbUserId} for Azure user: ${azureUserId}`)
 
       // Check if already enrolled
       const { data: existingData, error: checkError } = await supabaseClient
         .from('user_enrollments')
         .select('*')
-        .eq('user_id', targetUserId)
+        .eq('user_id', dbUserId)
         .eq('course_slug', courseSlug)
         .single()
 
       if (checkError && checkError.code !== 'PGRST116') {
         console.error('Error checking existing enrollment:', checkError)
-        logEnrollmentEvent('enrollment_error', courseSlug, targetUserId, { error: checkError.message });
+        logEnrollmentEvent('enrollment_error', courseSlug, azureUserId, { error: checkError.message });
         return sendError(res, 500, 'Failed to check existing enrollment', checkError.message)
       }
 
       // If already enrolled and active, return existing enrollment
       if (existingData && existingData.status === 'active') {
         console.log('✅ User already enrolled')
-        logEnrollmentEvent('enrollment_duplicate', courseSlug, targetUserId, { status: existingData.status });
+        logEnrollmentEvent('enrollment_duplicate', courseSlug, azureUserId, { status: existingData.status });
         return sendJSON(res, 200, {
           success: true,
           enrollment: mapRowToEnrollment(existingData),
@@ -576,7 +622,7 @@ const enrollmentHandlers = {
       // Create new enrollment
       console.log('📝 Creating new enrollment...')
       const enrollmentData = {
-        user_id: targetUserId,
+        user_id: dbUserId,
         course_slug: courseSlug,
         started_at: new Date().toISOString(),
         last_accessed_at: new Date().toISOString(),
@@ -593,12 +639,12 @@ const enrollmentHandlers = {
 
       if (error) {
         console.error('❌ Error creating enrollment:', error)
-        logEnrollmentEvent('enrollment_failed', courseSlug, targetUserId, { error: error.message });
+        logEnrollmentEvent('enrollment_failed', courseSlug, azureUserId, { error: error.message });
         return sendError(res, 500, 'Failed to create enrollment', error.message)
       }
 
       console.log('✅ Enrollment created successfully')
-      logEnrollmentEvent('enrollment_success', courseSlug, targetUserId, {
+      logEnrollmentEvent('enrollment_success', courseSlug, azureUserId, {
         enrollmentId: data.id,
         method: method
       });
@@ -610,23 +656,30 @@ const enrollmentHandlers = {
       })
     } catch (err) {
       console.error('Unexpected error in enrollment:', err)
-      logEnrollmentEvent('enrollment_error', body?.courseSlug || 'unknown', targetUserId || 'unknown', {
+      const azureUserId = getCurrentUser(req)?.azureUserId || 'unknown';
+      logEnrollmentEvent('enrollment_error', body?.courseSlug || 'unknown', azureUserId, {
         error: err.message
       });
       return sendError(res, 500, 'Internal server error')
     }
   },
 
-  // GET /api/enrollment/user/:userId
+  // GET /api/enrollment/user/:userId or /api/enrollment/user/me
   async getUserEnrollments(req, res, userId) {
     // Get authenticated user
     const authenticatedUser = getCurrentUser(req);
 
-    // If user is authenticated, use their Azure user ID instead of path param
-    const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : userId;
+    // If userId is null (from 'me' endpoint), use authenticated user
+    const azureUserId = !userId || userId === 'me' 
+      ? (authenticatedUser ? authenticatedUser.azureUserId : null)
+      : userId;
+
+    if (!azureUserId) {
+      return sendError(res, 401, 'Authentication required')
+    }
 
     // Security check: authenticated users can only get their own enrollments
-    if (authenticatedUser && userId !== authenticatedUser.azureUserId) {
+    if (authenticatedUser && userId && userId !== 'me' && userId !== authenticatedUser.azureUserId) {
       return sendError(res, 403, 'Cannot access enrollments for other users')
     }
 
@@ -635,12 +688,31 @@ const enrollmentHandlers = {
     }
 
     try {
-      console.log(`📚 Getting all enrollments for user ${targetUserId}`)
+      console.log(`📚 Getting all enrollments for Azure user ${azureUserId}`)
+
+      // Look up the database user ID from Azure user ID
+      const { data: userData, error: userError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', azureUserId)
+        .single()
+
+      if (userError || !userData) {
+        console.log('⚠️ User not found in database:', azureUserId)
+        // Return empty enrollments if user doesn't exist yet
+        return sendJSON(res, 200, {
+          success: true,
+          enrollments: [],
+          count: 0
+        })
+      }
+
+      const dbUserId = userData.id
 
       const { data, error } = await supabaseClient
         .from('user_enrollments')
         .select('*')
-        .eq('user_id', targetUserId)
+        .eq('user_id', dbUserId)
         .eq('status', 'active')
         .order('started_at', { ascending: false })
 
@@ -949,9 +1021,11 @@ const server = http.createServer(async (req, res) => {
         return await enrollmentHandlers.enrollInCourse(req, res)
       }
 
-      // GET /api/enrollment/user/:userId
+      // GET /api/enrollment/user/:userId or /api/enrollment/user/me
       if (pathParts[3] === 'user' && pathParts[4] && req.method === 'GET') {
-        return await enrollmentHandlers.getUserEnrollments(req, res, pathParts[4])
+        // If 'me', use authenticated user, otherwise use provided userId
+        const userId = pathParts[4] === 'me' ? null : pathParts[4];
+        return await enrollmentHandlers.getUserEnrollments(req, res, userId)
       }
 
       // GET /api/enrollment/access/:courseSlug

@@ -90,13 +90,20 @@ const validateAzureToken = async (token, tenantId, clientId, subdomain = null) =
     const client = getJwksClient(tenantId, subdomain);
     
     // Expected issuer based on configuration
-    const expectedIssuer = subdomain 
-      ? `https://${subdomain}.ciamlogin.com/${tenantId}/v2.0`
-      : `https://login.microsoftonline.com/${tenantId}/v2.0`;
+    // Azure CIAM can issue tokens with either subdomain or tenant ID format
+    const expectedIssuers = subdomain 
+      ? [
+          `https://${subdomain}.ciamlogin.com/${tenantId}/v2.0`,
+          `https://${tenantId}.ciamlogin.com/${tenantId}/v2.0`
+        ]
+      : [
+          `https://login.microsoftonline.com/${tenantId}/v2.0`,
+          `https://${tenantId}.ciamlogin.com/${tenantId}/v2.0`
+        ];
 
     const options = {
       audience: clientId,
-      issuer: expectedIssuer,
+      issuer: expectedIssuers,
       algorithms: ['RS256'],
       clockTolerance: 60, // Allow 60 seconds clock skew
     };
@@ -105,6 +112,20 @@ const validateAzureToken = async (token, tenantId, clientId, subdomain = null) =
       audience: options.audience,
       issuer: options.issuer,
       algorithms: options.algorithms
+    });
+
+    // Decode token without verification to see actual claims
+    const decodedWithoutVerify = jwt.decode(token, { complete: true });
+    console.log('🔍 Token claims (unverified):', {
+      header: decodedWithoutVerify?.header,
+      payload: {
+        iss: decodedWithoutVerify?.payload?.iss,
+        aud: decodedWithoutVerify?.payload?.aud,
+        sub: decodedWithoutVerify?.payload?.sub,
+        oid: decodedWithoutVerify?.payload?.oid,
+        exp: decodedWithoutVerify?.payload?.exp,
+        iat: decodedWithoutVerify?.payload?.iat
+      }
     });
 
     jwt.verify(token, getKey(client), options, (err, decoded) => {
