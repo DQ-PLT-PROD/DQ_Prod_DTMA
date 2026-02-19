@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     EditIcon,
     TrashIcon,
@@ -99,9 +99,95 @@ export function QuizzesSection() {
 
     // Scope selection
     const [scope, setScope] = useState<ContentScope>({ level: 'all' });
+    const [searchParams, setSearchParams] = useSearchParams();
 
     // View mode: 'tree' (hierarchical browser) or 'flat' (legacy table)
     const [viewMode, setViewMode] = useState<'tree' | 'flat'>('tree');
+
+    /* ─── Sync URL with Scope ────────────────────────────── */
+
+    // On mount or when data loads, restore scope from URL
+    useEffect(() => {
+        if (loading || courses.length === 0) return;
+
+        const scopeType = searchParams.get('scope');
+        const scopeId = searchParams.get('scopeId');
+
+        if (!scopeType || !scopeId) {
+            // Default to 'all' if no params, but only if we haven't set a scope yet (or it's 'all')
+            if (scope.level === 'all' && !searchParams.has('scope')) {
+                // No op
+            }
+            return;
+        }
+
+        let newScope: ContentScope | null = null;
+
+        if (scopeType === 'course') {
+            const c = courses.find(c => c.slug === scopeId);
+            if (c) newScope = { level: 'course', courseSlug: c.slug, courseTitle: c.title };
+        } else if (scopeType === 'module') {
+            const m = modules.find(m => m.id === scopeId);
+            if (m) {
+                const c = courses.find(c => c.slug === m.course_slug);
+                newScope = {
+                    level: 'module',
+                    courseSlug: m.course_slug,
+                    courseTitle: c?.title,
+                    moduleId: m.id,
+                    moduleTitle: m.title
+                };
+            }
+        } else if (scopeType === 'lesson') {
+            const l = lessons.find(l => l.id === scopeId);
+            if (l) {
+                const m = modules.find(m => m.id === l.module_id);
+                const c = courses.find(c => c.slug === l.course_slug);
+                newScope = {
+                    level: 'lesson',
+                    courseSlug: l.course_slug,
+                    courseTitle: c?.title,
+                    moduleId: l.module_id,
+                    moduleTitle: m?.title,
+                    lessonId: l.id,
+                    lessonTitle: l.title
+                };
+            }
+        }
+
+        if (newScope) {
+            setScope(newScope);
+
+            // Auto-expand tree path
+            if (newScope.courseSlug) {
+                setExpandedCourses(prev => new Set(prev).add(newScope.courseSlug!));
+            }
+            if (newScope.moduleId) {
+                setExpandedModules(prev => new Set(prev).add(newScope.moduleId!));
+            }
+        }
+    }, [loading, courses, modules, lessons, searchParams]);
+
+    /** Helper to update scope and URL */
+    const updateScope = (newScope: ContentScope) => {
+        setScope(newScope);
+
+        const params = new URLSearchParams(searchParams);
+        if (newScope.level === 'all') {
+            params.delete('scope');
+            params.delete('scopeId');
+        } else if (newScope.level === 'course') {
+            params.set('scope', 'course');
+            params.set('scopeId', newScope.courseSlug!);
+        } else if (newScope.level === 'module') {
+            params.set('scope', 'module');
+            params.set('scopeId', newScope.moduleId!);
+        } else if (newScope.level === 'lesson') {
+            params.set('scope', 'lesson');
+            params.set('scopeId', newScope.lessonId!);
+        }
+        setSearchParams(params, { replace: true });
+    };
 
     /* ─── Data Loading ───────────────────────────────────── */
 
@@ -206,7 +292,7 @@ export function QuizzesSection() {
     };
 
     const clearScope = () => {
-        setScope({ level: 'all' });
+        updateScope({ level: 'all' });
     };
 
     /* ─── Derived / filtered data ────────────────────────── */
@@ -376,8 +462,8 @@ export function QuizzesSection() {
                             onClick={crumb.onClick}
                             disabled={!crumb.onClick}
                             className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${crumb.onClick
-                                    ? 'text-[var(--md-primary)] hover:bg-[var(--md-primary)]/10 cursor-pointer'
-                                    : 'text-gray-700 font-semibold cursor-default'
+                                ? 'text-[var(--md-primary)] hover:bg-[var(--md-primary)]/10 cursor-pointer'
+                                : 'text-gray-700 font-semibold cursor-default'
                                 }`}
                         >
                             {crumb.icon}
@@ -425,10 +511,10 @@ export function QuizzesSection() {
 
                 {/* "All Quizzes" option */}
                 <div
-                    onClick={() => selectScope({ level: 'all' })}
+                    onClick={() => updateScope({ level: 'all' })}
                     className={`flex items-center gap-2 px-4 py-2.5 cursor-pointer transition-colors border-b border-gray-200 ${scope.level === 'all'
-                            ? 'bg-[var(--md-primary)]/10 text-[var(--md-primary)] font-semibold'
-                            : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-[var(--md-primary)]/10 text-[var(--md-primary)] font-semibold'
+                        : 'text-gray-700 hover:bg-gray-100'
                         }`}
                 >
                     <LayersIcon className="h-4 w-4 flex-shrink-0" />
@@ -462,8 +548,8 @@ export function QuizzesSection() {
                                     {/* Course Row */}
                                     <div
                                         className={`flex items-center gap-1 px-3 py-2.5 cursor-pointer transition-all group ${isSelected
-                                                ? 'bg-[var(--md-primary)]/10 text-[var(--md-primary)]'
-                                                : 'text-gray-800 hover:bg-gray-100'
+                                            ? 'bg-[var(--md-primary)]/10 text-[var(--md-primary)]'
+                                            : 'text-gray-800 hover:bg-gray-100'
                                             }`}
                                     >
                                         {/* Expand toggle */}
@@ -480,13 +566,17 @@ export function QuizzesSection() {
                                         {/* Course label */}
                                         <div
                                             className="flex items-center gap-1.5 flex-1 min-w-0"
-                                            onClick={() =>
-                                                selectScope({
-                                                    level: 'course',
-                                                    courseSlug: course.slug,
-                                                    courseTitle: course.title,
-                                                })
-                                            }
+                                            onClick={() => {
+                                                toggleCourse(course.slug);
+                                                if (!isSelected) {
+                                                    const newScope: ContentScope = {
+                                                        level: 'course',
+                                                        courseSlug: course.slug,
+                                                        courseTitle: course.title
+                                                    };
+                                                    updateScope(newScope);
+                                                }
+                                            }}
                                         >
                                             <GraduationCapIcon className={`h-4 w-4 flex-shrink-0 ${isSelected ? 'text-[var(--md-primary)]' : 'text-amber-500'}`} />
                                             <span className={`text-sm truncate ${isSelected ? 'font-semibold' : 'font-medium'}`}>
@@ -509,16 +599,27 @@ export function QuizzesSection() {
                                             {courseModules.length > 0 && (
                                                 courseModules.map(mod => {
                                                     const isModExpanded = expandedModules.has(mod.id);
-                                                    const isModSelected = scope.level === 'module' && scope.moduleId === mod.id;
                                                     const moduleLessons = lessonsByModule.get(mod.id) || [];
+                                                    const isModSelected = scope.level === 'module' && scope.moduleId === mod.id;
 
                                                     return (
-                                                        <div key={mod.id}>
+                                                        <div key={mod.id} className="ml-4 border-l border-gray-100 pl-2">
                                                             <div
-                                                                className={`flex items-center gap-1 pl-8 pr-3 py-2 cursor-pointer transition-all ${isModSelected
-                                                                        ? 'bg-[var(--md-primary)]/8 text-[var(--md-primary)]'
-                                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                                className={`flex items-center gap-2 p-1.5 rounded cursor-pointer transition-colors text-sm group/mod ${isModSelected ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50 text-gray-600'
                                                                     }`}
+                                                                onClick={() => {
+                                                                    toggleModule(mod.id);
+                                                                    if (!isModSelected) {
+                                                                        const newScope: ContentScope = {
+                                                                            level: 'module',
+                                                                            courseSlug: course.slug,
+                                                                            courseTitle: course.title,
+                                                                            moduleId: mod.id,
+                                                                            moduleTitle: mod.title
+                                                                        };
+                                                                        updateScope(newScope);
+                                                                    }
+                                                                }}
                                                             >
                                                                 {moduleLessons.length > 0 && (
                                                                     <button
@@ -535,15 +636,6 @@ export function QuizzesSection() {
 
                                                                 <div
                                                                     className="flex items-center gap-1.5 flex-1 min-w-0"
-                                                                    onClick={() =>
-                                                                        selectScope({
-                                                                            level: 'module',
-                                                                            courseSlug: course.slug,
-                                                                            courseTitle: course.title,
-                                                                            moduleId: mod.id,
-                                                                            moduleTitle: mod.title,
-                                                                        })
-                                                                    }
                                                                 >
                                                                     <BookOpenIcon className={`h-3.5 w-3.5 flex-shrink-0 ${isModSelected ? 'text-[var(--md-primary)]' : 'text-blue-600'}`} />
                                                                     <span className={`text-xs truncate ${isModSelected ? 'font-semibold' : ''}`}>
@@ -567,20 +659,23 @@ export function QuizzesSection() {
                                                                         return (
                                                                             <div
                                                                                 key={les.id}
-                                                                                onClick={() =>
-                                                                                    selectScope({
-                                                                                        level: 'lesson',
-                                                                                        courseSlug: course.slug,
-                                                                                        courseTitle: course.title,
-                                                                                        moduleId: mod.id,
-                                                                                        moduleTitle: mod.title,
-                                                                                        lessonId: les.id,
-                                                                                        lessonTitle: les.title,
-                                                                                    })
-                                                                                }
+                                                                                onClick={() => {
+                                                                                    if (!isLesSelected) {
+                                                                                        const newScope: ContentScope = {
+                                                                                            level: 'lesson',
+                                                                                            courseSlug: course.slug,
+                                                                                            courseTitle: course.title,
+                                                                                            moduleId: mod.id,
+                                                                                            moduleTitle: mod.title,
+                                                                                            lessonId: les.id,
+                                                                                            lessonTitle: les.title,
+                                                                                        };
+                                                                                        updateScope(newScope);
+                                                                                    }
+                                                                                }}
                                                                                 className={`flex items-center gap-1.5 pl-14 pr-3 py-1.5 cursor-pointer transition-all ${isLesSelected
-                                                                                        ? 'bg-[var(--md-primary)]/8 text-[var(--md-primary)]'
-                                                                                        : 'text-gray-600 hover:bg-gray-100'
+                                                                                    ? 'bg-[var(--md-primary)]/8 text-[var(--md-primary)]'
+                                                                                    : 'text-gray-600 hover:bg-gray-100'
                                                                                     }`}
                                                                             >
                                                                                 <PlayCircleIcon className={`h-3 w-3 flex-shrink-0 ${isLesSelected ? 'text-[var(--md-primary)]' : 'text-green-600'}`} />
@@ -627,8 +722,8 @@ export function QuizzesSection() {
                                                                     })
                                                                 }
                                                                 className={`flex items-center gap-1.5 pl-10 pr-3 py-1.5 cursor-pointer transition-all ${isLesSelected
-                                                                        ? 'bg-[var(--md-primary)]/8 text-[var(--md-primary)]'
-                                                                        : 'text-gray-600 hover:bg-gray-100'
+                                                                    ? 'bg-[var(--md-primary)]/8 text-[var(--md-primary)]'
+                                                                    : 'text-gray-600 hover:bg-gray-100'
                                                                     }`}
                                                             >
                                                                 <PlayCircleIcon className={`h-3 w-3 flex-shrink-0 ${isLesSelected ? 'text-[var(--md-primary)]' : 'text-green-600'}`} />
@@ -883,8 +978,8 @@ export function QuizzesSection() {
                     <button
                         onClick={() => setViewMode('tree')}
                         className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${viewMode === 'tree'
-                                ? 'bg-white text-[var(--md-primary)] shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
+                            ? 'bg-white text-[var(--md-primary)] shadow-sm'
+                            : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         <FilterIcon className="h-3 w-3" />
@@ -893,8 +988,8 @@ export function QuizzesSection() {
                     <button
                         onClick={() => setViewMode('flat')}
                         className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${viewMode === 'flat'
-                                ? 'bg-white text-[var(--md-primary)] shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
+                            ? 'bg-white text-[var(--md-primary)] shadow-sm'
+                            : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         <ListIcon className="h-3 w-3" />
