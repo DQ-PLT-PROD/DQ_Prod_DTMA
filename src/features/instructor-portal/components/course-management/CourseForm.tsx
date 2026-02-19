@@ -5,7 +5,7 @@
  * Adapted from DWS Admin App for DTMA integration.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, SaveIcon, UploadIcon, Image as ImageIcon } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/dbClient';
@@ -19,7 +19,7 @@ import {
     SFIA_LEVEL_CODES,
     AUDIENCE_OPTIONS
 } from '../../constants/courseConstants';
-import { AlertTriangleIcon, CheckIcon, XIcon } from 'lucide-react';
+import { AlertTriangleIcon, CheckIcon, ChevronDownIcon, XIcon } from 'lucide-react';
 
 interface CategoryOption {
     slug: string;
@@ -97,6 +97,8 @@ export function CourseForm() {
     const [isCustomCategory, setIsCustomCategory] = useState(false);
     const [customCategoryInput, setCustomCategoryInput] = useState('');
     const [customCategoryDescription, setCustomCategoryDescription] = useState('');
+    const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+    const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         loadCategories();
@@ -137,6 +139,17 @@ export function CourseForm() {
             }
         }
     }, [formData.category, categories]);
+
+    // Close category dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target as Node)) {
+                setCategoryDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const loadCourse = async (courseId: string) => {
         // ... (existing loadCourse implementation) ...
@@ -287,6 +300,10 @@ export function CourseForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.category?.trim()) {
+            setToast({ type: 'error', message: 'Please select a category.' });
+            return;
+        }
         setSaving(true);
         try {
             const supabase = getSupabaseClient();
@@ -326,15 +343,20 @@ export function CourseForm() {
     };
 
 
-    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const value = e.target.value;
+    const handleCategorySelect = (value: string) => {
         if (value === 'custom_new') {
             setShowCustomCategoryWarn(true);
+            setCategoryDropdownOpen(false);
         } else {
             setFormData({ ...formData, category: value });
             setIsCustomCategory(false);
+            setCategoryDropdownOpen(false);
         }
     };
+
+    const categoryDisplayLabel = formData.category
+        ? categories.find((c) => c.slug === formData.category)?.name ?? formData.category
+        : '';
 
     const confirmCustomCategory = async () => {
         const name = customCategoryInput.trim();
@@ -439,28 +461,68 @@ export function CourseForm() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                                <div className="space-y-3">
-                                    <select
-                                        required
-                                        disabled={categoriesLoading}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)] disabled:opacity-50"
-                                        value={showCustomCategoryWarn ? 'custom_new' : formData.category}
-                                        onChange={handleCategoryChange}
-                                    >
-                                        <option value="">{categoriesLoading ? 'Loading...' : 'Select category'}</option>
-                                        {categories.map((category) => (
-                                            <option key={category.slug} value={category.slug}>
-                                                {category.name}
-                                            </option>
-                                        ))}
-                                        <optgroup label="Add new">
-                                            <option value="custom_new">Create new category...</option>
-                                            {/* Show current category if not in list (e.g. orphaned or legacy) */}
-                                            {isCustomCategory && formData.category && (
-                                                <option value={formData.category}>{formData.category}</option>
-                                            )}
-                                        </optgroup>
-                                    </select>
+                                <div className="space-y-3" ref={categoryDropdownRef}>
+                                    <input
+                                        type="hidden"
+                                        name="category"
+                                        value={formData.category}
+                                        readOnly
+                                        tabIndex={-1}
+                                        aria-hidden="true"
+                                    />
+                                    <div className="relative">
+                                        <button
+                                            type="button"
+                                            disabled={categoriesLoading}
+                                            onClick={() => setCategoryDropdownOpen((o) => !o)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)] disabled:opacity-50 text-left flex items-center justify-between bg-white"
+                                        >
+                                            <span className={!categoryDisplayLabel ? 'text-gray-500' : ''}>
+                                                {categoriesLoading ? 'Loading...' : categoryDisplayLabel || 'Select category'}
+                                            </span>
+                                            <ChevronDownIcon
+                                                className={`h-4 w-4 text-gray-400 shrink-0 transition-transform ${categoryDropdownOpen ? 'rotate-180' : ''}`}
+                                            />
+                                        </button>
+                                        {categoryDropdownOpen && (
+                                            <div className="absolute z-10 mt-1 w-full min-w-0 bg-white border border-gray-200 rounded-lg shadow-lg py-1 max-h-60 overflow-auto overflow-x-hidden">
+                                                <div className="px-3 py-2 text-gray-700 font-bold text-sm border-b border-gray-100">
+                                                    Select category
+                                                </div>
+                                                {categories.map((category) => (
+                                                    <button
+                                                        key={category.slug}
+                                                        type="button"
+                                                        onClick={() => handleCategorySelect(category.slug)}
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-900 hover:bg-gray-50 flex items-center"
+                                                    >
+                                                        {category.name}
+                                                    </button>
+                                                ))}
+                                                <div className="border-t border-gray-100 mt-1 pt-1 px-2">
+                                                    <div className="px-1 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                                        Add new
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleCategorySelect('custom_new')}
+                                                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--md-primary)] text-white hover:bg-[var(--md-primary-dark)] transition-colors"
+                                                    >
+                                                        Add category
+                                                    </button>
+                                                </div>
+                                                {isCustomCategory && formData.category && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleCategorySelect(formData.category)}
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 border-t border-gray-100"
+                                                    >
+                                                        {formData.category}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
 
                                     {/* Create new category form */}
                                     {showCustomCategoryWarn && (
