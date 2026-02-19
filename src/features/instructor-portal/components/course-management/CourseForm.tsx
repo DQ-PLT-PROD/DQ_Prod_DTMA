@@ -442,7 +442,8 @@ export function CourseForm() {
                                 />
                             </div>
 
-                            <div>
+                            {/* Provider - commented out */}
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Provider *</label>
                                 <select
                                     required
@@ -457,7 +458,7 @@ export function CourseForm() {
                                         </option>
                                     ))}
                                 </select>
-                            </div>
+                            </div> */}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
@@ -586,7 +587,8 @@ export function CourseForm() {
                                 </div>
                             </div>
 
-                            <div>
+                            {/* Delivery Mode - commented out */}
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Mode</label>
                                 <select
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
@@ -598,7 +600,7 @@ export function CourseForm() {
                                     <option value="in-person">In-Person</option>
                                     <option value="hybrid">Hybrid</option>
                                 </select>
-                            </div>
+                            </div> */}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes) *</label>
@@ -628,7 +630,8 @@ export function CourseForm() {
                                 </select>
                             </div>
 
-                            <div>
+                            {/* SFIA Level - commented out */}
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">SFIA Level</label>
                                 <select
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
@@ -642,9 +645,10 @@ export function CourseForm() {
                                         </option>
                                     ))}
                                 </select>
-                            </div>
+                            </div> */}
 
-                            <div>
+                            {/* Department - commented out */}
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                                 <select
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
@@ -658,7 +662,7 @@ export function CourseForm() {
                                         </option>
                                     ))}
                                 </select>
-                            </div>
+                            </div> */}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Audience</label>
