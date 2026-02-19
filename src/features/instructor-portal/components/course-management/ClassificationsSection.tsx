@@ -3,7 +3,6 @@ import { COURSE_CATEGORIES } from '../../../../constants/navigation';
 import { getSupabaseClient } from '../../lib/dbClient';
 import { TagIcon, AlertCircleIcon, CheckCircleIcon, BarChart2Icon, PlusIcon, Edit2Icon, X, SaveIcon } from 'lucide-react';
 import { Toast } from '@/components/ui/Toast';
-import { useNavigate } from 'react-router-dom';
 
 interface CategoryInUse {
     slug: string;
@@ -26,7 +25,6 @@ export function ClassificationsSection() {
 }
 
 function CategoriesSubsection() {
-    const navigate = useNavigate();
     const [categories, setCategories] = useState<CategoryInUse[]>([]);
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
@@ -35,6 +33,7 @@ function CategoriesSubsection() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<CategoryInUse | null>(null);
     const [categoryName, setCategoryName] = useState('');
+    const [categoryDescription, setCategoryDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
     const slugToIcon = Object.fromEntries(COURSE_CATEGORIES.map((c) => [c.slug, c.icon]));
@@ -49,52 +48,41 @@ function CategoriesSubsection() {
         if (!supabase) return;
 
         try {
-            // Get distinct category_ids from courses with counts
+            // Get all categories from course_categories
+            const { data: catData, error: catError } = await supabase
+                .from('course_categories')
+                .select('slug, name, description, display_order')
+                .or('is_active.is.null,is_active.eq.true')
+                .order('display_order', { ascending: true });
+
+            if (catError) throw catError;
+            if (!catData?.length) {
+                setCategories([]);
+                return;
+            }
+
+            // Get course counts per category
             const { data: courseData, error: courseError } = await supabase
                 .from('courses')
                 .select('category_id');
 
             if (courseError) throw courseError;
-
             const categoryCounts: Record<string, number> = {};
             (courseData ?? []).forEach((row) => {
                 const slug = row.category_id;
-                if (slug) {
-                    categoryCounts[slug] = (categoryCounts[slug] || 0) + 1;
-                }
+                if (slug) categoryCounts[slug] = (categoryCounts[slug] || 0) + 1;
             });
 
-            const slugs = Object.keys(categoryCounts);
-            if (slugs.length === 0) {
-                setCategories([]);
-                return;
-            }
-
-            // Fetch metadata from course_categories
-            const { data: catData, error: catError } = await supabase
-                .from('course_categories')
-                .select('slug, name, description')
-                .in('slug', slugs);
-
-            if (catError) throw catError;
-
-            const catBySlug = Object.fromEntries(
-                (catData ?? []).map((c) => [c.slug, { name: c.name, description: c.description }])
-            );
-
-            const result: CategoryInUse[] = slugs
-                .sort((a, b) => (categoryCounts[b] ?? 0) - (categoryCounts[a] ?? 0))
-                .map((slug) => {
-                    const meta = catBySlug[slug];
-                    const Icon = slugToIcon[slug] ?? TagIcon;
-                    return {
-                        slug,
-                        title: meta?.name ?? slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-                        description: meta?.description ?? null,
-                        count: categoryCounts[slug] ?? 0,
-                        icon: Icon,
-                    };
-                });
+            const result: CategoryInUse[] = catData.map((c) => {
+                const Icon = slugToIcon[c.slug] ?? TagIcon;
+                return {
+                    slug: c.slug,
+                    title: c.name,
+                    description: c.description ?? null,
+                    count: categoryCounts[c.slug] ?? 0,
+                    icon: Icon,
+                };
+            });
 
             setCategories(result);
         } catch (err) {
@@ -107,12 +95,14 @@ function CategoriesSubsection() {
     const handleEditClick = (category: CategoryInUse) => {
         setEditingCategory(category);
         setCategoryName(category.title);
+        setCategoryDescription(category.description ?? '');
         setIsDialogOpen(true);
     };
 
     const handleAddClick = () => {
         setEditingCategory(null);
         setCategoryName('');
+        setCategoryDescription('');
         setIsDialogOpen(true);
     };
 
@@ -143,10 +133,13 @@ function CategoriesSubsection() {
         try {
             if (editingCategory) {
                 if (newSlug === editingCategory.slug) {
-                    // Only update display name
+                    // Update name and description
                     const { error } = await supabase
                         .from('course_categories')
-                        .update({ name: categoryName.trim() })
+                        .update({
+                            name: categoryName.trim(),
+                            description: categoryDescription.trim() || null,
+                        })
                         .eq('slug', editingCategory.slug);
                     if (error) throw error;
                 } else {
@@ -160,10 +153,14 @@ function CategoriesSubsection() {
                         setToast({ type: 'error', message: 'A category with this slug already exists' });
                         return;
                     }
-                    // Update slug and name in course_categories; ON UPDATE CASCADE propagates to courses
+                    // Update slug, name, description in course_categories; ON UPDATE CASCADE propagates to courses
                     const { error } = await supabase
                         .from('course_categories')
-                        .update({ slug: newSlug, name: categoryName.trim() })
+                        .update({
+                            slug: newSlug,
+                            name: categoryName.trim(),
+                            description: categoryDescription.trim() || null,
+                        })
                         .eq('slug', editingCategory.slug);
                     if (error) throw error;
                 }
@@ -172,9 +169,25 @@ function CategoriesSubsection() {
                 setIsDialogOpen(false);
                 loadCategories();
             } else {
+                // Add new category directly to course_categories
+                const { data: existing } = await supabase
+                    .from('course_categories')
+                    .select('slug')
+                    .eq('slug', newSlug)
+                    .maybeSingle();
+                if (existing) {
+                    setToast({ type: 'error', message: 'A category with this name already exists' });
+                    return;
+                }
+                const { error } = await supabase.from('course_categories').insert({
+                    slug: newSlug,
+                    name: categoryName.trim(),
+                    description: categoryDescription.trim() || null,
+                });
+                if (error) throw error;
+                setToast({ type: 'success', message: `Category "${categoryName}" added.` });
                 setIsDialogOpen(false);
-                setToast({ type: 'info', message: 'Redirecting to create course...' });
-                setTimeout(() => navigate('/instructor/course-management/course/new'), 1000);
+                loadCategories();
             }
         } catch (error) {
             console.error('Error saving category:', error);
@@ -192,7 +205,7 @@ function CategoriesSubsection() {
                     Categories
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
-                    Categories in use across your courses. Only categories assigned to at least one course are shown.
+                    Manage categories for course classification. Add new categories here—they will appear in the dropdown when creating or editing courses.
                 </p>
             </div>
 
@@ -208,7 +221,7 @@ function CategoriesSubsection() {
 
                     <button
                         onClick={handleAddClick}
-                        className="flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm"
+                        className="flex items-center px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-dark)] text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
                     >
                         <PlusIcon className="h-4 w-4 mr-1.5" />
                         Add New
@@ -249,16 +262,16 @@ function CategoriesSubsection() {
                 ) : (
                     <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-6 text-center">
                         <CheckCircleIcon className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                        <h4 className="text-gray-900 font-medium">No categories in use</h4>
+                        <h4 className="text-gray-900 font-medium">No categories yet</h4>
                         <p className="text-gray-500 text-sm">
-                            Categories will appear here once you assign them to courses. Create a course and set its
-                            category to see it listed.
+                            Add a category to get started. Categories will appear in the dropdown when creating or editing courses.
                         </p>
                         <button
                             onClick={handleAddClick}
-                            className="mt-4 text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline"
+                            className="mt-4 px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-dark)] text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
                         >
-                            Create a course with a category
+                            <PlusIcon className="h-4 w-4 inline mr-1.5" />
+                            Add New Category
                         </button>
                     </div>
                 )}
@@ -281,17 +294,9 @@ function CategoriesSubsection() {
                         </div>
 
                         <form onSubmit={handleSave} className="p-6 space-y-4">
-                            {!editingCategory && (
-                                <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-800 mb-4">
-                                    <p>
-                                        <strong>Note:</strong> Since categories are defined by their usage, creating a new category involves creating a new course assigned to it.
-                                    </p>
-                                </div>
-                            )}
-
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Category Name
+                                    Category Name *
                                 </label>
                                 <input
                                     type="text"
@@ -306,6 +311,19 @@ function CategoriesSubsection() {
                                         Slug: <span className="font-mono text-gray-600">{categoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}</span>
                                     </p>
                                 )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Description (optional)
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                    placeholder="Brief description of this category"
+                                    value={categoryDescription}
+                                    onChange={(e) => setCategoryDescription(e.target.value)}
+                                />
                             </div>
 
                             {editingCategory && (
@@ -341,7 +359,7 @@ function CategoriesSubsection() {
                                     ) : (
                                         <>
                                             <SaveIcon className="h-4 w-4 mr-2" />
-                                            {editingCategory ? 'Update Category' : 'Create & New Course'}
+                                            {editingCategory ? 'Update Category' : 'Add Category'}
                                         </>
                                     )}
                                 </button>
