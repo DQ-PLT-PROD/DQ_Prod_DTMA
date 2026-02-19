@@ -100,7 +100,7 @@ export function MediaPickerModal({ isOpen, onClose, onSelect, allowedTypes }: Me
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <label className={`flex items-center gap-2 px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-dark)] cursor-pointer transition-colors ${uploading ? 'opacity-70 pointer-events-none' : ''}`}>
+                    <label className={`flex items-center gap-2 px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)] cursor-pointer transition-colors ${uploading ? 'opacity-70 pointer-events-none' : ''}`}>
                         {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                         <span>{uploading ? 'Uploading...' : 'Upload New'}</span>
                         <input

@@ -145,7 +145,7 @@ export function ModuleForm() {
                 <button
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-dark)] text-white rounded-lg flex items-center shadow-sm disabled:opacity-50"
+                    className="px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-hover)] text-white rounded-lg flex items-center shadow-sm disabled:opacity-50"
                 >
                     <SaveIcon className="h-4 w-4 mr-2" />
                     {loading ? 'Saving...' : 'Save Module'}

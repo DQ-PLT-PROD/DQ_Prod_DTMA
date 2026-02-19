@@ -506,7 +506,7 @@ export function CourseForm() {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleCategorySelect('custom_new')}
-                                                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--md-primary)] text-white hover:bg-[var(--md-primary-dark)] transition-colors"
+                                                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--md-primary)] text-white hover:bg-[var(--md-primary-hover)] transition-colors"
                                                     >
                                                         Add category
                                                     </button>
@@ -786,7 +786,7 @@ export function CourseForm() {
                             <button
                                 type="button"
                                 onClick={addHighlight}
-                                className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-dark)]"
+                                className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)]"
                             >
                                 Add
                             </button>
@@ -822,7 +822,7 @@ export function CourseForm() {
                             <button
                                 type="button"
                                 onClick={addOutcome}
-                                className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-dark)]"
+                                className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)]"
                             >
                                 Add
                             </button>
@@ -855,7 +855,7 @@ export function CourseForm() {
                         <button
                             type="submit"
                             disabled={saving}
-                            className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-dark)] disabled:opacity-50 flex items-center"
+                            className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)] disabled:opacity-50 flex items-center"
                         >
                             <SaveIcon className="h-4 w-4 mr-2" />
                             {saving ? 'Saving...' : isEditing ? 'Update' : 'Create'}

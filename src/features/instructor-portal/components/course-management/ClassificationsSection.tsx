@@ -240,7 +240,7 @@ function CategoriesSubsection() {
 
                     <button
                         onClick={handleAddClick}
-                        className="flex items-center px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-dark)] text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
+                        className="flex items-center px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-hover)] text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
                     >
                         <PlusIcon className="h-4 w-4 mr-1.5" />
                         Add New
@@ -296,7 +296,7 @@ function CategoriesSubsection() {
                         </p>
                         <button
                             onClick={handleAddClick}
-                            className="mt-4 px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-dark)] text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
+                            className="mt-4 px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-hover)] text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
                         >
                             <PlusIcon className="h-4 w-4 inline mr-1.5" />
                             Add New Category

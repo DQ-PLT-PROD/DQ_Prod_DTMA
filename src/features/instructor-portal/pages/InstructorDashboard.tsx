@@ -96,7 +96,7 @@ export function InstructorDashboard() {
     return (
         <div className="space-y-6">
             {/* Welcome Section */}
-            <div className="bg-gradient-to-r from-[var(--md-primary)] to-[var(--md-primary-dark)] rounded-xl p-6 text-white">
+            <div className="bg-gradient-to-r from-[var(--md-primary)] to-[var(--md-primary-hover)] rounded-xl p-6 text-white">
                 <h1 className="text-2xl font-bold mb-2">Welcome to Instructor Portal</h1>
                 <p className="text-white/80">
                     Create and manage your courses, track student progress, and analyze engagement.
