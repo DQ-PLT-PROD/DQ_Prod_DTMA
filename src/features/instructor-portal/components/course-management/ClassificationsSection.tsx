@@ -5,10 +5,12 @@ import { TagIcon, AlertCircleIcon, CheckCircleIcon, BarChart2Icon, PlusIcon, Edi
 import { Toast } from '@/components/ui/Toast';
 import { useNavigate } from 'react-router-dom';
 
-interface CustomCategory {
+interface CategoryInUse {
     slug: string;
     title: string;
+    description: string | null;
     count: number;
+    icon: React.ComponentType<{ className?: string }>;
 }
 
 export function ClassificationsSection() {
@@ -25,61 +27,86 @@ export function ClassificationsSection() {
 
 function CategoriesSubsection() {
     const navigate = useNavigate();
-    const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
+    const [categories, setCategories] = useState<CategoryInUse[]>([]);
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
     // Dialog State
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [editingCategory, setEditingCategory] = useState<CustomCategory | null>(null); // null if adding new
+    const [editingCategory, setEditingCategory] = useState<CategoryInUse | null>(null);
     const [categoryName, setCategoryName] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
+    const slugToIcon = Object.fromEntries(COURSE_CATEGORIES.map((c) => [c.slug, c.icon]));
+
     useEffect(() => {
-        loadCustomCategories();
+        loadCategories();
     }, []);
 
-    const loadCustomCategories = async () => {
+    const loadCategories = async () => {
         setLoading(true);
         const supabase = getSupabaseClient();
         if (!supabase) return;
 
         try {
-            const { data, error } = await supabase
+            // Get distinct category_ids from courses with counts
+            const { data: courseData, error: courseError } = await supabase
                 .from('courses')
-                .select('category');
+                .select('category_id');
 
-            if (error) throw error;
+            if (courseError) throw courseError;
 
-            if (data) {
-                const standardSlugs = COURSE_CATEGORIES.map(c => c.slug);
-                const categoryCounts: Record<string, number> = {};
+            const categoryCounts: Record<string, number> = {};
+            (courseData ?? []).forEach((row) => {
+                const slug = row.category_id;
+                if (slug) {
+                    categoryCounts[slug] = (categoryCounts[slug] || 0) + 1;
+                }
+            });
 
-                data.forEach((course) => {
-                    const categorySlug = course.category;
-                    if (categorySlug && !standardSlugs.includes(categorySlug)) {
-                        categoryCounts[categorySlug] = (categoryCounts[categorySlug] || 0) + 1;
-                    }
+            const slugs = Object.keys(categoryCounts);
+            if (slugs.length === 0) {
+                setCategories([]);
+                return;
+            }
+
+            // Fetch metadata from course_categories
+            const { data: catData, error: catError } = await supabase
+                .from('course_categories')
+                .select('slug, name, description')
+                .in('slug', slugs);
+
+            if (catError) throw catError;
+
+            const catBySlug = Object.fromEntries(
+                (catData ?? []).map((c) => [c.slug, { name: c.name, description: c.description }])
+            );
+
+            const result: CategoryInUse[] = slugs
+                .sort((a, b) => (categoryCounts[b] ?? 0) - (categoryCounts[a] ?? 0))
+                .map((slug) => {
+                    const meta = catBySlug[slug];
+                    const Icon = slugToIcon[slug] ?? TagIcon;
+                    return {
+                        slug,
+                        title: meta?.name ?? slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+                        description: meta?.description ?? null,
+                        count: categoryCounts[slug] ?? 0,
+                        icon: Icon,
+                    };
                 });
 
-                const customCats: CustomCategory[] = Object.entries(categoryCounts).map(([slug, count]) => ({
-                    slug,
-                    title: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '), // Simple title case
-                    count
-                }));
-
-                setCustomCategories(customCats);
-            }
+            setCategories(result);
         } catch (err) {
-            console.error('Error loading custom categories:', err);
+            console.error('Error loading categories:', err);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleEditClick = (category: CustomCategory) => {
+    const handleEditClick = (category: CategoryInUse) => {
         setEditingCategory(category);
-        setCategoryName(category.title); // Initialize with title (pretty version) if simpler, or slug
+        setCategoryName(category.title);
         setIsDialogOpen(true);
     };
 
@@ -97,7 +124,6 @@ function CategoriesSubsection() {
             return;
         }
 
-        // Slugify the name
         const newSlug = categoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
         if (!newSlug) {
@@ -105,47 +131,50 @@ function CategoriesSubsection() {
             return;
         }
 
-        // Check if standard
-        if (COURSE_CATEGORIES.some(c => c.slug === newSlug)) {
+        if (COURSE_CATEGORIES.some((c) => c.slug === newSlug)) {
             setToast({ type: 'error', message: 'This conflicts with a standard category name' });
             return;
         }
 
         setSubmitting(true);
         const supabase = getSupabaseClient();
-
         if (!supabase) return;
 
         try {
             if (editingCategory) {
-                // Rename existing category (bulk update courses)
-                const { error } = await supabase
-                    .from('courses')
-                    .update({ category: newSlug })
-                    .eq('category', editingCategory.slug);
+                if (newSlug === editingCategory.slug) {
+                    // Only update display name
+                    const { error } = await supabase
+                        .from('course_categories')
+                        .update({ name: categoryName.trim() })
+                        .eq('slug', editingCategory.slug);
+                    if (error) throw error;
+                } else {
+                    // Check new slug doesn't already exist in course_categories
+                    const { data: existing } = await supabase
+                        .from('course_categories')
+                        .select('slug')
+                        .eq('slug', newSlug)
+                        .maybeSingle();
+                    if (existing) {
+                        setToast({ type: 'error', message: 'A category with this slug already exists' });
+                        return;
+                    }
+                    // Update slug and name in course_categories; ON UPDATE CASCADE propagates to courses
+                    const { error } = await supabase
+                        .from('course_categories')
+                        .update({ slug: newSlug, name: categoryName.trim() })
+                        .eq('slug', editingCategory.slug);
+                    if (error) throw error;
+                }
 
-                if (error) throw error;
-
-                setToast({ type: 'success', message: `Category renamed to "${categoryName}"` });
+                setToast({ type: 'success', message: `Category updated to "${categoryName}"` });
                 setIsDialogOpen(false);
-                loadCustomCategories(); // Reload list
+                loadCategories();
             } else {
-                // "Add" new category
-                // Since we don't have a categories table, we direct the user to create a course with this category
-                // Or we can just close and tell them.
-                // Best UX: Close and navigate to create course?
-
                 setIsDialogOpen(false);
                 setToast({ type: 'info', message: 'Redirecting to create course...' });
-
-                // Navigate to course creation with pre-filled category logic (if supported)
-                // Assuming CourseForm might not support URL params, we can just navigate or explain.
-                // But specifically for this demo, let's just close and show success message simulated.
-                // Actually, "Adding" requires creating a course.
-                setTimeout(() => {
-                    navigate('/instructor/course-management/course/new');
-                    // In a real app we'd pass ?category=newSlug
-                }, 1000);
+                setTimeout(() => navigate('/instructor/course-management/course/new'), 1000);
             }
         } catch (error) {
             console.error('Error saving category:', error);
@@ -162,37 +191,18 @@ function CategoriesSubsection() {
                     <TagIcon className="h-5 w-5 mr-2 text-[var(--md-primary)]" />
                     Categories
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">Manage the primary dimensions for course classification.</p>
+                <p className="text-sm text-gray-500 mt-1">
+                    Categories in use across your courses. Only categories assigned to at least one course are shown.
+                </p>
             </div>
 
-            {/* Standard Categories */}
-            <div>
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Standard 6 Dimensions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {COURSE_CATEGORIES.map((category) => (
-                        <div key={category.slug} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-blue-300 transition-colors flex items-start space-x-4 cursor-default group">
-                            <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
-                                <category.icon className="h-6 w-6" />
-                            </div>
-                            <div>
-                                <h3 className="font-medium text-gray-900 flex items-center">
-                                    {category.title}
-                                    <span className="ml-2 text-[10px] uppercase bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                        Standard
-                                    </span>
-                                </h3>
-                                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{category.description}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Custom Categories */}
+            {/* Categories from courses table */}
             <div>
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center">
-                        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mr-2">Custom Categories</h3>
+                        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mr-2">
+                            Categories in use
+                        </h3>
                         {loading && <span className="text-xs text-gray-400">Loading...</span>}
                     </div>
 
@@ -205,49 +215,50 @@ function CategoriesSubsection() {
                     </button>
                 </div>
 
-                {customCategories.length > 0 ? (
-                    <div className="bg-white rounded-xl border border-orange-200 overflow-hidden">
-                        <div className="px-4 py-3 bg-orange-50 border-b border-orange-100 flex items-center justify-between">
-                            <div className="flex items-center">
-                                <AlertCircleIcon className="h-5 w-5 text-orange-500 mr-2" />
-                                <p className="text-sm text-orange-800 font-medium">
-                                    These categories are outside the standard 6 Dimensions.
-                                </p>
-                            </div>
-                        </div>
-                        <ul className="divide-y divide-gray-100">
-                            {customCategories.map((cat) => (
-                                <li key={cat.slug} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors group">
-                                    <div className="flex items-center">
-                                        <TagIcon className="h-4 w-4 text-gray-400 mr-3 group-hover:text-blue-500 transition-colors" />
-                                        <span className="text-gray-900 font-medium">{cat.title} <span className="text-gray-400 font-normal text-sm">({cat.slug})</span></span>
-                                    </div>
-                                    <div className="flex items-center space-x-4">
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                {categories.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {categories.map((cat) => (
+                            <div
+                                key={cat.slug}
+                                className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:border-blue-300 transition-colors flex items-start space-x-4 group"
+                            >
+                                <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                                    <cat.icon className="h-6 w-6" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-medium text-gray-900 flex items-center">
+                                        {cat.title}
+                                        <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                             {cat.count} {cat.count === 1 ? 'course' : 'courses'}
                                         </span>
-                                        <button
-                                            onClick={() => handleEditClick(cat)}
-                                            className="text-gray-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors"
-                                            title="Edit Category"
-                                        >
-                                            <Edit2Icon className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
+                                    </h3>
+                                    {cat.description && (
+                                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">{cat.description}</p>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => handleEditClick(cat)}
+                                    className="text-gray-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors shrink-0"
+                                    title="Edit Category"
+                                >
+                                    <Edit2Icon className="h-4 w-4" />
+                                </button>
+                            </div>
+                        ))}
                     </div>
                 ) : (
                     <div className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-6 text-center">
                         <CheckCircleIcon className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                        <h4 className="text-gray-900 font-medium">Clean Structure</h4>
-                        <p className="text-gray-500 text-sm">All courses are using the standard categories.</p>
+                        <h4 className="text-gray-900 font-medium">No categories in use</h4>
+                        <p className="text-gray-500 text-sm">
+                            Categories will appear here once you assign them to courses. Create a course and set its
+                            category to see it listed.
+                        </p>
                         <button
                             onClick={handleAddClick}
                             className="mt-4 text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline"
                         >
-                            Create a custom category
+                            Create a course with a category
                         </button>
                     </div>
                 )}
