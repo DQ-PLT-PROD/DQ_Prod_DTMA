@@ -340,18 +340,6 @@ export function LessonForm() {
                             />
                         </div>
 
-                        <div className="flex items-center">
-                            <input
-                                id="is_preview"
-                                type="checkbox"
-                                checked={formData.is_preview}
-                                onChange={(e) => setFormData({ ...formData, is_preview: e.target.checked })}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="is_preview" className="ml-2 block text-sm text-gray-900">
-                                Allow as Free Preview
-                            </label>
-                        </div>
                     </div>
                 </div>
             </div>
