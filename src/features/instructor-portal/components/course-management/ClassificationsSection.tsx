@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { COURSE_CATEGORIES } from '../../../../constants/navigation';
 import { getSupabaseClient } from '../../lib/dbClient';
-import { TagIcon, AlertCircleIcon, CheckCircleIcon, BarChart2Icon, PlusIcon, Edit2Icon, X, SaveIcon } from 'lucide-react';
+import { TagIcon, AlertCircleIcon, CheckCircleIcon, BarChart2Icon, PlusIcon, Edit2Icon, TrashIcon, X, SaveIcon } from 'lucide-react';
 import { Toast } from '@/components/ui/Toast';
 
 interface CategoryInUse {
@@ -104,6 +104,25 @@ function CategoriesSubsection() {
         setCategoryName('');
         setCategoryDescription('');
         setIsDialogOpen(true);
+    };
+
+    const handleDeleteClick = async (category: CategoryInUse) => {
+        const message =
+            category.count > 0
+                ? `Delete "${category.title}"? ${category.count} course(s) will have their category cleared.`
+                : `Delete "${category.title}"?`;
+        if (!window.confirm(message)) return;
+        const supabase = getSupabaseClient();
+        if (!supabase) return;
+        try {
+            const { error } = await supabase.from('course_categories').delete().eq('slug', category.slug);
+            if (error) throw error;
+            setToast({ type: 'success', message: `Category "${category.title}" deleted.` });
+            loadCategories();
+        } catch (err) {
+            console.error('Error deleting category:', err);
+            setToast({ type: 'error', message: err instanceof Error ? err.message : 'Failed to delete category' });
+        }
     };
 
     const handleSave = async (e: React.FormEvent) => {
@@ -249,13 +268,22 @@ function CategoriesSubsection() {
                                         <p className="text-sm text-gray-500 mt-1 line-clamp-2">{cat.description}</p>
                                     )}
                                 </div>
-                                <button
-                                    onClick={() => handleEditClick(cat)}
-                                    className="text-gray-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors shrink-0"
-                                    title="Edit Category"
-                                >
-                                    <Edit2Icon className="h-4 w-4" />
-                                </button>
+                                <div className="flex items-center gap-1 shrink-0">
+                                    <button
+                                        onClick={() => handleEditClick(cat)}
+                                        className="text-gray-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors"
+                                        title="Edit Category"
+                                    >
+                                        <Edit2Icon className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteClick(cat)}
+                                        className="text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 transition-colors"
+                                        title="Delete Category"
+                                    >
+                                        <TrashIcon className="h-4 w-4" />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
