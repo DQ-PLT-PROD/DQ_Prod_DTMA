@@ -19,8 +19,13 @@ import {
     SFIA_LEVEL_CODES,
     AUDIENCE_OPTIONS
 } from '../../constants/courseConstants';
-import { COURSE_CATEGORIES as STANDARD_CATEGORIES } from '../../../../constants/navigation';
 import { AlertTriangleIcon, CheckIcon, XIcon } from 'lucide-react';
+
+interface CategoryOption {
+    slug: string;
+    name: string;
+    description: string | null;
+}
 
 interface CourseFormData {
     slug: string;
@@ -84,10 +89,18 @@ export function CourseForm() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [showMediaPicker, setShowMediaPicker] = useState(false);
 
-    // Custom Category State
+    // Categories from course_categories table
+    const [categories, setCategories] = useState<CategoryOption[]>([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
+    // Custom Category State (for adding new category not yet in DB)
     const [showCustomCategoryWarn, setShowCustomCategoryWarn] = useState(false);
     const [isCustomCategory, setIsCustomCategory] = useState(false);
     const [customCategoryInput, setCustomCategoryInput] = useState('');
+    const [customCategoryDescription, setCustomCategoryDescription] = useState('');
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
 
     useEffect(() => {
         if (isEditing && id) {
@@ -95,16 +108,35 @@ export function CourseForm() {
         }
     }, [id, isEditing]);
 
-    // Check if loaded category is custom
+    const loadCategories = async () => {
+        const supabase = getSupabaseClient();
+        if (!supabase) return;
+        try {
+            setCategoriesLoading(true);
+            const { data, error } = await supabase
+                .from('course_categories')
+                .select('slug, name, description')
+                .eq('is_active', true)
+                .order('display_order', { ascending: true });
+            if (error) throw error;
+            setCategories((data ?? []).map((r) => ({ slug: r.slug, name: r.name, description: r.description })));
+        } catch (err) {
+            console.error('Error loading categories:', err);
+        } finally {
+            setCategoriesLoading(false);
+        }
+    };
+
+    // Check if loaded category exists in fetched list (otherwise treat as custom/orphaned)
     useEffect(() => {
-        if (formData.category) {
-            const isStandard = STANDARD_CATEGORIES.some(c => c.slug === formData.category);
-            setIsCustomCategory(!isStandard);
-            if (!isStandard) {
+        if (formData.category && categories.length > 0) {
+            const exists = categories.some((c) => c.slug === formData.category);
+            setIsCustomCategory(!exists);
+            if (!exists) {
                 setCustomCategoryInput(formData.category);
             }
         }
-    }, [formData.category]);
+    }, [formData.category, categories]);
 
     const loadCourse = async (courseId: string) => {
         // ... (existing loadCourse implementation) ...
@@ -304,11 +336,31 @@ export function CourseForm() {
         }
     };
 
-    const confirmCustomCategory = () => {
-        if (customCategoryInput.trim()) {
-            setFormData({ ...formData, category: customCategoryInput.trim() });
-            setIsCustomCategory(true);
+    const confirmCustomCategory = async () => {
+        const name = customCategoryInput.trim();
+        if (!name) return;
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        if (!slug) return;
+        const supabase = getSupabaseClient();
+        if (!supabase) return;
+        try {
+            const { error } = await supabase.from('course_categories').insert({
+                slug,
+                name,
+                description: customCategoryDescription.trim() || null,
+            });
+            if (error) throw error;
+            await loadCategories();
+            setFormData({ ...formData, category: slug });
+            setIsCustomCategory(false);
             setShowCustomCategoryWarn(false);
+            setCustomCategoryInput('');
+            setCustomCategoryDescription('');
+            setToast({ type: 'success', message: `Category "${name}" added.` });
+        } catch (err) {
+            console.error('Error adding category:', err);
+            const msg = err instanceof Error ? err.message : 'Failed to add category';
+            setToast({ type: 'error', message: msg });
         }
     };
 
@@ -390,62 +442,71 @@ export function CourseForm() {
                                 <div className="space-y-3">
                                     <select
                                         required
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
+                                        disabled={categoriesLoading}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)] disabled:opacity-50"
                                         value={showCustomCategoryWarn ? 'custom_new' : formData.category}
                                         onChange={handleCategoryChange}
                                     >
-                                        <option value="">Select category</option>
-                                        <optgroup label="Standard Categories">
-                                            {STANDARD_CATEGORIES.map((category) => (
-                                                <option key={category.slug} value={category.slug}>
-                                                    {category.title}
-                                                </option>
-                                            ))}
-                                        </optgroup>
-                                        <optgroup label="Custom">
-                                            <option value="custom_new">Create Custom Category...</option>
-                                            {/* If current category is custom, show it as an option so it's selected */}
+                                        <option value="">{categoriesLoading ? 'Loading...' : 'Select category'}</option>
+                                        {categories.map((category) => (
+                                            <option key={category.slug} value={category.slug}>
+                                                {category.name}
+                                            </option>
+                                        ))}
+                                        <optgroup label="Add new">
+                                            <option value="custom_new">Create new category...</option>
+                                            {/* Show current category if not in list (e.g. orphaned or legacy) */}
                                             {isCustomCategory && formData.category && (
                                                 <option value={formData.category}>{formData.category}</option>
                                             )}
                                         </optgroup>
                                     </select>
 
-                                    {/* Custom Category Warning/Input */}
+                                    {/* Create new category form */}
                                     {showCustomCategoryWarn && (
-                                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
                                             <div className="flex items-start gap-3">
-                                                <AlertTriangleIcon className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
-                                                <div className="flex-1">
-                                                    <h4 className="text-sm font-medium text-orange-800">Custom Category Warning</h4>
-                                                    <p className="text-xs text-orange-700 mt-1">
-                                                        Creating a custom category keeps this course outside the standard 6 Dimensions of Digital Transformation.
-                                                        It may limit discoverability in standard filters.
+                                                <AlertTriangleIcon className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                                                <div className="flex-1 space-y-3">
+                                                    <h4 className="text-sm font-medium text-blue-800">Add new category</h4>
+                                                    <p className="text-xs text-blue-700">
+                                                        New categories are stored in the database and will appear in the dropdown for future courses.
                                                     </p>
-
-                                                    <div className="mt-3 flex items-center gap-2">
+                                                    <div className="space-y-2">
                                                         <input
                                                             type="text"
                                                             value={customCategoryInput}
                                                             onChange={(e) => setCustomCategoryInput(e.target.value)}
-                                                            placeholder="Enter custom category slug..."
-                                                            className="flex-1 text-sm px-3 py-1.5 border border-orange-300 rounded focus:border-orange-500 focus:outline-none"
+                                                            placeholder="Category name (e.g. Emerging Technologies)"
+                                                            className="w-full text-sm px-3 py-1.5 border border-blue-300 rounded focus:border-blue-500 focus:outline-none"
                                                         />
+                                                        <input
+                                                            type="text"
+                                                            value={customCategoryDescription}
+                                                            onChange={(e) => setCustomCategoryDescription(e.target.value)}
+                                                            placeholder="Description (optional)"
+                                                            className="w-full text-sm px-3 py-1.5 border border-blue-300 rounded focus:border-blue-500 focus:outline-none"
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
                                                         <button
                                                             type="button"
                                                             onClick={confirmCustomCategory}
-                                                            className="p-1.5 bg-orange-100 text-orange-700 rounded hover:bg-orange-200"
-                                                            title="Confirm"
+                                                            className="flex items-center px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                                                         >
-                                                            <CheckIcon className="h-4 w-4" />
+                                                            <CheckIcon className="h-4 w-4 mr-1" />
+                                                            Add category
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            onClick={() => setShowCustomCategoryWarn(false)}
-                                                            className="p-1.5 text-gray-400 hover:text-gray-600"
-                                                            title="Cancel"
+                                                            onClick={() => {
+                                                                setShowCustomCategoryWarn(false);
+                                                                setCustomCategoryInput('');
+                                                                setCustomCategoryDescription('');
+                                                            }}
+                                                            className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded text-sm"
                                                         >
-                                                            <XIcon className="h-4 w-4" />
+                                                            Cancel
                                                         </button>
                                                     </div>
                                                 </div>
@@ -453,21 +514,11 @@ export function CourseForm() {
                                         </div>
                                     )}
 
-                                    {/* Active Custom Category Indicator */}
+                                    {/* Orphaned/legacy category indicator */}
                                     {isCustomCategory && !showCustomCategoryWarn && formData.category && (
                                         <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-50 px-3 py-2 rounded-lg border border-orange-100">
                                             <AlertTriangleIcon className="h-3 w-3" />
-                                            <span>Using custom category: <strong>{formData.category}</strong></span>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setCustomCategoryInput(formData.category);
-                                                    setShowCustomCategoryWarn(true);
-                                                }}
-                                                className="text-orange-800 underline ml-auto"
-                                            >
-                                                Edit
-                                            </button>
+                                            <span>Category &quot;{formData.category}&quot; is not in the categories list. Consider selecting a different category or creating it via &quot;Create new category&quot;.</span>
                                         </div>
                                     )}
                                 </div>
