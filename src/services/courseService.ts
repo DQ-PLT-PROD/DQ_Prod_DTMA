@@ -1,16 +1,7 @@
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
-import { Course, CourseCatalogFilters, Lesson, Category } from "@/types/dtma-lms";
+import { Course, CourseCatalogFilters, Lesson, Category, Quiz } from "@/types/dtma-lms";
 
 // Types for quiz and resource data
-interface Quiz {
-    id: string;
-    title: string;
-    orderIndex: number;
-    question: string;
-    options: { id: string; text: string }[];
-    correctAnswer: string;
-    explanation?: string;
-}
 
 export interface CourseResource {
     id: string;
@@ -167,6 +158,7 @@ export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[
 
                 query = supabase
                     .from("courses")
+                    // @ts-ignore
                     .select(`${lightweightFields}, course_categories(name), lessons(type, estimated_duration_minutes)`)
                     .eq("status", "published");
             }
@@ -286,7 +278,14 @@ const mapRowToQuiz = (row: any): Quiz => {
         id: row.id,
         courseSlug: row.course_slug,
         title: row.title,
+        description: row.description || undefined,
         orderIndex: row.order_index,
+        passingScore: row.passing_score,
+        timeLimitMinutes: row.time_limit_minutes,
+        maxAttempts: row.max_attempts,
+        isPublished: row.is_published,
+        shuffleQuestions: row.shuffle_questions,
+        // Legacy fields
         question: row.question,
         options: row.options || [],
         correctAnswer: row.correct_answer,

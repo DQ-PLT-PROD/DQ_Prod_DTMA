@@ -29,6 +29,7 @@ const CourseForm = lazy(() => import("./features/instructor-portal/components/co
 const ModuleForm = lazy(() => import("./features/instructor-portal/components/course-management/ModuleForm").then(m => ({ default: m.ModuleForm })));
 const LessonForm = lazy(() => import("./features/instructor-portal/components/course-management/LessonForm").then(m => ({ default: m.LessonForm })));
 const MediaLibraryPage = lazy(() => import("./features/instructor-portal/pages/MediaLibraryPage").then(m => ({ default: m.MediaLibraryPage })));
+const QuizEditor = lazy(() => import("./features/instructor-portal/pages/QuizEditor").then(m => ({ default: m.QuizEditor })));
 
 
 // Loading fallback component
@@ -111,6 +112,8 @@ export function AppRouter() {
                 <Route path="course-management/module/:id" element={<ModuleForm />} />
                 <Route path="course-management/lesson/new" element={<LessonForm />} />
                 <Route path="course-management/lesson/:id" element={<LessonForm />} />
+                <Route path="course-management/quiz/new" element={<QuizEditor />} />
+                <Route path="course-management/quiz/:id" element={<QuizEditor />} />
                 <Route path="media" element={<MediaLibraryPage />} />
                 <Route path="students" element={<ComingSoon />} />
                 <Route path="learning-paths" element={<ComingSoon />} />

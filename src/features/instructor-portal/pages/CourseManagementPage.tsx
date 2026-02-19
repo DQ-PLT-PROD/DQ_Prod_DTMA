@@ -19,6 +19,7 @@ import {
 import { CoursesSection } from '../components/course-management/CoursesSection';
 import { ModulesSection } from '../components/course-management/ModulesSection';
 import { LessonsSection } from '../components/course-management/LessonsSection';
+import { QuizzesSection } from '../components/course-management/QuizzesSection';
 import { ClassificationsSection } from '../components/course-management/ClassificationsSection';
 
 interface Tab {
@@ -32,6 +33,7 @@ const tabs: Tab[] = [
     { id: 'courses', title: 'Courses', icon: GraduationCapIcon },
     { id: 'lessons', title: 'Lessons', icon: PlayCircleIcon },
     { id: 'modules', title: 'Modules', icon: FileTextIcon },
+    { id: 'quizzes', title: 'Quizzes', icon: HelpCircleIcon },
     { id: 'learning-paths', title: 'Learning Paths', icon: BookOpenIcon },
 ];
 
@@ -65,6 +67,9 @@ export function CourseManagementPage() {
             case 'lessons':
                 navigate('/instructor/course-management/lesson/new');
                 break;
+            case 'quizzes':
+                navigate('/instructor/course-management/quiz/new');
+                break;
             // No action for categories or disabled tabs
         }
     };
@@ -79,6 +84,8 @@ export function CourseManagementPage() {
                 return <ModulesSection />;
             case 'lessons':
                 return <LessonsSection />;
+            case 'quizzes':
+                return <QuizzesSection />;
             default:
                 return null;
         }
@@ -97,8 +104,8 @@ export function CourseManagementPage() {
                             Manage classifications, courses, modules, and lessons
                         </p>
                     </div>
-                    {/* Show Add New button only for content types, not Categories currently */}
-                    {activeTab !== 'classifications' && activeTab !== 'learning-paths' && (
+                    {/* Show Add New button only for core content types */}
+                    {['courses', 'modules', 'lessons'].includes(activeTab) && (
                         <button
                             className="px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-dark)] text-white rounded-md shadow-sm flex items-center justify-center text-sm font-medium transition-colors"
                             onClick={handleAddNew}
