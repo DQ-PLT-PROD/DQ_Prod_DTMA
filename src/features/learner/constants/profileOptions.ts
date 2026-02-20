@@ -31,7 +31,7 @@ export const PREFERENCE_OPTIONS = [
   "Finance",
 ];
 
-export const MIN_GOALS = 3;
+export const MIN_GOALS = 1;
 export const MAX_GOALS = 8;
 export const MAX_PREFERENCES = 12;
 
@@ -43,8 +43,8 @@ export const SENIORITY_OPTIONS = [
 ];
 
 export const WEEKLY_CAPACITY_OPTIONS = [
-  { label: "1–2h", value: "1-2h" },
-  { label: "3–5h", value: "3-5h" },
+  { label: "1-2h", value: "1-2h" },
+  { label: "3-5h", value: "3-5h" },
   { label: "5+h", value: "5+h" },
 ];
 
@@ -54,3 +54,4 @@ export const TRANSFORMATION_EXPERIENCE_OPTIONS = [
   { label: "Led initiatives", value: "led_initiatives" },
   { label: "Enterprise-wide", value: "enterprise_wide" },
 ];
+
