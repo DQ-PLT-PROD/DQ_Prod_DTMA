@@ -28,6 +28,7 @@ const InProgressPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [resumeCourseId, setResumeCourseId] = useState<string | null>(null);
     const isAuthPending = isAuthLoading || isDatabaseUserLoading;
+    const greetingName = databaseUser?.display_name || user?.name || "";
 
     useEffect(() => {
         const loadEnrollments = async () => {
@@ -106,7 +107,7 @@ const InProgressPage: React.FC = () => {
                 {/* Welcome Header */}
                 <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
                     <p className="text-sm text-gray-500">
-                        Welcome{user?.name ? `, ${user.name}` : ""}.
+                        Welcome{greetingName ? `, ${greetingName}` : ""}.
                     </p>
                     <h1 className="text-lg font-semibold text-gray-900">
                         Continue where you left off

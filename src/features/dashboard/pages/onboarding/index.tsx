@@ -72,7 +72,7 @@ export const LearnerOnboarding: React.FC<{
 
   const goalCountError = useMemo(() => {
     if (goals.length === 0) {
-      return "Select at least 3 goals to continue.";
+      return `Select at least ${MIN_GOALS} goal${MIN_GOALS > 1 ? "s" : ""} to continue.`;
     }
     if (goals.length < MIN_GOALS) {
       return `Select at least ${MIN_GOALS} goals to continue.`;
