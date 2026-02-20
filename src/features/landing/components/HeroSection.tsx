@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Send, ChevronDown, ArrowRight, Layers } from 'lucide-react';
+import { Send, ArrowRight, Layers } from 'lucide-react';
 import { AnimatedText, FadeInUpOnScroll, StaggeredFadeIn } from "@/components/AnimationUtils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from '@/lib/auth';
@@ -320,20 +320,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         </button>
 
       </PageContainer>
-
-      {/* Scroll indicator with animation */}
-      <div
-        className="absolute bottom-8 inset-x-0 flex justify-center animate-bounce cursor-pointer"
-        onClick={() => {
-          const nextSection = document.querySelector('main > div:nth-child(2)');
-          nextSection?.scrollIntoView({
-            behavior: 'smooth'
-          });
-        }}
-      >
-        <ChevronDown size={24} className="text-white" />
-        <span className="sr-only">Scroll down</span>
-      </div>
 
       {/* Add keyframes for gradient animation */}
       <style>{`

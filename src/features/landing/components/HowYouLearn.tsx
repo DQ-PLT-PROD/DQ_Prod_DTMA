@@ -22,54 +22,18 @@ const steps = [
 
 const HowYouLearn: React.FC = () => {
   return (
-    <div className="w-full h-full flex flex-col justify-center py-16">
+    <div className="w-full flex flex-col justify-center py-16 sm:py-20">
       <PageContainer>
-        <div className="flex flex-col md:flex-row w-full min-h-[170px] sm:min-h-[200px] shadow-lg sm:shadow-xl overflow-hidden bg-white">
-          <div
-            className="relative px-8 sm:px-12 md:px-14 py-8 sm:py-10 text-white overflow-hidden flex items-center md:w-7/12"
-            style={{
-              background:
-                "linear-gradient(145deg, #0e2f7a 0%, #0c2a6a 45%, #0a275f 100%)",
-            }}
+        <div className="text-center max-w-3xl mx-auto space-y-4 mb-2">
+          <h2
+            className="text-3xl md:text-4xl font-bold text-gray-900"
+            style={{ textShadow: "0 8px 20px rgba(3, 12, 43, 0.1)" }}
           >
-            <div
-              className="absolute rounded-full border border-white/75 hidden sm:block"
-              style={{
-                width: "22rem",
-                height: "22rem",
-                left: "-8rem",
-                bottom: "-16rem",
-                borderWidth: "1.5px",
-              }}
-              aria-hidden
-            />
-            <div
-              className="absolute rounded-full border border-white/70 sm:hidden"
-              style={{
-                width: "16rem",
-                height: "16rem",
-                left: "-8rem",
-                bottom: "-14rem",
-                borderWidth: "1.5px",
-              }}
-              aria-hidden
-            />
-            <div className="relative space-y-4 max-w-md pl-24 sm:pl-28">
-              <h2 className="text-3xl font-bold">How You Learn</h2>
-              <p className="text-blue-100 text-base leading-relaxed max-w-lg">
-                DTMA guides learners from fundamentals to real-world mastery in the AI era.
-              </p>
-            </div>
-          </div>
-
-          <div className="relative h-full min-h-[170px] sm:min-h-[200px] md:w-5/12">
-            <div className="absolute inset-0 bg-black/10 z-10" />
-            <img
-              src="/images/landing/leader-2.jpg"
-              alt="Learner engaged with coursework"
-              className="h-full w-full object-cover object-center"
-            />
-          </div>
+            How Learning Works in DTMA
+          </h2>
+          <p className="text-lg text-gray-600">
+            Making sense of digital has never been easier, courses are self-paced, resume anytime, bite-sized, learn on the go!
+          </p>
         </div>
 
         <div className="relative py-10 sm:py-12 how-you-learn-steps">
