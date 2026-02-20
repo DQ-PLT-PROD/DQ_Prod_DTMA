@@ -164,6 +164,7 @@ export function QuizEditor() {
                 isPublished: quizData.is_published ?? false,
                 shuffleQuestions: quizData.shuffle_questions ?? false,
                 hideAnswers: quizData.hide_answers ?? false,
+                orderIndex: quizData.order_index ?? 0,
                 questions: questions
             });
 
@@ -299,6 +300,7 @@ export function QuizEditor() {
                 is_published: quiz.isPublished,
                 shuffle_questions: quiz.shuffleQuestions,
                 hide_answers: quiz.hideAnswers ?? false,
+                order_index: quiz.orderIndex ?? 0,
                 updated_at: new Date().toISOString(),
             };
 
