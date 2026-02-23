@@ -6,7 +6,7 @@
 
 import { msalInstance } from '../auth/msal'
 
-const API_BASE = 'http://localhost:3001/api'
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 
 interface ApiResponse<T = any> {
   success?: boolean
