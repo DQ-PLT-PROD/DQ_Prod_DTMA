@@ -77,8 +77,14 @@ export function AppRouter() {
                 <Route path="onboarding" element={<LearnerOnboarding layout="portal" />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="my-courses/in-progress" element={<InProgressPage />} />
-                <Route path="learning/:courseId" element={<CoursePlayerPage />} />
-                {/* Backward compatibility for /learning?courseId=... */}
+                <Route 
+                  path="learning/:courseId" 
+                  element={
+                    <EnrollmentGuard>
+                      <CoursePlayerPage />
+                    </EnrollmentGuard>
+                  } 
+                />
               </Route>
 
               <Route path="/portal/admin/audit-quizzes" element={<QuizAuditPage />} />
