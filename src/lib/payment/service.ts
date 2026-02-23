@@ -200,7 +200,7 @@ export const handlePaymentSuccess = async (
         if (!verification.success || !verification.paid) {
             return {
                 success: false,
-                error: verification.error || 'Payment not completed'
+                error: (verification as any).error || 'Payment not completed'
             };
         }
 

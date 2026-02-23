@@ -1,0 +1,112 @@
+﻿src/AppRouter.tsx(16,30): error TS2307: Cannot find module './features/auth/components/AuthCallback' or its corresponding type declarations.
+src/components/Button/index.tsx(2,24): error TS2307: Cannot find module './Button' or its corresponding type declarations.
+src/components/Button/index.tsx(3,34): error TS2307: Cannot find module './Button' or its corresponding type declarations.
+src/components/Header/components/ExploreDropdown.tsx(141,33): error TS2339: Property 'id' does not exist on type 'CourseCategory'.
+src/components/Header/components/ExploreDropdown.tsx(164,33): error TS2339: Property 'name' does not exist on type 'CourseCategory'.
+src/components/Header/components/MobileDrawer.tsx(115,34): error TS2339: Property 'id' does not exist on type 'CourseCategory'.
+src/components/Header/components/MobileDrawer.tsx(123,57): error TS2339: Property 'name' does not exist on type 'CourseCategory'.
+src/constants/navigation.ts(15,9): error TS2503: Cannot find namespace 'React'.
+src/features/ai-widget/components/AIWidget.tsx(113,30): error TS2339: Property 'id' does not exist on type 'never'.
+src/features/ai-widget/components/AIWidget.tsx(115,27): error TS2339: Property 'type' does not exist on type 'never'.
+src/features/ai-widget/components/AIWidget.tsx(120,29): error TS2339: Property 'type' does not exist on type 'never'.
+src/features/ai-widget/components/AIWidget.tsx(126,30): error TS2339: Property 'content' does not exist on type 'never'.
+src/features/ai-widget/components/AIWidget.tsx(128,28): error TS2339: Property 'intent' does not exist on type 'never'.
+src/features/ai-widget/components/AIWidget.tsx(138,31): error TS2339: Property 'type' does not exist on type 'never'.
+src/features/ai-widget/components/AIWidget.tsx(143,46): error TS2339: Property 'timestamp' does not exist on type 'never'.
+src/features/ai-widget/components/AIWidgetContainer.tsx(55,7): error TS2322: Type 'IntentResponse | null' is not assignable to type 'null'.
+  Type 'IntentResponse' is not assignable to type 'null'.
+src/features/ai-widget/components/AIWidgetContainer.tsx(60,26): error TS2339: Property 'response' does not exist on type 'never'.
+src/features/ai-widget/components/AIWidgetContainer.tsx(72,35): error TS2339: Property 'response' does not exist on type 'never'.
+src/features/ai-widget/components/AIWidgetContainer.tsx(75,25): error TS2339: Property 'action' does not exist on type 'never'.
+src/features/ai-widget/components/AIWidgetContainer.tsx(77,39): error TS2339: Property 'action' does not exist on type 'never'.
+src/features/auth/components/ProtectedRoute.tsx(13,23): error TS2503: Cannot find namespace 'React'.
+src/features/auth/context/AuthContext.tsx(94,66): error TS2304: Cannot find name 'GraphUser'.
+src/features/auth/context/AuthContext.tsx(301,31): error TS2304: Cannot find name 'isDatabaseUserLoading'.
+src/features/auth/context/AuthContext.tsx(362,5): error TS2304: Cannot find name 'isDatabaseUserLoading'.
+src/features/courses/components/CourseGrid.tsx(27,9): error TS2503: Cannot find namespace 'React'.
+src/features/courses/components/CourseGrid.tsx(40,26): error TS2503: Cannot find namespace 'React'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(49,51): error TS2339: Property 'id' does not exist on type 'never'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(58,59): error TS2339: Property 'title' does not exist on type 'never'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(62,63): error TS2339: Property 'type' does not exist on type 'never'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(64,59): error TS2339: Property 'fileSizeBytes' does not exist on type 'never'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(66,74): error TS2339: Property 'fileSizeBytes' does not exist on type 'never'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(70,65): error TS2339: Property 'description' does not exist on type 'never'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(75,47): error TS2339: Property 'type' does not exist on type 'never'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(75,75): error TS2339: Property 'type' does not exist on type 'never'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(77,60): error TS2339: Property 'resourceUrl' does not exist on type 'never'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(81,74): error TS2339: Property 'title' does not exist on type 'never'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(87,60): error TS2339: Property 'resourceUrl' does not exist on type 'never'.
+src/features/courses/components/details/tabs/ResourcesTab.tsx(90,78): error TS2339: Property 'title' does not exist on type 'never'.
+src/features/courses/components/enrollment/EnrollmentButton.tsx(90,27): error TS2339: Property 'progressPct' does not exist on type 'AccessContract'.
+src/features/courses/components/enrollment/EnrollmentDebugPanel.tsx(6,25): error TS2307: Cannot find module '../Header' or its corresponding type declarations.
+src/features/courses/components/FilterSidebar.tsx(226,71): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/features/courses/components/FilterSidebar.tsx(228,66): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/features/courses/pages/__tests__/CourseCatalogPage.integration.test.tsx(97,51): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/courses/pages/__tests__/CourseCatalogPage.integration.test.tsx(102,47): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/courses/pages/__tests__/CourseCatalogPage.integration.test.tsx(117,45): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/courses/pages/__tests__/CourseCatalogPage.integration.test.tsx(123,41): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/courses/pages/__tests__/CourseCatalogPage.integration.test.tsx(140,11): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/courses/pages/__tests__/CourseCatalogPage.integration.test.tsx(146,47): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/courses/services/paymentService.ts(203,37): error TS2339: Property 'error' does not exist on type '{ success: boolean; paid: boolean; metadata?: any; }'.
+src/features/dashboard/pages/DashboardLayout.tsx(27,13): error TS2503: Cannot find namespace 'React'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(103,11): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(104,53): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(116,11): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(119,15): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement | null>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(131,11): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(134,15): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement | null>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(166,56): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(176,49): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(200,11): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(203,11): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(213,60): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(214,60): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(239,42): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(240,49): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(250,47): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(251,47): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(261,48): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(262,48): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(263,46): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/__tests__/PublicLandingPage.test.tsx(264,50): error TS2339: Property 'toBeInTheDocument' does not exist on type 'Assertion<HTMLElement>'.
+src/features/landing/CallToAction.tsx(225,21): error TS2349: This expression is not callable.
+  Type 'never' has no call signatures.
+src/features/landing/HeroSection.tsx(64,16): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(65,23): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(70,16): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(78,22): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(79,31): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(80,22): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(81,38): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(82,22): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(101,22): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(102,27): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(103,20): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(110,26): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(111,35): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(112,26): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(113,42): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(114,26): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(179,16): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(180,23): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(185,16): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(193,22): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(194,31): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(195,22): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(196,38): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/landing/HeroSection.tsx(197,22): error TS2339: Property 'voiceflow' does not exist on type 'Window & typeof globalThis'.
+src/features/learning/pages/LearningScreen.tsx(24,8): error TS2307: Cannot find module '../services/progressService' or its corresponding type declarations.
+src/features/learning/services/learningSnapshotService.ts(5,49): error TS2307: Cannot find module './progressService' or its corresponding type declarations.
+src/features/learning/services/learningSnapshotService.ts(133,29): error TS2345: Argument of type '"get_learning_snapshot"' is not assignable to parameter of type 'never'.
+src/features/recommendations/utils/__tests__/recommendationEngine.test.ts(94,5): error TS2322: Type '"All Levels"' is not assignable to type 'AudienceLevel'.
+src/hooks/useCourseDetails.ts(39,19): error TS2339: Property 'relatedCourses' does not exist on type 'Course'.
+src/hooks/useCourseDetails.ts(39,44): error TS2339: Property 'relatedCourses' does not exist on type 'Course'.
+src/hooks/useCourseDetails.ts(40,58): error TS2339: Property 'relatedCourses' does not exist on type 'Course'.
+src/utils/authTester.ts(41,30): error TS2345: Argument of type '"User ID (oid/sub)"' is not assignable to parameter of type 'never'.
+src/utils/authTester.ts(44,30): error TS2345: Argument of type '"Display Name"' is not assignable to parameter of type 'never'.
+src/utils/authTester.ts(47,30): error TS2345: Argument of type '"Email/Username"' is not assignable to parameter of type 'never'.
+src/utils/claimsValidator.ts(68,24): error TS2345: Argument of type '"User ID (oid/sub)"' is not assignable to parameter of type 'never'.
+src/utils/claimsValidator.ts(71,24): error TS2345: Argument of type '"Display Name"' is not assignable to parameter of type 'never'.
+src/utils/claimsValidator.ts(74,24): error TS2345: Argument of type '"Email/Username"' is not assignable to parameter of type 'never'.

@@ -34,7 +34,7 @@ import { CourseMeta } from "../../../components/ui/CourseMeta";
 import { Tag } from "../../../components/ui/Tag";
 import { AudienceFitIndicator } from "../components/details/AudienceFitIndicator";
 import { CourseCard } from "@/features/courses/components/CourseCard";
-import { EnrollmentButton } from "@/components/enrollment/EnrollmentButton";
+import { EnrollmentButton } from "@/features/courses/components/enrollment/EnrollmentButton";
 import { CourseDetailSkeleton } from "@/components/loading/CourseDetailSkeleton.tsx";
 import { SaveCourseFullButton } from "@/features/courses/components/SaveCourseButton.tsx";
 

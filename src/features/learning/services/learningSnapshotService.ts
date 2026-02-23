@@ -1,8 +1,8 @@
 import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
 import { isSupabaseConfigured } from "../../../lib/supabase/client";
 import { Course, Lesson as DbLesson, LessonType } from "../../../types/dtma-lms";
-import { CourseResource } from "@/services/courseService";
-import type { Enrollment, LessonProgress } from "./progressService";
+import { CourseResource } from "../../courses/services/courseService";
+import type { Enrollment, LessonProgress } from "../../portal/services/progressService";
 
 export interface LearningSnapshot {
     course: Course | null;
@@ -130,7 +130,7 @@ export const getLearningSnapshot = async (
 
     const fetchSnapshot = async (lookupUserId: string | null) => {
         const supabase = getSupabaseForEnrollment();
-        return supabase.rpc("get_learning_snapshot", {
+        return (supabase.rpc as any)("get_learning_snapshot", {
             p_course_slug: courseSlug,
             p_user_id: lookupUserId,
         });

@@ -116,18 +116,35 @@ export function CourseForm() {
             }
 
             const { data, error } = await supabase
-                .from('lms_courses')
+                .from('courses')
                 .select('*')
                 .eq('id', courseId)
                 .single();
 
             if (error) throw error;
             if (data) {
+                const row = data as Record<string, unknown>;
                 setFormData({
-                    ...data,
-                    highlights: Array.isArray(data.highlights) ? data.highlights : [],
-                    outcomes: Array.isArray(data.outcomes) ? data.outcomes : [],
-                    faq: Array.isArray(data.faq) ? data.faq : [],
+                    slug: (row.slug as string) ?? '',
+                    title: (row.title as string) ?? '',
+                    provider: '',
+                    description: (row.long_description as string) ?? (row.short_description as string) ?? '',
+                    category: (row.category_id as string) ?? '',
+                    delivery_mode: (row.delivery_mode as string) ?? '',
+                    duration: Number(row.estimated_duration_minutes) || 0,
+                    level_code: (row.level_tag as string) ?? '',
+                    department: '',
+                    audience: (row.audience_level as string) ?? '',
+                    status: (row.status as string) ?? 'draft',
+                    highlights: Array.isArray(row.skills_gained) ? (row.skills_gained as string[]) : [],
+                    outcomes: Array.isArray(row.learning_outcomes) ? (row.learning_outcomes as string[]) : [],
+                    course_type: '',
+                    track: '',
+                    rating: Number(row.rating) || 0,
+                    review_count: Number(row.review_count) || 0,
+                    image_url: (row.hero_image_url as string) ?? '',
+                    excerpt: (row.short_description as string) ?? '',
+                    faq: [],
                 });
             }
         } catch (error: unknown) {
@@ -213,31 +230,51 @@ export function CourseForm() {
         });
     };
 
+    /** Map form data to actual public.courses table columns (avoids 400 from invalid column names). */
+    const formDataToCourseRow = (): Record<string, unknown> => {
+        const slug = formData.slug?.trim() || formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        return {
+            slug,
+            title: formData.title?.trim() || '',
+            short_description: formData.excerpt?.trim() || formData.description?.trim() || null,
+            long_description: formData.description?.trim() || null,
+            category_id: formData.category?.trim() || null,
+            audience_level: formData.audience?.trim() || null,
+            level_tag: formData.level_code?.trim() || null,
+            estimated_duration_minutes: formData.duration ? Number(formData.duration) : null,
+            delivery_mode: formData.delivery_mode?.trim() || null,
+            status: formData.status || 'draft',
+            hero_image_url: formData.image_url?.trim() || null,
+            rating: formData.rating != null ? Number(formData.rating) : null,
+            review_count: formData.review_count != null ? Number(formData.review_count) : null,
+            learning_outcomes: Array.isArray(formData.outcomes) && formData.outcomes.length > 0 ? formData.outcomes : null,
+            skills_gained: Array.isArray(formData.highlights) && formData.highlights.length > 0 ? formData.highlights : null,
+            updated_at: new Date().toISOString(),
+        };
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        // ... (existing handleSubmit implementation) ...
         try {
             const supabase = getSupabaseClient();
             if (!supabase) {
                 throw new Error('Database connection unavailable');
             }
 
-            const dataToSave = {
-                ...formData,
-                slug: formData.slug || formData.title.toLowerCase().replace(/\s+/g, '-'),
-            };
+            const dataToSave = formDataToCourseRow();
 
             if (isEditing && id) {
+                const { id: _id, ...updatePayload } = dataToSave as { id?: string; [k: string]: unknown };
                 const { error } = await supabase
-                    .from('lms_courses')
-                    .update(dataToSave)
+                    .from('courses')
+                    .update(updatePayload)
                     .eq('id', id);
 
                 if (error) throw error;
             } else {
                 const { error } = await supabase
-                    .from('lms_courses')
+                    .from('courses')
                     .insert([dataToSave]);
 
                 if (error) throw error;

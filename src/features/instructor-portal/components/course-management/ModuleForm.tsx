@@ -6,6 +6,7 @@ import { Toast } from '@/components/ui/Toast';
 
 interface CourseOption {
     id: string;
+    slug: string;
     title: string;
 }
 
@@ -19,7 +20,7 @@ export function ModuleForm() {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        course_id: '',
+        course_slug: '',
         order_index: 0
     });
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
@@ -36,8 +37,8 @@ export function ModuleForm() {
         if (!supabase) return;
 
         const { data, error } = await supabase
-            .from('lms_courses')
-            .select('id, title')
+            .from('courses')
+            .select('id, slug, title')
             .order('title');
 
         if (error) {
@@ -55,7 +56,7 @@ export function ModuleForm() {
 
         try {
             const { data, error } = await supabase
-                .from('lms_modules')
+                .from('modules')
                 .select('*')
                 .eq('id', moduleId)
                 .single();
@@ -65,7 +66,7 @@ export function ModuleForm() {
                 setFormData({
                     title: data.title,
                     description: data.description || '',
-                    course_id: data.course_id,
+                    course_slug: data.course_slug || '',
                     order_index: data.order_index || 0
                 });
             }
@@ -79,7 +80,7 @@ export function ModuleForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.title || (!formData.course_id && !isEditing)) {
+        if (!formData.title || (!formData.course_slug && !isEditing)) {
             setToast({ type: 'error', message: 'Title and Course are required' });
             return;
         }
@@ -88,18 +89,26 @@ export function ModuleForm() {
         const supabase = getSupabaseClient();
         if (!supabase) return;
 
+        const payload = {
+            title: formData.title,
+            description: formData.description || null,
+            course_slug: formData.course_slug,
+            order_index: formData.order_index,
+            updated_at: new Date().toISOString(),
+        };
+
         try {
             if (isEditing && id) {
                 const { error } = await supabase
-                    .from('lms_modules')
-                    .update(formData)
+                    .from('modules')
+                    .update(payload)
                     .eq('id', id);
                 if (error) throw error;
                 setToast({ type: 'success', message: 'Module updated successfully' });
             } else {
                 const { error } = await supabase
-                    .from('lms_modules')
-                    .insert([formData]);
+                    .from('modules')
+                    .insert([payload]);
                 if (error) throw error;
                 setToast({ type: 'success', message: 'Module created successfully' });
                 // Reset form or navigate back
@@ -151,13 +160,13 @@ export function ModuleForm() {
                         </label>
                         <select
                             required
-                            value={formData.course_id}
-                            onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
+                            value={formData.course_slug}
+                            onChange={(e) => setFormData({ ...formData, course_slug: e.target.value })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
                         >
                             <option value="">Select a course</option>
                             {courses.map((course) => (
-                                <option key={course.id} value={course.id}>
+                                <option key={course.id} value={course.slug}>
                                     {course.title}
                                 </option>
                             ))}
