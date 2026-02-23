@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "../../../../components/ui/Toast";
-import { useAuth } from "../../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import {
   getLearnerProfile,
   RoleTrack,

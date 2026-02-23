@@ -3,20 +3,43 @@ import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/lib/auth";
 import { RoleSwitcherProvider } from "@/features/instructor-portal";
 import { App } from "./App";
-import { CourseCatalogPage } from "./features/courses/pages/CourseCatalogPage";
-import CourseDetailsPage from "./features/courses/pages/CourseDetailsPage";
-import DashboardRouter from "./features/dashboard/pages/DashboardRouter";
-import ProtectedRoute from "./features/auth/components/ProtectedRoute";
-import NotFound from "./features/app/pages/NotFound";
-import { PortalLayout } from "./features/portal/layout/PortalLayout";
-import InProgressPage from "./features/portal/pages/InProgressPage";
-import CoursePlayerPage from "./features/portal/pages/CoursePlayerPage";
-import LearnerOnboarding from "./features/dashboard/pages/onboarding";
-import ProfilePage from "./features/portal/pages/ProfilePage";
-import BadgesPage from "./features/portal/pages/BadgesPage";
-import { QuizAuditPage } from "./features/portal/pages/QuizAuditPage";
-import { ComingSoon } from "./features/app/pages/ComingSoon";
-import { AuthDebugPanel } from "./features/auth/components/AuthDebugPanel";
+
+// Lazy load page components for code splitting
+const CourseCatalogPage = lazy(() => import("./features/courses/pages/CourseCatalogPage").then(m => ({ default: m.CourseCatalogPage })));
+const CourseDetailsPage = lazy(() => import("./features/courses/pages/CourseDetailsPage"));
+const DashboardRouter = lazy(() => import("./features/dashboard/pages/DashboardRouter"));
+const ProtectedRoute = lazy(() => import("@/components/auth/ProtectedRoute"));
+const NotFound = lazy(() => import("./features/app/pages/NotFound"));
+const PortalLayout = lazy(() => import("./features/portal/layout/PortalLayout").then(m => ({ default: m.PortalLayout })));
+const InProgressPage = lazy(() => import("./features/portal/pages/InProgressPage"));
+const CoursePlayerPage = lazy(() => import("./features/portal/pages/CoursePlayerPage"));
+const LearnerOnboarding = lazy(() => import("./features/dashboard/pages/onboarding"));
+const ProfilePage = lazy(() => import("./features/portal/pages/ProfilePage"));
+const QuizAuditPage = lazy(() => import("./features/portal/pages/QuizAuditPage").then(m => ({ default: m.QuizAuditPage })));
+const ComingSoon = lazy(() => import("./features/app/pages/ComingSoon").then(m => ({ default: m.ComingSoon })));
+const AuthDebugPanel = lazy(() => import("@/components/auth/AuthDebugPanel").then(m => ({ default: m.AuthDebugPanel })));
+const EnrollmentGuard = lazy(() => import("./features/courses/components/guards/EnrollmentGuard").then(m => ({ default: m.EnrollmentGuard })));
+const PaymentSuccessHandler = lazy(() => import("./features/courses/components/payment/PaymentSuccessHandler").then(m => ({ default: m.PaymentSuccessHandler })));
+
+// Instructor Portal lazy imports
+const InstructorLayout = lazy(() => import("./features/instructor-portal/layout/InstructorLayout").then(m => ({ default: m.InstructorLayout })));
+const InstructorDashboard = lazy(() => import("./features/instructor-portal/pages/InstructorDashboard").then(m => ({ default: m.InstructorDashboard })));
+const CourseManagementPage = lazy(() => import("./features/instructor-portal/pages/CourseManagementPage").then(m => ({ default: m.CourseManagementPage })));
+const CourseForm = lazy(() => import("./features/instructor-portal/components/course-management/CourseForm").then(m => ({ default: m.CourseForm })));
+const ModuleForm = lazy(() => import("./features/instructor-portal/components/course-management/ModuleForm").then(m => ({ default: m.ModuleForm })));
+const LessonForm = lazy(() => import("./features/instructor-portal/components/course-management/LessonForm").then(m => ({ default: m.LessonForm })));
+const MediaLibraryPage = lazy(() => import("./features/instructor-portal/pages/MediaLibraryPage").then(m => ({ default: m.MediaLibraryPage })));
+
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+      <p className="mt-4 text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
 
 export function AppRouter() {
   return (
@@ -38,16 +61,15 @@ export function AppRouter() {
               <Route path="/marketplace/courses" element={<Navigate to="/courses" replace />} />
               <Route path="/marketplace/courses/:itemId" element={<Navigate to="/courses/:itemId" replace />} />
 
-          {/* Portal / Learning */}
-          <Route path="/portal" element={<PortalLayout />}>
-            <Route index element={<Navigate to="my-courses/in-progress" replace />} />
-            <Route path="onboarding" element={<LearnerOnboarding layout="portal" />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="badges" element={<BadgesPage />} />
-            <Route path="my-courses/in-progress" element={<InProgressPage />} />
-            <Route path="learning/:courseId" element={<CoursePlayerPage />} />
-            {/* Backward compatibility for /learning?courseId=... */}
-          </Route>
+              {/* Dashboard */}
+              <Route
+                path="/dashboard/*"
+                element={
+                  <ProtectedRoute>
+                    <DashboardRouter />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Portal / Learning */}
               <Route path="/portal" element={<PortalLayout />}>

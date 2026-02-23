@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Award, Trophy } from "lucide-react";
-import { useAuth } from "../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import {
     BADGE_DEFINITIONS,
     getUserBadges,

@@ -13,7 +13,7 @@ import {
   Square
 } from "lucide-react";
 import AchievementModal from "../../../components/AchievementModal";
-import { useAuth } from "../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import { fetchCourseQuizzes } from "../services/courseService";
 import { recordCourseCompletion, recordQuizAttempt } from "../../portal/services/achievementService";
 
