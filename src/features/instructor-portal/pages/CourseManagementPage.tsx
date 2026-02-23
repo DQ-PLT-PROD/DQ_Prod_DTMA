@@ -6,12 +6,15 @@
  */
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     BookOpenIcon,
     GraduationCapIcon,
     FileTextIcon,
     PlayCircleIcon,
-    TagIcon
+    TagIcon,
+    HelpCircleIcon,
+    PlusIcon
 } from 'lucide-react';
 import { CoursesSection } from '../components/course-management/CoursesSection';
 import { ModulesSection } from '../components/course-management/ModulesSection';
@@ -35,6 +38,7 @@ const tabs: Tab[] = [
 ];
 
 export function CourseManagementPage() {
+    const navigate = useNavigate();
     // Get tab from URL params or default to categories
     const urlParams = new URLSearchParams(window.location.search);
     const tabFromUrl = urlParams.get('tab') || 'classifications';
