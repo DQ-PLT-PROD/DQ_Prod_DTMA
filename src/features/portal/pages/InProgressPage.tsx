@@ -6,13 +6,14 @@ import { useNavigate, Link } from "react-router-dom";
 import {
     Play,
     Clock,
-    Loader2,
     BookOpen,
     ChevronRight
 } from "lucide-react";
-import { useAuth } from "../../../components/Header";
+import { PageContainer } from "../../../components/layouts/PageContainer";
+import { CourseListSkeleton } from "../../../components/loading/CourseListSkeleton";
+import { useAuth } from "@/lib/auth";
 import { getUserEnrollments, getActualProgressStats, Enrollment } from "../services/progressService";
-import { fetchFullCourse } from "../../courses/services/courseService";
+import { fetchFullCourse } from "@/services/courseService";
 import { Course } from "../../../types/dtma-lms";
 import { getLearningSnapshot } from "../../learning/services/learningSnapshotService";
 
@@ -102,7 +103,7 @@ const InProgressPage: React.FC = () => {
     };
 
     return (
-        <div className="p-3 md:p-4 w-full">
+        <PageContainer className="py-4 w-full">
             <div className="max-w-4xl mx-auto">
                 {/* Welcome Header */}
                 <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
@@ -131,8 +132,8 @@ const InProgressPage: React.FC = () => {
                     </div>
 
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <Loader2 className="animate-spin text-[#1839AD]" size={32} />
+                        <div className="py-4">
+                            <CourseListSkeleton />
                         </div>
                     ) : !user ? (
                         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
@@ -219,7 +220,9 @@ const InProgressPage: React.FC = () => {
                                             {/* Continue CTA */}
                                             <button
                                                 type="button"
-                                                onClick={() => handleCourseResume(enrollment.courseSlug)}
+                                                onClick={() =>
+                                                    handleCourseResume(enrollment.courseSlug)
+                                                }
                                                 disabled={isResuming}
                                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1839AD] text-white text-sm font-semibold hover:bg-[#132b7c] disabled:opacity-60 disabled:cursor-not-allowed transition shrink-0"
                                             >
@@ -233,8 +236,18 @@ const InProgressPage: React.FC = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Recommendations Section */}
+                <RecommendationRail
+                    className="mb-8"
+                    maxRecommendations={5}
+                    onRecommendationClick={(course, reason) => {
+                        // Navigate to course details page
+                        navigate(`/courses/${course.slug}`);
+                    }}
+                />
             </div>
-        </div>
+        </PageContainer>
     );
 };
 

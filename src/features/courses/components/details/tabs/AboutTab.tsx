@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 
 interface AboutTabProps {
-  serviceApplication: string;
   itemDescription: string;
   item: any;
   config: { itemName: string } & Record<string, any>;
@@ -9,7 +8,6 @@ interface AboutTabProps {
 }
 
 const AboutTab: React.FC<AboutTabProps> = ({
-  serviceApplication,
   itemDescription,
   item,
   config,

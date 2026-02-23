@@ -1,5 +1,7 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "path";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -8,9 +10,23 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
   return {
-    plugins: [react()],
+    plugins: [
+      react(),
+      // Bundle analyzer - only in analyze mode
+      mode === 'analyze' && visualizer({
+        open: true,
+        filename: 'dist/stats.html',
+        gzipSize: true,
+        brotliSize: true,
+      }),
+    ].filter(Boolean),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+    },
     server: {
-      port: 3000,
+      port: 5173,
       strictPort: false,
       host: "localhost",
       proxy: {
@@ -31,6 +47,20 @@ export default defineConfig(({ mode }) => {
     envPrefix: ["VITE_"],
     build: {
       chunkSizeWarningLimit: 3000,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Vendor chunks for better caching
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'azure-vendor': ['@azure/msal-browser', '@azure/msal-react'],
+            'apollo-vendor': ['@apollo/client', 'graphql'],
+            'supabase-vendor': ['@supabase/supabase-js'],
+            'ui-vendor': ['lucide-react', 'clsx'],
+          },
+        },
+      },
+      // Enable source maps for production debugging (optional)
+      sourcemap: mode === 'production' ? false : true,
     }
   };
 });

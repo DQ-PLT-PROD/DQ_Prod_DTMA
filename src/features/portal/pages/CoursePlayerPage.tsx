@@ -6,9 +6,9 @@ import { useLocation, useNavigate, useParams, useOutletContext } from "react-rou
 import {
     ChevronRight,
     ChevronLeft,
-    Loader2,
 } from "lucide-react";
-import { useAuth } from "../../../components/Header";
+import { PageLoader } from "../../../components/loading";
+import { useAuth } from "@/lib/auth";
 import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
@@ -116,12 +116,13 @@ const CoursePlayerPage: React.FC = () => {
                     }
                 }
 
+                // Load local storage progress as a fallback/supplement
+                const storageKey = `courseProgress_${courseId}`;
+                const saved = localStorage.getItem(storageKey);
+
                 if (fetchedLessons.length > 0) {
                     setDbLessons(fetchedLessons);
 
-                    // Load local storage progress as a fallback/supplement
-                    const storageKey = `courseProgress_${courseId}`;
-                    const saved = localStorage.getItem(storageKey);
                     if (saved) {
                         try {
                             const savedLessons: Lesson[] = JSON.parse(saved);
@@ -136,15 +137,42 @@ const CoursePlayerPage: React.FC = () => {
                     const uiLessons = fetchedLessons.map((lesson, idx) =>
                         toUILesson(lesson, idx, completedLessonIds)
                     );
+
+                    // Merge saved durations if available
+                    if (saved) {
+                        try {
+                            const localLessons: Lesson[] = JSON.parse(saved);
+                            if (localLessons.length > 0) {
+                                uiLessons.forEach(uiLesson => {
+                                    const savedMatch = localLessons.find(sl => String(sl.id) === String(uiLesson.id));
+                                    if (savedMatch && savedMatch.duration && savedMatch.duration !== '--:--') {
+                                        uiLesson.duration = savedMatch.duration;
+                                    }
+                                });
+                            }
+                        } catch (e) { /* ignore */ }
+                    }
+
                     setLessons(uiLessons);
+
                     if (resumeIndex >= 0) {
                         setCurrentLessonIndex(resumeIndex);
+                    } else {
+                        // Restore from local storage if no direct link
+                        const savedIndex = localStorage.getItem(`activeLessonIndex_${courseId}`);
+                        if (savedIndex !== null) {
+                            const idx = parseInt(savedIndex, 10);
+                            if (!isNaN(idx) && idx >= 0 && idx < uiLessons.length) {
+                                setCurrentLessonIndex(idx);
+                            }
+                        }
                     }
 
                     // If we have local completed lessons that weren't in DB, we should sync up
                     if (databaseUser?.id && saved) {
                         const localLessons: Lesson[] = JSON.parse(saved);
                         const localCompleted = localLessons.filter(l => l.completed).map(l => ({ id: String(l.id), completed: true }));
+
                         if (localCompleted.length > 0) {
                             // This is 'fire and forget' to ensure server is caught up
                             syncLocalProgressToServer(databaseUser.id, courseId, localCompleted);
@@ -171,9 +199,15 @@ const CoursePlayerPage: React.FC = () => {
         flushProgressQueue();
     }, [databaseUser?.id]);
 
+    // Create a stable reference to lesson video URLs for the preload effect
+    const lessonVideoUrls = useMemo(
+        () => lessons.map(l => l.videoUrl).filter(Boolean).join(','),
+        [lessons]
+    );
+
     // Preload video durations
     useEffect(() => {
-        if (lessons.length === 0 || !courseId) return;
+        if (lessons.length === 0 || !courseId || !lessonVideoUrls) return;
 
         const fetchVideoDuration = (videoUrl: string): Promise<number> => {
             return new Promise((resolve, reject) => {
@@ -204,14 +238,25 @@ const CoursePlayerPage: React.FC = () => {
         };
 
         const preloadAllDurations = async () => {
+            console.log('📊 Preloading durations for', lessons.length, 'lessons');
             const durationPromises = lessons.map(async (lesson, index) => {
-                if (!lesson.videoUrl || (lesson.duration !== '--:--' && lesson.duration !== '')) {
+                // Skip lessons that already have a valid duration or no video URL
+                if (!lesson.videoUrl) {
+                    console.log(`⏭️ Lesson ${index}: No video URL, skipping`);
+                    return { index, duration: lesson.duration };
+                }
+                if (lesson.duration !== '--:--' && lesson.duration !== '') {
+                    console.log(`✅ Lesson ${index}: Already has duration: ${lesson.duration}`);
                     return { index, duration: lesson.duration };
                 }
                 try {
+                    console.log(`🎬 Lesson ${index}: Fetching duration for ${lesson.videoUrl}`);
                     const durationSeconds = await fetchVideoDuration(lesson.videoUrl);
-                    return { index, duration: formatDuration(durationSeconds) };
+                    const formatted = formatDuration(durationSeconds);
+                    console.log(`✅ Lesson ${index}: Duration fetched: ${formatted}`);
+                    return { index, duration: formatted };
                 } catch (error) {
+                    console.warn(`❌ Lesson ${index}: Failed to fetch duration`, error);
                     return { index, duration: '--:--' };
                 }
             });
@@ -232,9 +277,9 @@ const CoursePlayerPage: React.FC = () => {
         };
 
         preloadAllDurations();
-    }, [lessons.length, courseId]);
+    }, [lessons.length, courseId, lessonVideoUrls]);
 
-    // Check enrollment status
+    // Check enrollment status and redirect if not enrolled
     useEffect(() => {
         const checkEnrollmentStatus = async () => {
             if (!databaseUser?.id || !courseId) {
@@ -247,6 +292,12 @@ const CoursePlayerPage: React.FC = () => {
                 setEnrollmentLoading(true);
                 const enrolled = await isUserEnrolled(databaseUser.id, courseId);
                 setIsEnrolled(enrolled);
+
+                // Redirect unenrolled users to the course details page
+                if (!enrolled) {
+                    console.log('🚫 User not enrolled, redirecting to course details page');
+                    navigate(`/courses/${courseId}`, { replace: true });
+                }
             } catch (error) {
                 console.error('Error checking enrollment status:', error);
                 setIsEnrolled(false);
@@ -256,47 +307,18 @@ const CoursePlayerPage: React.FC = () => {
         };
 
         checkEnrollmentStatus();
-    }, [databaseUser?.id, courseId]);
+    }, [databaseUser?.id, courseId, navigate]);
 
-    // Auto-enrollment logic
-    useEffect(() => {
-        const handleAutoEnrollment = async () => {
-            if (!databaseUser?.id || lessons.length === 0 || enrollment || isEnrolled || !courseId) return;
+    // Note: Auto-enrollment removed. Users must enroll via the course details page before accessing the portal.
 
-            try {
-                const enroll = await getOrCreateEnrollment(databaseUser.id, courseId);
-                setEnrollment(enroll);
-
-                if (enroll) {
-                    setIsEnrolled(true);
-                    const storageKey = `courseProgress_${courseId}`;
-                    const saved = localStorage.getItem(storageKey);
-                    if (saved) {
-                        const localLessons: Lesson[] = JSON.parse(saved);
-                        const localCompletedIds = localLessons
-                            .filter(l => l.completed)
-                            .map(l => ({ id: String(l.id), completed: true }));
-
-                        if (localCompletedIds.length > 0) {
-                            await syncLocalProgressToServer(databaseUser.id, courseId, localCompletedIds);
-                        }
-                    }
-                }
-            } catch (err) {
-                console.warn('Failed to create enrollment or sync progress:', err);
-            }
-        };
-
-        handleAutoEnrollment();
-    }, [databaseUser?.id, lessons.length, courseId, enrollment, isEnrolled]);
-
-    // Persist progress
+    // Persist progress and active lesson
     useEffect(() => {
         if (typeof window !== 'undefined' && lessons.length > 0 && courseId) {
             const storageKey = `courseProgress_${courseId}`;
             localStorage.setItem(storageKey, JSON.stringify(lessons));
+            localStorage.setItem(`activeLessonIndex_${courseId}`, String(currentLessonIndex));
         }
-    }, [lessons, courseId]);
+    }, [lessons, courseId, currentLessonIndex]);
 
     const activeLesson = useMemo(
         () => lessons[currentLessonIndex],
@@ -437,7 +459,7 @@ const CoursePlayerPage: React.FC = () => {
 
     return (
         <div className="flex h-full w-full">
-            {/* Course Outline Sidebar */}
+            {/* Course Outline Sidebar (Desktop) */}
             <div className={`${moduleOpen ? 'w-80' : isTheater ? 'w-0' : 'w-12'} shrink-0 bg-white border-r border-gray-200 transition-all duration-300 hidden lg:flex flex-col ${showQuiz ? 'opacity-50 pointer-events-none' : ''} rounded-none`}>
                 {moduleOpen ? (
                     <div className="flex flex-col h-full">
@@ -475,10 +497,10 @@ const CoursePlayerPage: React.FC = () => {
             </div>
 
             {/* Main Content */}
-            <main className={`flex-1 min-w-0 ${isTheater ? "p-0 h-full" : "p-3 md:p-4"} overflow-y-auto`}>
+            <main className={`flex-1 min-w-0 ${isTheater ? "p-0 h-full" : "p-3 md:p-4"} overflow-y-auto flex flex-col`}>
                 {isLoading ? (
                     <div className="flex h-full items-center justify-center">
-                        <Loader2 className="animate-spin text-blue-600" size={48} />
+                        <PageLoader size="xl" label="Loading course..." />
                     </div>
                 ) : !activeLesson ? (
                     <div className="flex h-full items-center justify-center">
@@ -519,37 +541,26 @@ const CoursePlayerPage: React.FC = () => {
                                 </h1>
                             </div>
 
-                            <PreviewContentGate
-                                course={course!}
-                                isPreviewLesson={activeLesson?.isPreview || false}
-                                isUserEnrolled={isEnrolled}
-                                onEnrollmentSuccess={() => {
-                                    if (databaseUser?.id) {
-                                        isUserEnrolled(databaseUser.id, courseId!).then(setIsEnrolled);
-                                    }
-                                }}
-                            >
-                                <VideoPlayer
-                                    src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
-                                    poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
-                                    isPlaying={isPlaying}
-                                    volume={volume}
-                                    playbackRate={playbackRate}
-                                    currentTime={currentTime}
-                                    duration={duration}
-                                    captionsEnabled={captionsEnabled}
-                                    onPlayPause={handlePlayPause}
-                                    onVolumeChange={handleVolume}
-                                    onSpeedChange={handleSpeedChange}
-                                    onSeek={handleSeek}
-                                    onToggleCaptions={handleToggleCaptions}
-                                    onFullscreen={handleFullscreen}
-                                    onTimeUpdate={handleTimeUpdate}
-                                    onLoadedMetadata={handleLoadedMetadata}
-                                    onEnded={() => setIsPlaying(false)}
-                                    className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
-                                />
-                            </PreviewContentGate>
+                            <VideoPlayer
+                                src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
+                                poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
+                                isPlaying={isPlaying}
+                                volume={volume}
+                                playbackRate={playbackRate}
+                                currentTime={currentTime}
+                                duration={duration}
+                                captionsEnabled={captionsEnabled}
+                                onPlayPause={handlePlayPause}
+                                onVolumeChange={handleVolume}
+                                onSpeedChange={handleSpeedChange}
+                                onSeek={handleSeek}
+                                onToggleCaptions={handleToggleCaptions}
+                                onFullscreen={handleFullscreen}
+                                onTimeUpdate={handleTimeUpdate}
+                                onLoadedMetadata={handleLoadedMetadata}
+                                onEnded={() => setIsPlaying(false)}
+                                className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
+                            />
                         </div>
 
                         {/* Navigation Buttons */}
@@ -572,12 +583,12 @@ const CoursePlayerPage: React.FC = () => {
 
                                 <button
                                     onClick={handleNext}
-                                    disabled={atLastLesson || !isNextLessonUnlocked}
-                                    className={`px-4 py-2.5 rounded-lg font-medium flex items-center gap-2 transition ${atLastLesson || !isNextLessonUnlocked
+                                    disabled={atLastLesson || (!isNextLessonUnlocked && !lessons[currentLessonIndex]?.completed)}
+                                    className={`px-4 py-2.5 rounded-lg font-medium flex items-center gap-2 transition ${atLastLesson || (!isNextLessonUnlocked && !lessons[currentLessonIndex]?.completed)
                                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                                         : "bg-[#1839AD] text-white hover:bg-[#132b7c] shadow-sm"
                                         }`}
-                                    title={!isNextLessonUnlocked && !atLastLesson ? "Watch until 1 minute before the end to unlock next lesson" : ""}
+                                    title={!isNextLessonUnlocked && !atLastLesson && !lessons[currentLessonIndex]?.completed ? "Watch until 1 minute before the end to unlock next lesson" : ""}
                                 >
                                     Next Lesson
                                     <ChevronRight size={18} />
@@ -599,6 +610,31 @@ const CoursePlayerPage: React.FC = () => {
                                 <p className="text-xs text-gray-500 mt-1">
                                     {completedCount} of {lessons.length} lessons completed
                                 </p>
+                            </div>
+                        </div>
+
+                        {/* Mobile Course Outline (Vertical Stack) */}
+                        <div className="lg:hidden mt-6 pb-20">
+                            <div className="mb-3 px-1">
+                                <h3 className="font-semibold text-gray-900">Course Content</h3>
+                                <p className="text-xs text-gray-500">{completedCount} of {lessons.length} completed</p>
+                            </div>
+                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                                <CourseOutline
+                                    lessons={lessons}
+                                    currentLessonIndex={currentLessonIndex}
+                                    onLessonSelect={handleLessonSelect}
+                                    onShowQuiz={handleShowQuiz}
+                                    moduleOpen={true}
+                                    setModuleOpen={setModuleOpen}
+                                    currentTime={currentTime}
+                                    duration={duration}
+                                    isNextLessonUnlocked={isNextLessonUnlocked}
+                                    showQuiz={showQuiz}
+                                    completedCount={completedCount}
+                                    progressPct={boundedProgress}
+                                    isUserEnrolled={isEnrolled}
+                                />
                             </div>
                         </div>
                     </div>

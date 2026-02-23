@@ -57,7 +57,7 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {[...Array(40)].map((_, i) => (
@@ -82,18 +82,18 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
       )}
 
       <div
-        className={`bg-white rounded-3xl shadow-2xl max-w-lg w-full mx-4 relative overflow-hidden transform transition-all duration-500 ${
+        className={`md-card-elevated max-w-lg w-full mx-4 relative overflow-hidden transform transition-all duration-500 ${
           animationPhase >= 1 ? "scale-100 opacity-100" : "scale-75 opacity-0"
         }`}
         style={{ maxHeight: "90vh" }}
       >
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-br from-[#1839AD] via-[#2E469E] to-[#4A5FC7] opacity-10" />
+        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-br from-[#1839AD] via-[#2e469e] to-[#4a5fc7] opacity-10" />
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+          className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-[color:var(--md-surface-variant)] hover:bg-[color:var(--md-surface-variant-hover)] flex items-center justify-center transition-colors"
         >
-          <X size={16} className="text-gray-600" />
+          <X size={16} className="text-[color:var(--md-on-surface-variant)]" />
         </button>
 
         <div className="relative p-6 text-center overflow-y-auto" style={{ maxHeight: "90vh" }}>
@@ -116,11 +116,11 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
               animationPhase >= 3 ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
             }`}
           >
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">🎉 Congratulations!</h2>
-            <p className="text-gray-600 text-lg leading-relaxed mb-5">
+            <h2 className="text-2xl font-semibold text-[color:var(--md-on-surface)] mb-3">🎉 Congratulations!</h2>
+            <p className="text-[color:var(--md-on-surface-variant)] text-lg leading-relaxed mb-5">
               Outstanding! You're officially a Perfecting Life Transactions: A Digital Builder's Blueprint expert!
             </p>
-            <div className="bg-[#1839AD] text-white rounded-2xl p-4 mb-4 shadow-sm">
+            <div className="bg-[color:var(--md-primary)] text-white rounded-[var(--md-radius-md)] p-4 mb-4 shadow-md-1">
               <div className="text-3xl font-bold mb-1">{score}%</div>
               <div className="text-sm opacity-90">Final Score</div>
             </div>
@@ -133,7 +133,7 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
           >
             <button
               onClick={handleShare}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
+              className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-full font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-md-2"
             >
               <Share2 size={20} />
               Share Your Achievement
@@ -141,7 +141,7 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
 
             <button
               onClick={onClose}
-              className="w-full bg-[#1839AD] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#132b7c] transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-[color:var(--md-primary)] text-white py-3 px-6 rounded-full font-semibold hover:bg-[color:var(--md-primary-hover)] transition-colors flex items-center justify-center gap-2 shadow-md-1"
             >
               Continue Learning
               <ArrowRight size={20} />
@@ -149,18 +149,18 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
           </div>
 
           <div
-            className={`mt-5 pt-5 border-t border-gray-100 transform transition-all duration-700 delay-900 ${
+            className={`mt-5 pt-5 border-t border-[color:var(--md-outline-variant)] transform transition-all duration-700 delay-900 ${
               animationPhase >= 3 ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
             }`}
           >
-            <p className="text-sm text-gray-500 italic">"Every expert was once a beginner. Keep up the amazing work!"</p>
-            <div className="mt-3 text-xs text-gray-400">
+            <p className="text-sm text-[color:var(--md-on-surface-variant)] italic">"Every expert was once a beginner. Keep up the amazing work!"</p>
+            <div className="mt-3 text-xs text-[color:var(--md-on-surface-variant)]">
               Ready for the next challenge? Check out more courses to continue your journey!
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-[#1839AD] via-[#2E469E] to-[#4A5FC7]" />
+        <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-[#1839AD] via-[#2e469e] to-[#4a5fc7]" />
       </div>
     </div>
   );

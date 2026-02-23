@@ -221,17 +221,17 @@ VALUES (
     'Create your final mini capstone: a realistic improvement plan with before/after visuals, revised PLT scores, and implementation strategy.'
 );
 
--- Outro
-INSERT INTO public.lessons (course_slug, title, type, order_index, estimated_duration_minutes, video_url, content)
-VALUES (
-    'perfecting-life-transactions',
-    'Course Conclusion & Next Steps',
-    'outro',
-    10,
-    5,
-    'https://ugmybskacomcdgdngolz.supabase.co/storage/v1/object/public/course-content/plt-course-01/outro/Outro_V2.mp4',
-    'Congratulations on completing the course! Review key takeaways and plan your next steps in perfecting life transactions.'
-);
+-- Add preview flag to intro lesson (make it accessible without enrollment)
+UPDATE public.lessons 
+SET is_preview = true 
+WHERE course_slug = 'perfecting-life-transactions' 
+AND title = 'Course Introduction';
+
+-- Add preview flag to first lesson (for testing)
+UPDATE public.lessons 
+SET is_preview = true 
+WHERE course_slug = 'perfecting-life-transactions' 
+AND title = 'Economy 4.0 & Your Role in Perfecting Life''s Transactions';
 
 -- ============================================
 -- STEP 4: Insert Placeholder Quizzes

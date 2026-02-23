@@ -1,5 +1,10 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
+import {
+  useParams,
+  useNavigate,
+  useSearchParams,
+  Link,
+} from "react-router-dom";
 import {
   ChevronRightIcon,
   HomeIcon,
@@ -10,28 +15,28 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Breadcrumb } from "../../../components/ui/Breadcrumb";
-import { Header, useAuth } from "../../../components/Header";
+import { Header } from "../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import { Footer } from "../../../components/Footer";
-import RequiredDocumentsTab from "../components/details/tabs/RequiredDocumentsTab";
+import { PageContainer } from "../../../components/layouts/PageContainer";
 
 import AboutTab from "../components/details/tabs/AboutTab";
 import ScheduleTab from "../components/details/tabs/ScheduleTab";
 import LearningOutcomesTab from "../components/details/tabs/LearningOutcomesTab";
-import EligibilityTermsTab from "../components/details/tabs/EligibilityTermsTab";
-import ApplicationProcessTab from "../components/details/tabs/ApplicationProcessTab";
 import ResourcesTab from "../components/details/tabs/ResourcesTab";
 import TabsNav from "../components/details/TabsNav";
 import { getCourseConfig } from "../../../utils/courseConfig";
 import { getCourseMedia } from "../../../utils/courseMedia";
 
 import { ErrorDisplay } from "../../../components/SkeletonLoader";
-import { useProductDetails } from "../../../hooks/useProductDetails";
+import { useProductDetails } from "../hooks/useProductDetails";
 import { CourseMeta } from "../../../components/ui/CourseMeta";
 import { Tag } from "../../../components/ui/Tag";
 import { AudienceFitIndicator } from "../components/details/AudienceFitIndicator";
-import { CourseTile } from "../components/CourseTile";
-import { EnrollmentButton } from "../components/enrollment/EnrollmentButton";
-
+import { CourseCard } from "@/features/courses/components/CourseCard";
+import { EnrollmentButton } from "@/features/courses/components/enrollment/EnrollmentButton";
+import { CourseDetailSkeleton } from "@/components/loading/CourseDetailSkeleton.tsx";
+import { SaveCourseFullButton } from "@/features/courses/components/SaveCourseButton.tsx";
 
 const CourseDetailsPage: React.FC = () => {
   const { itemId } = useParams<{
@@ -85,27 +90,22 @@ const CourseDetailsPage: React.FC = () => {
     [item]
   );
 
-
   const seeAllHref = useMemo(() => {
     const params = new URLSearchParams();
     const courseItem: any = item || {};
-    if (courseItem?.categorySlug) params.set("category", courseItem.categorySlug);
-    if (courseItem?.audienceLevel) params.set("audience", courseItem.audienceLevel);
+    if (courseItem?.categorySlug)
+      params.set("category", courseItem.categorySlug);
+    if (courseItem?.audienceLevel)
+      params.set("audience", courseItem.audienceLevel);
     if (courseItem?.levelTag) params.set("level", courseItem.levelTag);
     const qs = params.toString();
-    return qs ? `/courses?${qs}` : '/courses';
+    return qs ? `/courses?${qs}` : "/courses";
   }, [item]);
-
-
-
-
 
   // Update floating card visibility based on scroll position
   useEffect(() => {
     const handleScroll = () => {
       // Get header height dynamically
-
-
 
       if (heroRef.current && mainContentRef.current) {
         const heroRect = heroRef.current.getBoundingClientRect();
@@ -184,22 +184,14 @@ const CourseDetailsPage: React.FC = () => {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-
-
   const [activeTab, setActiveTab] = useState<string>(
     config.tabs[0]?.id || "about"
   );
 
-
-
-
-
-
-
   const handlePrimaryAction = () => {
     // Navigate to learning screen - EnrollmentButton will handle enrollment
     if (item) {
-      navigate(`/portal/learning/${encodeURIComponent(item.id)}`);
+      navigate(`/learning?courseId=${encodeURIComponent(item.id)}`);
     }
   };
 
@@ -207,50 +199,45 @@ const CourseDetailsPage: React.FC = () => {
     if (itemId) {
       try {
         refetch?.();
-      } catch { }
-    }
-  };
-
-  const handleShare = async () => {
-    const shareData = {
-      title: item?.title || "Course",
-      text: item?.description || "",
-      url: window.location.href,
-    };
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch {
-        // User cancelled or error - silently ignore
-      }
-    } else {
-      // Fallback: copy URL to clipboard
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        alert("Link copied to clipboard!");
-      } catch {
-        // Clipboard API not available
+      } catch (error) {
+        console.warn("Failed to refetch course details.", error);
       }
     }
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Header
-          toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          sidebarOpen={sidebarOpen}
-        />
-        <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[300px] flex-grow">
-          <div className="animate-pulse flex flex-col items-center">
-            <div className="h-8 w-32 bg-gray-200 rounded mb-4"></div>
-            <div className="h-4 w-48 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-        <Footer isLoggedIn={false} />
-      </div>
-    );
+    return <CourseDetailSkeleton />;
   }
+
+  // Helper for sharing
+  const handleShare = async () => {
+    const shareData = {
+      title: itemTitle,
+      text: itemDescription,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log("Error sharing", err);
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        // Could add a toast here, but simple alert for MVP if no toast system
+        alert("Link copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy", err);
+      }
+    }
+  };
+
+  // ...
+
+  // Render Share Button
 
   if (error) {
     return (
@@ -334,10 +321,8 @@ const CourseDetailsPage: React.FC = () => {
   const itemTitle = item.title;
   const itemDescription = item.description;
   const serviceApplication = item.serviceApplication;
-  const provider = item.provider;
+
   const primaryAction = config.primaryCTA;
-
-
 
   // Extract highlights/features
   const highlights = item.keyHighlights || item.learningOutcomes || [];
@@ -355,13 +340,15 @@ const CourseDetailsPage: React.FC = () => {
             <AboutTab
               itemDescription={itemDescription}
               item={item}
-              serviceApplication={serviceApplication}
+
               config={config}
               highlights={highlights}
             />
             {/* Audience Fit Indicator - DTMA Specific */}
             {(item as any).audienceLevel && (
-              <AudienceFitIndicator audienceLevel={(item as any).audienceLevel} />
+              <AudienceFitIndicator
+                audienceLevel={(item as any).audienceLevel}
+              />
             )}
           </div>
         );
@@ -372,22 +359,15 @@ const CourseDetailsPage: React.FC = () => {
       case "learning_outcomes":
         return (
           <LearningOutcomesTab
-            outcomes={Array.isArray(item.learningOutcomes) ? item.learningOutcomes : highlights}
+            outcomes={
+              Array.isArray(item.learningOutcomes)
+                ? item.learningOutcomes
+                : highlights
+            }
             skills={item.skillsGained}
             uponCompletion={item.uponCompletion}
           />
         );
-      case "eligibility_terms":
-        return (
-          <EligibilityTermsTab
-            item={item}
-            providerName={item.provider?.name || "Service Provider"}
-          />
-        );
-      case "application_process":
-        return <ApplicationProcessTab process={item.applicationProcess} />;
-      case "required_documents":
-        return <RequiredDocumentsTab documents={item.requiredDocuments} />;
 
 
       case "resources":
@@ -435,7 +415,7 @@ const CourseDetailsPage: React.FC = () => {
         {/* Hero Banner - Netflix-style video with layered structure */}
         <div
           ref={heroRef}
-          className="w-full text-white relative h-[70vh] min-h-[450px] md:h-[80vh] lg:h-screen lg:min-h-[600px] overflow-hidden isolate"
+          className="w-full text-white relative h-screen min-h-[600px] overflow-hidden isolate"
           onMouseEnter={() => setShowScrollIndicator(true)}
           onMouseLeave={() => setShowScrollIndicator(false)}
         >
@@ -487,7 +467,8 @@ const CourseDetailsPage: React.FC = () => {
           <div
             className="absolute inset-x-0 top-0 h-32 z-[5] pointer-events-none"
             style={{
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0) 100%)'
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0) 100%)",
             }}
           />
 
@@ -495,19 +476,23 @@ const CourseDetailsPage: React.FC = () => {
           <div
             className="absolute inset-0 z-[5] pointer-events-none"
             style={{
-              background: 'linear-gradient(to top right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0) 70%)'
+              background:
+                "linear-gradient(to top right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0) 70%)",
             }}
           />
 
           {/* Content Overlay Layer */}
-          <div className="container mx-auto px-4 absolute inset-0 flex flex-col pt-20 pointer-events-none z-10">
+          <PageContainer className="absolute inset-0 flex flex-col pt-20 pointer-events-none z-10">
             {/* Breadcrumbs - Fixed at top */}
             <div className="pb-4 pointer-events-auto flex-none">
               <Breadcrumb
                 variant="overlay"
                 items={[
-                  { label: 'Home', href: '/' },
-                  { label: config.itemNamePlural, href: config.route as string },
+                  { label: "Home", href: "/" },
+                  {
+                    label: config.itemNamePlural,
+                    href: config.route as string,
+                  },
                   { label: itemTitle, current: true },
                 ]}
               />
@@ -518,17 +503,26 @@ const CourseDetailsPage: React.FC = () => {
               {/* Badges Row */}
               <div className="flex flex-wrap items-center gap-3 mb-6">
                 {(item as any).category && (
-                  <Tag variant="category" className="bg-blue-500/10 text-blue-300 border-blue-500/20 backdrop-blur-sm">
+                  <Tag
+                    variant="category"
+                    className="bg-blue-500/10 text-blue-300 border-blue-500/20 backdrop-blur-sm"
+                  >
                     {(item as any).category}
                   </Tag>
                 )}
                 {(item as any).audienceLevel && (
-                  <Tag variant="audience" className="bg-purple-500/10 text-purple-300 border-purple-500/20 backdrop-blur-sm">
+                  <Tag
+                    variant="audience"
+                    className="bg-purple-500/10 text-purple-300 border-purple-500/20 backdrop-blur-sm"
+                  >
                     {(item as any).audienceLevel}
                   </Tag>
                 )}
                 {(item as any).levelTag && (
-                  <Tag variant="level" className="bg-white/10 text-gray-200 border-white/10 backdrop-blur-sm">
+                  <Tag
+                    variant="level"
+                    className="bg-white/10 text-gray-200 border-white/10 backdrop-blur-sm"
+                  >
                     {(item as any).levelTag}
                   </Tag>
                 )}
@@ -550,12 +544,15 @@ const CourseDetailsPage: React.FC = () => {
 
               {/* Description with Collapse Animation */}
               <div
-                className={`overflow-hidden transition-all duration-1000 ease-in-out ${showDescription ? 'max-h-[300px] opacity-100 mb-8' : 'max-h-0 opacity-0 mb-4'}`}
+                className={`overflow-hidden transition-all duration-1000 ease-in-out ${showDescription
+                  ? "max-h-[300px] opacity-100 mb-8"
+                  : "max-h-0 opacity-0 mb-4"
+                  }`}
                 onMouseEnter={() => setShowDescription(true)}
               >
                 <p className="text-white text-base leading-relaxed max-w-2xl font-light drop-shadow-md">
-                  {itemDescription && itemDescription.split(' ').length > 25
-                    ? itemDescription.split(' ').slice(0, 25).join(' ') + '...'
+                  {itemDescription && itemDescription.split(" ").length > 25
+                    ? itemDescription.split(" ").slice(0, 25).join(" ") + "..."
                     : itemDescription}
                 </p>
               </div>
@@ -567,10 +564,17 @@ const CourseDetailsPage: React.FC = () => {
                   onEnrollmentSuccess={handlePrimaryAction}
                   className="flex-1 sm:flex-none px-6 py-3 bg-blue-600 text-white font-bold text-base rounded-xl shadow-xl hover:bg-blue-700 transition-all transform hover:-translate-y-1"
                 />
+                {!item.isComingSoon && (
+                  <SaveCourseFullButton
+                    courseSlug={item.slug}
+                    courseTitle={item.title}
+                    className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
+                  />
+                )}
                 <button
                   onClick={handleShare}
                   className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
-                  aria-label="Share this course"
+                  aria-label="Share Course"
                 >
                   <Share2Icon size={20} />
                 </button>
@@ -579,13 +583,19 @@ const CourseDetailsPage: React.FC = () => {
 
             {/* Scroll Indicator */}
             <div
-              className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-none transition-all duration-500 ${showScrollIndicator ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+              className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-none transition-all duration-500 ${showScrollIndicator
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-4"
+                }`}
             >
               <div className="animate-bounce">
-                <ChevronDown size={32} className="text-white/70 drop-shadow-md" />
+                <ChevronDown
+                  size={32}
+                  className="text-white/70 drop-shadow-md"
+                />
               </div>
             </div>
-          </div>
+          </PageContainer>
         </div>
 
         {/* Tabs Navigation */}
@@ -602,23 +612,22 @@ const CourseDetailsPage: React.FC = () => {
             scrollLeft={scrollLeft}
             scrollRight={scrollRight}
             onCheckOverflow={() => { }}
-            rightContent={showStickyHeaderCTA ? (
-              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                <EnrollmentButton
-                  course={item}
-                  onEnrollmentSuccess={handlePrimaryAction}
-                  className="px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
-                />
-              </div>
-            ) : undefined}
+            rightContent={
+              showStickyHeaderCTA ? (
+                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <EnrollmentButton
+                    course={item}
+                    onEnrollmentSuccess={handlePrimaryAction}
+                    className="px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
+                  />
+                </div>
+              ) : undefined
+            }
           />
         </div>
 
         {/* Main content area - full width */}
-        <div
-          ref={mainContentRef}
-          className="container mx-auto px-4 md:px-6 max-w-7xl py-8"
-        >
+        <PageContainer ref={mainContentRef} className="py-8">
           {/* Tab Content - Full width */}
           <div className="mb-8">
             {config.tabs.map((tab) => (
@@ -633,11 +642,14 @@ const CourseDetailsPage: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
+        </PageContainer>
 
         {/* Related Items */}
-        <section ref={relatedRef} className="bg-gray-50 py-10 border-t border-gray-200">
-          <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+        <section
+          ref={relatedRef}
+          className="bg-gray-50 py-10 border-t border-gray-200"
+        >
+          <PageContainer>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
                 Related {config.itemNamePlural}
@@ -655,57 +667,54 @@ const CourseDetailsPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedItems.slice(0, 4).map((relatedItem) => (
                 <div key={relatedItem.id} className="h-full">
-                  <CourseTile
-                    title={relatedItem.title}
-                    description={relatedItem.description}
-                    thumbnailUrl={relatedItem.heroImageUrl || relatedItem.thumbnailUrl}
-                    videoUrl={relatedItem.introVideoUrl}
-                    category={relatedItem.category}
-                    levelTag={relatedItem.levelTag}
-                    audienceLevel={relatedItem.audienceLevel}
-                    duration={relatedItem.duration}
-                    lessonCount={relatedItem.lessonCount}
-                    rating={relatedItem.rating}
-                    reviewCount={relatedItem.reviewCount}
-                    variant={relatedItem.isComingSoon ? "coming-soon" : "course"}
-                    onCardClick={relatedItem.isComingSoon ? undefined : () => {
-                      navigate(`/courses/${relatedItem.id}`);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
+                  <CourseCard
+                    course={{
+                      id: relatedItem.id,
+                      slug: relatedItem.id,
+                      title: relatedItem.title,
+                      shortDescription: relatedItem.description,
+                      categoryName: relatedItem.category,
+                      levelTag: relatedItem.levelTag,
+                      audienceLevel: relatedItem.audienceLevel,
+                      duration: relatedItem.duration,
+                      lessonCount: relatedItem.lessonCount,
+                      thumbnailUrl: relatedItem.thumbnailUrl,
+                      heroImageUrl: relatedItem.heroImageUrl,
+                      introVideoUrl: relatedItem.introVideoUrl,
+                      isComingSoon: relatedItem.isComingSoon,
                     }}
+                    showSaveButton={false}
                   />
                 </div>
               ))}
             </div>
-          </div>
+          </PageContainer>
         </section>
 
         {/* Sticky mobile CTA */}
-        {
-          showStickyBottomCTA && (
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 lg:hidden z-30 transform transition-transform duration-300 ease-in-out">
-              <div className="flex items-center justify-between max-w-sm mx-auto">
-                <div className="mr-3">
-                  <div className="text-gray-900 font-bold">
-                    {item.price || "Free"}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {item.duration || item.serviceType || ""}
-                  </div>
+        {showStickyBottomCTA && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 lg:hidden z-30 transform transition-transform duration-300 ease-in-out">
+            <div className="flex items-center justify-between max-w-sm mx-auto">
+              <div className="mr-3">
+                <div className="text-gray-900 font-bold">
+                  {item.price || "Free"}
                 </div>
-                <EnrollmentButton
-                  course={item}
-                  onEnrollmentSuccess={handlePrimaryAction}
-                  className="flex-1 px-4 py-3 text-white font-bold rounded-md bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 hover:from-blue-700 hover:via-blue-800 hover:to-blue-900 transition-colors shadow-md"
-                />
+                <div className="text-sm text-gray-600">
+                  {item.duration || item.serviceType || ""}
+                </div>
               </div>
+              <EnrollmentButton
+                course={item}
+                onEnrollmentSuccess={handlePrimaryAction}
+                className="flex-1 px-4 py-3 text-white font-bold rounded-md bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 hover:from-blue-700 hover:via-blue-800 hover:to-blue-900 transition-colors shadow-md"
+              />
             </div>
-          )
-        }
+          </div>
+        )}
       </main>
       <Footer isLoggedIn={false} />
     </div>
   );
 };
-
 
 export default CourseDetailsPage;

@@ -15,7 +15,7 @@ interface ResourcesTabProps {
     resources?: Resource[];
 }
 
-const ResourcesTab: React.FC<ResourcesTabProps> = ({ resources = [] }) => {
+const ResourcesTab: React.FC<ResourcesTabProps> = ({ resources = [] as Resource[] }) => {
     // Extract filename from URL for download attribute
     const getDownloadName = (resource: Resource): string => {
         try {

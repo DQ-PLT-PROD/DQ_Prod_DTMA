@@ -88,12 +88,6 @@ export const ServiceRequestsTable: React.FC<ServiceRequestsTableProps> = ({
               >
                 Submitted Date
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Actions
-              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -117,26 +111,10 @@ export const ServiceRequestsTable: React.FC<ServiceRequestsTableProps> = ({
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {request.submittedDate}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link
-                    to="/dashboard/requests"
-                    className="px-3 py-1 border border-gray-300 rounded-md text-xs text-gray-600 hover:text-blue-600 hover:border-blue-300 inline-block"
-                  >
-                    View
-                  </Link>
-                </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-      <div className="mt-4 flex justify-end">
-        <Link
-          to="/dashboard/requests"
-          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-        >
-          View All Requests
-        </Link>
       </div>
     </div>
   );

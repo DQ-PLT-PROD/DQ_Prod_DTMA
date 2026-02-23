@@ -5,8 +5,83 @@
 /* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL */
 
 :root {
-  --brand-gradient: linear-gradient(90deg, #868B9E 0%, #7E8398 8.12%, #737A96 14.47%, #677195 19.42%, #5E6996 23.32%, #596594 26.54%, #566293 29.42%, #556293 32.34%, #525F91 35.66%, #4C5A8E 39.72%, #495995 44.89%, #3C4E8F 51.54%, #33478E 60.01%, #2D4492 70.67%, #1A3592 83.88%, #092893 100%);
-  --brand-primary: #1839AD;
+  --brand-gradient: linear-gradient(90deg, #0030E3 0%, #1839AD 100%);
+  --brand-primary: #0030E3;
+  --md-primary: #0030E3;
+  --md-primary-hover: #002080;
+  --md-primary-active: #000E44;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #DDE3FF;
+  --md-primary-container-hover: #C5CAE9;
+  --md-on-primary-container: #000E44;
+  --md-surface: #FFFFFF;
+  --md-surface-variant: #F3F4F6;
+  --md-surface-variant-hover: #E5E7EB;
+  --md-background: #FFFFFF;
+  --md-on-surface: #1F2937;
+  --md-on-surface-variant: #374151;
+  --md-outline: #E5E7EB;
+  --md-outline-variant: #F3F4F6;
+  --md-elevation-1: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --md-elevation-2: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --md-elevation-3: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+  --md-radius-sm: 4px;
+  --md-radius-md: 8px;
+  --md-radius-lg: 12px;
+}
+
+@layer base {
+  html {
+    font-family: theme('fontFamily.body');
+    background-color: theme('colors.surface.DEFAULT');
+    color: theme('colors.neutral.900');
+  }
+
+  body {
+    background-color: theme('colors.surface.DEFAULT');
+    color: theme('colors.neutral.900');
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: var(--md-primary);
+  }
+
+  ::selection {
+    background: rgba(24, 57, 173, 0.18);
+  }
+}
+
+@layer components {
+  .md-surface {
+    background-color: var(--md-surface);
+    color: var(--md-on-surface);
+  }
+
+  .md-surface-variant {
+    background-color: var(--md-surface-variant);
+    color: var(--md-on-surface);
+  }
+
+  .md-card {
+    background-color: var(--md-surface);
+    border: 1px solid var(--md-outline-variant);
+    border-radius: var(--md-radius-lg);
+    box-shadow: var(--md-elevation-1);
+  }
+
+  .md-card-elevated {
+    background-color: var(--md-surface);
+    border: 1px solid var(--md-outline-variant);
+    border-radius: var(--md-radius-lg);
+    box-shadow: var(--md-elevation-2);
+  }
+
+  .md-focus-ring {
+    outline: 2px solid rgba(24, 57, 173, 0.28);
+    outline-offset: 2px;
+  }
 }
 
 .no-scroll {
@@ -14,16 +89,21 @@
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
+  display: none;
+  /* Chrome, Safari and Opera */
 }
 
 /* Prevent accidental horizontal overflow on tablets/phones */
-html, body, #root {
+html,
+body,
+#root {
   max-width: 100%;
   overflow-x: hidden;
 }
@@ -62,15 +142,41 @@ html, body, #root {
 }
 
 /* TipTap content gets readable defaults similar to public page */
-.tiptap :where(p)       { @apply my-3; }
-.tiptap :where(h2)      { @apply text-2xl font-bold mt-6 mb-3; }
-.tiptap :where(h3)      { @apply text-xl font-semibold mt-5 mb-2; }
-.tiptap :where(ul)      { @apply list-disc pl-6 my-3; }
-.tiptap :where(ol)      { @apply list-decimal pl-6 my-3; }
-.tiptap :where(blockquote) { @apply border-l-4 pl-4 italic text-slate-600 my-4; }
-.tiptap :where(a)       { @apply text-blue-600 underline; }
-.tiptap :where(strong)  { @apply font-semibold; }
-.tiptap :where(hr)      { @apply my-6 border-slate-200; }
+.tiptap :where(p) {
+  @apply my-3;
+}
+
+.tiptap :where(h2) {
+  @apply text-2xl font-bold mt-6 mb-3;
+}
+
+.tiptap :where(h3) {
+  @apply text-xl font-semibold mt-5 mb-2;
+}
+
+.tiptap :where(ul) {
+  @apply list-disc pl-6 my-3;
+}
+
+.tiptap :where(ol) {
+  @apply list-decimal pl-6 my-3;
+}
+
+.tiptap :where(blockquote) {
+  @apply border-l-4 pl-4 italic text-slate-600 my-4;
+}
+
+.tiptap :where(a) {
+  @apply text-blue-600 underline;
+}
+
+.tiptap :where(strong) {
+  @apply font-semibold;
+}
+
+.tiptap :where(hr) {
+  @apply my-6 border-slate-200;
+}
 
 .bg-gradient-to-r,
 .bg-gradient-to-l,
@@ -87,42 +193,67 @@ html, body, #root {
 
 .typing-word {
   display: inline-block;
-  color: #1839AD;
+  color: var(--md-primary);
   white-space: nowrap;
   padding-right: 0;
   min-height: 1em;
-  min-width: 7ch; /* Reserve space so surrounding text doesn’t reflow during typing */
-  border-right: none; /* Remove caret */
-  animation: none; /* Stop caret blink */
+  min-width: 7ch;
+  /* Reserve space so surrounding text doesn’t reflow during typing */
+  border-right: none;
+  /* Remove caret */
+  animation: none;
+  /* Stop caret blink */
 }
 
 @keyframes typing-caret {
+
   from,
   to {
     border-color: transparent;
   }
+
   50% {
-    border-color: #1839AD;
+    border-color: var(--md-primary);
   }
 }
 
 /* App-wide layout clamp used by PageLayout to avoid horizontal overflow on small screens */
 .app-clamp {
-  inline-size: 100%;            /* logical width */
-  max-inline-size: 100dvw;      /* cap at dynamic viewport width to avoid 100vw scrollbar spill */
-  overflow-x: clip;             /* hard-stop horizontal overflow */
+  inline-size: 100%;
+  /* logical width */
+  max-inline-size: 100dvw;
+  /* cap at dynamic viewport width to avoid 100vw scrollbar spill */
+  overflow-x: clip;
+  /* hard-stop horizontal overflow */
   overscroll-behavior-x: contain;
 }
+
 /* Ensure children can shrink within flex/grid containers */
-.app-clamp, .app-clamp * {
+.app-clamp,
+.app-clamp * {
   min-inline-size: 0;
 }
+
 /* Defensive: elements trying to be viewport-wide inside the clamp should not exceed container */
-.app-clamp .w-screen { width: 100% !important; max-width: 100% !important; }
+.app-clamp .w-screen {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
 /* Media should never overflow the section */
-.app-clamp img, .app-clamp video, .app-clamp svg { max-width: 100%; height: auto; }
+.app-clamp img,
+.app-clamp video,
+.app-clamp svg {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Tables stretch but stay contained */
-.app-clamp table { width: 100%; max-width: 100%; border-collapse: collapse; }
+.app-clamp table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+}
 
 .card-container {
   margin-bottom: 56px;
@@ -132,6 +263,7 @@ html, body, #root {
 .how-you-learn-steps {
   position: relative;
 }
+
 .how-you-learn-steps::before {
   display: none;
 }
@@ -145,6 +277,7 @@ html, body, #root {
   gap: 16px;
   padding-top: 16px;
 }
+
 .steps-flow::before {
   content: "";
   position: absolute;
@@ -152,15 +285,16 @@ html, body, #root {
   left: 0;
   right: 0;
   height: 1px;
-  background-image: linear-gradient(to right, #d4d4d4 50%, transparent 50%);
+  background-image: linear-gradient(to right, var(--md-outline) 50%, transparent 50%);
   background-size: 8px 1px;
   z-index: 0;
 }
+
 .step-circle {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 2px solid #1839AD;
+  border: 2px solid var(--md-primary);
   text-align: center;
   display: flex;
   justify-content: center;
@@ -168,19 +302,22 @@ html, body, #root {
   position: relative;
   z-index: 1;
   background: #fff;
-  color: #1839AD;
+  color: var(--md-primary);
   font-weight: 600;
   margin-bottom: 6px;
 }
+
 .step-text {
   text-align: center;
   margin-top: 4px;
 }
+
 @media (max-width: 640px) {
   .steps-flow {
     flex-direction: column;
     align-items: center;
   }
+
   .steps-flow::before {
     display: none;
   }
@@ -204,4 +341,3 @@ html, body, #root {
   min-width: 44px;
   min-height: 44px;
 }
-

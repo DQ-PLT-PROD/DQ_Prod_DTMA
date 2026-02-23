@@ -3,7 +3,7 @@ import "./index.css";
 import { AppRouter } from "./AppRouter";
 import { createRoot } from "react-dom/client";
 import { MsalProvider } from "@azure/msal-react";
-import { msalInstance } from "./services/auth/msal";
+import { msalInstance } from "@/lib/auth/msal";
 import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
 import { ApolloProvider } from "@apollo/client/react";
 
@@ -143,3 +143,12 @@ async function initializeApp() {
 
 console.log('🎯 Starting app initialization...');
 initializeApp();
+
+// Register service worker for PWA support and offline caching
+// Register service worker for PWA support and offline caching
+/* 
+if (process.env.NODE_ENV === 'production') {
+  // Service worker file is missing, disabling for now to fix build
+  console.log('Service worker disabled');
+} 
+*/

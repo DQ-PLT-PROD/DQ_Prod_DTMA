@@ -1,11 +1,24 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PromoCard } from "../../../components/PromoCard";
-import { CourseTile } from "./CourseTile";
+import { CourseCard } from "./CourseCard";
 
 interface CourseItem {
   id: string;
+  slug: string;
   title: string;
   description: string;
+  shortDescription?: string;
+  categoryName?: string;
+  category?: string;
+  levelTag?: string;
+  audienceLevel?: string;
+  duration?: string;
+  durationMinutes?: number;
+  lessonCount?: number;
+  thumbnailUrl?: string;
+  heroImageUrl?: string;
+  introVideoUrl?: string;
+  isComingSoon?: boolean;
   [key: string]: any;
 }
 interface PromoCardData {
@@ -19,17 +32,19 @@ interface PromoCardData {
 }
 interface CourseGridProps {
   items: CourseItem[];
-  bookmarkedItems: string[];
-  onToggleBookmark: (itemId: string) => void;
+  bookmarkedItems?: string[];
+  onToggleBookmark?: (itemId: string) => void;
   promoCards?: PromoCardData[];
   onTagClick?: (type: string, value: string) => void;
+  showSaveButton?: boolean;
 }
 export const CourseGrid: React.FC<CourseGridProps> = ({
   items,
-  bookmarkedItems,
+  bookmarkedItems = [],
   onToggleBookmark,
   promoCards = [],
   onTagClick,
+  showSaveButton = true,
 }) => {
   const [isPointerFine, setIsPointerFine] = useState<boolean>(true);
 
@@ -41,8 +56,6 @@ export const CourseGrid: React.FC<CourseGridProps> = ({
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
-
-
 
   // Use items passed in directly - no fallback data
   const displayItems = items || [];
@@ -91,7 +104,10 @@ export const CourseGrid: React.FC<CourseGridProps> = ({
       <div className="flex justify-between items-end mb-8">
         {/* Responsive header - concise on mobile */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 hidden sm:block mb-1" aria-live="polite">
+          <h2
+            className="text-2xl font-bold text-gray-900 hidden sm:block mb-1"
+            aria-live="polite"
+          >
             Showing {totalItems} Courses
           </h2>
           <div className="text-sm text-gray-500 hidden sm:block">
@@ -99,7 +115,10 @@ export const CourseGrid: React.FC<CourseGridProps> = ({
           </div>
         </div>
         {/* Mobile-friendly header */}
-        <h2 className="text-lg font-medium text-gray-800 sm:hidden" aria-live="polite">
+        <h2
+          className="text-lg font-medium text-gray-800 sm:hidden"
+          aria-live="polite"
+        >
           {totalItems} Courses
         </h2>
       </div>
@@ -108,10 +127,25 @@ export const CourseGrid: React.FC<CourseGridProps> = ({
           if (entry.type === "item") {
             const item = entry.data as CourseItem;
             return (
-              <CourseTile
+              <CourseCard
                 key={`item-${item.id || idx}`}
-                item={item}
-                enableHoverEffects={isPointerFine}
+                course={{
+                  id: item.id,
+                  slug: item.slug,
+                  title: item.title,
+                  shortDescription: item.shortDescription || item.description,
+                  categoryName: item.categoryName || item.category,
+                  levelTag: item.levelTag,
+                  audienceLevel: item.audienceLevel,
+                  duration: item.duration,
+                  durationMinutes: item.durationMinutes,
+                  lessonCount: item.lessonCount,
+                  thumbnailUrl: item.thumbnailUrl,
+                  heroImageUrl: item.heroImageUrl,
+                  introVideoUrl: item.introVideoUrl,
+                  isComingSoon: item.isComingSoon,
+                }}
+                showSaveButton={showSaveButton}
               />
             );
           } else if (entry.type === "promo") {
