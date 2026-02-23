@@ -133,13 +133,10 @@ class EnrollmentApiClient {
 
   /**
    * Enroll user in a course
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token - do not pass userId
    */
-  async enrollInCourse(courseSlug: string, method: 'explicit' | 'auto' = 'explicit', userId?: string) {
-    const requestBody: any = { courseSlug, method }
-    if (userId) {
-      requestBody.userId = userId
-    }
+  async enrollInCourse(courseSlug: string, method: 'explicit' | 'auto' = 'explicit') {
+    const requestBody = { courseSlug, method }
 
     const result = await this.makeRequest(
       'POST',
@@ -157,12 +154,11 @@ class EnrollmentApiClient {
 
   /**
    * Get all enrollments for a user
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token - do not pass userId
    */
-  async getUserEnrollments(userId?: string) {
-    // For authenticated requests, the backend will use the authenticated user's ID
-    // The userId parameter is kept for backward compatibility but may be ignored
-    const endpoint = userId ? `/enrollment/user/${userId}` : '/enrollment/user/me'
+  async getUserEnrollments() {
+    // Backend will use authenticated user's ID from token
+    const endpoint = '/enrollment/user/me'
     
     const result = await this.makeRequest(
       'GET',
@@ -204,13 +200,10 @@ class EnrollmentApiClient {
 
   /**
    * Cancel enrollment
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token - do not pass userId
    */
-  async cancelEnrollment(courseSlug: string, userId?: string) {
-    const requestBody: any = { courseSlug }
-    if (userId) {
-      requestBody.userId = userId
-    }
+  async cancelEnrollment(courseSlug: string) {
+    const requestBody = { courseSlug }
 
     const result = await this.makeRequest(
       'POST',

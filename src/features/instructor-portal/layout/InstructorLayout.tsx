@@ -23,7 +23,7 @@ const navItems = [
     },
     {
         path: '/instructor/course-management',
-        label: 'Courses',
+        label: 'Course Management',
         icon: GraduationCap
     },
     {

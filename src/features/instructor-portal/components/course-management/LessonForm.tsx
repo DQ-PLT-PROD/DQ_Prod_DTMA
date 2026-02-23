@@ -10,6 +10,12 @@ interface CourseOption {
     title: string;
 }
 
+interface ModuleOption {
+    id: string;
+    title: string;
+    course_slug: string;
+}
+
 export function LessonForm() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -17,12 +23,14 @@ export function LessonForm() {
 
     const [loading, setLoading] = useState(false);
     const [courses, setCourses] = useState<CourseOption[]>([]);
+    const [modules, setModules] = useState<ModuleOption[]>([]);
 
-    // Form Data (aligned with public.lessons: course_slug, title, type, order_index, estimated_duration_minutes, video_url, content, is_preview)
+    // Form Data (aligned with public.lessons: course_slug, module_id, title, type, order_index, estimated_duration_minutes, video_url, content, is_preview)
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         course_slug: '',
+        module_id: '' as string,
         order_index: 0,
         duration: 0,
         video_url: '',
@@ -52,6 +60,32 @@ export function LessonForm() {
         else setCourses(coursesData || []);
     };
 
+    // Load modules when course is selected
+    useEffect(() => {
+        const loadModules = async () => {
+            if (!formData.course_slug) {
+                setModules([]);
+                return;
+            }
+            const supabase = getSupabaseClient();
+            if (!supabase) return;
+
+            const { data, error } = await supabase
+                .from('modules')
+                .select('id, title, course_slug')
+                .eq('course_slug', formData.course_slug)
+                .order('order_index', { ascending: true });
+
+            if (error) {
+                console.error('Error loading modules:', error);
+                setModules([]);
+            } else {
+                setModules(data || []);
+            }
+        };
+        loadModules();
+    }, [formData.course_slug]);
+
     const loadLesson = async (lessonId: string) => {
         setLoading(true);
         const supabase = getSupabaseClient();
@@ -71,6 +105,7 @@ export function LessonForm() {
                     title: (row.title as string) ?? '',
                     description: (row.content as string) ?? '',
                     course_slug: (row.course_slug as string) ?? '',
+                    module_id: (row.module_id as string) ?? '',
                     order_index: Number(row.order_index) ?? 0,
                     duration: Number(row.estimated_duration_minutes) ?? 0,
                     video_url: (row.video_url as string) ?? '',
@@ -99,6 +134,7 @@ export function LessonForm() {
 
         const payload = {
             course_slug: formData.course_slug,
+            module_id: formData.module_id || null,
             title: formData.title,
             type: 'standard' as const,
             order_index: formData.order_index,
@@ -241,7 +277,7 @@ export function LessonForm() {
                             <select
                                 required
                                 value={formData.course_slug}
-                                onChange={(e) => setFormData({ ...formData, course_slug: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, course_slug: e.target.value, module_id: '' })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                             >
                                 <option value="">Select Course</option>
@@ -251,6 +287,31 @@ export function LessonForm() {
                                     </option>
                                 ))}
                             </select>
+                            <p className="mt-1 text-xs text-gray-500">
+                                Assign the lesson directly to a course, or optionally to a module below.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Module (optional)
+                            </label>
+                            <select
+                                value={formData.module_id}
+                                onChange={(e) => setFormData({ ...formData, module_id: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                disabled={!formData.course_slug}
+                            >
+                                <option value="">None (assign to course directly)</option>
+                                {modules.map((mod) => (
+                                    <option key={mod.id} value={mod.id}>
+                                        {mod.title}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="mt-1 text-xs text-gray-500">
+                                Optionally assign to a module within the selected course.
+                            </p>
                         </div>
 
                         <div>
@@ -279,18 +340,6 @@ export function LessonForm() {
                             />
                         </div>
 
-                        <div className="flex items-center">
-                            <input
-                                id="is_preview"
-                                type="checkbox"
-                                checked={formData.is_preview}
-                                onChange={(e) => setFormData({ ...formData, is_preview: e.target.checked })}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="is_preview" className="ml-2 block text-sm text-gray-900">
-                                Allow as Free Preview
-                            </label>
-                        </div>
                     </div>
                 </div>
             </div>

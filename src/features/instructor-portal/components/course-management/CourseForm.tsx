@@ -5,7 +5,7 @@
  * Adapted from DWS Admin App for DTMA integration.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, SaveIcon, UploadIcon, Image as ImageIcon } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/dbClient';
@@ -19,8 +19,13 @@ import {
     SFIA_LEVEL_CODES,
     AUDIENCE_OPTIONS
 } from '../../constants/courseConstants';
-import { COURSE_CATEGORIES as STANDARD_CATEGORIES } from '../../../../constants/navigation';
-import { AlertTriangleIcon, CheckIcon, XIcon } from 'lucide-react';
+import { AlertTriangleIcon, CheckIcon, ChevronDownIcon, XIcon } from 'lucide-react';
+
+interface CategoryOption {
+    slug: string;
+    name: string;
+    description: string | null;
+}
 
 interface CourseFormData {
     slug: string;
@@ -84,10 +89,20 @@ export function CourseForm() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [showMediaPicker, setShowMediaPicker] = useState(false);
 
-    // Custom Category State
+    // Categories from course_categories table
+    const [categories, setCategories] = useState<CategoryOption[]>([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
+    // Custom Category State (for adding new category not yet in DB)
     const [showCustomCategoryWarn, setShowCustomCategoryWarn] = useState(false);
     const [isCustomCategory, setIsCustomCategory] = useState(false);
     const [customCategoryInput, setCustomCategoryInput] = useState('');
+    const [customCategoryDescription, setCustomCategoryDescription] = useState('');
+    const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+    const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
 
     useEffect(() => {
         if (isEditing && id) {
@@ -95,16 +110,46 @@ export function CourseForm() {
         }
     }, [id, isEditing]);
 
-    // Check if loaded category is custom
+    const loadCategories = async () => {
+        const supabase = getSupabaseClient();
+        if (!supabase) return;
+        try {
+            setCategoriesLoading(true);
+            const { data, error } = await supabase
+                .from('course_categories')
+                .select('slug, name, description')
+                .eq('is_active', true)
+                .order('display_order', { ascending: true });
+            if (error) throw error;
+            setCategories((data ?? []).map((r) => ({ slug: r.slug, name: r.name, description: r.description })));
+        } catch (err) {
+            console.error('Error loading categories:', err);
+        } finally {
+            setCategoriesLoading(false);
+        }
+    };
+
+    // Check if loaded category exists in fetched list (otherwise treat as custom/orphaned)
     useEffect(() => {
-        if (formData.category) {
-            const isStandard = STANDARD_CATEGORIES.some(c => c.slug === formData.category);
-            setIsCustomCategory(!isStandard);
-            if (!isStandard) {
+        if (formData.category && categories.length > 0) {
+            const exists = categories.some((c) => c.slug === formData.category);
+            setIsCustomCategory(!exists);
+            if (!exists) {
                 setCustomCategoryInput(formData.category);
             }
         }
-    }, [formData.category]);
+    }, [formData.category, categories]);
+
+    // Close category dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target as Node)) {
+                setCategoryDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const loadCourse = async (courseId: string) => {
         // ... (existing loadCourse implementation) ...
@@ -255,6 +300,10 @@ export function CourseForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.category?.trim()) {
+            setToast({ type: 'error', message: 'Please select a category.' });
+            return;
+        }
         setSaving(true);
         try {
             const supabase = getSupabaseClient();
@@ -294,21 +343,46 @@ export function CourseForm() {
     };
 
 
-    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const value = e.target.value;
+    const handleCategorySelect = (value: string) => {
         if (value === 'custom_new') {
             setShowCustomCategoryWarn(true);
+            setCategoryDropdownOpen(false);
         } else {
             setFormData({ ...formData, category: value });
             setIsCustomCategory(false);
+            setCategoryDropdownOpen(false);
         }
     };
 
-    const confirmCustomCategory = () => {
-        if (customCategoryInput.trim()) {
-            setFormData({ ...formData, category: customCategoryInput.trim() });
-            setIsCustomCategory(true);
+    const categoryDisplayLabel = formData.category
+        ? categories.find((c) => c.slug === formData.category)?.name ?? formData.category
+        : '';
+
+    const confirmCustomCategory = async () => {
+        const name = customCategoryInput.trim();
+        if (!name) return;
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        if (!slug) return;
+        const supabase = getSupabaseClient();
+        if (!supabase) return;
+        try {
+            const { error } = await supabase.from('course_categories').insert({
+                slug,
+                name,
+                description: customCategoryDescription.trim() || null,
+            });
+            if (error) throw error;
+            await loadCategories();
+            setFormData({ ...formData, category: slug });
+            setIsCustomCategory(false);
             setShowCustomCategoryWarn(false);
+            setCustomCategoryInput('');
+            setCustomCategoryDescription('');
+            setToast({ type: 'success', message: `Category "${name}" added.` });
+        } catch (err) {
+            console.error('Error adding category:', err);
+            const msg = err instanceof Error ? err.message : 'Failed to add category';
+            setToast({ type: 'error', message: msg });
         }
     };
 
@@ -368,7 +442,8 @@ export function CourseForm() {
                                 />
                             </div>
 
-                            <div>
+                            {/* Provider - commented out */}
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Provider *</label>
                                 <select
                                     required
@@ -383,69 +458,118 @@ export function CourseForm() {
                                         </option>
                                     ))}
                                 </select>
-                            </div>
+                            </div> */}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                                <div className="space-y-3">
-                                    <select
-                                        required
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                        value={showCustomCategoryWarn ? 'custom_new' : formData.category}
-                                        onChange={handleCategoryChange}
-                                    >
-                                        <option value="">Select category</option>
-                                        <optgroup label="Standard Categories">
-                                            {STANDARD_CATEGORIES.map((category) => (
-                                                <option key={category.slug} value={category.slug}>
-                                                    {category.title}
-                                                </option>
-                                            ))}
-                                        </optgroup>
-                                        <optgroup label="Custom">
-                                            <option value="custom_new">Create Custom Category...</option>
-                                            {/* If current category is custom, show it as an option so it's selected */}
-                                            {isCustomCategory && formData.category && (
-                                                <option value={formData.category}>{formData.category}</option>
-                                            )}
-                                        </optgroup>
-                                    </select>
+                                <div className="space-y-3" ref={categoryDropdownRef}>
+                                    <input
+                                        type="hidden"
+                                        name="category"
+                                        value={formData.category}
+                                        readOnly
+                                        tabIndex={-1}
+                                        aria-hidden="true"
+                                    />
+                                    <div className="relative">
+                                        <button
+                                            type="button"
+                                            disabled={categoriesLoading}
+                                            onClick={() => setCategoryDropdownOpen((o) => !o)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)] disabled:opacity-50 text-left flex items-center justify-between bg-white"
+                                        >
+                                            <span className={!categoryDisplayLabel ? 'text-gray-500' : ''}>
+                                                {categoriesLoading ? 'Loading...' : categoryDisplayLabel || 'Select category'}
+                                            </span>
+                                            <ChevronDownIcon
+                                                className={`h-4 w-4 text-gray-400 shrink-0 transition-transform ${categoryDropdownOpen ? 'rotate-180' : ''}`}
+                                            />
+                                        </button>
+                                        {categoryDropdownOpen && (
+                                            <div className="absolute z-10 mt-1 w-full min-w-0 bg-white border border-gray-200 rounded-lg shadow-lg py-1 max-h-60 overflow-auto overflow-x-hidden">
+                                                <div className="px-3 py-2 text-gray-700 font-bold text-sm border-b border-gray-100">
+                                                    Select category
+                                                </div>
+                                                {categories.map((category) => (
+                                                    <button
+                                                        key={category.slug}
+                                                        type="button"
+                                                        onClick={() => handleCategorySelect(category.slug)}
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-900 hover:bg-gray-50 flex items-center"
+                                                    >
+                                                        {category.name}
+                                                    </button>
+                                                ))}
+                                                <div className="border-t border-gray-100 mt-1 pt-1 px-2">
+                                                    <div className="px-1 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                                        Add new
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleCategorySelect('custom_new')}
+                                                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--md-primary)] text-white hover:bg-[var(--md-primary-hover)] transition-colors"
+                                                    >
+                                                        Add category
+                                                    </button>
+                                                </div>
+                                                {isCustomCategory && formData.category && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleCategorySelect(formData.category)}
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 border-t border-gray-100"
+                                                    >
+                                                        {formData.category}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
 
-                                    {/* Custom Category Warning/Input */}
+                                    {/* Create new category form */}
                                     {showCustomCategoryWarn && (
-                                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
                                             <div className="flex items-start gap-3">
-                                                <AlertTriangleIcon className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
-                                                <div className="flex-1">
-                                                    <h4 className="text-sm font-medium text-orange-800">Custom Category Warning</h4>
-                                                    <p className="text-xs text-orange-700 mt-1">
-                                                        Creating a custom category keeps this course outside the standard 6 Dimensions of Digital Transformation.
-                                                        It may limit discoverability in standard filters.
+                                                <AlertTriangleIcon className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                                                <div className="flex-1 space-y-3">
+                                                    <h4 className="text-sm font-medium text-blue-800">Add new category</h4>
+                                                    <p className="text-xs text-blue-700">
+                                                        New categories are stored in the database and will appear in the dropdown for future courses.
                                                     </p>
-
-                                                    <div className="mt-3 flex items-center gap-2">
+                                                    <div className="space-y-2">
                                                         <input
                                                             type="text"
                                                             value={customCategoryInput}
                                                             onChange={(e) => setCustomCategoryInput(e.target.value)}
-                                                            placeholder="Enter custom category slug..."
-                                                            className="flex-1 text-sm px-3 py-1.5 border border-orange-300 rounded focus:border-orange-500 focus:outline-none"
+                                                            placeholder="Category name (e.g. Emerging Technologies)"
+                                                            className="w-full text-sm px-3 py-1.5 border border-blue-300 rounded focus:border-blue-500 focus:outline-none"
                                                         />
+                                                        <input
+                                                            type="text"
+                                                            value={customCategoryDescription}
+                                                            onChange={(e) => setCustomCategoryDescription(e.target.value)}
+                                                            placeholder="Description (optional)"
+                                                            className="w-full text-sm px-3 py-1.5 border border-blue-300 rounded focus:border-blue-500 focus:outline-none"
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
                                                         <button
                                                             type="button"
                                                             onClick={confirmCustomCategory}
-                                                            className="p-1.5 bg-orange-100 text-orange-700 rounded hover:bg-orange-200"
-                                                            title="Confirm"
+                                                            className="flex items-center px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                                                         >
-                                                            <CheckIcon className="h-4 w-4" />
+                                                            <CheckIcon className="h-4 w-4 mr-1" />
+                                                            Add category
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            onClick={() => setShowCustomCategoryWarn(false)}
-                                                            className="p-1.5 text-gray-400 hover:text-gray-600"
-                                                            title="Cancel"
+                                                            onClick={() => {
+                                                                setShowCustomCategoryWarn(false);
+                                                                setCustomCategoryInput('');
+                                                                setCustomCategoryDescription('');
+                                                            }}
+                                                            className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded text-sm"
                                                         >
-                                                            <XIcon className="h-4 w-4" />
+                                                            Cancel
                                                         </button>
                                                     </div>
                                                 </div>
@@ -453,27 +577,18 @@ export function CourseForm() {
                                         </div>
                                     )}
 
-                                    {/* Active Custom Category Indicator */}
+                                    {/* Orphaned/legacy category indicator */}
                                     {isCustomCategory && !showCustomCategoryWarn && formData.category && (
                                         <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-50 px-3 py-2 rounded-lg border border-orange-100">
                                             <AlertTriangleIcon className="h-3 w-3" />
-                                            <span>Using custom category: <strong>{formData.category}</strong></span>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setCustomCategoryInput(formData.category);
-                                                    setShowCustomCategoryWarn(true);
-                                                }}
-                                                className="text-orange-800 underline ml-auto"
-                                            >
-                                                Edit
-                                            </button>
+                                            <span>Category &quot;{formData.category}&quot; is not in the categories list. Consider selecting a different category or creating it via &quot;Create new category&quot;.</span>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            <div>
+                            {/* Delivery Mode - commented out */}
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Mode</label>
                                 <select
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
@@ -485,7 +600,7 @@ export function CourseForm() {
                                     <option value="in-person">In-Person</option>
                                     <option value="hybrid">Hybrid</option>
                                 </select>
-                            </div>
+                            </div> */}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes) *</label>
@@ -515,7 +630,8 @@ export function CourseForm() {
                                 </select>
                             </div>
 
-                            <div>
+                            {/* SFIA Level - commented out */}
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">SFIA Level</label>
                                 <select
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
@@ -529,9 +645,10 @@ export function CourseForm() {
                                         </option>
                                     ))}
                                 </select>
-                            </div>
+                            </div> */}
 
-                            <div>
+                            {/* Department - commented out */}
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                                 <select
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
@@ -545,7 +662,7 @@ export function CourseForm() {
                                         </option>
                                     ))}
                                 </select>
-                            </div>
+                            </div> */}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Audience</label>
@@ -673,7 +790,7 @@ export function CourseForm() {
                             <button
                                 type="button"
                                 onClick={addHighlight}
-                                className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-dark)]"
+                                className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)]"
                             >
                                 Add
                             </button>
@@ -709,7 +826,7 @@ export function CourseForm() {
                             <button
                                 type="button"
                                 onClick={addOutcome}
-                                className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-dark)]"
+                                className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)]"
                             >
                                 Add
                             </button>
@@ -742,7 +859,7 @@ export function CourseForm() {
                         <button
                             type="submit"
                             disabled={saving}
-                            className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-dark)] disabled:opacity-50 flex items-center"
+                            className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)] disabled:opacity-50 flex items-center"
                         >
                             <SaveIcon className="h-4 w-4 mr-2" />
                             {saving ? 'Saving...' : isEditing ? 'Update' : 'Create'}

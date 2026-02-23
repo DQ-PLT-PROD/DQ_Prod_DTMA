@@ -6,14 +6,11 @@
  */
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
     BookOpenIcon,
     GraduationCapIcon,
     FileTextIcon,
     PlayCircleIcon,
-    HelpCircleIcon,
-    PlusIcon,
     TagIcon
 } from 'lucide-react';
 import { CoursesSection } from '../components/course-management/CoursesSection';
@@ -38,8 +35,6 @@ const tabs: Tab[] = [
 ];
 
 export function CourseManagementPage() {
-    const navigate = useNavigate();
-
     // Get tab from URL params or default to categories
     const urlParams = new URLSearchParams(window.location.search);
     const tabFromUrl = urlParams.get('tab') || 'classifications';
@@ -135,7 +130,7 @@ export function CourseManagementPage() {
                                     onClick={() => handleTabChange(tab.id)}
                                     disabled={isDisabled}
                                     className={`flex items-center px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${isActive
-                                        ? 'bg-[var(--md-primary)] text-white shadow-sm'
+                                        ? 'bg-[var(--md-primary)] text-white shadow-sm hover:bg-[var(--md-primary-hover)]'
                                         : isDisabled
                                             ? 'text-gray-400 cursor-not-allowed'
                                             : 'text-gray-600 hover:bg-gray-100'

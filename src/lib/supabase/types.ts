@@ -548,60 +548,84 @@ export interface Database {
                     email: string
                     name: string
                     given_name: string | null
-                surname: string | null
-                job_title: string | null
-                department: string | null
-                office_location: string | null
-                profile_data: Json | null
-                role_track: string | null
-                goals: Json | null
-                preferences: Json | null
-                onboarding_completed: boolean
-                onboarding_completed_at: string | null
-                last_login: string
-                created_at: string
-                updated_at: string
-            }
-            Insert: {
-                id?: string
+                    surname: string | null
+                    job_title: string | null
+                    department: string | null
+                    office_location: string | null
+                    profile_data: Json | null
+                    display_name: string | null
+                    preferred_email: string | null
+                    phone_number: string | null
+                    country: string | null
+                    timezone: string | null
+                    role_track: string | null
+                    goals: Json | null
+                    preferences: Json | null
+                    onboarding_completed: boolean
+                    onboarding_completed_at: string | null
+                    seniority_level: string | null
+                    weekly_learning_capacity: string | null
+                    transformation_experience: string | null
+                    last_login: string
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
                     azure_user_id: string
                     customer_id: string
                     email: string
                     name: string
                     given_name?: string | null
-                surname?: string | null
-                job_title?: string | null
-                department?: string | null
-                office_location?: string | null
-                profile_data?: Json | null
-                role_track?: string | null
-                goals?: Json | null
-                preferences?: Json | null
-                onboarding_completed?: boolean
-                onboarding_completed_at?: string | null
-                last_login?: string
-                created_at?: string
-                updated_at?: string
-            }
-            Update: {
-                azure_user_id?: string
+                    surname?: string | null
+                    job_title?: string | null
+                    department?: string | null
+                    office_location?: string | null
+                    profile_data?: Json | null
+                    display_name?: string | null
+                    preferred_email?: string | null
+                    phone_number?: string | null
+                    country?: string | null
+                    timezone?: string | null
+                    role_track?: string | null
+                    goals?: Json | null
+                    preferences?: Json | null
+                    onboarding_completed?: boolean
+                    onboarding_completed_at?: string | null
+                    seniority_level?: string | null
+                    weekly_learning_capacity?: string | null
+                    transformation_experience?: string | null
+                    last_login?: string
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    azure_user_id?: string
                     customer_id?: string
                     email?: string
                     name?: string
                     given_name?: string | null
-                surname?: string | null
-                job_title?: string | null
-                department?: string | null
-                office_location?: string | null
-                profile_data?: Json | null
-                role_track?: string | null
-                goals?: Json | null
-                preferences?: Json | null
-                onboarding_completed?: boolean
-                onboarding_completed_at?: string | null
-                last_login?: string
-                updated_at?: string
-            }
+                    surname?: string | null
+                    job_title?: string | null
+                    department?: string | null
+                    office_location?: string | null
+                    profile_data?: Json | null
+                    display_name?: string | null
+                    preferred_email?: string | null
+                    phone_number?: string | null
+                    country?: string | null
+                    timezone?: string | null
+                    role_track?: string | null
+                    goals?: Json | null
+                    preferences?: Json | null
+                    onboarding_completed?: boolean
+                    onboarding_completed_at?: string | null
+                    seniority_level?: string | null
+                    weekly_learning_capacity?: string | null
+                    transformation_experience?: string | null
+                    last_login?: string
+                    updated_at?: string
+                }
                 Relationships: []
             },
             user_enrollments: {
@@ -697,6 +721,105 @@ export interface Database {
                         foreignKeyName: "lesson_progress_lesson_id_fkey"
                         columns: ["lesson_id"]
                         referencedRelation: "lessons"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            quiz_attempts: {
+                Row: {
+                    id: string
+                    user_id: string
+                    course_slug: string
+                    score_pct: number | null
+                    passed: boolean
+                    completed_at: string
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    course_slug: string
+                    score_pct?: number | null
+                    passed?: boolean
+                    completed_at?: string
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    user_id?: string
+                    course_slug?: string
+                    score_pct?: number | null
+                    passed?: boolean
+                    completed_at?: string
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "quiz_attempts_user_id_fkey"
+                        columns: ["user_id"]
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "quiz_attempts_course_slug_fkey"
+                        columns: ["course_slug"]
+                        referencedRelation: "courses"
+                        referencedColumns: ["slug"]
+                    }
+                ]
+            }
+            user_badges: {
+                Row: {
+                    id: string
+                    user_id: string
+                    badge_key: string
+                    awarded_at: string
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    badge_key: string
+                    awarded_at?: string
+                    created_at?: string
+                }
+                Update: {
+                    user_id?: string
+                    badge_key?: string
+                    awarded_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "user_badges_user_id_fkey"
+                        columns: ["user_id"]
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            user_xp: {
+                Row: {
+                    user_id: string
+                    total_xp: number
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    user_id: string
+                    total_xp?: number
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    total_xp?: number
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "user_xp_user_id_fkey"
+                        columns: ["user_id"]
+                        referencedRelation: "users"
                         referencedColumns: ["id"]
                     }
                 ]
