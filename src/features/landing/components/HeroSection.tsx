@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Send, ArrowRight, Layers } from 'lucide-react';
-import { AnimatedText, FadeInUpOnScroll, StaggeredFadeIn } from "@/components/AnimationUtils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from '@/lib/auth';
 import { PageContainer } from "@/components/layouts/PageContainer";
@@ -274,7 +273,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           opacity: 0.25,
           backdropFilter: BRAND_BACKDROP_BLUR,
           WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
-          animation: 'pulse-gradient 8s ease-in-out infinite alternate',
         }}
       ></div>
       {/* Deep navy tint to boost readability */}
@@ -294,16 +292,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       ></div>
 
       <PageContainer className="h-full py-16 md:py-24 flex flex-col justify-center items-center gap-8 relative z-10 text-center">
-        <FadeInUpOnScroll className="space-y-5 w-full flex flex-col items-center">
-          <div className="space-y-5 w-full flex flex-col items-center text-center">
-            <h1 className="text-[48px] md:text-[56px] leading-[1.2] font-bold text-white tracking-[-0.5px] max-w-3xl mx-auto">
-              Every Skill to Grow and Scale in the Digital Economy
-            </h1>
-            <p className="text-[18px] leading-[1.5] text-white/80 font-semibold max-w-2xl mx-auto">
-              Start your digital transformation journey with easy‑to‑follow lessons that help you understand, improve, and innovate at your own pace.
-            </p>
-          </div>
-        </FadeInUpOnScroll>
+        <div className="space-y-5 w-full flex flex-col items-center text-center">
+          <h1 className="text-[48px] md:text-[56px] leading-[1.2] font-bold text-white tracking-[-0.5px] max-w-3xl mx-auto">
+            Gain clarity in a noisy Digital World
+          </h1>
+          <p className="text-[18px] leading-[1.5] text-white/80 font-semibold max-w-2xl mx-auto">
+            Develop the structured understanding, practical tools, and strategic clarity required to drive digital transformation — guided by the D6 Framework crafted from our 15 years of leading successful digital initiatives.
+          </p>
+        </div>
 
         {/* AI Prompt Interface removed as requested */}
 
@@ -321,20 +317,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
       </PageContainer>
 
-      {/* Add keyframes for gradient animation */}
-      <style>{`
-        @keyframes pulse-gradient {
-          0% {
-            opacity: 0.4;
-          }
-          50% {
-            opacity: 0.6;
-          }
-          100% {
-            opacity: 0.4;
-          }
-        }
-      `}</style>
     </div >
   );
 };

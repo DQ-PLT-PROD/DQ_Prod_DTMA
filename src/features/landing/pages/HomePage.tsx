@@ -3,7 +3,6 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import HeroSection from "../components/HeroSection";
 import ProofAndTrust from "../components/ProofAndTrust";
-import MetricsSection from "../components/MetricsSection";
 import SixPerspectivesSection from "../components/SixPerspectivesSection";
 import CourseCatalogSection from "../components/CourseCatalogSection";
 import SixXDDeepDiveSection from "../components/SixXDDeepDiveSection";
@@ -52,14 +51,9 @@ const HomePage: React.FC = () => {
           <HeroSection />
         </section>
 
-        {/* ── Section 2 — Why DTMA (Benefits) ──────────────────────────────── */}
+        {/* ── Section 2 — Metrics + Benefits ───────────────────────────────── */}
         <section className={`${SECTION} bg-gray-50`}>
           <ProofAndTrust />
-        </section>
-
-        {/* ── Section 3 — Metrics strip ─────────────────────────────────────── */}
-        <section className={`${SECTION} bg-white`}>
-          <MetricsSection />
         </section>
 
         {/* ── Section 4 — The 6X Perspectives of Digital ───────────────────── */}

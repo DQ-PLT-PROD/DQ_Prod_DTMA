@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Star } from "lucide-react";
-import { FadeInUpOnScroll } from "@/components/AnimationUtils";
 import { CourseCard } from "@/features/courses/components/CourseCard";
 import { CourseCardSkeleton } from "@/components/SkeletonLoader";
 import { fetchCourses } from "@/services/courseService";
@@ -115,14 +114,14 @@ const CourseCatalogSection: React.FC = () => {
   return (
     <div className="w-full flex flex-col justify-center py-16 sm:py-20">
       <PageContainer>
-        <FadeInUpOnScroll className="text-center max-w-3xl mx-auto space-y-4">
+        <div className="text-center max-w-3xl mx-auto space-y-4">
           <h2
             className="text-3xl md:text-4xl font-bold text-gray-900"
             style={{ textShadow: "0 8px 20px rgba(3, 12, 43, 0.1)" }}
           >
             Explore our course catalog to find the right sense-making course for you
           </h2>
-        </FadeInUpOnScroll>
+        </div>
 
         {/* Category selector pills */}
         <div className="mt-8 flex flex-wrap gap-3 justify-center">

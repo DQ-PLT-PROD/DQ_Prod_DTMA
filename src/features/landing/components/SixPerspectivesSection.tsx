@@ -1,5 +1,5 @@
 import React from "react";
-import { FadeInUpOnScroll } from "@/components/AnimationUtils";
+import { ArrowRight } from "lucide-react";
 import { PageContainer } from "@/components/layouts/PageContainer";
 
 const perspectives = [
@@ -45,7 +45,10 @@ const SixPerspectivesSection: React.FC = () => {
   return (
     <div className="w-full flex flex-col justify-center py-16 sm:py-20">
       <PageContainer>
-        <FadeInUpOnScroll className="text-center max-w-3xl mx-auto space-y-4">
+        <div className="text-center max-w-3xl mx-auto space-y-4">
+          <p className="text-xs font-semibold tracking-widest text-[#1839AD] uppercase">
+            The D6 Framework
+          </p>
           <h2
             className="text-3xl md:text-4xl font-bold text-gray-900"
             style={{ textShadow: "0 8px 20px rgba(3, 12, 43, 0.1)" }}
@@ -55,19 +58,31 @@ const SixPerspectivesSection: React.FC = () => {
           <p className="text-lg text-gray-600">
             Make sense of digital in a structured manner, from 6 critical digital angles defined by Digital Qatalyst through 15+ years of experience orchestrating digital transformation
           </p>
-        </FadeInUpOnScroll>
+        </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="flex justify-center mt-5">
+          <a
+            href="https://digitalqatalyst.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 py-2 text-sm font-medium text-[#1839AD] hover:text-[#0d2b8a] hover:underline transition-colors duration-150"
+          >
+            Learn more about Digital Qatalyst
+            <ArrowRight size={14} className="flex-shrink-0" />
+          </a>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {perspectives.map((item) => (
             <div
               key={item.number}
-              className="flex flex-col rounded-3xl overflow-hidden bg-white shadow-lg transition-transform duration-200 hover:-translate-y-1 h-full relative z-20"
+              className="flex flex-col rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 h-full"
             >
               <div className="flex flex-col flex-1 p-6 space-y-3">
                 <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#1839AD]/10 text-[#1839AD] text-xs font-bold self-start flex-shrink-0">
                   {String(item.number).padStart(2, "0")}
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900">
+                <h3 className="text-base font-semibold text-gray-900">
                   {item.title}
                 </h3>
                 <p className="text-sm text-gray-600 leading-relaxed">
