@@ -7,6 +7,7 @@
 import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
 import { isSupabaseConfigured } from "../../../lib/supabase/client";
 import { recordCourseCompletion } from "./achievementService";
+import { enrollmentApiClient } from "../../../lib/api/enrollmentApiClient";
 
 // Types
 export interface Enrollment {

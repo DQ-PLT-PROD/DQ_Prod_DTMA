@@ -438,10 +438,23 @@ const enrollmentHandlers = {
     try {
       console.log(`🔍 Checking enrollment status for user ${targetUserId} in course ${courseSlug}`)
 
+      // Resolve Azure OID to Supabase DB user UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', targetUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendJSON(res, 200, { isEnrolled: false, enrollmentStatus: null })
+      }
+
+      const dbUserId = userData.id
+
       const { data, error } = await supabaseClient
         .from('user_enrollments')
         .select('id, status')
-        .eq('user_id', targetUserId)
+        .eq('user_id', dbUserId)
         .eq('course_slug', courseSlug)
         .eq('status', 'active')
         .single()
@@ -493,10 +506,23 @@ const enrollmentHandlers = {
     try {
       console.log(`📋 Getting enrollment details for user ${targetUserId} in course ${courseSlug}`)
 
+      // Resolve Azure OID to Supabase DB user UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', targetUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendJSON(res, 404, { error: 'Enrollment not found' })
+      }
+
+      const dbUserId = userData.id
+
       const { data, error } = await supabaseClient
         .from('user_enrollments')
         .select('*')
-        .eq('user_id', targetUserId)
+        .eq('user_id', dbUserId)
         .eq('course_slug', courseSlug)
         .single()
 
@@ -769,18 +795,37 @@ const enrollmentHandlers = {
     try {
       console.log(`🔐 Getting access contract for user ${targetUserId} in course ${courseSlug}`)
 
+      // Resolve Azure OID to Supabase DB user UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', targetUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendJSON(res, 200, {
+          isEnrolled: false,
+          enrollmentStatus: null,
+          subscriptionStatus: null,
+          courseSlug,
+          userId: targetUserId
+        })
+      }
+
+      const dbUserId = userData.id
+
       // Get enrollment and subscription in parallel
       const [enrollmentResult, subscriptionResult] = await Promise.all([
         supabaseClient
           .from('user_enrollments')
           .select('*')
-          .eq('user_id', targetUserId)
+          .eq('user_id', dbUserId)
           .eq('course_slug', courseSlug)
           .single(),
         supabaseClient
           .from('subscriptions')
           .select('*')
-          .eq('user_id', targetUserId)
+          .eq('user_id', dbUserId)
           .eq('status', 'active')
           .order('created_at', { ascending: false })
           .limit(1)
@@ -838,6 +883,19 @@ const enrollmentHandlers = {
 
       console.log(`❌ Cancelling enrollment for user ${targetUserId} in course ${courseSlug}`)
 
+      // Resolve Azure OID to Supabase DB user UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', targetUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendError(res, 404, 'Active enrollment not found')
+      }
+
+      const dbUserId = userData.id
+
       const { data, error } = await supabaseClient
         .from('user_enrollments')
         .update({
@@ -845,7 +903,7 @@ const enrollmentHandlers = {
           cancelled_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
-        .eq('user_id', targetUserId)
+        .eq('user_id', dbUserId)
         .eq('course_slug', courseSlug)
         .eq('status', 'active')
         .select()

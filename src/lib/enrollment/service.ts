@@ -235,7 +235,8 @@ export const getAccessContract = async (
 
     try {
         // Get access contract from backend API
-        return await enrollmentApiClient.getAccessContract(courseSlug, userId);
+        // Don't pass userId — server derives user identity from the auth token
+        return await enrollmentApiClient.getAccessContract(courseSlug);
     } catch (err) {
         console.error("Error getting access contract:", err);
         return {
