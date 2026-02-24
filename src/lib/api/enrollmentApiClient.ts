@@ -69,14 +69,18 @@ class EnrollmentApiClient {
         },
       }
 
-      // Add authentication header if token is available
-      if (token) {
-        options.headers = {
-          ...options.headers,
-          'Authorization': `Bearer ${token}`
+      // Enrollment APIs require authentication — fail fast if no token
+      if (!token) {
+        console.warn('No authentication token available for enrollment API request')
+        return {
+          success: false,
+          error: 'Authentication required. Please sign in and try again.'
         }
-      } else {
-        console.warn('Making API request without authentication token')
+      }
+
+      options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
       }
 
       if (body) {

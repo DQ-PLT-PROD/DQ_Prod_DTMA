@@ -13,11 +13,9 @@ import { logRequest, logAuthEvent, logEnrollmentEvent, logAccessEvent } from './
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-try {
-  const envPath = join(__dirname, '.env')
-  const envFile = readFileSync(envPath, 'utf8')
-
-  envFile.split('\n').forEach(line => {
+const loadEnvFile = (filePath) => {
+  const file = readFileSync(filePath, 'utf8')
+  file.split('\n').forEach(line => {
     const trimmed = line.trim()
     if (trimmed && !trimmed.startsWith('#')) {
       const [key, ...valueParts] = trimmed.split('=')
@@ -26,9 +24,20 @@ try {
       }
     }
   })
-  console.log('✅ Environment variables loaded from .env')
-} catch (err) {
-  console.log('⚠️ No .env file found, using system environment variables')
+}
+
+try {
+  // Try api/.env first (for deploy-specific overrides)
+  loadEnvFile(join(__dirname, '.env'))
+  console.log('✅ Environment variables loaded from api/.env')
+} catch {
+  try {
+    // Fall back to root .env (standard development setup)
+    loadEnvFile(join(__dirname, '../.env'))
+    console.log('✅ Environment variables loaded from root .env')
+  } catch {
+    console.log('⚠️ No .env file found, using system environment variables')
+  }
 }
 
 const PORT = process.env.API_PORT ? Number(process.env.API_PORT) : 3001
