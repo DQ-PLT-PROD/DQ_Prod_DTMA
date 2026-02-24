@@ -2,7 +2,7 @@ import http from 'http'
 import { parse } from 'url'
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'fs'
-import { join, dirname } from 'path'
+import { join, dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { authenticateUser, getCurrentUser, isAuthenticated } from './middleware/auth.mjs'
 import { checkLessonAccess, checkModuleAccess, getCourseAccessSummary, enforceLessonAccess } from './middleware/lessonAccess.mjs'
@@ -917,7 +917,7 @@ const enrollmentHandlers = {
   }
 }
 
-const server = http.createServer(async (req, res) => {
+export const requestHandler = async (req, res) => {
   try {
     // Apply request logging middleware
     await applyMiddleware(logRequest, req, res);
@@ -1090,32 +1090,39 @@ const server = http.createServer(async (req, res) => {
     console.error('Server error:', e)
     return sendError(res, 500, e?.message || 'Internal server error')
   }
-})
+}
 
-server.listen(PORT, () => {
-  console.log(`🚀 DTMA API Server listening on http://localhost:${PORT}`)
-  console.log(`📋 Available endpoints:`)
-  console.log(`   GET  /api/health - Health check`)
-  console.log(``)
-  console.log(`   📚 Lesson Access Endpoints:`)
-  console.log(`   GET  /api/lessons/access/:courseSlug/:lessonId - Check lesson access`)
-  console.log(`   GET  /api/lessons/course-access/:courseSlug - Get course access summary`)
-  console.log(`   GET  /api/lessons/content/:courseSlug/:lessonId - Get lesson content`)
-  console.log(`   POST /api/lessons/progress/:courseSlug/:lessonId - Update lesson progress`)
-  console.log(``)
-  console.log(`   🎓 Enrollment Endpoints:`)
-  console.log(`   GET  /api/enrollment/status/:courseSlug?userId=xxx - Check enrollment status`)
-  console.log(`   GET  /api/enrollment/details/:courseSlug?userId=xxx - Get enrollment details`)
-  console.log(`   POST /api/enrollment/enroll - Enroll in course`)
-  console.log(`   GET  /api/enrollment/user/:userId - Get user enrollments`)
-  console.log(`   GET  /api/enrollment/access/:courseSlug?userId=xxx - Get access contract`)
-  console.log(`   POST /api/enrollment/cancel - Cancel enrollment`)
-  console.log(``)
-  console.log(`   🧪 Development Endpoints:`)
-  console.log(`   POST /api/test/create-user - Create test user (dev only)`)
-  console.log(`   POST /api/stripe/* - Stripe mock endpoints`)
-  console.log(``)
-  console.log(`🔧 Configuration:`)
-  console.log(`   Supabase: ${supabaseClient ? '✅ Connected' : '❌ Not configured'}`)
-  console.log(`   Authentication: ${process.env.VITE_AZURE_TENANT_ID ? '✅ Configured' : '❌ Not configured'}`)
-})
+const server = http.createServer(requestHandler)
+const isDirectExecution = Boolean(process.argv[1]) && resolve(process.argv[1]) === __filename
+
+if (isDirectExecution) {
+  server.listen(PORT, () => {
+    console.log(`🚀 DTMA API Server listening on http://localhost:${PORT}`)
+    console.log(`📋 Available endpoints:`)
+    console.log(`   GET  /api/health - Health check`)
+    console.log(``)
+    console.log(`   📚 Lesson Access Endpoints:`)
+    console.log(`   GET  /api/lessons/access/:courseSlug/:lessonId - Check lesson access`)
+    console.log(`   GET  /api/lessons/course-access/:courseSlug - Get course access summary`)
+    console.log(`   GET  /api/lessons/content/:courseSlug/:lessonId - Get lesson content`)
+    console.log(`   POST /api/lessons/progress/:courseSlug/:lessonId - Update lesson progress`)
+    console.log(``)
+    console.log(`   🎓 Enrollment Endpoints:`)
+    console.log(`   GET  /api/enrollment/status/:courseSlug?userId=xxx - Check enrollment status`)
+    console.log(`   GET  /api/enrollment/details/:courseSlug?userId=xxx - Get enrollment details`)
+    console.log(`   POST /api/enrollment/enroll - Enroll in course`)
+    console.log(`   GET  /api/enrollment/user/:userId - Get user enrollments`)
+    console.log(`   GET  /api/enrollment/access/:courseSlug?userId=xxx - Get access contract`)
+    console.log(`   POST /api/enrollment/cancel - Cancel enrollment`)
+    console.log(``)
+    console.log(`   🧪 Development Endpoints:`)
+    console.log(`   POST /api/test/create-user - Create test user (dev only)`)
+    console.log(`   POST /api/stripe/* - Stripe mock endpoints`)
+    console.log(``)
+    console.log(`🔧 Configuration:`)
+    console.log(`   Supabase: ${supabaseClient ? '✅ Connected' : '❌ Not configured'}`)
+    console.log(`   Authentication: ${process.env.VITE_AZURE_TENANT_ID ? '✅ Configured' : '❌ Not configured'}`)
+  })
+}
+
+export default requestHandler
