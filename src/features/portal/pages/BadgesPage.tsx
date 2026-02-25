@@ -101,13 +101,19 @@ const BadgesPage: React.FC = () => {
                             Track your progress, earn badges, and climb the leaderboard.
                         </p>
                     </div>
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 flex items-center gap-4 min-w-[200px]">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 flex items-center gap-4 min-w-[200px] group relative">
                         <div className="h-12 w-12 rounded-xl bg-yellow-50 flex items-center justify-center shrink-0">
                             <Trophy className="text-yellow-500" size={28} />
                         </div>
                         <div>
                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total XP</p>
-                            <p className="text-2xl font-bold text-gray-900 leading-tight">{totalXp.toLocaleString()}</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-2xl font-bold text-gray-400 leading-tight">—</p>
+                                <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tight">Soon</span>
+                            </div>
+                        </div>
+                        <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-xs font-bold text-gray-500 bg-white px-2 py-1 rounded-full shadow-sm border border-gray-100">Coming Soon</span>
                         </div>
                     </div>
                 </div>
@@ -127,16 +133,11 @@ const BadgesPage: React.FC = () => {
                         )}
                     </button>
                     <button
-                        onClick={() => setActiveTab("leaderboard")}
-                        className={`px-6 py-3 font-medium text-sm transition-colors relative ${activeTab === "leaderboard"
-                            ? "text-[#1839AD]"
-                            : "text-gray-500 hover:text-gray-700"
-                            }`}
+                        className="px-6 py-3 font-medium text-sm text-gray-400 cursor-not-allowed flex items-center gap-2"
+                        title="Coming Soon"
                     >
                         Leaderboard
-                        {activeTab === "leaderboard" && (
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1839AD]" />
-                        )}
+                        <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tight">Soon</span>
                     </button>
                 </div>
 
@@ -151,7 +152,7 @@ const BadgesPage: React.FC = () => {
                                 <p className="text-gray-500 mb-8 leading-relaxed">
                                     You haven't earned any badges yet. Start your learning journey today and badges will appear here as you reach milestones.
                                 </p>
-                                <Button asChild className="rounded-full px-8">
+                                <Button asChild className="rounded-full px-8 bg-[#1839AD] hover:bg-[#132b7c]">
                                     <Link to="/courses">Browse Courses</Link>
                                 </Button>
                             </div>
@@ -208,59 +209,14 @@ const BadgesPage: React.FC = () => {
                         )}
                     </div>
                 ) : (
-                    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                            <h2 className="font-bold text-gray-900 flex items-center gap-2">
-                                <Search size={18} className="text-gray-400" /> Top Learners
-                            </h2>
-                            <span className="text-xs text-gray-500 font-medium uppercase tracking-wider">Top 10 Global</span>
+                    <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center max-w-2xl mx-auto">
+                        <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Lock className="text-gray-300" size={40} />
                         </div>
-                        <div className="divide-y divide-gray-100">
-                            {leaderboard.length === 0 ? (
-                                <div className="p-12 text-center text-gray-500">No leaderboard data available yet.</div>
-                            ) : (
-                                leaderboard.map((entry, index) => {
-                                    const isMe = entry.userId === databaseUser?.id;
-                                    return (
-                                        <div
-                                            key={entry.userId}
-                                            className={`flex items-center gap-4 p-4 transition-colors ${isMe ? 'bg-blue-50/50' : 'hover:bg-gray-50'}`}
-                                        >
-                                            <div className="w-8 flex justify-center">
-                                                {index === 0 ? (
-                                                    <span className="text-xl">🥇</span>
-                                                ) : index === 1 ? (
-                                                    <span className="text-xl">🥈</span>
-                                                ) : index === 2 ? (
-                                                    <span className="text-xl">🥉</span>
-                                                ) : (
-                                                    <span className="text-sm font-bold text-gray-400">#{index + 1}</span>
-                                                )}
-                                            </div>
-                                            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center shrink-0 border-2 border-white shadow-sm overflow-hidden">
-                                                <img 
-                                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(entry.name || entry.email || 'L')}&background=random`} 
-                                                    alt={entry.name || 'Learner'} 
-                                                />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-bold text-gray-900 truncate flex items-center gap-2">
-                                                    {entry.name || entry.email?.split('@')[0] || "Learner"}
-                                                    {isMe && <Badge variant="default" className="text-[10px] h-4">You</Badge>}
-                                                </p>
-                                                <p className="text-xs text-gray-500">Certified Digital Qatalyst</p>
-                                            </div>
-                                            <div className="text-right shrink-0">
-                                                <div className="flex items-center gap-1.5 justify-end">
-                                                    <span className="font-black text-gray-900">{entry.totalXp.toLocaleString()}</span>
-                                                    <span className="text-[10px] font-bold text-[#1839AD] uppercase">XP</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">Leaderboard Coming Soon</h2>
+                        <p className="text-gray-500 mb-8 leading-relaxed">
+                            Compete with other learners and showcase your achievements. The leaderboard will be available soon in the next update.
+                        </p>
                     </div>
                 )}
 
@@ -286,6 +242,10 @@ const BadgesPage: React.FC = () => {
                     score={100} // Dummy score for modal compatibility
                     courseName={selectedBadge.badge.title}
                     userName={databaseUser?.name || "Learner"}
+                    badge={{
+                        definition: selectedBadge.badge,
+                        shareToken: selectedBadge.shareToken
+                    }}
                 />
             )}
         </div>
