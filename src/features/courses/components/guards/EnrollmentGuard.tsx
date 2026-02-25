@@ -9,7 +9,7 @@
  * Non-enrolled users are redirected to course details page.
  */
 import React, { useEffect, useState } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useSearchParams, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { lessonAccessApiClient } from '@/lib/api/lessonAccessApiClient';
@@ -29,12 +29,13 @@ export const EnrollmentGuard: React.FC<EnrollmentGuardProps> = ({
 }) => {
     const { user, databaseUser } = useAuth();
     const [searchParams] = useSearchParams();
+    const { courseId: pathCourseId } = useParams<{ courseId: string }>();
     const [accessSummary, setAccessSummary] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Get course slug from props or URL params
-    const courseSlug = propCourseSlug || searchParams.get('courseId');
+    // Get course slug from props, path params (:courseId), or query params (?courseId=)
+    const courseSlug = propCourseSlug || pathCourseId || searchParams.get('courseId');
 
     useEffect(() => {
         const checkAccess = async () => {
