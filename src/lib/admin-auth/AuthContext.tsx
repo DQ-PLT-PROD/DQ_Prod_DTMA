@@ -96,7 +96,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         bootstrap();
 
         const { data } = supabase.auth.onAuthStateChange(
-            async (_event: AuthChangeEvent, nextSession: Session | null) => {
+            (_event: AuthChangeEvent, nextSession: Session | null) => {
                 if (!isMounted) {
                     return;
                 }
@@ -105,14 +105,22 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                 setSession(nextSession);
                 setUser(nextUser);
 
-                if (nextUser?.id) {
+                if (!nextUser?.id) {
+                    setMembership(null);
+                    return;
+                }
+
+                // Avoid querying Supabase inside the auth callback while auth lock is held.
+                setTimeout(async () => {
+                    if (!isMounted) {
+                        return;
+                    }
+
                     const activeMembership = await getActiveMembership(nextUser.id);
                     if (isMounted) {
                         setMembership(activeMembership);
                     }
-                } else {
-                    setMembership(null);
-                }
+                }, 0);
             }
         );
 
