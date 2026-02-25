@@ -13,6 +13,8 @@ const NotFound = lazy(() => import("./features/app/pages/NotFound"));
 const PortalLayout = lazy(() => import("./features/portal/layout/PortalLayout").then(m => ({ default: m.PortalLayout })));
 const InProgressPage = lazy(() => import("./features/portal/pages/InProgressPage"));
 const CoursePlayerPage = lazy(() => import("./features/portal/pages/CoursePlayerPage"));
+const BadgesPage = lazy(() => import("./features/portal/pages/BadgesPage"));
+const BadgeSharePage = lazy(() => import("./features/portal/pages/BadgeSharePage"));
 const LearnerOnboarding = lazy(() => import("./features/dashboard/pages/onboarding"));
 const ProfilePage = lazy(() => import("./features/portal/pages/ProfilePage"));
 const QuizAuditPage = lazy(() => import("./features/portal/pages/QuizAuditPage").then(m => ({ default: m.QuizAuditPage })));
@@ -78,6 +80,7 @@ export function AppRouter() {
                 <Route path="onboarding" element={<LearnerOnboarding layout="portal" />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="my-courses/in-progress" element={<InProgressPage />} />
+                <Route path="badges" element={<BadgesPage />} />
                 <Route 
                   path="learning/:courseId" 
                   element={
@@ -87,6 +90,9 @@ export function AppRouter() {
                   } 
                 />
               </Route>
+
+              {/* Public Share Routes */}
+              <Route path="/badges/share/:token" element={<BadgeSharePage />} />
 
               <Route path="/portal/admin/audit-quizzes" element={<QuizAuditPage />} />
 

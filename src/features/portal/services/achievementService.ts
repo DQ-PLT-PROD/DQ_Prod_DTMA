@@ -6,11 +6,23 @@ export type BadgeKey = "first_quiz_completed" | "first_course_completed";
 const QUIZ_XP_AWARD = 100;
 const COURSE_XP_AWARD = 200;
 
+export interface BadgeDefinition {
+    id: string;
+    slug: string;
+    title: string;
+    description: string;
+    iconUrl?: string | null;
+    category?: string | null;
+    criteriaText?: string | null;
+}
+
 export interface UserBadge {
     id: string;
     userId: string;
-    badgeKey: BadgeKey | string;
-    awardedAt: string;
+    badgeId: string;
+    earnedAt: string;
+    shareToken?: string;
+    badge: BadgeDefinition;
 }
 
 export interface UserXp {
@@ -30,8 +42,18 @@ const getAchievementSupabase = () => getSupabaseForEnrollment();
 const mapBadgeRow = (row: any): UserBadge => ({
     id: row.id,
     userId: row.user_id,
-    badgeKey: row.badge_key,
-    awardedAt: row.awarded_at,
+    badgeId: row.badge_id,
+    earnedAt: row.earned_at,
+    shareToken: row.share_token,
+    badge: {
+        id: row.badges.id,
+        slug: row.badges.slug,
+        title: row.badges.title,
+        description: row.badges.description,
+        iconUrl: row.badges.icon_url,
+        category: row.badges.category,
+        criteriaText: row.badges.criteria_text,
+    }
 });
 
 const mapXpRow = (row: any): UserXp => ({
@@ -71,19 +93,32 @@ const upsertUserXp = async (userId: string, delta: number): Promise<UserXp | nul
     return data ? mapXpRow(data) : null;
 };
 
-const awardBadge = async (userId: string, badgeKey: BadgeKey): Promise<boolean> => {
+export const earnBadge = async (userId: string, badgeSlug: string, context?: { type: string; id: string }): Promise<boolean> => {
     if (!isSupabaseConfigured()) {
         return false;
     }
 
     const supabase = getAchievementSupabase();
-    const { error } = await supabase
-        .from("user_badges")
+
+    // First find the badge definition by slug
+    const { data: badgeDef, error: badgeError } = await (supabase.from("badges" as any) as any)
+        .select("id")
+        .eq("slug", badgeSlug)
+        .single();
+
+    if (badgeError || !badgeDef) {
+        console.error("Badge definition not found:", badgeSlug, badgeError);
+        return false;
+    }
+
+    const { error } = await (supabase.from("earned_badges" as any) as any)
         .upsert({
             user_id: userId,
-            badge_key: badgeKey,
-            awarded_at: new Date().toISOString(),
-        }, { onConflict: "user_id,badge_key" });
+            badge_id: (badgeDef as any).id,
+            earned_at: new Date().toISOString(),
+            context_type: context?.type,
+            context_id: context?.id,
+        }, { onConflict: "user_id,badge_id" });
 
     if (error) {
         console.error("Error awarding badge:", error);
@@ -98,9 +133,9 @@ export const recordQuizAttempt = async (
     courseSlug: string,
     scorePct: number,
     passed: boolean
-): Promise<void> => {
+): Promise<UserBadge | null> => {
     if (!isSupabaseConfigured()) {
-        return;
+        return null;
     }
 
     const supabase = getAchievementSupabase();
@@ -126,33 +161,50 @@ export const recordQuizAttempt = async (
 
     if (error) {
         console.error("Error recording quiz attempt:", error);
-        return;
+        return null;
     }
 
     if (!existing?.id) {
-        await awardBadge(userId, "first_quiz_completed");
-        await upsertUserXp(userId, QUIZ_XP_AWARD);
+        const success = await earnBadge(userId, "first_quiz_completed", { type: "course", id: courseSlug });
+        if (success) {
+            const badges = await getUserBadges(userId);
+            return badges.find(b => b.badge.slug === "first_quiz_completed") || null;
+        }
     }
+    return null;
 };
 
 export const recordCourseCompletion = async (
     userId: string,
     courseSlug: string
-): Promise<void> => {
+): Promise<UserBadge | null> => {
     if (!isSupabaseConfigured()) {
-        return;
+        return null;
     }
 
     const supabase = getAchievementSupabase();
-    const { data: existing } = await supabase
-        .from("user_badges")
+    
+    // Find the badge ID first
+    const { data: badgeDef } = await (supabase.from("badges" as any) as any)
+        .select("id")
+        .eq("slug", "first_course_completed")
+        .single();
+    
+    if (!badgeDef) return null;
+
+    const { data: existing } = await (supabase.from("earned_badges" as any) as any)
         .select("id")
         .eq("user_id", userId)
-        .eq("badge_key", "first_course_completed")
-        .single();
+        .eq("badge_id", (badgeDef as any).id)
+        .maybeSingle();
 
+    let earnedBadge: UserBadge | null = null;
     if (!existing?.id) {
-        await awardBadge(userId, "first_course_completed");
+        const success = await earnBadge(userId, "first_course_completed", { type: "course", id: courseSlug });
+        if (success) {
+            const badges = await getUserBadges(userId);
+            earnedBadge = badges.find(b => b.badge.slug === "first_course_completed") || null;
+        }
         await upsertUserXp(userId, COURSE_XP_AWARD);
     }
 
@@ -161,6 +213,8 @@ export const recordCourseCompletion = async (
         .update({ updated_at: new Date().toISOString() })
         .eq("user_id", userId)
         .eq("course_slug", courseSlug);
+        
+    return earnedBadge;
 };
 
 export const getUserBadges = async (userId: string): Promise<UserBadge[]> => {
@@ -169,17 +223,75 @@ export const getUserBadges = async (userId: string): Promise<UserBadge[]> => {
     }
 
     const supabase = getAchievementSupabase();
-    const { data, error } = await supabase
-        .from("user_badges")
-        .select("*")
+    const { data, error } = await (supabase.from("earned_badges" as any) as any)
+        .select(`
+            id,
+            user_id,
+            badge_id,
+            earned_at,
+            share_token,
+            badges (
+                id,
+                slug,
+                title,
+                description,
+                icon_url,
+                category,
+                criteria_text
+            )
+        `)
         .eq("user_id", userId)
-        .order("awarded_at", { ascending: false });
+        .order("earned_at", { ascending: false });
 
     if (error || !data) {
+        console.error("Error fetching user badges:", error);
         return [];
     }
 
     return data.map(mapBadgeRow);
+};
+
+export const getBadgeByShareToken = async (shareToken: string): Promise<UserBadge | null> => {
+    if (!isSupabaseConfigured()) {
+        return null;
+    }
+
+    const supabase = getAchievementSupabase();
+    const { data, error } = await (supabase.from("earned_badges" as any) as any)
+        .select(`
+            id,
+            user_id,
+            badge_id,
+            earned_at,
+            share_token,
+            badges (
+                id,
+                slug,
+                title,
+                description,
+                icon_url,
+                category,
+                criteria_text
+            ),
+            users (
+                name,
+                email
+            )
+        `)
+        .eq("share_token", shareToken)
+        .single();
+
+    if (error || !data) {
+        console.error("Error fetching badge by share token:", error);
+        return null;
+    }
+
+    const badge = mapBadgeRow(data);
+    // Add user info for public share page
+    return {
+        ...badge,
+        userName: (data.users as any)?.name || (data.users as any)?.email?.split("@")[0] || "Learner"
+    } as any;
 };
 
 export const getUserXp = async (userId: string): Promise<UserXp | null> => {
@@ -225,13 +337,3 @@ export const getXpLeaderboard = async (limit = 5): Promise<LeaderboardEntry[]> =
     }));
 };
 
-export const BADGE_DEFINITIONS: Record<BadgeKey, { title: string; description: string }> = {
-    first_quiz_completed: {
-        title: "First Quiz Completed",
-        description: "Completed your first course assessment.",
-    },
-    first_course_completed: {
-        title: "First Course Completed",
-        description: "Completed your first course end-to-end.",
-    },
-};
