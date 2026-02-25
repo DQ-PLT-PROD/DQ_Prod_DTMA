@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EditIcon, TrashIcon, PlusIcon, SearchIcon } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/dbClient';
+import { useAdminAuth } from '@/lib/admin-auth';
 import { Toast } from '@/components/ui/Toast';
 
 interface Lesson {
@@ -23,10 +24,14 @@ interface Lesson {
 
 export function LessonsSection() {
     const navigate = useNavigate();
+    const { ability } = useAdminAuth();
     const [lessons, setLessons] = useState<Lesson[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+    const canCreateLesson = ability.can('create', 'Lesson');
+    const canUpdateLesson = ability.can('update', 'Lesson');
+    const canDeleteLesson = ability.can('delete', 'Lesson');
 
     useEffect(() => {
         loadLessons();
@@ -63,6 +68,10 @@ export function LessonsSection() {
     };
 
     const handleDelete = async (id: string) => {
+        if (!canDeleteLesson) {
+            setToast({ type: 'error', message: 'You do not have permission to delete lessons.' });
+            return;
+        }
         if (!confirm('Are you sure you want to delete this lesson?')) return;
 
         try {
@@ -114,8 +123,15 @@ export function LessonsSection() {
                         </p>
                     </div>
                     <button
-                        onClick={() => navigate('/instructor/course-management/lesson/new')}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center text-sm font-medium transition-colors"
+                        onClick={() => {
+                            if (!canCreateLesson) {
+                                setToast({ type: 'error', message: 'You do not have permission to create lessons.' });
+                                return;
+                            }
+                            navigate('/instructor/course-management/lesson/new');
+                        }}
+                        disabled={!canCreateLesson}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Add Lesson
@@ -191,20 +207,24 @@ export function LessonsSection() {
                                     </td>
                                     <td className="px-4 py-3 text-right text-sm font-medium">
                                         <div className="flex items-center justify-end space-x-2">
-                                            <button
-                                                onClick={() => navigate(`/instructor/course-management/lesson/${lesson.id}`)}
-                                                className="text-blue-600 hover:text-blue-900"
-                                                title="Edit"
-                                            >
-                                                <EditIcon className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(lesson.id)}
-                                                className="text-red-600 hover:text-red-900"
-                                                title="Delete"
-                                            >
-                                                <TrashIcon className="h-4 w-4" />
-                                            </button>
+                                            {canUpdateLesson && (
+                                                <button
+                                                    onClick={() => navigate(`/instructor/course-management/lesson/${lesson.id}`)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                    title="Edit"
+                                                >
+                                                    <EditIcon className="h-4 w-4" />
+                                                </button>
+                                            )}
+                                            {canDeleteLesson && (
+                                                <button
+                                                    onClick={() => handleDelete(lesson.id)}
+                                                    className="text-red-600 hover:text-red-900"
+                                                    title="Delete"
+                                                >
+                                                    <TrashIcon className="h-4 w-4" />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

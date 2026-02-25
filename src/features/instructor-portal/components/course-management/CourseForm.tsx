@@ -10,6 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, SaveIcon, UploadIcon, Image as ImageIcon } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/dbClient';
 import { uploadLMSFile } from '../../lib/storage';
+import { useAdminAuth } from '@/lib/admin-auth';
 import { Toast } from '@/components/ui/Toast';
 import { MediaPickerModal } from '../../components/media/MediaPickerModal';
 import {
@@ -80,6 +81,7 @@ export function CourseForm() {
 
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [originalStatus, setOriginalStatus] = useState<'draft' | 'published' | 'archived'>('draft');
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
     const [highlightInput, setHighlightInput] = useState('');
     const [outcomeInput, setOutcomeInput] = useState('');
@@ -99,6 +101,14 @@ export function CourseForm() {
     const [customCategoryDescription, setCustomCategoryDescription] = useState('');
     const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
     const categoryDropdownRef = useRef<HTMLDivElement>(null);
+    const { ability } = useAdminAuth();
+    const canCreateCourse = ability.can('create', 'Course');
+    const canUpdateCourse = ability.can('update', 'Course');
+    const canPublishCourse = ability.can('publish', 'Course');
+    const canUnpublishCourse = ability.can('unpublish', 'Course');
+    const canCreateCategory = ability.can('create', 'Category');
+    const canUploadMedia = ability.can('upload', 'Media');
+    const canSubmit = isEditing ? canUpdateCourse : canCreateCourse;
 
     useEffect(() => {
         loadCategories();
@@ -191,6 +201,7 @@ export function CourseForm() {
                     excerpt: (row.short_description as string) ?? '',
                     faq: [],
                 });
+                setOriginalStatus(((row.status as string) ?? 'draft') as 'draft' | 'published' | 'archived');
             }
         } catch (error: unknown) {
             console.error('Error loading course:', error);
@@ -203,6 +214,11 @@ export function CourseForm() {
 
     // ... (handleImageUpload and others remain the same) ...
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!canUploadMedia) {
+            setToast({ type: 'error', message: 'You do not have permission to upload media.' });
+            e.target.value = '';
+            return;
+        }
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -300,8 +316,20 @@ export function CourseForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!canSubmit) {
+            setToast({ type: 'error', message: `You do not have permission to ${isEditing ? 'update' : 'create'} courses.` });
+            return;
+        }
         if (!formData.category?.trim()) {
             setToast({ type: 'error', message: 'Please select a category.' });
+            return;
+        }
+        if (formData.status === 'published' && !canPublishCourse) {
+            setToast({ type: 'error', message: 'You do not have permission to publish courses.' });
+            return;
+        }
+        if (isEditing && originalStatus === 'published' && formData.status !== 'published' && !canUnpublishCourse) {
+            setToast({ type: 'error', message: 'You do not have permission to unpublish courses.' });
             return;
         }
         setSaving(true);
@@ -359,6 +387,10 @@ export function CourseForm() {
         : '';
 
     const confirmCustomCategory = async () => {
+        if (!canCreateCategory) {
+            setToast({ type: 'error', message: 'You do not have permission to create categories.' });
+            return;
+        }
         const name = customCategoryInput.trim();
         if (!name) return;
         const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -507,7 +539,8 @@ export function CourseForm() {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleCategorySelect('custom_new')}
-                                                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--md-primary)] text-white hover:bg-[var(--md-primary-hover)] transition-colors"
+                                                        disabled={!canCreateCategory}
+                                                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--md-primary)] text-white hover:bg-[var(--md-primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
                                                         Add category
                                                     </button>
@@ -555,7 +588,8 @@ export function CourseForm() {
                                                         <button
                                                             type="button"
                                                             onClick={confirmCustomCategory}
-                                                            className="flex items-center px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                                            disabled={!canCreateCategory}
+                                                            className="flex items-center px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
                                                             <CheckIcon className="h-4 w-4 mr-1" />
                                                             Add category
@@ -686,10 +720,21 @@ export function CourseForm() {
                                     required
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
                                     value={formData.status}
-                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                    onChange={(e) => {
+                                        const nextStatus = e.target.value;
+                                        if (nextStatus === 'published' && !canPublishCourse) {
+                                            setToast({ type: 'error', message: 'You do not have permission to publish courses.' });
+                                            return;
+                                        }
+                                        if (formData.status === 'published' && nextStatus !== 'published' && !canUnpublishCourse) {
+                                            setToast({ type: 'error', message: 'You do not have permission to unpublish courses.' });
+                                            return;
+                                        }
+                                        setFormData({ ...formData, status: nextStatus });
+                                    }}
                                 >
                                     <option value="draft">Draft</option>
-                                    <option value="published">Published</option>
+                                    <option value="published" disabled={!canPublishCourse}>Published</option>
                                     <option value="archived">Archived</option>
                                 </select>
                             </div>
@@ -705,7 +750,7 @@ export function CourseForm() {
                                             onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                                             placeholder="https://..."
                                         />
-                                        <label className={`px-4 py-2 rounded-lg cursor-pointer flex items-center transition-colors ${uploadingImage
+                                        <label className={`px-4 py-2 rounded-lg cursor-pointer flex items-center transition-colors ${(uploadingImage || !canUploadMedia)
                                             ? 'bg-[var(--md-surface-variant)] text-[var(--md-on-surface-variant)]'
                                             : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                                             }`}>
@@ -716,13 +761,20 @@ export function CourseForm() {
                                                 accept="image/*"
                                                 className="hidden"
                                                 onChange={handleImageUpload}
-                                                disabled={uploadingImage}
+                                                disabled={uploadingImage || !canUploadMedia}
                                             />
                                         </label>
                                         <button
                                             type="button"
-                                            onClick={() => setShowMediaPicker(true)}
-                                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center transition-colors"
+                                            onClick={() => {
+                                                if (!canUploadMedia) {
+                                                    setToast({ type: 'error', message: 'You do not have permission to upload media.' });
+                                                    return;
+                                                }
+                                                setShowMediaPicker(true);
+                                            }}
+                                            disabled={!canUploadMedia}
+                                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             <ImageIcon className="h-4 w-4 mr-2" />
                                             Library
@@ -858,7 +910,7 @@ export function CourseForm() {
                         </button>
                         <button
                             type="submit"
-                            disabled={saving}
+                            disabled={saving || !canSubmit}
                             className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)] disabled:opacity-50 flex items-center"
                         >
                             <SaveIcon className="h-4 w-4 mr-2" />

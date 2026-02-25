@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EditIcon, TrashIcon, PlusIcon, SearchIcon, BookOpenIcon } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/dbClient';
+import { useAdminAuth } from '@/lib/admin-auth';
 import { Toast } from '@/components/ui/Toast';
 
 interface Module {
@@ -17,10 +18,14 @@ interface Module {
 
 export function ModulesSection() {
     const navigate = useNavigate();
+    const { ability } = useAdminAuth();
     const [modules, setModules] = useState<Module[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+    const canCreateModule = ability.can('create', 'Module');
+    const canUpdateModule = ability.can('update', 'Module');
+    const canDeleteModule = ability.can('delete', 'Module');
 
     useEffect(() => {
         loadModules();
@@ -74,6 +79,10 @@ export function ModulesSection() {
     };
 
     const handleDelete = async (id: string) => {
+        if (!canDeleteModule) {
+            setToast({ type: 'error', message: 'You do not have permission to delete modules.' });
+            return;
+        }
         if (!confirm('Are you sure you want to delete this module?')) return;
 
         try {
@@ -125,8 +134,15 @@ export function ModulesSection() {
                         </p>
                     </div>
                     <button
-                        onClick={() => navigate('/instructor/course-management/module/new')}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center text-sm font-medium transition-colors"
+                        onClick={() => {
+                            if (!canCreateModule) {
+                                setToast({ type: 'error', message: 'You do not have permission to create modules.' });
+                                return;
+                            }
+                            navigate('/instructor/course-management/module/new');
+                        }}
+                        disabled={!canCreateModule}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Add Module
@@ -179,20 +195,24 @@ export function ModulesSection() {
                                     <td className="px-4 py-3 text-sm text-gray-700">{module.order_index}</td>
                                     <td className="px-4 py-3 text-right text-sm font-medium">
                                         <div className="flex items-center justify-end space-x-2">
-                                            <button
-                                                onClick={() => navigate(`/instructor/course-management/module/${module.id}`)}
-                                                className="text-blue-600 hover:text-blue-900"
-                                                title="Edit"
-                                            >
-                                                <EditIcon className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(module.id)}
-                                                className="text-red-600 hover:text-red-900"
-                                                title="Delete"
-                                            >
-                                                <TrashIcon className="h-4 w-4" />
-                                            </button>
+                                            {canUpdateModule && (
+                                                <button
+                                                    onClick={() => navigate(`/instructor/course-management/module/${module.id}`)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                    title="Edit"
+                                                >
+                                                    <EditIcon className="h-4 w-4" />
+                                                </button>
+                                            )}
+                                            {canDeleteModule && (
+                                                <button
+                                                    onClick={() => handleDelete(module.id)}
+                                                    className="text-red-600 hover:text-red-900"
+                                                    title="Delete"
+                                                >
+                                                    <TrashIcon className="h-4 w-4" />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

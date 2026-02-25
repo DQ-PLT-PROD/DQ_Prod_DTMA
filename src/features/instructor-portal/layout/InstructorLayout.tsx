@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { ProfileDropdown } from '@/components/Header/ProfileDropdown';
 import { useAuth } from '@/lib/auth';
+import { useAdminAuthOptional } from '@/lib/admin-auth';
 
 const navItems = [
     {
@@ -55,6 +56,7 @@ export function InstructorLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 1024);
     const location = useLocation();
     const { logout } = useAuth();
+    const adminAuth = useAdminAuthOptional();
     const navigate = useNavigate();
 
     // Close sidebar on mobile when navigating
@@ -228,7 +230,11 @@ export function InstructorLayout() {
                     <div className="p-4 border-t border-gray-200">
                         <button
                             onClick={() => {
-                                logout();
+                                if (adminAuth?.session) {
+                                    adminAuth.signOut().then(() => navigate('/admin/login', { replace: true }));
+                                } else {
+                                    logout();
+                                }
                                 setSidebarOpen(false);
                             }}
                             className="flex items-center gap-3 w-full px-3 py-2.5 text-red-600 bg-white border border-red-100 rounded-xl shadow-sm hover:bg-red-50 transition-colors font-medium"

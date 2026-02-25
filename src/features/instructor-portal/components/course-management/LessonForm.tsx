@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, SaveIcon, LinkIcon } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/dbClient';
+import { useAdminAuth } from '@/lib/admin-auth';
 import { Toast } from '@/components/ui/Toast';
 
 interface CourseOption {
@@ -20,6 +21,7 @@ export function LessonForm() {
     const navigate = useNavigate();
     const { id } = useParams();
     const isEditing = Boolean(id);
+    const { ability } = useAdminAuth();
 
     const [loading, setLoading] = useState(false);
     const [courses, setCourses] = useState<CourseOption[]>([]);
@@ -39,6 +41,9 @@ export function LessonForm() {
     });
 
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+    const canCreateLesson = ability.can('create', 'Lesson');
+    const canUpdateLesson = ability.can('update', 'Lesson');
+    const canSubmit = isEditing ? canUpdateLesson : canCreateLesson;
 
     useEffect(() => {
         loadDependencyData();
@@ -121,8 +126,12 @@ export function LessonForm() {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        if (!canSubmit) {
+            setToast({ type: 'error', message: `You do not have permission to ${isEditing ? 'update' : 'create'} lessons.` });
+            return;
+        }
         if (!formData.title || !formData.course_slug) {
             setToast({ type: 'error', message: 'Title and Course are required' });
             return;
@@ -191,7 +200,7 @@ export function LessonForm() {
                 </div>
                 <button
                     onClick={handleSubmit}
-                    disabled={loading}
+                    disabled={loading || !canSubmit}
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center shadow-sm disabled:opacity-50"
                 >
                     <SaveIcon className="h-4 w-4 mr-2" />

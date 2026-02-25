@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/lib/auth";
-import { RoleSwitcherProvider } from "@/features/instructor-portal";
+import { AdminAuthProvider } from "@/lib/admin-auth";
 import { App } from "./App";
 
 // Lazy load page components for code splitting
@@ -9,6 +9,7 @@ const CourseCatalogPage = lazy(() => import("./features/courses/pages/CourseCata
 const CourseDetailsPage = lazy(() => import("./features/courses/pages/CourseDetailsPage"));
 const DashboardRouter = lazy(() => import("./features/dashboard/pages/DashboardRouter"));
 const ProtectedRoute = lazy(() => import("@/components/auth/ProtectedRoute"));
+const AdminProtectedRoute = lazy(() => import("@/components/auth/AdminProtectedRoute"));
 const NotFound = lazy(() => import("./features/app/pages/NotFound"));
 const PortalLayout = lazy(() => import("./features/portal/layout/PortalLayout").then(m => ({ default: m.PortalLayout })));
 const InProgressPage = lazy(() => import("./features/portal/pages/InProgressPage"));
@@ -20,6 +21,8 @@ const ComingSoon = lazy(() => import("./features/app/pages/ComingSoon").then(m =
 const AuthDebugPanel = lazy(() => import("@/components/auth/AuthDebugPanel").then(m => ({ default: m.AuthDebugPanel })));
 const EnrollmentGuard = lazy(() => import("./features/courses/components/guards/EnrollmentGuard").then(m => ({ default: m.EnrollmentGuard })));
 const PaymentSuccessHandler = lazy(() => import("./features/courses/components/payment/PaymentSuccessHandler").then(m => ({ default: m.PaymentSuccessHandler })));
+const AdminLoginPage = lazy(() => import("./features/admin-auth/pages/AdminLoginPage"));
+const AdminLogoutPage = lazy(() => import("./features/admin-auth/pages/AdminLogoutPage"));
 
 // Instructor Portal lazy imports
 const InstructorLayout = lazy(() => import("./features/instructor-portal/layout/InstructorLayout").then(m => ({ default: m.InstructorLayout })));
@@ -45,9 +48,9 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <RoleSwitcherProvider>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
+        <AdminAuthProvider>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
               <Route path="/" element={<App />} />
 
               {/* Course routes */}
@@ -99,13 +102,17 @@ export function AppRouter() {
                 </div>
               } />
 
+              {/* Admin Auth */}
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin/logout" element={<AdminLogoutPage />} />
+
               {/* Instructor Portal */}
               <Route
                 path="/instructor"
                 element={
-                  <ProtectedRoute>
+                  <AdminProtectedRoute>
                     <InstructorLayout />
-                  </ProtectedRoute>
+                  </AdminProtectedRoute>
                 }
               >
                 <Route index element={<Navigate to="dashboard" replace />} />
@@ -140,9 +147,9 @@ export function AppRouter() {
 
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/404" replace />} />
-            </Routes>
-          </Suspense>
-        </RoleSwitcherProvider>
+              </Routes>
+            </Suspense>
+        </AdminAuthProvider>
       </AuthProvider>
     </BrowserRouter>
   );

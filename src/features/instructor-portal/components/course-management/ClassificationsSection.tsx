@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { COURSE_CATEGORIES } from '../../../../constants/navigation';
 import { getSupabaseClient } from '../../lib/dbClient';
+import { useAdminAuth } from '@/lib/admin-auth';
 import { TagIcon, AlertCircleIcon, CheckCircleIcon, BarChart2Icon, PlusIcon, Edit2Icon, TrashIcon, X, SaveIcon } from 'lucide-react';
 import { Toast } from '@/components/ui/Toast';
 
@@ -25,6 +26,7 @@ export function ClassificationsSection() {
 }
 
 function CategoriesSubsection() {
+    const { ability } = useAdminAuth();
     const [categories, setCategories] = useState<CategoryInUse[]>([]);
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
@@ -35,6 +37,9 @@ function CategoriesSubsection() {
     const [categoryName, setCategoryName] = useState('');
     const [categoryDescription, setCategoryDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const canCreateCategory = ability.can('create', 'Category');
+    const canUpdateCategory = ability.can('update', 'Category');
+    const canDeleteCategory = ability.can('delete', 'Category');
 
     const slugToIcon = Object.fromEntries(COURSE_CATEGORIES.map((c) => [c.slug, c.icon]));
 
@@ -107,6 +112,10 @@ function CategoriesSubsection() {
     };
 
     const handleDeleteClick = async (category: CategoryInUse) => {
+        if (!canDeleteCategory) {
+            setToast({ type: 'error', message: 'You do not have permission to delete categories.' });
+            return;
+        }
         const message =
             category.count > 0
                 ? `Delete "${category.title}"? ${category.count} course(s) will have their category cleared.`
@@ -127,6 +136,14 @@ function CategoriesSubsection() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (editingCategory && !canUpdateCategory) {
+            setToast({ type: 'error', message: 'You do not have permission to update categories.' });
+            return;
+        }
+        if (!editingCategory && !canCreateCategory) {
+            setToast({ type: 'error', message: 'You do not have permission to create categories.' });
+            return;
+        }
 
         if (!categoryName.trim()) {
             setToast({ type: 'error', message: 'Category name is required' });
@@ -239,8 +256,15 @@ function CategoriesSubsection() {
                     </div>
 
                     <button
-                        onClick={handleAddClick}
-                        className="flex items-center px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-hover)] text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
+                        onClick={() => {
+                            if (!canCreateCategory) {
+                                setToast({ type: 'error', message: 'You do not have permission to create categories.' });
+                                return;
+                            }
+                            handleAddClick();
+                        }}
+                        disabled={!canCreateCategory}
+                        className="flex items-center px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-hover)] text-white rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <PlusIcon className="h-4 w-4 mr-1.5" />
                         Add New
@@ -271,6 +295,7 @@ function CategoriesSubsection() {
                                 <div className="flex items-center gap-1 shrink-0">
                                     <button
                                         onClick={() => handleEditClick(cat)}
+                                        disabled={!canUpdateCategory}
                                         className="text-gray-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors"
                                         title="Edit Category"
                                     >
@@ -278,6 +303,7 @@ function CategoriesSubsection() {
                                     </button>
                                     <button
                                         onClick={() => handleDeleteClick(cat)}
+                                        disabled={!canDeleteCategory}
                                         className="text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50 transition-colors"
                                         title="Delete Category"
                                     >
@@ -295,8 +321,15 @@ function CategoriesSubsection() {
                             Add a category to get started. Categories will appear in the dropdown when creating or editing courses.
                         </p>
                         <button
-                            onClick={handleAddClick}
-                            className="mt-4 px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-hover)] text-white rounded-lg text-sm font-medium shadow-sm transition-colors"
+                            onClick={() => {
+                                if (!canCreateCategory) {
+                                    setToast({ type: 'error', message: 'You do not have permission to create categories.' });
+                                    return;
+                                }
+                                handleAddClick();
+                            }}
+                            disabled={!canCreateCategory}
+                            className="mt-4 px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-hover)] text-white rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <PlusIcon className="h-4 w-4 inline mr-1.5" />
                             Add New Category
@@ -376,7 +409,11 @@ function CategoriesSubsection() {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={submitting || !categoryName.trim()}
+                                    disabled={
+                                        submitting ||
+                                        !categoryName.trim() ||
+                                        (editingCategory ? !canUpdateCategory : !canCreateCategory)
+                                    }
                                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm flex items-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
                                     {submitting ? (

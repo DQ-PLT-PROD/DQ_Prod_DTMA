@@ -19,6 +19,7 @@
         "@apollo/client": "^4.0.7",
         "@azure/msal-browser": "^4.23.0",
         "@azure/msal-react": "^3.0.19",
+        "@casl/ability": "^6.8.0",
         "@mendable/firecrawl-js": "^4.11.5",
         "@supabase/supabase-js": "^2.58.0",
         "@tanstack/react-virtual": "^3.13.18",
