@@ -409,6 +409,149 @@ const lessonAccessHandlers = {
   }
 }
 
+// Saved Courses API handlers
+const savedCoursesHandlers = {
+  // GET /api/saved-courses — list saved course slugs for authenticated user
+  async listSavedCourses(req, res) {
+    const authenticatedUser = getCurrentUser(req)
+    if (!authenticatedUser) {
+      return sendError(res, 401, 'Authentication required')
+    }
+
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      const azureUserId = authenticatedUser.azureUserId
+
+      // Resolve Azure OID → DB UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', azureUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        // User doesn't exist yet — return empty list
+        return sendJSON(res, 200, { savedCourseIds: [] })
+      }
+
+      const { data, error } = await supabaseClient
+        .from('saved_courses')
+        .select('course_id')
+        .eq('user_id', userData.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching saved courses:', error)
+        return sendError(res, 500, 'Failed to fetch saved courses')
+      }
+
+      const savedCourseIds = (data || []).map(row => row.course_id)
+      return sendJSON(res, 200, { savedCourseIds })
+    } catch (err) {
+      console.error('Error listing saved courses:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  },
+
+  // POST /api/saved-courses — save a course { courseId }
+  async saveCourse(req, res) {
+    const authenticatedUser = getCurrentUser(req)
+    if (!authenticatedUser) {
+      return sendError(res, 401, 'Authentication required')
+    }
+
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      const body = await parseBody(req)
+      const { courseId } = body
+
+      if (!courseId) {
+        return sendError(res, 400, 'Missing required field: courseId')
+      }
+
+      const azureUserId = authenticatedUser.azureUserId
+
+      // Resolve Azure OID → DB UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', azureUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendError(res, 404, 'User not found')
+      }
+
+      // Upsert to handle duplicate gracefully
+      const { error } = await supabaseClient
+        .from('saved_courses')
+        .upsert(
+          { user_id: userData.id, course_id: courseId },
+          { onConflict: 'user_id,course_id' }
+        )
+
+      if (error) {
+        console.error('Error saving course:', error)
+        return sendError(res, 500, 'Failed to save course')
+      }
+
+      return sendJSON(res, 200, { saved: true, courseId })
+    } catch (err) {
+      console.error('Error saving course:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  },
+
+  // DELETE /api/saved-courses/:courseId — unsave a course
+  async unsaveCourse(req, res, courseId) {
+    const authenticatedUser = getCurrentUser(req)
+    if (!authenticatedUser) {
+      return sendError(res, 401, 'Authentication required')
+    }
+
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      const azureUserId = authenticatedUser.azureUserId
+
+      // Resolve Azure OID → DB UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', azureUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendError(res, 404, 'User not found')
+      }
+
+      const { error } = await supabaseClient
+        .from('saved_courses')
+        .delete()
+        .eq('user_id', userData.id)
+        .eq('course_id', courseId)
+
+      if (error) {
+        console.error('Error unsaving course:', error)
+        return sendError(res, 500, 'Failed to unsave course')
+      }
+
+      return sendJSON(res, 200, { saved: false, courseId })
+    } catch (err) {
+      console.error('Error unsaving course:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  }
+}
+
 // Enrollment API handlers
 const enrollmentHandlers = {
   // GET /api/enrollment/status/:courseSlug?userId=xxx
@@ -1060,6 +1203,36 @@ export const requestHandler = async (req, res) => {
       return sendError(res, 404, 'Lesson endpoint not found')
     }
 
+    // Saved Courses API routes (authentication required)
+    if (pathname.startsWith('/api/saved-courses')) {
+      // Apply authentication middleware
+      try {
+        await applyMiddleware(authenticateUser({ required: true }), req, res);
+      } catch (authError) {
+        console.error('❌ Authentication failed:', authError);
+        return; // Response already sent by middleware
+      }
+
+      const pathParts = pathname.split('/')
+
+      // GET /api/saved-courses — list saved courses
+      if (req.method === 'GET' && !pathParts[3]) {
+        return await savedCoursesHandlers.listSavedCourses(req, res)
+      }
+
+      // POST /api/saved-courses — save a course
+      if (req.method === 'POST' && !pathParts[3]) {
+        return await savedCoursesHandlers.saveCourse(req, res)
+      }
+
+      // DELETE /api/saved-courses/:courseId — unsave a course
+      if (req.method === 'DELETE' && pathParts[3]) {
+        return await savedCoursesHandlers.unsaveCourse(req, res, pathParts[3])
+      }
+
+      return sendError(res, 404, 'Saved courses endpoint not found')
+    }
+
     // Enrollment API routes (authentication required)
     if (pathname.startsWith('/api/enrollment/')) {
       // Apply authentication middleware
@@ -1173,6 +1346,11 @@ if (isDirectExecution) {
     console.log(`   GET  /api/lessons/course-access/:courseSlug - Get course access summary`)
     console.log(`   GET  /api/lessons/content/:courseSlug/:lessonId - Get lesson content`)
     console.log(`   POST /api/lessons/progress/:courseSlug/:lessonId - Update lesson progress`)
+    console.log(``)
+    console.log(`   🔖 Saved Courses Endpoints:`)
+    console.log(`   GET    /api/saved-courses - List saved course slugs`)
+    console.log(`   POST   /api/saved-courses - Save a course`)
+    console.log(`   DELETE /api/saved-courses/:courseId - Unsave a course`)
     console.log(``)
     console.log(`   🎓 Enrollment Endpoints:`)
     console.log(`   GET  /api/enrollment/status/:courseSlug?userId=xxx - Check enrollment status`)

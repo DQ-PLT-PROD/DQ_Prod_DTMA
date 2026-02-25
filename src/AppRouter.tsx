@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/lib/auth";
 import { RoleSwitcherProvider } from "@/features/instructor-portal";
+import { SavedCoursesProvider } from "@/features/courses/context/SavedCoursesContext";
 import { App } from "./App";
 
 // Lazy load page components for code splitting
@@ -12,6 +13,7 @@ const ProtectedRoute = lazy(() => import("@/components/auth/ProtectedRoute"));
 const NotFound = lazy(() => import("./features/app/pages/NotFound"));
 const PortalLayout = lazy(() => import("./features/portal/layout/PortalLayout").then(m => ({ default: m.PortalLayout })));
 const InProgressPage = lazy(() => import("./features/portal/pages/InProgressPage"));
+const SavedCoursesPage = lazy(() => import("./features/portal/pages/SavedCoursesPage"));
 const CoursePlayerPage = lazy(() => import("./features/portal/pages/CoursePlayerPage"));
 const LearnerOnboarding = lazy(() => import("./features/dashboard/pages/onboarding"));
 const ProfilePage = lazy(() => import("./features/portal/pages/ProfilePage"));
@@ -46,6 +48,7 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <SavedCoursesProvider>
         <RoleSwitcherProvider>
           <Suspense fallback={<PageLoader />}>
             <Routes>
@@ -78,6 +81,7 @@ export function AppRouter() {
                 <Route path="onboarding" element={<LearnerOnboarding layout="portal" />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="my-courses/in-progress" element={<InProgressPage />} />
+                <Route path="saved" element={<SavedCoursesPage />} />
                 <Route 
                   path="learning/:courseId" 
                   element={
@@ -146,6 +150,7 @@ export function AppRouter() {
             </Routes>
           </Suspense>
         </RoleSwitcherProvider>
+        </SavedCoursesProvider>
       </AuthProvider>
     </BrowserRouter>
   );
