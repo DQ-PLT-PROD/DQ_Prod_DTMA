@@ -1,5 +1,7 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "path";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -8,19 +10,32 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
   return {
-    plugins: [react()],
-    base: '/dtma/',
-    server: {
-      port: 3000,
-      strictPort: true,
-      host: "localhost",
-    proxy: {
-      "/api": {
-        target: "http://localhost:3001",
-        changeOrigin: true,
-        secure: false,
+    plugins: [
+      react(),
+      // Bundle analyzer - only in analyze mode
+      mode === 'analyze' && visualizer({
+        open: true,
+        filename: 'dist/stats.html',
+        gzipSize: true,
+        brotliSize: true,
+      }),
+    ].filter(Boolean),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
       },
-    }
+    },
+    server: {
+      port: 5173,
+      strictPort: false,
+      host: "localhost",
+      proxy: {
+        "/api": {
+          target: "http://localhost:3001",
+          changeOrigin: true,
+          secure: false,
+        },
+      }
     },
     preview: {
       port: 3000,
@@ -29,9 +44,23 @@ export default defineConfig(({ mode }) => {
     },
     // Load environment variables from .env file
     envDir: ".",
-    envPrefix: ["VITE_", "STORAGE_", "CONTAINER_", "AZURE_", "SAS_"],
-    build:{
-      chunkSizeWarningLimit:3000,
+    envPrefix: ["VITE_"],
+    build: {
+      chunkSizeWarningLimit: 3000,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Vendor chunks for better caching
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'azure-vendor': ['@azure/msal-browser', '@azure/msal-react'],
+            'apollo-vendor': ['@apollo/client', 'graphql'],
+            'supabase-vendor': ['@supabase/supabase-js'],
+            'ui-vendor': ['lucide-react', 'clsx'],
+          },
+        },
+      },
+      // Enable source maps for production debugging (optional)
+      sourcemap: mode === 'production' ? false : true,
     }
   };
 });

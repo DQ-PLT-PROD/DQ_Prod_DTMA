@@ -1,107 +1,69 @@
-pr: 
-  branches:
-    include:
-      - main
-trigger: 
-  branches:
-    include:
-      - main
+# trigger:
+#   branches:
+#     include:
+#       - Develop  # Trigger the pipeline on updates to the 'develop' branch
+
+# ✅ Use pipeline run button (manual UI or API)
+pr: none
+trigger: none  # 🔒 Explicitly disables automatic CI triggers
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'  # Use an Ubuntu-based agent for the pipeline.
 
 variables:
-- group: ovh-registry-secrets
+- group: 'ovh-registry-secrets'
 - name: imageName
-  value: frontend-prod
+  value: 'frontend'  # Define the image name
 - name: registry
-  value: u4c2j2w9.c1.gra9.container-registry.ovh.net/dtma
+  value: 'u4c2j2w9.c1.gra9.container-registry.ovh.net/kf'  # OVH Container Registry URL
 - name: imageTag
-  value: prod-$(Build.BuildId)
-- name: namespace
-  value: dtma
-
-stages:
-- stage: Build
-  displayName: Build and Push Image
-  jobs:
-  - job: Build
-    displayName: Docker Build
-    steps:
-    - checkout: self
-
-   # 1️ Build & Push Image
-    - task: Docker@2
-      displayName: Build & Push Frontend
-      inputs:
-        containerRegistry: OVH-Registry
-        repository: dtma/frontend-prod
-        command: buildAndPush
-        Dockerfile: Dockerfile
-        tags: |
-          $(imageTag)
-
-    # 2️ Install Trivy
-    - script: |
-        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
-        trivy --version
-      displayName: Install Trivy.
-
-    # 3️ Trivy Image Scan (FAILS BUILD on High/Critical)
-    - script: |
-        trivy image \
-          --exit-code 1 \
-          --severity HIGH,CRITICAL \
-          --no-progress \
-          $(registry)/$(imageName):$(imageTag)
-      displayName: Trivy Image Scan.
+  value: 'staging-$(Build.BuildId)'  # Use the build ID as the image tag
 
 
-- stage: Deploy
-  displayName: Deploy to OVH Kubernetes
-  dependsOn: Build
-  condition: succeeded()
+steps:
+# 1. Building Vendure Image
+- task: Docker@2
+  inputs:
+    containerRegistry: 'OVH -Registry'
+    repository: 'kf/frontend'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    buildContext: '**'
+    tags: |
+      $(imageTag)
 
-  jobs:
-  - job: Deploy
-    displayName: Kubernetes Deploy
-    steps:
-  # 1️ Deploy new image
-    - task: KubernetesManifest@1
-      displayName: Deploy Frontend
-      inputs:
-        action: deploy
-        kubernetesServiceConnection: OVH-Prod-Kubeconfig
-        namespace: $(namespace)
-        manifests: |
-          k8s/overlays/Production/deployment.yaml
-        containers: |
-          $(registry)/$(imageName):$(imageTag)
+# 2. Setting Image with Build Id and creating secret.
+- script: |
+    echo "Injecting image tag: staging-$(Build.BuildId)"
+    sed -i "s|image: .*$|image: $(registry)/$(imageName):$(imageTag)|" k8s/overlays/staging/deployment.yaml
+  displayName: 'Setting Image with BuildId'
 
-  # 2️ Verify rollout (FAILS job if rollout fails)
-    - task: Kubernetes@1
-      displayName: Verify Rollout
-      inputs:
-        connectionType: Kubernetes service connection
-        kubernetesServiceEndpoint: OVH-Test-Kubeconfig
-        namespace: $(namespace)
-        command: rollout
-        arguments: status deployment/dtma-frontend --timeout=120s
+# 3. Download the Kubeconfig File from Azure DevOps Secure Files
+- task: DownloadSecureFile@1
+  displayName: 'GetKubeconfig'
+  name: GetKubeconfig
+  inputs:
+    secureFile: 'kubeconfig-kf.yml'  # Use the name of your Kubeconfig secure file in Azure DevOps
+  
+#4. Authenticating Kubernetes.'
+- script: |
+      echo "Authenticating Kubernetes"
+      mkdir -p ~/.kube
+      cp $KUBECONFIG_FILE ~/.kube/config 
+      kubectl config use-context kubernetes-admin@khalifa-fund-cluster
+      kubectl config get-contexts
 
-  # 3️ Rollback on failure
-    - task: Kubernetes@1
-      displayName: Rollback Deployment
-      condition: failed()
-      inputs:
-        connectionType: Kubernetes service connection
-        kubernetesServiceEndpoint: OVH-Test-Kubeconfig
-        namespace: $(namespace)
-        command: rollout
-        arguments: undo deployment/dtma-frontend
+  env:
+    KUBECONFIG_FILE: $(GetKubeconfig.secureFilePath)
+  displayName: 'Authenticating Kubernetes'
 
-  # 4️ Explicit failure marker (optional but clear)
-    - script: |
-        echo "Deployment failed. Rollback was executed."
-        exit 1
-      condition: failed()
-      displayName: Mark Deployment as Failed
+# 5. Deploying Image to OVH
+- task: Kubernetes@1
+  displayName: 'Deploy to OVH Kubernetes Cluster'
+  inputs:
+    connectionType: 'Kubernetes service connection'
+    kubernetesServiceEndpoint: 'Kubernetes-kf'  # Use your secure file path or environment variable
+    command: 'apply'
+    arguments: '-f k8s/overlays/staging/deployment.yaml'
+    # Optional: Add namespace if needed (default or specify another)
+    namespace: 'staging'

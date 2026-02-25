@@ -1,0 +1,310 @@
+# DTM Instructor Portal — Feature Specification
+
+**Owner**: *Dev TBD*  
+**Auth Model**: Azure Entra ID (MSAL)  
+**Data Source**: Supabase (all data **must be wired**, no hardcoded overrides)
+
+---
+
+## 0) Mission
+
+Deliver a fully functional **Instructor Portal** for DTMA that enables content creators to:
+1. View key content metrics at a glance
+2. Manage course classifications
+3. Author courses, modules, and lessons
+4. Upload and manage media assets
+
+**Primary Constraint**: All views must fetch data from Supabase. Static placeholders are only acceptable for features explicitly marked "Coming Soon."
+
+---
+
+## 1) Feature I1 — Dashboard (Home)
+
+**Route**: `/instructor`
+
+### 1.1 Objective
+Provide an at-a-glance summary of the instructor's content.
+
+### 1.2 In Scope
+- Metrics grid (wired to Supabase)
+- Recent activity / "Continue Editing" section
+- Quick action shortcuts
+
+### 1.3 Out of Scope
+- Advanced analytics
+- Multi-instructor views
+
+### 1.4 Functional Requirements
+
+**FR1: Metrics Grid**
+| Metric | Data Source | Status |
+|--------|-------------|--------|
+| Active Courses | `lms_courses` WHERE `status = 'published'` | Wired |
+| Draft Courses | `lms_courses` WHERE `status = 'draft'` | Wired |
+| Active Students | `user_enrollments` count | Coming Soon |
+| Completion Rate | TBD calculation | Coming Soon |
+
+- Draft Courses: Clicking opens filtered view or navigates to Courses tab with filter.
+
+**FR2: Recent Activity / Continue Editing**
+- Display 3–5 most recently modified items (Courses, Modules, Lessons).
+- Query: Fetch top 5 by `updated_at` DESC from each table, merge & sort.
+- Each item shows:
+  - Icon (type indicator)
+  - Title
+  - Context (e.g., "Draft • 2h ago")
+- Action: Click navigates to **Edit** page.
+
+**FR3: Quick Actions**
+- "Create Course" → `/instructor/course-management/course/new`
+- "Manage Courses" → `/instructor/course-management?tab=courses`
+
+### 1.5 Acceptance Criteria
+- [ ] Metrics display live data from Supabase.
+- [ ] "Coming Soon" metrics are visually indicated (badge or greyed out).
+- [ ] Recent Activity section shows real items.
+
+---
+
+## 2) Feature I2 — Course Management (Tabbed Interface)
+
+**Route**: `/instructor/course-management`
+
+### 2.1 Objective
+Centralize all content authoring: Courses, Modules, Lessons, Classifications, and Media.
+
+### 2.2 Critical Design Rules
+1. **CTAs**: All "Add New" or primary action buttons **must reside within the tab content**, not in the global page header.
+2. **Tab Order**: Courses → Modules → Lessons → Classifications → Media Library.
+
+### 2.3 Current Tab Order (to be corrected)
+```
+Classifications | Courses | Lessons | Modules | Learning Paths
+```
+**Required Tab Order:**
+```
+Courses | Modules | Lessons | Classifications | Media Library
+```
+
+---
+
+### 2.4 Tab: Courses
+
+**Order**: 1st
+
+#### 2.4.1 Objective
+List and manage courses (Published, Draft, Archived).
+
+#### 2.4.2 Functional Requirements
+
+**FR1: List View**
+- Show all courses from `lms_courses`.
+- Columns: Title, Category, Status, Last Updated.
+- Action buttons: Edit, Delete.
+
+**FR2: Course Editor Form**
+- Route: `/instructor/course-management/course/:id`
+- **Fields to REMOVE from current form:**
+  - Provider
+  - Delivery Mode
+  - Course Type
+  - Department
+  - Audience
+  - SFI / Level Code
+- **Fields to RETAIN:**
+  - Title (required)
+  - Slug (auto-generated from title)
+  - Description
+  - Category (from Classifications)
+  - Status (Draft / Published)
+  - Hero Image (via Media Picker)
+  - Intro Video (via Media Picker)
+  - Highlights (list)
+  - Outcomes (list)
+
+**FR3: Auto-Duration**
+- Duration field must be **read-only / auto-calculated**.
+- Calculation: Sum of `estimated_duration_minutes` from all associated lessons.
+- If no lessons, display "0 min".
+
+**FR4: CTA Placement**
+- "Add Course" button inside the Courses tab content area, not page header.
+
+#### 2.4.3 Acceptance Criteria
+- [ ] Courses list pulls from `lms_courses`.
+- [ ] Form does NOT show Provider, Delivery Mode, Course Type, Department, Audience, Level Code.
+- [ ] Duration is calculated, not editable.
+
+---
+
+### 2.5 Tab: Modules
+
+**Order**: 2nd
+
+#### 2.5.1 Objective
+Manage reusable modules that group lessons.
+
+#### 2.5.2 Functional Requirements
+
+**FR1: List View**
+- Data Source: `lms_modules` or equivalent.
+- Show: Title, Associated Course count.
+
+**FR2: Module Editor**
+- Route: `/instructor/course-management/module/:id`
+- Fields: Title, Description.
+
+**FR3: Relationships**
+- A Module can belong to zero or more Courses.
+- A Lesson can belong to a Module OR directly to a Course.
+
+**FR4: CTA Placement**
+- "Add Module" inside the Modules tab content area.
+
+#### 2.5.3 Acceptance Criteria
+- [ ] Modules list pulls from database.
+- [ ] Can create/edit a module.
+
+---
+
+### 2.6 Tab: Lessons
+
+**Order**: 3rd
+
+#### 2.6.1 Objective
+Manage individual lessons.
+
+#### 2.6.2 Functional Requirements
+
+**FR1: List View**
+- Data Source: `lessons` table.
+- Show: Title, Type (Video/Quiz/Text), Duration.
+- Filter by Type.
+
+**FR2: Lesson Editor**
+- Route: `/instructor/course-management/lesson/:id`
+- Fields: Title, Type, Content/Video URL, Duration, Is Preview, Associated Module OR Course.
+
+**FR3: Relationships**
+- Lessons can map to a Module.
+- OR map directly to a Course (no Module).
+
+**FR4: CTA Placement**
+- "Add Lesson" inside the Lessons tab content area.
+
+#### 2.6.3 Acceptance Criteria
+- [ ] Lessons list pulls from `lessons` table.
+- [ ] Can create/edit a lesson with duration.
+
+---
+
+### 2.7 Tab: Classifications (Categories)
+
+**Order**: 4th
+
+#### 2.7.1 Objective
+Manage Course Categories (6XD Dimensions) and Difficulty Levels.
+
+#### 2.7.2 Functional Requirements
+
+**FR1: Categories Management**
+- Display single unified list (no separate "Standard" vs "Custom" sections).
+- **Actions:**
+  - Add new category (Button: "Add Category").
+  - Edit existing category (inline or modal).
+- **Warning System:**
+  - When editing a category name, display a **confirmation modal** with warning:
+    > "Changing this category will affect X courses, Y modules, and Z lessons."
+  - Query counts before showing modal.
+
+**FR2: Difficulty Levels**
+- Section visible but marked **Coming Soon**.
+
+**FR3: CTA Placement**
+- "Add Category" inside the Classifications tab content area.
+
+#### 2.7.3 Acceptance Criteria
+- [ ] Can add and edit categories.
+- [ ] Warning modal shows impact counts.
+- [ ] Difficulty Levels section shows "Coming Soon".
+
+---
+
+### 2.8 Tab: Media Library
+
+**Order**: 5th
+
+#### 2.8.1 Objective
+Manage media assets stored in Supabase Storage.
+
+#### 2.8.2 Functional Requirements
+
+**FR1: Storage Buckets**
+- Images (thumbnails, hero images)
+- Videos (lesson videos, intros)
+- Documents (PDFs, resources)
+
+**FR2: Operations**
+- Upload file to appropriate bucket.
+- List existing files with previews/icons.
+- Delete file (with confirmation).
+- Copy public URL.
+
+**FR3: CTA Placement**
+- "Upload Media" inside the Media Library tab content area.
+
+#### 2.8.3 Acceptance Criteria
+- [ ] Can upload, list, delete files from Supabase Storage.
+- [ ] Three bucket types supported.
+
+---
+
+## 3) Non-Functional Requirements
+
+### 3.1 Data Wiring
+- All displayed counts, lists, and forms must fetch from Supabase.
+- No hardcoded demo data in production views.
+
+### 3.2 UX
+- Loading skeletons for async data.
+- Toast notifications for success/error states.
+- Confirmation modals for destructive actions (delete, category rename).
+
+### 3.3 Security
+- No service-role keys in browser code.
+- RLS should scope instructor data where applicable.
+
+---
+
+## 4) Implementation Cleanup Checklist
+
+| Item | Location | Action |
+|------|----------|--------|
+| Global "Add New" button | `CourseManagementPage.tsx` header | Remove (move to tabs) |
+| Tab Order | `CourseManagementPage.tsx` tabs array | Reorder to: Courses, Modules, Lessons, Classifications, Media Library |
+| Learning Paths tab | `CourseManagementPage.tsx` | Remove or keep as stub (Coming Soon) |
+| Course Form fields | `CourseForm.tsx` | Remove: Provider, Delivery Mode, Course Type, Department, Audience, Level Code |
+| Duration field | `CourseForm.tsx` | Make read-only, calculate from lessons |
+| Media Library tab | `CourseManagementPage.tsx` | Add new component |
+
+---
+
+## 5) Acceptance Criteria Summary
+
+- [ ] Dashboard wired with live metrics.
+- [ ] Tab order: Courses → Modules → Lessons → Classifications → Media Library.
+- [ ] No global CTA button in Course Management header.
+- [ ] Course Form cleaned up (specified fields removed).
+- [ ] Duration auto-calculates from lessons.
+- [ ] Category editing shows impact warning.
+- [ ] Media Library operational.
+
+---
+
+## 6) Explicit Deferrals (Do NOT Implement)
+
+- Advanced analytics / Completion Rate calculation
+- Active Students calculation
+- Learning Paths functionality
+- Difficulty Levels management
+- Multi-instructor / team views

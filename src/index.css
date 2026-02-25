@@ -1,59 +1,346 @@
-/* Tailwind CSS base imports */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* PLEASE NOTE: THESE TAILWIND IMPORTS SHOULD NEVER BE DELETED */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+/* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL */
 
-/* Custom font imports */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+:root {
+  /* Fixed header height — used for scroll-snap offset and section padding */
+  --header-h: 64px;
 
-/* Base styles */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  --brand-gradient: linear-gradient(90deg, #0030E3 0%, #1839AD 100%);
+  --brand-primary: #0030E3;
+  --md-primary: #0030E3;
+  --md-primary-hover: #002080;
+  --md-primary-active: #000E44;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #DDE3FF;
+  --md-primary-container-hover: #C5CAE9;
+  --md-on-primary-container: #000E44;
+  --md-surface: #FFFFFF;
+  --md-surface-variant: #F3F4F6;
+  --md-surface-variant-hover: #E5E7EB;
+  --md-background: #FFFFFF;
+  --md-on-surface: #1F2937;
+  --md-on-surface-variant: #374151;
+  --md-outline: #E5E7EB;
+  --md-outline-variant: #F3F4F6;
+  --md-elevation-1: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --md-elevation-2: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --md-elevation-3: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+  --md-radius-sm: 4px;
+  --md-radius-md: 8px;
+  --md-radius-lg: 12px;
 }
 
-html {
-    scroll-behavior: smooth;
+@layer base {
+  html {
+    font-family: theme('fontFamily.body');
+    background-color: theme('colors.surface.DEFAULT');
+    color: theme('colors.neutral.900');
+  }
+
+  body {
+    background-color: theme('colors.surface.DEFAULT');
+    color: theme('colors.neutral.900');
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    color: var(--md-primary);
+  }
+
+  ::selection {
+    background: rgba(24, 57, 173, 0.18);
+  }
 }
 
-body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    line-height: 1.6;
-    background-color: #0d0d1a;
-    color: #ffffff;
-    min-height: 100vh;
-    overflow-x: hidden;
-}
+@layer components {
+  .md-surface {
+    background-color: var(--md-surface);
+    color: var(--md-on-surface);
+  }
 
-/* Selection styling */
-::selection {
-    background-color: rgba(0, 229, 209, 0.3);
-    color: #ffffff;
-}
+  .md-surface-variant {
+    background-color: var(--md-surface-variant);
+    color: var(--md-on-surface);
+  }
 
-/* Focus visible for accessibility */
-:focus-visible {
-    outline: 2px solid #00E5D1;
+  .md-card {
+    background-color: var(--md-surface);
+    border: 1px solid var(--md-outline-variant);
+    border-radius: var(--md-radius-lg);
+    box-shadow: var(--md-elevation-1);
+  }
+
+  .md-card-elevated {
+    background-color: var(--md-surface);
+    border: 1px solid var(--md-outline-variant);
+    border-radius: var(--md-radius-lg);
+    box-shadow: var(--md-elevation-2);
+  }
+
+  .md-focus-ring {
+    outline: 2px solid rgba(24, 57, 173, 0.28);
     outline-offset: 2px;
+  }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
+.no-scroll {
+  overflow: hidden;
 }
 
-::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
-::-webkit-scrollbar-thumb {
-    background: rgba(0, 48, 227, 0.5);
-    border-radius: 4px;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari and Opera */
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 48, 227, 0.7);
+/* Prevent accidental horizontal overflow on tablets/phones */
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Map styles for better responsiveness */
+.map-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  border-radius: 0 !important;
+}
+
+.fullscreen-map {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Ensure map is responsive on all devices */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Fix map popup responsiveness */
+.map-popup .leaflet-popup-content-wrapper {
+  max-width: 90vw !important;
+}
+
+@media (max-width: 640px) {
+  .map-popup .leaflet-popup-content-wrapper {
+    max-width: 280px !important;
+  }
+}
+
+/* TipTap content gets readable defaults similar to public page */
+.tiptap :where(p) {
+  @apply my-3;
+}
+
+.tiptap :where(h2) {
+  @apply text-2xl font-bold mt-6 mb-3;
+}
+
+.tiptap :where(h3) {
+  @apply text-xl font-semibold mt-5 mb-2;
+}
+
+.tiptap :where(ul) {
+  @apply list-disc pl-6 my-3;
+}
+
+.tiptap :where(ol) {
+  @apply list-decimal pl-6 my-3;
+}
+
+.tiptap :where(blockquote) {
+  @apply border-l-4 pl-4 italic text-slate-600 my-4;
+}
+
+.tiptap :where(a) {
+  @apply text-blue-600 underline;
+}
+
+.tiptap :where(strong) {
+  @apply font-semibold;
+}
+
+.tiptap :where(hr) {
+  @apply my-6 border-slate-200;
+}
+
+.bg-gradient-to-r,
+.bg-gradient-to-l,
+.bg-gradient-to-b,
+.bg-gradient-to-t,
+.bg-gradient-to-br,
+.bg-gradient-to-bl,
+.bg-gradient-to-tr,
+.bg-gradient-to-tl {
+  background-image: var(--brand-gradient) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.typing-word {
+  display: inline-block;
+  color: var(--md-primary);
+  white-space: nowrap;
+  padding-right: 0;
+  min-height: 1em;
+  min-width: 7ch;
+  /* Reserve space so surrounding text doesn’t reflow during typing */
+  border-right: none;
+  /* Remove caret */
+  animation: none;
+  /* Stop caret blink */
+}
+
+@keyframes typing-caret {
+
+  from,
+  to {
+    border-color: transparent;
+  }
+
+  50% {
+    border-color: var(--md-primary);
+  }
+}
+
+/* App-wide layout clamp used by PageLayout to avoid horizontal overflow on small screens */
+.app-clamp {
+  inline-size: 100%;
+  /* logical width */
+  max-inline-size: 100dvw;
+  /* cap at dynamic viewport width to avoid 100vw scrollbar spill */
+  overflow-x: clip;
+  /* hard-stop horizontal overflow */
+  overscroll-behavior-x: contain;
+}
+
+/* Ensure children can shrink within flex/grid containers */
+.app-clamp,
+.app-clamp * {
+  min-inline-size: 0;
+}
+
+/* Defensive: elements trying to be viewport-wide inside the clamp should not exceed container */
+.app-clamp .w-screen {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Media should never overflow the section */
+.app-clamp img,
+.app-clamp video,
+.app-clamp svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Tables stretch but stay contained */
+.app-clamp table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+}
+
+.card-container {
+  margin-bottom: 56px;
+}
+
+/* How You Learn stepper line behind circles */
+.how-you-learn-steps {
+  position: relative;
+}
+
+.how-you-learn-steps::before {
+  display: none;
+}
+
+/* How You Learn steps flow */
+.steps-flow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.steps-flow::before {
+  content: "";
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-image: linear-gradient(to right, var(--md-outline) 50%, transparent 50%);
+  background-size: 8px 1px;
+  z-index: 0;
+}
+
+.step-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--md-primary);
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  background: #fff;
+  color: var(--md-primary);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.step-text {
+  text-align: center;
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .steps-flow {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .steps-flow::before {
+    display: none;
+  }
+}
+
+/* ==============================================
+   LEARNING PAGE MOBILE RESPONSIVENESS
+   ============================================== */
+
+/* Safe area insets for notched devices (iPhone X+, etc.) */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-inset-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Touch target minimum size (44px as per Apple HIG) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
 }

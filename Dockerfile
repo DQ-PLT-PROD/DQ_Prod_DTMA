@@ -1,64 +1,33 @@
-##############################
-# 1. BUILD STAGE
-##############################
-FROM node:18 AS build
+
+# Step 1: Use an official Node.js image from Docker Hub
+FROM node:20
+
+# Step 2: Set the working directory in the container
 WORKDIR /app
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
+# Step 3: Copy package.json and package-lock.json if available
 COPY package*.json ./
+
+# Step 4: Install app dependencies
 RUN npm install
 
+# Copy the rest of the application code
 COPY . .
 
-#ENV VITE_BASE_PATH=/dtma
+# Disable lint & type-check, increase Node heap
+ENV NEXT_DISABLE_ESLINT=1
+ENV NEXT_DISABLE_TYPECHECK=1
 
-RUN npm run build  --no-lint
+# Build the Next.js app
+RUN npm run build --no-lint
 
-
-##############################
-# 2. RUNTIME STAGE (NGINX + NON-ROOT USER)
-##############################
-FROM nginx:stable-alpine
-
-# Install envsubst (part of gettext)
-RUN apk add --no-cache gettext
-
-# Create non-root user and group
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-# Copy built assets
-COPY --from=build /app/dist /usr/share/nginx/html/dtma
-
-# Remove the default config provided by the image
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Copy runtime template & entrypoint and default nginx config.
-COPY default.conf /etc/nginx/conf.d/default.conf
-COPY env.template.js /usr/share/nginx/html/dtma/env.template.js
-COPY entrypoint.sh /entrypoint.sh
-
-
-# Permissions: allow non-root user to read/serve files
-RUN mkdir -p /var/cache/nginx/pids && \
-    chown -R appuser:appgroup /var/cache/nginx && \
-    chown -R appuser:appgroup /usr/share/nginx/html && \
-    chown -R appuser:appgroup /var/log/nginx && \
-    chmod +x /entrypoint.sh
-
-# Change NGINX to run as non-root user
-# We override the default user in nginx.conf
-RUN sed -i 's/user  nginx;/user appuser;/g' /etc/nginx/nginx.conf
-
-# Override NGINX default port (80 requires root)
-# Update NGINX config to serve on 8080 instead of 80
-# RUN sed -i 's/listen       80;/listen 3000;/g' /etc/nginx/conf.d/default.conf
-
-# Change pid location to one writable by non-root user
-RUN sed -i 's|pid        /run/nginx.pid;|pid        /var/cache/nginx/pids/nginx.pid;|g' /etc/nginx/nginx.conf
-
-USER appuser
-
+# Step 6: Expose the port the app runs on
 EXPOSE 3000
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Step 7: Define the command to run the app
+
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0"]
+
+

@@ -1,6 +1,6 @@
-namespace: dtma
+namespace: staging
 
 resources:
   - ../../base
   - deployment.yaml
-  - ingress.yaml
+  - staging-ingress.yaml

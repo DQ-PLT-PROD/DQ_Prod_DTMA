@@ -1,0 +1,32 @@
+{
+  "$schema": "https://unpkg.com/knip/schema.json",
+  "entry": ["./src/index.tsx"],
+  "ignore": [
+    // Ignore specific exports
+    "src/utils/mediaUtils.ts::createPeerConnection",
+    "src/utils/mediaUtils.ts::startCall",
+
+    // Ignore paths
+    "public/**",
+    "src/pages/**",
+    "src/pages/api/**",
+    "src/server/**",
+    "src/admin-ui/**",
+    "src/test*/**",
+    "src/**/mock*.ts",
+    "src/**/mockData.ts",
+    // Keep design system primitives even if unused in current build
+    "src/components/Button/**",
+    "src/components/layouts/**",
+    "src/components/ui/Badge.tsx",
+    ".unused_backup/**",
+    "vercel.json",
+    "vite.config.*",
+    ".github/**",
+    "azure-pipelines.yml",
+    "Dockerfile"
+  ],
+  "workspaces": {
+    ".": {}
+  }
+}
