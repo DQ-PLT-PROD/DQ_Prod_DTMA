@@ -112,8 +112,8 @@ export async function uploadLMSFile({
     });
 
     // Create a proper public URL for the file to be uploaded
-    // Note: bucket is 'lms-content'
-    const BUCKET_NAME = 'lms-content';
+    // Note: bucket is 'course-content'
+    const BUCKET_NAME = 'course-content';
 
     if (onProgress) {
         return new Promise((resolve, reject) => {

@@ -42,18 +42,12 @@ export function MediaPickerModal({ isOpen, onClose, onSelect, allowedTypes }: Me
 
         try {
             setUploading(true);
-            // Upload to library root
-            const url = await uploadToLibrary(file);
+            await uploadToLibrary(file);
             setToast({ type: 'success', message: 'File uploaded successfully' });
-
-            // Reload and select
             await loadFiles();
-            // Optional: Auto-select uploaded file? or just let user select.
-            // onSelect(url);
-            // onClose();
-        } catch (error) {
-            console.error('Upload failed', error);
-            setToast({ type: 'error', message: 'Upload failed: ' + (error instanceof Error ? error.message : 'Unknown error') });
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Upload failed';
+            setToast({ type: 'error', message: msg });
         } finally {
             setUploading(false);
             e.target.value = '';
