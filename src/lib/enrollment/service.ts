@@ -54,7 +54,8 @@ export const isUserEnrolled = async (
     courseSlug: string
 ): Promise<boolean> => {
     try {
-        return await enrollmentApiClient.isUserEnrolled(courseSlug, userId);
+        // Backend uses authenticated user from token, don't pass userId
+        return await enrollmentApiClient.isUserEnrolled(courseSlug);
     } catch (err) {
         console.error("Error checking enrollment:", err);
         return false;
@@ -71,7 +72,8 @@ export const getEnrollment = async (
     courseSlug: string
 ): Promise<CourseEnrollment | null> => {
     try {
-        return await enrollmentApiClient.getEnrollment(courseSlug, userId);
+        // Backend uses authenticated user from token, don't pass userId
+        return await enrollmentApiClient.getEnrollment(courseSlug);
     } catch (err) {
         console.error("Error getting enrollment:", err);
         return null;
@@ -235,7 +237,8 @@ export const getAccessContract = async (
 
     try {
         // Get access contract from backend API
-        return await enrollmentApiClient.getAccessContract(courseSlug, userId);
+        // Don't pass userId — server derives user identity from the auth token
+        return await enrollmentApiClient.getAccessContract(courseSlug);
     } catch (err) {
         console.error("Error getting access contract:", err);
         return {

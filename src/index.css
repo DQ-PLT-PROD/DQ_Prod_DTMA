@@ -5,6 +5,9 @@
 /* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL */
 
 :root {
+  /* Fixed header height — used for scroll-snap offset and section padding */
+  --header-h: 64px;
+
   --brand-gradient: linear-gradient(90deg, #0030E3 0%, #1839AD 100%);
   --brand-primary: #0030E3;
   --md-primary: #0030E3;

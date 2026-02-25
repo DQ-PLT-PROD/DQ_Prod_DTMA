@@ -189,9 +189,9 @@ const CourseDetailsPage: React.FC = () => {
   );
 
   const handlePrimaryAction = () => {
-    // Navigate to learning screen - EnrollmentButton will handle enrollment
+    // Navigate to portal learning route after enrollment
     if (item) {
-      navigate(`/learning?courseId=${encodeURIComponent(item.id)}`);
+      navigate(`/portal/learning/${encodeURIComponent(item.id)}`);
     }
   };
 

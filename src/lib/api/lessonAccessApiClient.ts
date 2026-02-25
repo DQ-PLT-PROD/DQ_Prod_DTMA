@@ -6,7 +6,7 @@
 
 import { msalInstance } from '../auth/msal'
 
-const API_BASE = 'http://localhost:3001/api'
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 
 interface ApiResponse<T = any> {
   success?: boolean
@@ -86,6 +86,17 @@ export interface LessonProgress {
 }
 
 class LessonAccessApiClient {
+  private async parseResponseBody(response: Response): Promise<any> {
+    const contentType = response.headers.get('content-type') || ''
+
+    if (contentType.includes('application/json')) {
+      return response.json()
+    }
+
+    const text = await response.text()
+    return text ? { error: text.slice(0, 250) } : null
+  }
+
   /**
    * Get access token for API requests
    */
@@ -123,6 +134,7 @@ class LessonAccessApiClient {
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       }
 
@@ -139,13 +151,14 @@ class LessonAccessApiClient {
       }
 
       const response = await fetch(`${API_BASE}${endpoint}`, options)
-      const data = await response.json()
+      const data = await this.parseResponseBody(response)
 
       if (!response.ok) {
+        const statusError = `API request failed with status ${response.status}`
         return {
           success: false,
-          error: data.error || 'API request failed',
-          details: data.details
+          error: data?.error || statusError,
+          details: data?.details
         }
       }
 

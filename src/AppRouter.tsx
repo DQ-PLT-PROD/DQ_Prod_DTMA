@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/lib/auth";
 import { AdminAuthProvider } from "@/lib/admin-auth";
+import { SavedCoursesProvider } from "@/features/courses/context/SavedCoursesContext";
 import { App } from "./App";
 
 // Lazy load page components for code splitting
@@ -13,7 +14,10 @@ const AdminProtectedRoute = lazy(() => import("@/components/auth/AdminProtectedR
 const NotFound = lazy(() => import("./features/app/pages/NotFound"));
 const PortalLayout = lazy(() => import("./features/portal/layout/PortalLayout").then(m => ({ default: m.PortalLayout })));
 const InProgressPage = lazy(() => import("./features/portal/pages/InProgressPage"));
+const SavedCoursesPage = lazy(() => import("./features/portal/pages/SavedCoursesPage"));
 const CoursePlayerPage = lazy(() => import("./features/portal/pages/CoursePlayerPage"));
+const BadgesPage = lazy(() => import("./features/portal/pages/BadgesPage"));
+const BadgeSharePage = lazy(() => import("./features/portal/pages/BadgeSharePage"));
 const LearnerOnboarding = lazy(() => import("./features/dashboard/pages/onboarding"));
 const ProfilePage = lazy(() => import("./features/portal/pages/ProfilePage"));
 const QuizAuditPage = lazy(() => import("./features/portal/pages/QuizAuditPage").then(m => ({ default: m.QuizAuditPage })));
@@ -32,6 +36,7 @@ const CourseForm = lazy(() => import("./features/instructor-portal/components/co
 const ModuleForm = lazy(() => import("./features/instructor-portal/components/course-management/ModuleForm").then(m => ({ default: m.ModuleForm })));
 const LessonForm = lazy(() => import("./features/instructor-portal/components/course-management/LessonForm").then(m => ({ default: m.LessonForm })));
 const MediaLibraryPage = lazy(() => import("./features/instructor-portal/pages/MediaLibraryPage").then(m => ({ default: m.MediaLibraryPage })));
+const QuizEditor = lazy(() => import("./features/instructor-portal/pages/QuizEditor").then(m => ({ default: m.QuizEditor })));
 
 
 // Loading fallback component
@@ -44,10 +49,22 @@ const PageLoader = () => (
   </div>
 );
 
+export const LegacyLearningRedirect = () => {
+  const [searchParams] = useSearchParams();
+  const courseId = searchParams.get("courseId");
+
+  if (courseId) {
+    return <Navigate to={`/portal/learning/${encodeURIComponent(courseId)}`} replace />;
+  }
+
+  return <Navigate to="/portal" replace />;
+};
+
 export function AppRouter() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <SavedCoursesProvider>
         <Suspense fallback={<PageLoader />}>
           <Routes>
               <Route path="/" element={<App />} />
@@ -79,6 +96,8 @@ export function AppRouter() {
                 <Route path="onboarding" element={<LearnerOnboarding layout="portal" />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="my-courses/in-progress" element={<InProgressPage />} />
+                <Route path="saved" element={<SavedCoursesPage />} />
+                <Route path="badges" element={<BadgesPage />} />
                 <Route 
                   path="learning/:courseId" 
                   element={
@@ -89,10 +108,13 @@ export function AppRouter() {
                 />
               </Route>
 
+              {/* Public Share Routes */}
+              <Route path="/badges/share/:token" element={<BadgeSharePage />} />
+
               <Route path="/portal/admin/audit-quizzes" element={<QuizAuditPage />} />
 
-              {/* Redirect /learning to /portal for backward compatibility */}
-              <Route path="/learning" element={<Navigate to="/portal" replace />} />
+              {/* Redirect /learning and legacy /learning?courseId=... to portal routes */}
+              <Route path="/learning" element={<LegacyLearningRedirect />} />
 
               {/* Auth Debug Panel - for testing authentication and user sync */}
               <Route path="/auth-debug" element={
@@ -139,6 +161,8 @@ export function AppRouter() {
                 <Route path="course-management/module/:id" element={<ModuleForm />} />
                 <Route path="course-management/lesson/new" element={<LessonForm />} />
                 <Route path="course-management/lesson/:id" element={<LessonForm />} />
+                <Route path="course-management/quiz/new" element={<QuizEditor />} />
+                <Route path="course-management/quiz/:id" element={<QuizEditor />} />
                 <Route path="media" element={<MediaLibraryPage />} />
                 <Route path="students" element={<ComingSoon />} />
                 <Route path="learning-paths" element={<ComingSoon />} />
@@ -164,6 +188,7 @@ export function AppRouter() {
               <Route path="*" element={<Navigate to="/404" replace />} />
             </Routes>
           </Suspense>
+        </SavedCoursesProvider>
       </AuthProvider>
     </BrowserRouter>
   );

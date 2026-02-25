@@ -6,16 +6,20 @@
  */
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     BookOpenIcon,
     GraduationCapIcon,
     FileTextIcon,
     PlayCircleIcon,
-    TagIcon
+    TagIcon,
+    HelpCircleIcon,
+    PlusIcon
 } from 'lucide-react';
 import { CoursesSection } from '../components/course-management/CoursesSection';
 import { ModulesSection } from '../components/course-management/ModulesSection';
 import { LessonsSection } from '../components/course-management/LessonsSection';
+import { QuizzesSection } from '../components/course-management/QuizzesSection';
 import { ClassificationsSection } from '../components/course-management/ClassificationsSection';
 
 interface Tab {
@@ -29,10 +33,12 @@ const tabs: Tab[] = [
     { id: 'courses', title: 'Courses', icon: GraduationCapIcon },
     { id: 'lessons', title: 'Lessons', icon: PlayCircleIcon },
     { id: 'modules', title: 'Modules', icon: FileTextIcon },
+    { id: 'quizzes', title: 'Quizzes', icon: HelpCircleIcon },
     { id: 'learning-paths', title: 'Learning Paths', icon: BookOpenIcon },
 ];
 
 export function CourseManagementPage() {
+    const navigate = useNavigate();
     // Get tab from URL params or default to categories
     const urlParams = new URLSearchParams(window.location.search);
     const tabFromUrl = urlParams.get('tab') || 'classifications';
@@ -49,6 +55,24 @@ export function CourseManagementPage() {
         window.history.replaceState({}, '', url.toString());
     };
 
+    const handleAddNew = () => {
+        switch (activeTab) {
+            case 'courses':
+                navigate('/instructor/course-management/course/new');
+                break;
+            case 'modules':
+                navigate('/instructor/course-management/module/new');
+                break;
+            case 'lessons':
+                navigate('/instructor/course-management/lesson/new');
+                break;
+            case 'quizzes':
+                navigate('/instructor/course-management/quiz/new');
+                break;
+            // No action for categories or disabled tabs
+        }
+    };
+
     const renderContent = () => {
         switch (activeTab) {
             case 'classifications':
@@ -59,6 +83,8 @@ export function CourseManagementPage() {
                 return <ModulesSection />;
             case 'lessons':
                 return <LessonsSection />;
+            case 'quizzes':
+                return <QuizzesSection />;
             default:
                 return null;
         }
@@ -77,6 +103,16 @@ export function CourseManagementPage() {
                             Manage classifications, courses, modules, and lessons
                         </p>
                     </div>
+                    {/* Show Add New button only for core content types */}
+                    {['courses', 'modules', 'lessons'].includes(activeTab) && (
+                        <button
+                            className="px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-dark)] text-white rounded-md shadow-sm flex items-center justify-center text-sm font-medium transition-colors"
+                            onClick={handleAddNew}
+                        >
+                            <PlusIcon className="h-4 w-4 mr-1" />
+                            Add New
+                        </button>
+                    )}
                 </div>
             </div>
 

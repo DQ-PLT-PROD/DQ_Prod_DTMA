@@ -4,8 +4,10 @@
  * 
  * Feature 02.1 Hardening: All operations now go through backend APIs
  */
+import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
+import { isSupabaseConfigured } from "../../../lib/supabase/client";
+import { recordCourseCompletion } from "./achievementService";
 import { enrollmentApiClient } from "../../../lib/api/enrollmentApiClient";
-import { lessonAccessApiClient } from "../../../lib/api/lessonAccessApiClient";
 
 // Types
 export interface Enrollment {
@@ -32,6 +34,106 @@ export interface LocalLesson {
     completed: boolean;
 }
 
+type ProgressQueueItem =
+    | {
+        type: "lesson_progress";
+        payload: {
+            userId: string;
+            courseSlug: string;
+            lessonId: string;
+            completed: boolean;
+            watchTimeSeconds?: number;
+        };
+    }
+    | {
+        type: "enrollment_progress";
+        payload: {
+            userId: string;
+            courseSlug: string;
+            progressPct: number;
+        };
+    };
+
+const PROGRESS_QUEUE_KEY = "dtma_progress_queue_v1";
+
+const readProgressQueue = (): ProgressQueueItem[] => {
+    if (typeof window === "undefined") {
+        return [];
+    }
+
+    try {
+        const raw = window.localStorage.getItem(PROGRESS_QUEUE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+        console.warn("Failed to read progress queue:", err);
+        return [];
+    }
+};
+
+const writeProgressQueue = (queue: ProgressQueueItem[]) => {
+    if (typeof window === "undefined") return;
+    try {
+        window.localStorage.setItem(PROGRESS_QUEUE_KEY, JSON.stringify(queue));
+    } catch (err) {
+        console.warn("Failed to persist progress queue:", err);
+    }
+};
+
+const enqueueProgress = (item: ProgressQueueItem) => {
+    const queue = readProgressQueue();
+    queue.push(item);
+    writeProgressQueue(queue);
+};
+
+export const flushProgressQueue = async (): Promise<void> => {
+    if (!isSupabaseConfigured()) {
+        return;
+    }
+
+    const queue = readProgressQueue();
+    if (queue.length === 0) {
+        return;
+    }
+
+    const remaining: ProgressQueueItem[] = [];
+    for (const item of queue) {
+        try {
+            if (item.type === "lesson_progress") {
+                const result = await updateLessonProgress(
+                    item.payload.userId,
+                    item.payload.courseSlug,
+                    item.payload.lessonId,
+                    item.payload.completed,
+                    item.payload.watchTimeSeconds
+                );
+                if (!result) {
+                    remaining.push(item);
+                }
+                continue;
+            }
+
+            if (item.type === "enrollment_progress") {
+                const result = await updateEnrollmentProgress(
+                    item.payload.userId,
+                    item.payload.courseSlug,
+                    item.payload.progressPct
+                );
+                if (!result) {
+                    remaining.push(item);
+                }
+                continue;
+            }
+        } catch (err) {
+            console.warn("Failed to flush progress queue item:", err);
+            remaining.push(item);
+        }
+    }
+
+    writeProgressQueue(remaining);
+};
+
 // No direct database access - all operations via API
 
 /**
@@ -43,15 +145,15 @@ export const getOrCreateEnrollment = async (
     courseSlug: string
 ): Promise<Enrollment | null> => {
     try {
-        // Try to get existing enrollment
-        let enrollment = await enrollmentApiClient.getEnrollment(courseSlug, userId);
+        // Try to get existing enrollment (backend uses authenticated user from token)
+        let enrollment = await enrollmentApiClient.getEnrollment(courseSlug);
         
         if (enrollment) {
             return enrollment as Enrollment;
         }
 
         // Create new enrollment via API
-        const result = await enrollmentApiClient.enrollInCourse(courseSlug, 'auto', userId);
+        const result = await enrollmentApiClient.enrollInCourse(courseSlug, 'auto');
         
         if (result.success && result.enrollment) {
             return result.enrollment as Enrollment;
@@ -75,11 +177,23 @@ export const getUserCourseProgress = async (
     enrollment: Enrollment | null;
     lessonProgress: LessonProgress[];
 }> => {
+    if (!isSupabaseConfigured()) {
+        return { enrollment: null, lessonProgress: [] };
+    }
+
     try {
-        // Get enrollment from API
-        const enrollment = await enrollmentApiClient.getEnrollment(courseSlug, userId);
-        
-        if (!enrollment) {
+        await flushProgressQueue();
+        const supabase = getProgressSupabase();
+
+        // Get enrollment
+        const { data: enrollmentData, error: enrollmentError } = await supabase
+            .from("user_enrollments")
+            .select("*")
+            .eq("user_id", userId)
+            .eq("course_slug", courseSlug)
+            .single();
+
+        if (enrollmentError || !enrollmentData) {
             return { enrollment: null, lessonProgress: [] };
         }
 
@@ -110,17 +224,60 @@ export const updateLessonProgress = async (
     completed: boolean,
     watchTimeSeconds?: number
 ): Promise<boolean> => {
-    try {
-        const result = await lessonAccessApiClient.updateLessonProgress(
-            courseSlug,
-            lessonId,
-            completed,
-            watchTimeSeconds || 0
-        );
+    if (!isSupabaseConfigured()) {
+        enqueueProgress({
+            type: "lesson_progress",
+            payload: { userId, courseSlug, lessonId, completed, watchTimeSeconds },
+        });
+        return false;
+    }
 
-        return result.success;
+    try {
+        const supabase = getProgressSupabase();
+
+        // Get enrollment first
+        const { data: enrollmentData } = await supabase
+            .from("user_enrollments")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("course_slug", courseSlug)
+            .single();
+
+        if (!enrollmentData) {
+            console.warn("No enrollment found for lesson progress update");
+            return false;
+        }
+
+        // Upsert lesson progress
+        const { error } = await supabase
+            .from("lesson_progress")
+            .upsert({
+                enrollment_id: enrollmentData.id,
+                lesson_id: lessonId,
+                completed,
+                watch_time_seconds: watchTimeSeconds || 0,
+                completed_at: completed ? new Date().toISOString() : null,
+                updated_at: new Date().toISOString()
+            }, {
+                onConflict: 'enrollment_id,lesson_id'
+            });
+
+        if (error) {
+            console.error("Error updating lesson progress:", error);
+            enqueueProgress({
+                type: "lesson_progress",
+                payload: { userId, courseSlug, lessonId, completed, watchTimeSeconds },
+            });
+            return false;
+        }
+
+        return true;
     } catch (err) {
         console.error("Unexpected error updating lesson progress:", err);
+        enqueueProgress({
+            type: "lesson_progress",
+            payload: { userId, courseSlug, lessonId, completed, watchTimeSeconds },
+        });
         return false;
     }
 };
@@ -134,10 +291,48 @@ export const updateEnrollmentProgress = async (
     courseSlug: string,
     progressPct: number
 ): Promise<boolean> => {
-    // Backend automatically calculates progress based on lesson completions
-    // This function is kept for backward compatibility but does nothing
-    console.log('updateEnrollmentProgress: Progress calculated automatically on backend');
-    return true;
+    if (!isSupabaseConfigured()) {
+        enqueueProgress({
+            type: "enrollment_progress",
+            payload: { userId, courseSlug, progressPct },
+        });
+        return false;
+    }
+
+    try {
+        const supabase = getProgressSupabase();
+
+        const { error } = await supabase
+            .from("user_enrollments")
+            .update({
+                progress_pct: Math.min(Math.max(progressPct, 0), 100),
+                updated_at: new Date().toISOString(),
+                ...(progressPct >= 100 && { completed_at: new Date().toISOString() })
+            })
+            .eq("user_id", userId)
+            .eq("course_slug", courseSlug);
+
+        if (error) {
+            console.error("Error updating enrollment progress:", error);
+            enqueueProgress({
+                type: "enrollment_progress",
+                payload: { userId, courseSlug, progressPct },
+            });
+            return false;
+        }
+
+        if (progressPct >= 100) {
+            await recordCourseCompletion(userId, courseSlug);
+        }
+        return true;
+    } catch (err) {
+        console.error("Unexpected error updating enrollment progress:", err);
+        enqueueProgress({
+            type: "enrollment_progress",
+            payload: { userId, courseSlug, progressPct },
+        });
+        return false;
+    }
 };
 
 /**
@@ -149,16 +344,17 @@ export const syncLocalProgressToServer = async (
     courseSlug: string,
     localLessons: { id: string; completed: boolean }[]
 ): Promise<boolean> => {
-    if (localLessons.length === 0) {
+    if (!isSupabaseConfigured() || localLessons.length === 0) {
         return false;
     }
 
     try {
-        // Update each completed lesson via API
+        await flushProgressQueue();
+        // Update each completed lesson
         const updatePromises = localLessons
             .filter(lesson => lesson.completed)
             .map(lesson =>
-                lessonAccessApiClient.updateLessonProgress(courseSlug, lesson.id, true, 0)
+                updateLessonProgress(userId, courseSlug, lesson.id, true)
             );
 
         await Promise.all(updatePromises);
@@ -197,8 +393,8 @@ export const getActualProgressStats = async (
     const defaultResult = { completedCount: 0, totalCount: 0, progressPct: 0 };
 
     try {
-        // Get enrollment which has the progress_pct
-        const enrollment = await enrollmentApiClient.getEnrollment(courseSlug, userId);
+        // Get enrollment which has the progress_pct (backend uses authenticated user from token)
+        const enrollment = await enrollmentApiClient.getEnrollment(courseSlug);
         
         if (!enrollment) {
             return defaultResult;

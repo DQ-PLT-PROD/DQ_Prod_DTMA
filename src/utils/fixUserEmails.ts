@@ -1,6 +1,11 @@
 /**
  * Utility to fix existing users with fallback email addresses
  * This can be run manually or as a migration to update users in bulk
+ *
+ * Usage (browser dev tools console):
+ *   emailFixUtils.report()    — generate a report of affected users
+ *   emailFixUtils.dryRun()    — preview changes without applying
+ *   emailFixUtils.fix()       — apply changes
  */
 import { getSupabase } from '../lib/supabase/client';
 
@@ -12,30 +17,27 @@ interface UserEmailFix {
   needs_manual_review: boolean;
 }
 
-/**
- * Identifies users with fallback email addresses that need fixing
- */
 async function identifyUsersNeedingEmailFix(): Promise<UserEmailFix[]> {
   const supabase = getSupabase();
-  
+
   try {
     console.log('🔍 Identifying users with fallback email addresses...');
-    
+
     const { data: users, error } = await supabase
       .from('users')
       .select('id, azure_user_id, email, name')
-      .or('email.eq.user@domain.com,email.like.user-%@missing-email.local');
+      .or('email.eq.user@domain.com,email.like.user-%@temp.com,email.like.user-%@missing-email.local');
 
     if (error) {
       console.error('❌ Error fetching users:', error);
       return [];
     }
 
-    const usersNeedingFix: UserEmailFix[] = users.map(user => {
+    const usersNeedingFix: UserEmailFix[] = (users ?? []).map(user => {
       let suggestedEmail: string | undefined;
       let needsManualReview = true;
 
-      // Try to extract email from azure_user_id if it looks like an email
+      // If azure_user_id looks like an email, use it as suggested email
       if (user.azure_user_id && user.azure_user_id.includes('@')) {
         suggestedEmail = user.azure_user_id;
         needsManualReview = false;
@@ -50,7 +52,7 @@ async function identifyUsersNeedingEmailFix(): Promise<UserEmailFix[]> {
       };
     });
 
-    console.log(`📊 Found ${usersNeedingFix.length} users with fallback emails:`, {
+    console.log(`📊 Found ${usersNeedingFix.length} users with fallback emails`, {
       total: usersNeedingFix.length,
       autoFixable: usersNeedingFix.filter(u => !u.needs_manual_review).length,
       needsReview: usersNeedingFix.filter(u => u.needs_manual_review).length
@@ -63,12 +65,9 @@ async function identifyUsersNeedingEmailFix(): Promise<UserEmailFix[]> {
   }
 }
 
-/**
- * Generates a report of users with email issues
- */
 async function generateEmailFixReport(): Promise<string> {
   const usersNeedingFix = await identifyUsersNeedingEmailFix();
-  
+
   let report = `# User Email Fix Report\n\n`;
   report += `Generated: ${new Date().toISOString()}\n\n`;
   report += `## Summary\n`;
@@ -81,20 +80,20 @@ async function generateEmailFixReport(): Promise<string> {
     return report;
   }
 
-  report += `## Auto-Fixable Users\n`;
   const autoFixable = usersNeedingFix.filter(u => !u.needs_manual_review);
+  report += `## Auto-Fixable Users\n`;
   if (autoFixable.length > 0) {
     report += `| Azure User ID | Current Email | Suggested Email |\n`;
-    report += `|---------------|---------------|----------------|\n`;
+    report += `|---------------|---------------|-----------------|\n`;
     autoFixable.forEach(user => {
       report += `| ${user.azure_user_id} | ${user.current_email} | ${user.suggested_email} |\n`;
     });
   } else {
-    report += `No auto-fixable users found.\n`;
+    report += `None.\n`;
   }
 
-  report += `\n## Users Needing Manual Review\n`;
   const needsReview = usersNeedingFix.filter(u => u.needs_manual_review);
+  report += `\n## Users Needing Manual Review\n`;
   if (needsReview.length > 0) {
     report += `| Azure User ID | Current Email | Notes |\n`;
     report += `|---------------|---------------|-------|\n`;
@@ -102,21 +101,18 @@ async function generateEmailFixReport(): Promise<string> {
       report += `| ${user.azure_user_id} | ${user.current_email} | Requires manual investigation |\n`;
     });
   } else {
-    report += `No users need manual review.\n`;
+    report += `None.\n`;
   }
 
   report += `\n## Next Steps\n`;
-  report += `1. Review the auto-fixable users and run \`fixAutoFixableUserEmails()\` if they look correct\n`;
+  report += `1. Review auto-fixable users and run \`emailFixUtils.fix()\` if they look correct\n`;
   report += `2. For users needing manual review, investigate their Azure AD profiles\n`;
-  report += `3. Users will also be automatically fixed when they log in next time\n`;
+  report += `3. Users will also be automatically updated on next login\n`;
 
   return report;
 }
 
-/**
- * Automatically fixes users where we can confidently determine the correct email
- */
-async function fixAutoFixableUserEmails(dryRun: boolean = true): Promise<void> {
+async function fixAutoFixableUserEmails(dryRun = true): Promise<void> {
   const supabase = getSupabase();
   const usersNeedingFix = await identifyUsersNeedingEmailFix();
   const autoFixable = usersNeedingFix.filter(u => !u.needs_manual_review && u.suggested_email);
@@ -126,7 +122,7 @@ async function fixAutoFixableUserEmails(dryRun: boolean = true): Promise<void> {
     return;
   }
 
-  console.log(`🔧 ${dryRun ? 'DRY RUN: Would fix' : 'Fixing'} ${autoFixable.length} users...`);
+  console.log(`🔧 ${dryRun ? 'DRY RUN — would fix' : 'Fixing'} ${autoFixable.length} users...`);
 
   for (const user of autoFixable) {
     console.log(`${dryRun ? '🔍 Would update' : '📝 Updating'} user ${user.azure_user_id}:`, {
@@ -138,16 +134,13 @@ async function fixAutoFixableUserEmails(dryRun: boolean = true): Promise<void> {
       try {
         const { error } = await supabase
           .from('users')
-          .update({
-            email: user.suggested_email,
-            updated_at: new Date().toISOString()
-          })
+          .update({ email: user.suggested_email, updated_at: new Date().toISOString() })
           .eq('id', user.id);
 
         if (error) {
           console.error(`❌ Failed to update user ${user.azure_user_id}:`, error);
         } else {
-          console.log(`✅ Updated user ${user.azure_user_id} email`);
+          console.log(`✅ Updated user ${user.azure_user_id}`);
         }
       } catch (error) {
         console.error(`❌ Error updating user ${user.azure_user_id}:`, error);
@@ -156,40 +149,30 @@ async function fixAutoFixableUserEmails(dryRun: boolean = true): Promise<void> {
   }
 
   if (dryRun) {
-    console.log('🔍 Dry run complete. Run with dryRun=false to apply changes.');
+    console.log('🔍 Dry run complete. Run emailFixUtils.fix() to apply changes.');
   } else {
     console.log('✅ Email fix complete!');
   }
 }
 
-/**
- * Console helper functions for easy use in browser dev tools
- */
 export const emailFixUtils = {
-  // Generate and log a report
   async report() {
     const report = await generateEmailFixReport();
     console.log(report);
     return report;
   },
-
-  // Identify users needing fixes
   async identify() {
     return await identifyUsersNeedingEmailFix();
   },
-
-  // Dry run of fixes
   async dryRun() {
     return await fixAutoFixableUserEmails(true);
   },
-
-  // Actually apply fixes
   async fix() {
     return await fixAutoFixableUserEmails(false);
   }
 };
 
-// Make it available globally for console use
+// Expose globally for easy browser console access
 if (typeof window !== 'undefined') {
   (window as any).emailFixUtils = emailFixUtils;
 }

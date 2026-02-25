@@ -9,8 +9,10 @@ export function ProfileDropdown() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
+  const roleSwitcher = useRoleSwitcherOptional();
   const {
     user,
+    databaseUser,
     logout,
     isLoading
   } = useAuth();
