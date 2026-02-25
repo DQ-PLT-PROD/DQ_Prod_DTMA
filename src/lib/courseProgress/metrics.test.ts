@@ -40,6 +40,18 @@ describe("courseProgress metrics", () => {
         expect(progress.progressPercent).toBe(0);
     });
 
+    it("returns 100% only when all trackable items are complete", () => {
+        const progress = computeTrackableProgress(
+            items,
+            ["lesson-1", "lesson-2", "quiz-1"],
+            true,
+            true
+        );
+        expect(progress.completedTrackableItems).toBe(4);
+        expect(progress.trackableItemCount).toBe(4);
+        expect(progress.progressPercent).toBe(100);
+    });
+
     it("numbers only standard lessons", () => {
         expect(getCountableLessonNumber(items, 0)).toBeNull(); // intro
         expect(getCountableLessonNumber(items, 1)).toBe(1);
