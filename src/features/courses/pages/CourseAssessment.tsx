@@ -82,6 +82,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
 
   const [showSummary, setShowSummary] = useState(false);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
+  const [earnedBadge, setEarnedBadge] = useState<{ definition: any, shareToken?: string } | null>(null);
 
   useEffect(() => {
     const mapSupabaseQuiz = (quiz: any, idx: number): QuizQuestion => {
@@ -234,16 +235,29 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
     setShowFeedback(true);
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     if (isLastQuestion) {
       const finalScore = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
       const incorrectCount = totalQuestions - correctAnswers;
       const passed = incorrectCount <= 5;
 
       if (databaseUser?.id) {
-        recordQuizAttempt(databaseUser.id, courseSlug, finalScore, passed);
+        const quizBadge = await recordQuizAttempt(databaseUser.id, courseSlug, finalScore, passed);
+        if (quizBadge) {
+          setEarnedBadge({
+            definition: quizBadge.badge,
+            shareToken: quizBadge.shareToken
+          });
+        }
+        
         if (passed && allLessonsCompleted) {
-          recordCourseCompletion(databaseUser.id, courseSlug);
+          const courseBadge = await recordCourseCompletion(databaseUser.id, courseSlug);
+          if (courseBadge) {
+            setEarnedBadge({
+              definition: courseBadge.badge,
+              shareToken: courseBadge.shareToken
+            });
+          }
         }
       }
 
@@ -575,8 +589,9 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
           setShowSummary(true);
         }}
         score={scorePercentage}
-        courseName="Perfecting Life Transactions: A Digital Builder's Blueprint"
-        userName="Digital Builder"
+        courseName={courseSlug === "plt-course-01" ? "Perfecting Life Transactions: A Digital Builder's Blueprint" : courseSlug}
+        userName={databaseUser?.name || "Digital Builder"}
+        badge={earnedBadge || undefined}
       />
     </div>
   );
