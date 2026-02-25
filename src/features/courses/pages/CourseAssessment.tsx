@@ -43,6 +43,7 @@ interface CourseAssessmentProps {
   onBack: () => void;
   courseSlug: string;
   variant?: "page" | "inline";
+  onAssessmentPassed?: () => void;
 }
 
 // Fisher-Yates shuffle algorithm
@@ -68,7 +69,8 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
   allLessonsCompleted,
   onBack,
   courseSlug,
-  variant = "page"
+  variant = "page",
+  onAssessmentPassed
 }) => {
   const { databaseUser } = useAuth();
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -262,6 +264,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
       }
 
       if (passed) {
+        onAssessmentPassed?.();
         setShowAchievementModal(true);
       } else {
         setShowSummary(true);

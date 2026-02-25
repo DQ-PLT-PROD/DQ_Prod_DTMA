@@ -2,7 +2,7 @@
  * CoursePlayerPage - The active learning interface with video player and course outline
  */
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams, useOutletContext } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
     ChevronRight,
     ChevronLeft,
@@ -13,19 +13,28 @@ import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
 import { Lesson, toUILesson } from "../../../types/course";
-import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
+import { fetchCourseLessons, fetchCourseQuizzes, fetchFullCourse } from "../../courses/services/courseService";
 import {
-    getOrCreateEnrollment,
     updateLessonProgress,
-    updateEnrollmentProgress,
-    syncLocalProgressToServer,
     getUserCourseProgress,
     flushProgressQueue,
-    Enrollment,
 } from "../services/progressService";
 import { isUserEnrolled } from "../../courses/services/enrollmentService";
-import { PreviewContentGate } from "../components/PreviewContentGate";
-import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
+import { Course } from "../../../types/dtma-lms";
+import { lessonAccessApiClient } from "@/lib/api/lessonAccessApiClient";
+import {
+    computeTrackableProgress,
+    getCountableLessonNumber,
+    isIntroType,
+    isOutroType,
+    isQuizType,
+} from "@/lib/courseProgress/metrics";
+
+type ServerProgressSnapshot = {
+    completedTrackableItems: number;
+    trackableItemCount: number;
+    progressPercent: number;
+};
 
 // Defined so we can pass context up to the layout if we needed to (e.g. theater mode)
 // But for now we manage theater mode locally and just hide sidebar via pure CSS or similar, 
@@ -55,8 +64,6 @@ const CoursePlayerPage: React.FC = () => {
 
     const [course, setCourse] = useState<Course | null>(null);
     const [lessons, setLessons] = useState<Lesson[]>([]);
-    const [dbLessons, setDbLessons] = useState<DBLesson[]>([]);
-    const [resources, setResources] = useState<CourseResource[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
@@ -70,12 +77,13 @@ const CoursePlayerPage: React.FC = () => {
     const [isNextLessonUnlocked, setIsNextLessonUnlocked] = useState(false);
     const [showQuiz, setShowQuiz] = useState(false);
     const [isTheater, setIsTheater] = useState(false);
-    const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
+    const [hasAssessmentQuiz, setHasAssessmentQuiz] = useState(false);
+    const [assessmentCompleted, setAssessmentCompleted] = useState(false);
+    const [serverProgress, setServerProgress] = useState<ServerProgressSnapshot | null>(null);
     const [isEnrolled, setIsEnrolled] = useState(false);
-    const [enrollmentLoading, setEnrollmentLoading] = useState(true);
 
     const navigate = useNavigate();
-    const { user, databaseUser } = useAuth();
+    const { databaseUser } = useAuth();
 
     const resumeLessonId = useMemo(() => {
         const searchParams = new URLSearchParams(location.search);
@@ -90,40 +98,57 @@ const CoursePlayerPage: React.FC = () => {
         const loadCourseData = async () => {
             try {
                 setIsLoading(true);
-                const [fetchedCourse, fetchedLessons, fetchedResources] = await Promise.all([
+                const [fetchedCourse, fetchedLessons, fetchedQuizzes] = await Promise.all([
                     fetchFullCourse(courseId),
                     fetchCourseLessons(courseId),
-                    fetchCourseResources(courseId),
+                    fetchCourseQuizzes(courseId),
                 ]);
 
                 setCourse(fetchedCourse);
+                setHasAssessmentQuiz((fetchedQuizzes || []).length > 0);
+                setAssessmentCompleted(false);
+                setServerProgress(null);
 
                 const resumeIndex = resumeLessonId
                     ? fetchedLessons.findIndex((lesson) => String(lesson.id) === resumeLessonId)
                     : -1;
 
-                let completedLessonIds = new Set<string>();
+                const completedLessonIds = new Set<string>();
 
                 // If user is logged in, fetch server-side progress
                 if (databaseUser?.id) {
                     try {
-                        const { lessonProgress } = await getUserCourseProgress(databaseUser.id, courseId);
+                        const [courseProgress, accessSummary] = await Promise.all([
+                            getUserCourseProgress(databaseUser.id, courseId),
+                            lessonAccessApiClient.getCourseAccessSummary(courseId),
+                        ]);
+
+                        const { lessonProgress } = courseProgress;
                         lessonProgress.forEach(p => {
                             if (p.completed) completedLessonIds.add(p.lessonId);
                         });
+
+                        if (accessSummary) {
+                            setHasAssessmentQuiz(Boolean(accessSummary.summary.hasAssessmentQuiz));
+                            setAssessmentCompleted(Boolean(accessSummary.summary.assessmentCompleted));
+                            setServerProgress({
+                                completedTrackableItems: Number(accessSummary.summary.completedTrackableItems ?? 0) || 0,
+                                trackableItemCount: Number(accessSummary.summary.trackableItemCount ?? 0) || 0,
+                                progressPercent: Number(accessSummary.summary.progressPercent ?? 0) || 0,
+                            });
+                        }
                     } catch (err) {
                         console.warn("Failed to load server progress:", err);
                     }
                 }
 
-                // Load local storage progress as a fallback/supplement
+                // Load local storage progress only for unauthenticated users.
                 const storageKey = `courseProgress_${courseId}`;
                 const saved = localStorage.getItem(storageKey);
+                const shouldUseLocalCompletion = !databaseUser?.id;
 
                 if (fetchedLessons.length > 0) {
-                    setDbLessons(fetchedLessons);
-
-                    if (saved) {
+                    if (saved && shouldUseLocalCompletion) {
                         try {
                             const savedLessons: Lesson[] = JSON.parse(saved);
                             savedLessons.forEach(l => {
@@ -167,23 +192,10 @@ const CoursePlayerPage: React.FC = () => {
                             }
                         }
                     }
-
-                    // If we have local completed lessons that weren't in DB, we should sync up
-                    if (databaseUser?.id && saved) {
-                        const localLessons: Lesson[] = JSON.parse(saved);
-                        const localCompleted = localLessons.filter(l => l.completed).map(l => ({ id: String(l.id), completed: true }));
-
-                        if (localCompleted.length > 0) {
-                            // This is 'fire and forget' to ensure server is caught up
-                            syncLocalProgressToServer(databaseUser.id, courseId, localCompleted);
-                        }
-                    }
-
                 } else {
                     setLessons([]);
                 }
 
-                setResources(fetchedResources);
             } catch (error) {
                 console.warn('Failed to load course data:', error);
             } finally {
@@ -284,12 +296,10 @@ const CoursePlayerPage: React.FC = () => {
         const checkEnrollmentStatus = async () => {
             if (!databaseUser?.id || !courseId) {
                 setIsEnrolled(false);
-                setEnrollmentLoading(false);
                 return;
             }
 
             try {
-                setEnrollmentLoading(true);
                 const enrolled = await isUserEnrolled(databaseUser.id, courseId);
                 setIsEnrolled(enrolled);
 
@@ -301,8 +311,6 @@ const CoursePlayerPage: React.FC = () => {
             } catch (error) {
                 console.error('Error checking enrollment status:', error);
                 setIsEnrolled(false);
-            } finally {
-                setEnrollmentLoading(false);
             }
         };
 
@@ -325,47 +333,90 @@ const CoursePlayerPage: React.FC = () => {
         [lessons, currentLessonIndex]
     );
 
-    const completedCount = useMemo(
-        () => lessons.filter((lesson) => lesson.completed).length,
+    const completedLessonIds = useMemo(
+        () =>
+            lessons
+                .filter((lesson) => lesson.completed)
+                .map((lesson) => String(lesson.id)),
         [lessons]
     );
 
-    const currentLesson = lessons[currentLessonIndex];
-    const currentLessonProgress =
-        currentLesson && !currentLesson.completed && duration > 0
-            ? Math.min(currentTime / duration, 1)
-            : 0;
-    const progressPct = Math.round(
-        ((completedCount + currentLessonProgress) / lessons.length) * 100
+    const progressStats = useMemo(
+        () =>
+            computeTrackableProgress(
+                lessons,
+                completedLessonIds,
+                hasAssessmentQuiz,
+                assessmentCompleted
+            ),
+        [lessons, completedLessonIds, hasAssessmentQuiz, assessmentCompleted]
     );
-    const boundedProgress = Math.min(Math.max(progressPct, 0), 100);
     const allLessonsCompleted = useMemo(
-        () => lessons.every((lesson) => lesson.completed),
-        [lessons]
+        () => progressStats.completedTrackableLessons >= progressStats.trackableLessonCount,
+        [progressStats.completedTrackableLessons, progressStats.trackableLessonCount]
     );
+
+    const refreshServerProgress = useCallback(async () => {
+        if (!databaseUser?.id || !courseId) {
+            return;
+        }
+
+        try {
+            const accessSummary = await lessonAccessApiClient.getCourseAccessSummary(courseId);
+            if (!accessSummary?.success) {
+                return;
+            }
+
+            setHasAssessmentQuiz(Boolean(accessSummary.summary.hasAssessmentQuiz));
+            setAssessmentCompleted(Boolean(accessSummary.summary.assessmentCompleted));
+            setServerProgress({
+                completedTrackableItems: Number(accessSummary.summary.completedTrackableItems ?? 0) || 0,
+                trackableItemCount: Number(accessSummary.summary.trackableItemCount ?? 0) || 0,
+                progressPercent: Number(accessSummary.summary.progressPercent ?? 0) || 0,
+            });
+        } catch (error) {
+            console.warn("Failed to refresh server progress summary.", error);
+        }
+    }, [databaseUser?.id, courseId]);
+
+    const boundedProgress =
+        databaseUser?.id && serverProgress
+            ? serverProgress.progressPercent
+            : progressStats.progressPercent;
+    const completedTrackableItems =
+        databaseUser?.id && serverProgress
+            ? serverProgress.completedTrackableItems
+            : progressStats.completedTrackableItems;
+    const totalTrackableItems =
+        databaseUser?.id && serverProgress
+            ? serverProgress.trackableItemCount
+            : progressStats.trackableItemCount;
 
     const markLessonComplete = useCallback(async (lessonIndex: number) => {
         const lesson = lessons[lessonIndex];
         if (!lesson || lesson.completed) return;
+
+        // Use isEnrolled instead of enrollment to ensure sync works for all enrolled users
+        if (isEnrolled && databaseUser?.id && courseId) {
+            try {
+                const persisted = await updateLessonProgress(databaseUser.id, courseId, String(lesson.id), true);
+                if (!persisted) {
+                    console.warn("Lesson completion was not persisted; keeping local state unchanged.");
+                    return;
+                }
+                await refreshServerProgress();
+            } catch (err) {
+                console.warn('Failed to sync lesson completion to server:', err);
+                return;
+            }
+        }
 
         setLessons(prevLessons =>
             prevLessons.map((l, index) =>
                 index === lessonIndex ? { ...l, completed: true } : l
             )
         );
-
-        // Use isEnrolled instead of enrollment to ensure sync works for all enrolled users
-        if (isEnrolled && databaseUser?.id && courseId) {
-            try {
-                await updateLessonProgress(databaseUser.id, courseId, String(lesson.id), true);
-                const newCompletedCount = lessons.filter(l => l.completed).length + 1;
-                const newProgressPct = (newCompletedCount / lessons.length) * 100;
-                await updateEnrollmentProgress(databaseUser.id, courseId, newProgressPct);
-            } catch (err) {
-                console.warn('Failed to sync lesson completion to server:', err);
-            }
-        }
-    }, [lessons, isEnrolled, databaseUser?.id, courseId]);
+    }, [lessons, isEnrolled, databaseUser?.id, courseId, refreshServerProgress]);
 
     const handleTimeUpdate = (time: number, totalDuration: number) => {
         setCurrentTime(time);
@@ -451,6 +502,29 @@ const CoursePlayerPage: React.FC = () => {
     };
 
     const courseTitle = course?.title || "Loading...";
+    const currentContentLabel = useMemo(() => {
+        const lesson = lessons[currentLessonIndex];
+        if (!lesson) {
+            return "";
+        }
+
+        if (isIntroType(lesson.type)) {
+            return "Intro";
+        }
+        if (isOutroType(lesson.type)) {
+            return "Outro";
+        }
+        if (isQuizType(lesson.type)) {
+            return "Quiz";
+        }
+
+        const lessonNumber = getCountableLessonNumber(lessons, currentLessonIndex);
+        if (lessonNumber) {
+            return `Lesson ${lessonNumber} of ${progressStats.lessonCount}`;
+        }
+
+        return `Lesson ${currentLessonIndex + 1}`;
+    }, [lessons, currentLessonIndex, progressStats.lessonCount]);
     const atFirstLesson = currentLessonIndex === 0;
     const atLastLesson = currentLessonIndex === lessons.length - 1;
 
@@ -475,7 +549,8 @@ const CoursePlayerPage: React.FC = () => {
                                 duration={duration}
                                 isNextLessonUnlocked={isNextLessonUnlocked}
                                 showQuiz={showQuiz}
-                                completedCount={completedCount}
+                                completedTrackableItems={completedTrackableItems}
+                                trackableItemCount={totalTrackableItems}
                                 progressPct={boundedProgress}
                                 isUserEnrolled={isEnrolled}
                             />
@@ -516,6 +591,13 @@ const CoursePlayerPage: React.FC = () => {
                             allLessonsCompleted={allLessonsCompleted}
                             courseSlug={courseId}
                             onBack={handleBackFromQuiz}
+                            onAssessmentPassed={() => {
+                                if (databaseUser?.id) {
+                                    void refreshServerProgress();
+                                    return;
+                                }
+                                setAssessmentCompleted(true);
+                            }}
                         />
                     </div>
                 ) : (
@@ -577,7 +659,7 @@ const CoursePlayerPage: React.FC = () => {
 
                                 <div className="flex-1 text-center">
                                     <span className="text-sm text-gray-500">
-                                        Lesson {currentLessonIndex + 1} of {lessons.length}
+                                        {currentContentLabel}
                                     </span>
                                 </div>
 
@@ -608,7 +690,7 @@ const CoursePlayerPage: React.FC = () => {
                                     />
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1">
-                                    {completedCount} of {lessons.length} lessons completed
+                                    {completedTrackableItems} of {totalTrackableItems} trackable items completed
                                 </p>
                             </div>
                         </div>
@@ -617,7 +699,9 @@ const CoursePlayerPage: React.FC = () => {
                         <div className="lg:hidden mt-6 pb-20">
                             <div className="mb-3 px-1">
                                 <h3 className="font-semibold text-gray-900">Course Content</h3>
-                                <p className="text-xs text-gray-500">{completedCount} of {lessons.length} completed</p>
+                                <p className="text-xs text-gray-500">
+                                    {completedTrackableItems} of {totalTrackableItems} trackable items completed
+                                </p>
                             </div>
                             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                                 <CourseOutline
@@ -631,7 +715,8 @@ const CoursePlayerPage: React.FC = () => {
                                     duration={duration}
                                     isNextLessonUnlocked={isNextLessonUnlocked}
                                     showQuiz={showQuiz}
-                                    completedCount={completedCount}
+                                    completedTrackableItems={completedTrackableItems}
+                                    trackableItemCount={totalTrackableItems}
                                     progressPct={boundedProgress}
                                     isUserEnrolled={isEnrolled}
                                 />

@@ -14,6 +14,15 @@
 
 import { getCurrentUser } from './auth.mjs'
 
+const normalizeLessonType = (type) => String(type || '').trim().toLowerCase()
+
+const isCountableLessonType = (type) => normalizeLessonType(type) === 'standard'
+
+const isTrackableLessonType = (type) => {
+  const normalized = normalizeLessonType(type)
+  return normalized === 'standard' || normalized === 'quiz'
+}
+
 /**
  * Resolve auth user identity (Azure OID) to DB user UUID used by user_enrollments.user_id.
  * Falls back to the provided value for backward compatibility with legacy environments.
@@ -302,6 +311,7 @@ export const getCourseAccessSummary = async (supabaseClient, userId, courseSlug)
         lessonId: lesson.id,
         moduleId: lesson.module_id,
         title: lesson.title,
+        type: lesson.type,
         orderIndex: lesson.order_index,
         isPreview: lesson.is_preview,
         canAccess: accessResult.canAccess,
@@ -313,8 +323,9 @@ export const getCourseAccessSummary = async (supabaseClient, userId, courseSlug)
 
     // Get enrollment info if user is authenticated
     let enrollment = null
+    let enrollmentUserId = null
     if (userId) {
-      const enrollmentUserId = await resolveEnrollmentUserId(supabaseClient, userId)
+      enrollmentUserId = await resolveEnrollmentUserId(supabaseClient, userId)
       const { data: enrollmentData } = await supabaseClient
         .from('user_enrollments')
         .select('*')
@@ -325,6 +336,66 @@ export const getCourseAccessSummary = async (supabaseClient, userId, courseSlug)
       
       enrollment = enrollmentData
     }
+
+    const lessonCount = lessons.filter((lesson) => isCountableLessonType(lesson.type)).length
+    const trackableLessonIds = lessons
+      .filter((lesson) => isTrackableLessonType(lesson.type))
+      .map((lesson) => lesson.id)
+    const trackableLessonCount = trackableLessonIds.length
+
+    const { count: quizRowsCount, error: quizCountError } = await supabaseClient
+      .from('quizzes')
+      .select('id', { count: 'exact', head: true })
+      .eq('course_slug', courseSlug)
+
+    if (quizCountError) {
+      console.warn('Error counting quizzes for course summary:', quizCountError)
+    }
+
+    const hasAssessmentQuiz = (quizRowsCount || 0) > 0
+
+    let completedTrackableLessons = 0
+    if (enrollment?.id && trackableLessonIds.length > 0) {
+      const { count: completedTrackableLessonsCount, error: completedLessonsError } = await supabaseClient
+        .from('lesson_progress')
+        .select('lesson_id', { count: 'exact', head: true })
+        .eq('enrollment_id', enrollment.id)
+        .eq('completed', true)
+        .in('lesson_id', trackableLessonIds)
+
+      if (completedLessonsError) {
+        console.warn('Error counting completed trackable lessons:', completedLessonsError)
+      } else {
+        completedTrackableLessons = completedTrackableLessonsCount || 0
+      }
+    }
+
+    let assessmentCompleted = false
+    if (enrollmentUserId && hasAssessmentQuiz) {
+      const { data: quizAttempt, error: quizAttemptError } = await supabaseClient
+        .from('quiz_attempts')
+        .select('id')
+        .eq('user_id', enrollmentUserId)
+        .eq('course_slug', courseSlug)
+        .eq('passed', true)
+        .maybeSingle()
+
+      if (
+        quizAttemptError &&
+        !['PGRST116', 'PGRST204', 'PGRST205', '42P01'].includes(quizAttemptError.code)
+      ) {
+        console.warn('Error checking assessment completion:', quizAttemptError)
+      } else {
+        assessmentCompleted = Boolean(quizAttempt?.id)
+      }
+    }
+
+    const trackableItemCount = trackableLessonCount + (hasAssessmentQuiz ? 1 : 0)
+    const completedTrackableItems = completedTrackableLessons + (assessmentCompleted ? 1 : 0)
+    const progressPercent =
+      trackableItemCount > 0
+        ? Math.round((completedTrackableItems / trackableItemCount) * 100)
+        : 0
 
     // Build module summary with intro access info
     const moduleSummary = (modules || []).map(module => ({
@@ -350,7 +421,14 @@ export const getCourseAccessSummary = async (supabaseClient, userId, courseSlug)
       modules: moduleSummary,
       lessons: accessResults,
       summary: {
-        totalLessons: lessons.length,
+        totalLessons: lessonCount,
+        lessonCount,
+        totalContentItems: lessons.length,
+        hasAssessmentQuiz,
+        assessmentCompleted,
+        trackableItemCount,
+        completedTrackableItems,
+        progressPercent,
         totalModules: (modules || []).length,
         previewLessons: lessons.filter(l => l.is_preview).length,
         accessibleLessons: accessResults.filter(r => r.canAccess).length,

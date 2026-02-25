@@ -45,6 +45,7 @@ export interface CourseAccessSummary {
   lessons: Array<{
     lessonId: string
     title: string
+    type?: string
     orderIndex: number
     isPreview: boolean
     canAccess: boolean
@@ -58,6 +59,13 @@ export interface CourseAccessSummary {
   }>
   summary: {
     totalLessons: number
+    lessonCount: number
+    totalContentItems: number
+    hasAssessmentQuiz: boolean
+    assessmentCompleted: boolean
+    trackableItemCount: number
+    completedTrackableItems: number
+    progressPercent: number
     previewLessons: number
     accessibleLessons: number
     blockedLessons: number
