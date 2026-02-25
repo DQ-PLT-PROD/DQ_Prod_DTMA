@@ -48,9 +48,8 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AdminAuthProvider>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
               <Route path="/" element={<App />} />
 
               {/* Course routes */}
@@ -103,16 +102,32 @@ export function AppRouter() {
               } />
 
               {/* Admin Auth */}
-              <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route path="/admin/logout" element={<AdminLogoutPage />} />
+              <Route
+                path="/admin/login"
+                element={
+                  <AdminAuthProvider>
+                    <AdminLoginPage />
+                  </AdminAuthProvider>
+                }
+              />
+              <Route
+                path="/admin/logout"
+                element={
+                  <AdminAuthProvider>
+                    <AdminLogoutPage />
+                  </AdminAuthProvider>
+                }
+              />
 
               {/* Instructor Portal */}
               <Route
                 path="/instructor"
                 element={
-                  <AdminProtectedRoute>
-                    <InstructorLayout />
-                  </AdminProtectedRoute>
+                  <AdminAuthProvider>
+                    <AdminProtectedRoute>
+                      <InstructorLayout />
+                    </AdminProtectedRoute>
+                  </AdminAuthProvider>
                 }
               >
                 <Route index element={<Navigate to="dashboard" replace />} />
@@ -147,9 +162,8 @@ export function AppRouter() {
 
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/404" replace />} />
-              </Routes>
-            </Suspense>
-        </AdminAuthProvider>
+            </Routes>
+          </Suspense>
       </AuthProvider>
     </BrowserRouter>
   );
