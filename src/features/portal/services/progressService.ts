@@ -145,8 +145,8 @@ export const getOrCreateEnrollment = async (
     courseSlug: string
 ): Promise<Enrollment | null> => {
     try {
-        // Try to get existing enrollment
-        let enrollment = await enrollmentApiClient.getEnrollment(courseSlug, userId);
+        // Try to get existing enrollment (backend uses authenticated user from token)
+        let enrollment = await enrollmentApiClient.getEnrollment(courseSlug);
         
         if (enrollment) {
             return enrollment as Enrollment;
@@ -393,8 +393,8 @@ export const getActualProgressStats = async (
     const defaultResult = { completedCount: 0, totalCount: 0, progressPct: 0 };
 
     try {
-        // Get enrollment which has the progress_pct
-        const enrollment = await enrollmentApiClient.getEnrollment(courseSlug, userId);
+        // Get enrollment which has the progress_pct (backend uses authenticated user from token)
+        const enrollment = await enrollmentApiClient.getEnrollment(courseSlug);
         
         if (!enrollment) {
             return defaultResult;
