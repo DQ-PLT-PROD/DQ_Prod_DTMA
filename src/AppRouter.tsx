@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/lib/auth";
-import { RoleSwitcherProvider } from "@/features/instructor-portal";
+import { AdminAuthProvider } from "@/lib/admin-auth";
+import { SavedCoursesProvider } from "@/features/courses/context/SavedCoursesContext";
 import { App } from "./App";
 
 // Lazy load page components for code splitting
@@ -9,10 +10,14 @@ const CourseCatalogPage = lazy(() => import("./features/courses/pages/CourseCata
 const CourseDetailsPage = lazy(() => import("./features/courses/pages/CourseDetailsPage"));
 const DashboardRouter = lazy(() => import("./features/dashboard/pages/DashboardRouter"));
 const ProtectedRoute = lazy(() => import("@/components/auth/ProtectedRoute"));
+const AdminProtectedRoute = lazy(() => import("@/components/auth/AdminProtectedRoute"));
 const NotFound = lazy(() => import("./features/app/pages/NotFound"));
 const PortalLayout = lazy(() => import("./features/portal/layout/PortalLayout").then(m => ({ default: m.PortalLayout })));
 const InProgressPage = lazy(() => import("./features/portal/pages/InProgressPage"));
+const SavedCoursesPage = lazy(() => import("./features/portal/pages/SavedCoursesPage"));
 const CoursePlayerPage = lazy(() => import("./features/portal/pages/CoursePlayerPage"));
+const BadgesPage = lazy(() => import("./features/portal/pages/BadgesPage"));
+const BadgeSharePage = lazy(() => import("./features/portal/pages/BadgeSharePage"));
 const LearnerOnboarding = lazy(() => import("./features/dashboard/pages/onboarding"));
 const ProfilePage = lazy(() => import("./features/portal/pages/ProfilePage"));
 const QuizAuditPage = lazy(() => import("./features/portal/pages/QuizAuditPage").then(m => ({ default: m.QuizAuditPage })));
@@ -20,6 +25,8 @@ const ComingSoon = lazy(() => import("./features/app/pages/ComingSoon").then(m =
 const AuthDebugPanel = lazy(() => import("@/components/auth/AuthDebugPanel").then(m => ({ default: m.AuthDebugPanel })));
 const EnrollmentGuard = lazy(() => import("./features/courses/components/guards/EnrollmentGuard").then(m => ({ default: m.EnrollmentGuard })));
 const PaymentSuccessHandler = lazy(() => import("./features/courses/components/payment/PaymentSuccessHandler").then(m => ({ default: m.PaymentSuccessHandler })));
+const AdminLoginPage = lazy(() => import("./features/admin-auth/pages/AdminLoginPage"));
+const AdminLogoutPage = lazy(() => import("./features/admin-auth/pages/AdminLogoutPage"));
 
 // Instructor Portal lazy imports
 const InstructorLayout = lazy(() => import("./features/instructor-portal/layout/InstructorLayout").then(m => ({ default: m.InstructorLayout })));
@@ -42,13 +49,24 @@ const PageLoader = () => (
   </div>
 );
 
+export const LegacyLearningRedirect = () => {
+  const [searchParams] = useSearchParams();
+  const courseId = searchParams.get("courseId");
+
+  if (courseId) {
+    return <Navigate to={`/portal/learning/${encodeURIComponent(courseId)}`} replace />;
+  }
+
+  return <Navigate to="/portal" replace />;
+};
+
 export function AppRouter() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <RoleSwitcherProvider>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
+        <SavedCoursesProvider>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
               <Route path="/" element={<App />} />
 
               {/* Course routes */}
@@ -78,6 +96,8 @@ export function AppRouter() {
                 <Route path="onboarding" element={<LearnerOnboarding layout="portal" />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="my-courses/in-progress" element={<InProgressPage />} />
+                <Route path="saved" element={<SavedCoursesPage />} />
+                <Route path="badges" element={<BadgesPage />} />
                 <Route 
                   path="learning/:courseId" 
                   element={
@@ -88,10 +108,13 @@ export function AppRouter() {
                 />
               </Route>
 
+              {/* Public Share Routes */}
+              <Route path="/badges/share/:token" element={<BadgeSharePage />} />
+
               <Route path="/portal/admin/audit-quizzes" element={<QuizAuditPage />} />
 
-              {/* Redirect /learning to /portal for backward compatibility */}
-              <Route path="/learning" element={<Navigate to="/portal" replace />} />
+              {/* Redirect /learning and legacy /learning?courseId=... to portal routes */}
+              <Route path="/learning" element={<LegacyLearningRedirect />} />
 
               {/* Auth Debug Panel - for testing authentication and user sync */}
               <Route path="/auth-debug" element={
@@ -100,13 +123,33 @@ export function AppRouter() {
                 </div>
               } />
 
+              {/* Admin Auth */}
+              <Route
+                path="/admin/login"
+                element={
+                  <AdminAuthProvider>
+                    <AdminLoginPage />
+                  </AdminAuthProvider>
+                }
+              />
+              <Route
+                path="/admin/logout"
+                element={
+                  <AdminAuthProvider>
+                    <AdminLogoutPage />
+                  </AdminAuthProvider>
+                }
+              />
+
               {/* Instructor Portal */}
               <Route
                 path="/instructor"
                 element={
-                  <ProtectedRoute>
-                    <InstructorLayout />
-                  </ProtectedRoute>
+                  <AdminAuthProvider>
+                    <AdminProtectedRoute>
+                      <InstructorLayout />
+                    </AdminProtectedRoute>
+                  </AdminAuthProvider>
                 }
               >
                 <Route index element={<Navigate to="dashboard" replace />} />
@@ -145,7 +188,7 @@ export function AppRouter() {
               <Route path="*" element={<Navigate to="/404" replace />} />
             </Routes>
           </Suspense>
-        </RoleSwitcherProvider>
+        </SavedCoursesProvider>
       </AuthProvider>
     </BrowserRouter>
   );

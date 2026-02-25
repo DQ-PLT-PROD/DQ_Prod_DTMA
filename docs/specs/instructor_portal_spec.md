@@ -1,7 +1,7 @@
 # DTM Instructor Portal — Feature Specification
 
 **Owner**: *Dev TBD*  
-**Auth Model**: Azure Entra ID (MSAL)  
+**Auth Model**: Supabase Auth for `/instructor/*` (MSAL remains for learner flows)  
 **Data Source**: Supabase (all data **must be wired**, no hardcoded overrides)
 
 ---
@@ -15,6 +15,12 @@ Deliver a fully functional **Instructor Portal** for DTMA that enables content c
 4. Upload and manage media assets
 
 **Primary Constraint**: All views must fetch data from Supabase. Static placeholders are only acceptable for features explicitly marked "Coming Soon."
+
+### 0.1 Admin Authentication Baseline
+- Admin entry route: `/admin/login`
+- Protected instructor routes: `/instructor/*` (guarded by Supabase session + active `public.admin_memberships` record)
+- RBAC source of truth: `public.admin_memberships` (`admin`, `instructor`, `editor`, `viewer`)
+- Frontend authorization: CASL ability checks for all content mutations
 
 ---
 
@@ -272,7 +278,8 @@ Manage media assets stored in Supabase Storage.
 
 ### 3.3 Security
 - No service-role keys in browser code.
-- RLS should scope instructor data where applicable.
+- RLS is required on `courses`, `lessons`, `modules`, `course_categories`, and `storage.objects` (`lms-content`).
+- Admin authorization decisions must not rely on localStorage role toggles.
 
 ---
 
@@ -286,6 +293,7 @@ Manage media assets stored in Supabase Storage.
 | Course Form fields | `CourseForm.tsx` | Remove: Provider, Delivery Mode, Course Type, Department, Audience, Level Code |
 | Duration field | `CourseForm.tsx` | Make read-only, calculate from lessons |
 | Media Library tab | `CourseManagementPage.tsx` | Add new component |
+| Instructor route guard | `AppRouter.tsx` | Use Supabase-based `AdminProtectedRoute` |
 
 ---
 

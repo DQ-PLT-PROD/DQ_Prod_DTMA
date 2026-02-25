@@ -31,6 +31,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
     // Highlight active link
     const isMyCoursesActive = location.pathname.includes("/portal/my-courses") || location.search.includes("view=my-courses");
     const isProfileActive = location.pathname.startsWith("/portal/profile");
+    const isSavedActive = location.pathname.startsWith("/portal/saved");
+    const isBadgesActive = location.pathname.startsWith("/portal/badges");
 
     useEffect(() => {
         let isMounted = true;
@@ -158,18 +160,16 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                                 </Link>
 
                                 {/* Saved */}
-                                <div
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 cursor-not-allowed ${!sidebarOpen ? 'justify-center' : ''}`}
-                                    title="Saved - Coming Soon"
+                                <Link
+                                    to="/portal/saved"
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isSavedActive ? 'text-[#1839AD] bg-[#1839AD]/10' : 'text-[#1839AD] bg-[#1839AD]/5 hover:bg-[#1839AD]/10'} transition ${!sidebarOpen ? 'justify-center' : ''}`}
+                                    title="Saved"
                                 >
                                     <Bookmark size={16} className="shrink-0" />
                                     {sidebarOpen && (
-                                        <div className="flex-1 flex items-center justify-between">
-                                            <span className="text-sm">Saved</span>
-                                            <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
-                                        </div>
+                                        <span className="text-sm">Saved</span>
                                     )}
-                                </div>
+                                </Link>
                             </div>
 
                             {/* Divider */}
@@ -177,7 +177,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
 
                             <Link
                                 to="/portal/badges"
-                                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg text-[#1839AD] bg-[#1839AD]/5 hover:bg-[#1839AD]/10 transition ${!sidebarOpen ? 'justify-center' : ''}`}
+                                className={`flex items-center gap-3 px-3 py-2 mx-2 rounded-lg ${isBadgesActive ? 'text-[#1839AD] bg-[#1839AD]/10' : 'text-[#1839AD] bg-[#1839AD]/5 hover:bg-[#1839AD]/10'} transition ${!sidebarOpen ? 'justify-center' : ''}`}
                                 title="Badges"
                             >
                                 <Award size={16} className="shrink-0" />
@@ -258,16 +258,15 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, isTheaterM
                                     <span className="text-sm">Profile</span>
                                 </Link>
 
-                                <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400">
+                                <Link to="/portal/saved" className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isSavedActive ? 'text-[#1839AD] bg-[#1839AD]/10' : 'text-[#1839AD] bg-[#1839AD]/5'}`}>
                                     <Bookmark size={16} />
                                     <span className="text-sm">Saved</span>
-                                    <span className="ml-auto text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">Soon</span>
-                                </div>
+                                </Link>
                             </div>
 
                             <div className="my-3 mx-3 border-t border-gray-200" />
 
-                            <Link to="/portal/badges" className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#1839AD] bg-[#1839AD]/5">
+                            <Link to="/portal/badges" className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isBadgesActive ? 'text-[#1839AD] bg-[#1839AD]/10' : 'text-[#1839AD] bg-[#1839AD]/5'}`}>
                                 <Award size={16} />
                                 <span className="text-sm">Badges</span>
                             </Link>

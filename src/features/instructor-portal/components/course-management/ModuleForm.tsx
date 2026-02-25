@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftIcon, SaveIcon } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/dbClient';
+import { useAdminAuth } from '@/lib/admin-auth';
 import { Toast } from '@/components/ui/Toast';
 
 interface CourseOption {
@@ -14,6 +15,7 @@ export function ModuleForm() {
     const navigate = useNavigate();
     const { id } = useParams();
     const isEditing = Boolean(id);
+    const { ability } = useAdminAuth();
 
     const [loading, setLoading] = useState(false);
     const [courses, setCourses] = useState<CourseOption[]>([]);
@@ -24,6 +26,9 @@ export function ModuleForm() {
         order_index: 0
     });
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+    const canCreateModule = ability.can('create', 'Module');
+    const canUpdateModule = ability.can('update', 'Module');
+    const canSubmit = isEditing ? canUpdateModule : canCreateModule;
 
     useEffect(() => {
         loadCourses();
@@ -78,8 +83,12 @@ export function ModuleForm() {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        if (!canSubmit) {
+            setToast({ type: 'error', message: `You do not have permission to ${isEditing ? 'update' : 'create'} modules.` });
+            return;
+        }
         if (!formData.title || (!formData.course_slug && !isEditing)) {
             setToast({ type: 'error', message: 'Title and Course are required' });
             return;
@@ -144,7 +153,7 @@ export function ModuleForm() {
                 </div>
                 <button
                     onClick={handleSubmit}
-                    disabled={loading}
+                    disabled={loading || !canSubmit}
                     className="px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-hover)] text-white rounded-lg flex items-center shadow-sm disabled:opacity-50"
                 >
                     <SaveIcon className="h-4 w-4 mr-2" />

@@ -8,7 +8,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EditIcon, TrashIcon, PlusIcon, SearchIcon, SendIcon, ArchiveIcon } from 'lucide-react';
-import { getSupabaseClient, getSupabaseClientWithRLSOverride, isRLSOverrideAvailable } from '../../lib/dbClient';
+import { getSupabaseClient } from '../../lib/dbClient';
+import { useAdminAuth } from '@/lib/admin-auth';
 import { Toast } from '@/components/ui/Toast';
 
 interface Course {
@@ -44,12 +45,17 @@ interface Course {
 
 export function CoursesSection() {
     const navigate = useNavigate();
+    const { ability } = useAdminAuth();
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
-    const [overrideRLS, setOverrideRLS] = useState(false);
     const [postingId, setPostingId] = useState<string | null>(null);
+    const canCreateCourse = ability.can('create', 'Course');
+    const canUpdateCourse = ability.can('update', 'Course');
+    const canDeleteCourse = ability.can('delete', 'Course');
+    const canPublishCourse = ability.can('publish', 'Course');
+    const canUnpublishCourse = ability.can('unpublish', 'Course');
 
     useEffect(() => {
         loadCourses();
@@ -80,6 +86,10 @@ export function CoursesSection() {
     };
 
     const handleDelete = async (id: string) => {
+        if (!canDeleteCourse) {
+            setToast({ type: 'error', message: 'You do not have permission to delete courses.' });
+            return;
+        }
         if (!confirm('Are you sure you want to delete this course?')) return;
 
         try {
@@ -105,7 +115,11 @@ export function CoursesSection() {
     };
 
     const handlePost = async (course: Course) => {
-        const supabase = overrideRLS ? getSupabaseClientWithRLSOverride() : getSupabaseClient();
+        if (!canPublishCourse) {
+            setToast({ type: 'error', message: 'You do not have permission to publish courses.' });
+            return;
+        }
+        const supabase = getSupabaseClient();
         if (!supabase) {
             setToast({ type: 'error', message: 'Database connection unavailable' });
             return;
@@ -123,19 +137,18 @@ export function CoursesSection() {
         } catch (error: unknown) {
             console.error('Error posting course:', error);
             const msg = error instanceof Error ? error.message : 'Failed to post course';
-            const hint = !overrideRLS && isRLSOverrideAvailable()
-                ? ' Try enabling "Override RLS" below if the update is blocked by policy.'
-                : !isRLSOverrideAvailable()
-                    ? ' Set VITE_SUPABASE_SERVICE_ROLE_KEY in .env to use "Override RLS" and bypass RLS.'
-                    : '';
-            setToast({ type: 'error', message: msg + hint });
+            setToast({ type: 'error', message: msg });
         } finally {
             setPostingId(null);
         }
     };
 
     const handleUnpost = async (course: Course) => {
-        const supabase = overrideRLS ? getSupabaseClientWithRLSOverride() : getSupabaseClient();
+        if (!canUnpublishCourse) {
+            setToast({ type: 'error', message: 'You do not have permission to unpublish courses.' });
+            return;
+        }
+        const supabase = getSupabaseClient();
         if (!supabase) {
             setToast({ type: 'error', message: 'Database connection unavailable' });
             return;
@@ -153,12 +166,7 @@ export function CoursesSection() {
         } catch (error: unknown) {
             console.error('Error unposting course:', error);
             const msg = error instanceof Error ? error.message : 'Failed to revert to draft';
-            const hint = !overrideRLS && isRLSOverrideAvailable()
-                ? ' Try enabling "Override RLS" below if the update is blocked by policy.'
-                : !isRLSOverrideAvailable()
-                    ? ' Set VITE_SUPABASE_SERVICE_ROLE_KEY in .env to use "Override RLS" and bypass RLS.'
-                    : '';
-            setToast({ type: 'error', message: msg + hint });
+            setToast({ type: 'error', message: msg });
         } finally {
             setPostingId(null);
         }
@@ -193,7 +201,8 @@ export function CoursesSection() {
                     </div>
                     <button
                         onClick={() => navigate('/instructor/course-management/course/new')}
-                        className="px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-hover)] text-white rounded-md flex items-center text-sm font-medium transition-colors"
+                        disabled={!canCreateCourse}
+                        className="px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-hover)] text-white rounded-md flex items-center text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Add Course
@@ -214,17 +223,6 @@ export function CoursesSection() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                {isRLSOverrideAvailable() && (
-                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={overrideRLS}
-                            onChange={(e) => setOverrideRLS(e.target.checked)}
-                            className="rounded border-gray-300 text-[var(--md-primary)] focus:ring-[var(--md-primary)]"
-                        />
-                        <span>Override RLS (use service role for post/unpost if blocked by policy)</span>
-                    </label>
-                )}
             </div>
 
             <div className="overflow-x-auto">
@@ -281,7 +279,7 @@ export function CoursesSection() {
                                     </td>
                                     <td className="px-4 py-3 text-right text-sm font-medium">
                                         <div className="flex items-center justify-end gap-1">
-                                            {course.status !== 'published' && (
+                                            {course.status !== 'published' && canPublishCourse && (
                                                 <button
                                                     onClick={() => handlePost(course)}
                                                     disabled={postingId === course.id}
@@ -295,7 +293,7 @@ export function CoursesSection() {
                                                     )}
                                                 </button>
                                             )}
-                                            {course.status === 'published' && (
+                                            {course.status === 'published' && canUnpublishCourse && (
                                                 <button
                                                     onClick={() => handleUnpost(course)}
                                                     disabled={postingId === course.id}
@@ -309,20 +307,24 @@ export function CoursesSection() {
                                                     )}
                                                 </button>
                                             )}
-                                            <button
-                                                onClick={() => navigate(`/instructor/course-management/course/${course.id}`)}
-                                                className="p-1.5 text-[var(--md-primary)] hover:bg-gray-100 rounded"
-                                                title="Edit"
-                                            >
-                                                <EditIcon className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(course.id)}
-                                                className="p-1.5 text-red-600 hover:text-red-800 rounded hover:bg-red-50"
-                                                title="Delete"
-                                            >
-                                                <TrashIcon className="h-4 w-4" />
-                                            </button>
+                                            {canUpdateCourse && (
+                                                <button
+                                                    onClick={() => navigate(`/instructor/course-management/course/${course.id}`)}
+                                                    className="p-1.5 text-[var(--md-primary)] hover:bg-gray-100 rounded"
+                                                    title="Edit"
+                                                >
+                                                    <EditIcon className="h-4 w-4" />
+                                                </button>
+                                            )}
+                                            {canDeleteCourse && (
+                                                <button
+                                                    onClick={() => handleDelete(course.id)}
+                                                    className="p-1.5 text-red-600 hover:text-red-800 rounded hover:bg-red-50"
+                                                    title="Delete"
+                                                >
+                                                    <TrashIcon className="h-4 w-4" />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

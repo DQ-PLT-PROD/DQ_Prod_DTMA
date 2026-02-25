@@ -2,11 +2,10 @@
  * Instructor Dashboard Stats Service
  *
  * Fetches live counts for the instructor dashboard: courses (draft/published)
- * and active students. Uses service role for enrollment counts since RLS
- * restricts user_enrollments to own enrollments.
+ * and active students.
  */
 
-import { getSupabaseClient, getSupabaseClientWithRLSOverride } from './dbClient';
+import { getSupabaseClient } from './dbClient';
 
 export interface InstructorDashboardStats {
     totalCourses: number;
@@ -17,8 +16,6 @@ export interface InstructorDashboardStats {
 
 /**
  * Fetch dashboard stats: course counts (draft, published) and active students.
- * Course counts use regular client; active students use RLS override to read
- * all enrollments (instructor cannot see other users' enrollments via RLS).
  */
 export async function fetchInstructorDashboardStats(): Promise<InstructorDashboardStats> {
     const supabase = getSupabaseClient();
@@ -38,7 +35,7 @@ export async function fetchInstructorDashboardStats(): Promise<InstructorDashboa
 }
 
 async function fetchCourseStats(
-    supabase: ReturnType<typeof getSupabaseClient>
+    supabase: NonNullable<ReturnType<typeof getSupabaseClient>>
 ): Promise<{ totalCourses: number; draftCourses: number; publishedCourses: number }> {
     const { data, error } = await supabase
         .from('courses')
@@ -58,13 +55,9 @@ async function fetchCourseStats(
 }
 
 async function fetchActiveStudentsCount(
-    supabase: ReturnType<typeof getSupabaseClient>
+    supabase: NonNullable<ReturnType<typeof getSupabaseClient>>
 ): Promise<number> {
-    // Use RLS override to read enrollments; regular client only returns
-    // the current user's enrollments
-    const client = getSupabaseClientWithRLSOverride() ?? supabase;
-
-    const { data, error } = await client
+    const { data, error } = await supabase
         .from('user_enrollments')
         .select('user_id')
         .eq('status', 'active');
