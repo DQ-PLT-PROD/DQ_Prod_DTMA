@@ -9,6 +9,12 @@ import {
     FileText,
 } from "lucide-react";
 import { Lesson } from "../../../types/course";
+import {
+    getCountableLessonNumber,
+    isIntroType,
+    isOutroType,
+    isQuizType,
+} from "@/lib/courseProgress/metrics";
 
 interface CourseOutlineProps {
     lessons: Lesson[];
@@ -21,7 +27,8 @@ interface CourseOutlineProps {
     duration: number;
     isNextLessonUnlocked: boolean;
     showQuiz: boolean;
-    completedCount: number;
+    completedTrackableItems: number;
+    trackableItemCount: number;
     progressPct: number;
     isUserEnrolled?: boolean; // Add enrollment status
 }
@@ -37,16 +44,11 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
     duration,
     isNextLessonUnlocked,
     showQuiz,
-    completedCount,
+    completedTrackableItems,
+    trackableItemCount,
     progressPct,
     isUserEnrolled = false, // Default to false
 }) => {
-    const firstLessonTitle = (lessons[0]?.title || "").toLowerCase();
-    const hasIntroLesson =
-        lessons[0]?.type === "intro" ||
-        firstLessonTitle.includes("introduction");
-    const shouldOffsetNumbering = hasIntroLesson || lessons.length >= 11;
-
     return (
         <aside className="bg-white border border-gray-200 rounded-none overflow-hidden flex flex-col h-full sticky top-4">
             <div className="px-3 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50 rounded-none">
@@ -54,8 +56,9 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
                     <ListVideo size={16} />
                     <span className="font-semibold text-sm">Course Outline</span>
                     <span className="text-xs text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">
-                        {completedCount}/{lessons.length}
+                        {completedTrackableItems}/{trackableItemCount}
                     </span>
+                    <span className="text-xs text-gray-500">{progressPct}%</span>
                 </div>
                 <button
                     onClick={() => setModuleOpen(!moduleOpen)}
@@ -81,21 +84,14 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
                     {lessons.map((lesson, idx) => {
                         const isActive = idx === currentLessonIndex && !showQuiz;
                         const isCompleted = lesson.completed;
-                        const isLocked = !isCompleted && idx > currentLessonIndex && !lessons[idx - 1]?.completed;
-                        const isIntroLesson = shouldOffsetNumbering && idx === 0;
-                        const isConclusionLesson =
-                            lesson.type === "outro" ||
-                            /conclusion/i.test(lesson.title || "") ||
-                            (lessons.length >= 11 && idx === lessons.length - 1);
-
-                        const displayNumber =
-                            !isIntroLesson && !isConclusionLesson
-                                ? (shouldOffsetNumbering ? idx : idx + 1)
-                                : null;
+                        const isIntroLesson = isIntroType(lesson.type);
+                        const isConclusionLesson = isOutroType(lesson.type);
+                        const isQuizLesson = isQuizType(lesson.type);
+                        const displayNumber = getCountableLessonNumber(lessons, idx);
 
                         const badgeContent = isCompleted
                             ? <CheckCircle2 size={12} />
-                            : (displayNumber ?? "");
+                            : (displayNumber ?? (isQuizLesson ? "Q" : ""));
 
                         // Access control logic:
                         // 1. Preview lessons are always accessible
@@ -156,6 +152,11 @@ export const CourseOutline: React.FC<CourseOutlineProps> = ({
                                         {isConclusionLesson && (
                                             <span className="text-[10px] text-[#2E469E] font-semibold uppercase bg-blue-100 px-1.5 py-0.5 rounded">
                                                 Course Conclusion
+                                            </span>
+                                        )}
+                                        {isQuizLesson && (
+                                            <span className="text-[10px] text-[#6246B1] font-semibold uppercase bg-indigo-100 px-1.5 py-0.5 rounded">
+                                                Assessment
                                             </span>
                                         )}
                                         {isCompleted && (

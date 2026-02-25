@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchCourseWithContent, fetchRelatedCourses, fetchCourseLessons, fetchCategories } from "@/services/courseService";
+import { fetchCourseWithContent, fetchRelatedCourses, fetchCategories } from "@/services/courseService";
+import { computeCourseContentStats } from "@/lib/courseProgress/metrics";
 import { Course, Category } from "@/types/dtma-lms";
 
 export interface UseProductDetailsArgs {
@@ -97,6 +98,7 @@ export function useProductDetails({
         const category = categories.find((c) => c.id === course.categoryId || c.slug === course.categoryId);
         // Use lessons passed in, fallback to empty if not provided
         const lessonList = courseLessons.length ? courseLessons : [];
+        const lessonStats = computeCourseContentStats(lessonList);
 
         if (!applicationProcess) {
             applicationProcess = lessonList.map((lesson) => ({
@@ -124,7 +126,7 @@ export function useProductDetails({
             category: category?.name,
             categorySlug: category?.slug,
             duration: formatDuration(course.estimatedDurationMinutes),
-            lessonCount: course.lessonCount,
+            lessonCount: lessonList.length > 0 ? lessonStats.lessonCount : course.lessonCount,
             learningOutcomes: course.learningOutcomes || [],
             skillsGained: course.skillsGained || [],
             keyHighlights: highlights,

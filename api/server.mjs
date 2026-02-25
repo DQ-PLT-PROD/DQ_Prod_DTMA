@@ -353,6 +353,86 @@ const lessonAccessHandlers = {
         return sendError(res, 500, 'Failed to update lesson progress')
       }
 
+      // Recompute enrollment progress from persisted completion records.
+      const { data: trackableLessons, error: trackableLessonsError } = await supabaseClient
+        .from('lessons')
+        .select('id, type')
+        .eq('course_slug', courseSlug)
+        .in('type', ['standard', 'quiz'])
+
+      if (trackableLessonsError) {
+        console.warn('Error fetching trackable lessons for progress calculation:', trackableLessonsError)
+      }
+
+      const trackableLessonIds = (trackableLessons || []).map((lesson) => lesson.id)
+      const trackableLessonCount = trackableLessonIds.length
+
+      let completedTrackableLessonCount = 0
+      if (trackableLessonIds.length > 0) {
+        const { count: completedCount, error: completedCountError } = await supabaseClient
+          .from('lesson_progress')
+          .select('lesson_id', { count: 'exact', head: true })
+          .eq('enrollment_id', enrollment.id)
+          .eq('completed', true)
+          .in('lesson_id', trackableLessonIds)
+
+        if (completedCountError) {
+          console.warn('Error counting completed trackable lessons:', completedCountError)
+        } else {
+          completedTrackableLessonCount = completedCount || 0
+        }
+      }
+
+      const { count: quizRowsCount, error: quizRowsCountError } = await supabaseClient
+        .from('quizzes')
+        .select('id', { count: 'exact', head: true })
+        .eq('course_slug', courseSlug)
+
+      if (quizRowsCountError) {
+        console.warn('Error counting assessment quizzes for progress calculation:', quizRowsCountError)
+      }
+
+      const hasAssessmentQuiz = (quizRowsCount || 0) > 0
+      let assessmentCompleted = false
+
+      if (hasAssessmentQuiz) {
+        const { data: quizAttempt, error: quizAttemptError } = await supabaseClient
+          .from('quiz_attempts')
+          .select('id')
+          .eq('user_id', dbUserId)
+          .eq('course_slug', courseSlug)
+          .eq('passed', true)
+          .maybeSingle()
+
+        if (
+          quizAttemptError &&
+          !['PGRST116', 'PGRST204', 'PGRST205', '42P01'].includes(quizAttemptError.code)
+        ) {
+          console.warn('Error checking assessment completion for progress calculation:', quizAttemptError)
+        } else {
+          assessmentCompleted = Boolean(quizAttempt?.id)
+        }
+      }
+
+      const trackableItemCount = trackableLessonCount + (hasAssessmentQuiz ? 1 : 0)
+      const completedTrackableItems = completedTrackableLessonCount + (assessmentCompleted ? 1 : 0)
+      const progressPct = trackableItemCount > 0
+        ? Math.round((completedTrackableItems / trackableItemCount) * 100)
+        : 0
+
+      const { error: enrollmentProgressError } = await supabaseClient
+        .from('user_enrollments')
+        .update({
+          progress_pct: progressPct,
+          completed_at: progressPct >= 100 ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', enrollment.id)
+
+      if (enrollmentProgressError) {
+        console.warn('Error updating enrollment progress:', enrollmentProgressError)
+      }
+
       console.log('✅ Lesson progress updated successfully')
       return sendJSON(res, 200, {
         success: true,
@@ -362,6 +442,13 @@ const lessonAccessHandlers = {
           watchTimeSeconds: progress.watch_time_seconds,
           completedAt: progress.completed_at,
           updatedAt: progress.updated_at
+        },
+        courseProgress: {
+          progressPct,
+          completedTrackableItems,
+          trackableItemCount,
+          hasAssessmentQuiz,
+          assessmentCompleted
         },
         message: 'Lesson progress updated successfully'
       })
