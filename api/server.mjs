@@ -292,6 +292,19 @@ const lessonAccessHandlers = {
 
       console.log(`📈 Updating lesson progress for user ${userId} - course: ${courseSlug}, lesson: ${lessonId}`)
 
+      // Resolve Azure OID to Supabase DB user UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', userId)
+        .single()
+
+      if (userLookupError || !userData?.id) {
+        return sendError(res, 403, 'Active enrollment required')
+      }
+
+      const dbUserId = userData.id
+
       // Check if user has access to this lesson
       const accessResult = await checkLessonAccess(
         supabaseClient,
@@ -308,7 +321,7 @@ const lessonAccessHandlers = {
       const { data: enrollment, error: enrollmentError } = await supabaseClient
         .from('user_enrollments')
         .select('id')
-        .eq('user_id', userId)
+        .eq('user_id', dbUserId)
         .eq('course_slug', courseSlug)
         .eq('status', 'active')
         .single()
@@ -547,6 +560,7 @@ const enrollmentHandlers = {
 
   // POST /api/enrollment/enroll
   async enrollInCourse(req, res) {
+    let enrollmentCourseSlug = 'unknown'
     try {
       const body = await parseBody(req)
 
@@ -575,6 +589,7 @@ const enrollmentHandlers = {
       }
 
       const { courseSlug, method = 'explicit' } = body
+      enrollmentCourseSlug = courseSlug
 
       if (!supabaseClient) {
         return sendError(res, 503, 'Database not configured')
@@ -692,7 +707,7 @@ const enrollmentHandlers = {
     } catch (err) {
       console.error('Unexpected error in enrollment:', err)
       const azureUserId = getCurrentUser(req)?.azureUserId || 'unknown';
-      logEnrollmentEvent('enrollment_error', body?.courseSlug || 'unknown', azureUserId, {
+      logEnrollmentEvent('enrollment_error', enrollmentCourseSlug, azureUserId, {
         error: err.message
       });
       return sendError(res, 500, 'Internal server error')
