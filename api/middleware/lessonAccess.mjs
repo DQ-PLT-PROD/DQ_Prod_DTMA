@@ -15,6 +15,30 @@
 import { getCurrentUser } from './auth.mjs'
 
 /**
+ * Resolve auth user identity (Azure OID) to DB user UUID used by user_enrollments.user_id.
+ * Falls back to the provided value for backward compatibility with legacy environments.
+ */
+const resolveEnrollmentUserId = async (supabaseClient, authUserId) => {
+  if (!authUserId) return null
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('users')
+      .select('id')
+      .eq('azure_user_id', authUserId)
+      .single()
+
+    if (!error && data?.id) {
+      return data.id
+    }
+  } catch (error) {
+    console.warn('Failed to resolve Azure user ID to DB user ID:', error)
+  }
+
+  return authUserId
+}
+
+/**
  * Check if user can access a specific lesson
  */
 export const checkLessonAccess = async (supabaseClient, userId, courseSlug, lessonId, lessonData = null) => {
@@ -60,11 +84,13 @@ export const checkLessonAccess = async (supabaseClient, userId, courseSlug, less
       }
     }
 
+    const enrollmentUserId = await resolveEnrollmentUserId(supabaseClient, userId)
+
     // Check enrollment status
     const { data: enrollment, error: enrollmentError } = await supabaseClient
       .from('user_enrollments')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', enrollmentUserId)
       .eq('course_slug', courseSlug)
       .eq('status', 'active')
       .single()
@@ -288,10 +314,11 @@ export const getCourseAccessSummary = async (supabaseClient, userId, courseSlug)
     // Get enrollment info if user is authenticated
     let enrollment = null
     if (userId) {
+      const enrollmentUserId = await resolveEnrollmentUserId(supabaseClient, userId)
       const { data: enrollmentData } = await supabaseClient
         .from('user_enrollments')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', enrollmentUserId)
         .eq('course_slug', courseSlug)
         .eq('status', 'active')
         .single()

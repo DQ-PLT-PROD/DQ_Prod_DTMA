@@ -7,6 +7,7 @@
 import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
 import { isSupabaseConfigured } from "../../../lib/supabase/client";
 import { recordCourseCompletion } from "./achievementService";
+import { enrollmentApiClient } from "../../../lib/api/enrollmentApiClient";
 
 // Types
 export interface Enrollment {
@@ -144,15 +145,15 @@ export const getOrCreateEnrollment = async (
     courseSlug: string
 ): Promise<Enrollment | null> => {
     try {
-        // Try to get existing enrollment
-        let enrollment = await enrollmentApiClient.getEnrollment(courseSlug, userId);
+        // Try to get existing enrollment (backend uses authenticated user from token)
+        let enrollment = await enrollmentApiClient.getEnrollment(courseSlug);
         
         if (enrollment) {
             return enrollment as Enrollment;
         }
 
         // Create new enrollment via API
-        const result = await enrollmentApiClient.enrollInCourse(courseSlug, 'auto', userId);
+        const result = await enrollmentApiClient.enrollInCourse(courseSlug, 'auto');
         
         if (result.success && result.enrollment) {
             return result.enrollment as Enrollment;
@@ -392,8 +393,8 @@ export const getActualProgressStats = async (
     const defaultResult = { completedCount: 0, totalCount: 0, progressPct: 0 };
 
     try {
-        // Get enrollment which has the progress_pct
-        const enrollment = await enrollmentApiClient.getEnrollment(courseSlug, userId);
+        // Get enrollment which has the progress_pct (backend uses authenticated user from token)
+        const enrollment = await enrollmentApiClient.getEnrollment(courseSlug);
         
         if (!enrollment) {
             return defaultResult;

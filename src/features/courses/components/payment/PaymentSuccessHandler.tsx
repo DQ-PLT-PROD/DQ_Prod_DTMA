@@ -76,7 +76,7 @@ export const PaymentSuccessHandler: React.FC = () => {
 
                 // Redirect to learning screen after 2 seconds
                 setTimeout(() => {
-                    navigate(`/learning?courseId=${encodeURIComponent(courseSlug)}`);
+                    navigate(`/portal/learning/${encodeURIComponent(courseSlug)}`);
                 }, 2000);
             } catch (error) {
                 console.error('Error processing payment:', error);

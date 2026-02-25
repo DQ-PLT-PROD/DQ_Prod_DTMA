@@ -16,6 +16,17 @@ interface ApiResponse<T = any> {
 }
 
 class EnrollmentApiClient {
+  private async parseResponseBody(response: Response): Promise<any> {
+    const contentType = response.headers.get('content-type') || ''
+
+    if (contentType.includes('application/json')) {
+      return response.json()
+    }
+
+    const text = await response.text()
+    return text ? { error: text.slice(0, 250) } : null
+  }
+
   /**
    * Get access token for API requests
    */
@@ -54,17 +65,22 @@ class EnrollmentApiClient {
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       }
 
-      // Add authentication header if token is available
-      if (token) {
-        options.headers = {
-          ...options.headers,
-          'Authorization': `Bearer ${token}`
+      // Enrollment APIs require authentication — fail fast if no token
+      if (!token) {
+        console.warn('No authentication token available for enrollment API request')
+        return {
+          success: false,
+          error: 'Authentication required. Please sign in and try again.'
         }
-      } else {
-        console.warn('Making API request without authentication token')
+      }
+
+      options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
       }
 
       if (body) {
@@ -72,13 +88,14 @@ class EnrollmentApiClient {
       }
 
       const response = await fetch(`${API_BASE}${endpoint}`, options)
-      const data = await response.json()
+      const data = await this.parseResponseBody(response)
 
       if (!response.ok) {
+        const statusError = `API request failed with status ${response.status}`
         return {
           success: false,
-          error: data.error || 'API request failed',
-          details: data.details
+          error: data?.error || statusError,
+          details: data?.details
         }
       }
 
@@ -97,13 +114,13 @@ class EnrollmentApiClient {
 
   /**
    * Check if user is enrolled in a course
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token.
+   * Keep the optional arg for backward compatibility, but do not send it.
    */
-  async isUserEnrolled(courseSlug: string, userId?: string): Promise<boolean> {
-    const queryParam = userId ? `?userId=${userId}` : ''
+  async isUserEnrolled(courseSlug: string, _userId?: string): Promise<boolean> {
     const result = await this.makeRequest(
       'GET',
-      `/enrollment/status/${courseSlug}${queryParam}`
+      `/enrollment/status/${courseSlug}`
     )
 
     if (result.success && result.data) {
@@ -115,13 +132,13 @@ class EnrollmentApiClient {
 
   /**
    * Get enrollment details for a user and course
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token.
+   * Keep the optional arg for backward compatibility, but do not send it.
    */
-  async getEnrollment(courseSlug: string, userId?: string) {
-    const queryParam = userId ? `?userId=${userId}` : ''
+  async getEnrollment(courseSlug: string, _userId?: string) {
     const result = await this.makeRequest(
       'GET',
-      `/enrollment/details/${courseSlug}${queryParam}`
+      `/enrollment/details/${courseSlug}`
     )
 
     if (result.success && result.data) {
@@ -174,13 +191,13 @@ class EnrollmentApiClient {
 
   /**
    * Get access contract for a user and course
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token.
+   * Keep the optional arg for backward compatibility, but do not send it.
    */
-  async getAccessContract(courseSlug: string, userId?: string) {
-    const queryParam = userId ? `?userId=${userId}` : ''
+  async getAccessContract(courseSlug: string, _userId?: string) {
     const result = await this.makeRequest(
       'GET',
-      `/enrollment/access/${courseSlug}${queryParam}`
+      `/enrollment/access/${courseSlug}`
     )
 
     if (result.success && result.data) {

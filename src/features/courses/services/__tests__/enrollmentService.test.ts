@@ -1,313 +1,164 @@
 /**
- * Unit Tests for Enrollment Service
- * Tests enrollment creation logic and enrollment lookup logic as per DTMA Spec requirement 9
+ * Enrollment service tests aligned with backend-first API architecture.
+ * Covers:
+ * - Unit gating behavior for lesson access.
+ * - Integration behavior for enrollment API orchestration.
+ * - Smoke happy path (enroll -> access lesson).
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock the modules before importing the service
-vi.mock('../../../../lib/supabase/serviceClient', () => ({
-    getSupabaseForEnrollment: vi.fn(),
-    isServiceRoleConfigured: vi.fn(() => true)
+vi.mock("../../../../lib/api/enrollmentApiClient", () => ({
+  enrollmentApiClient: {
+    isUserEnrolled: vi.fn(),
+    getEnrollment: vi.fn(),
+    enrollInCourse: vi.fn(),
+    getUserEnrollments: vi.fn(),
+    getAccessContract: vi.fn(),
+    cancelEnrollment: vi.fn(),
+  },
 }));
 
-vi.mock('../../../../lib/supabase/client', () => ({
-    isSupabaseConfigured: vi.fn(() => true)
+vi.mock("../../../../lib/api/lessonAccessApiClient", () => ({
+  lessonAccessApiClient: {
+    canAccessLesson: vi.fn(),
+  },
 }));
 
-// Import after mocking
 import {
-    isUserEnrolled,
-    getEnrollment,
-    enrollInCourse,
-    canAccessLesson,
-    validateEnrollmentEligibility
-} from '../../../../lib/enrollment/service';
-import { getSupabaseForEnrollment } from '../../../../lib/supabase/serviceClient';
+  canAccessLesson,
+  enrollInCourse,
+  getEnrollment,
+  isUserEnrolled,
+} from "../../../../lib/enrollment/service";
+import { enrollmentApiClient } from "../../../../lib/api/enrollmentApiClient";
+import { lessonAccessApiClient } from "../../../../lib/api/lessonAccessApiClient";
 
-describe('EnrollmentService', () => {
-    const mockSupabaseClient = {
-        from: vi.fn(() => ({
-            select: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                    eq: vi.fn(() => ({
-                        eq: vi.fn(() => ({
-                            single: vi.fn()
-                        }))
-                    }))
-                }))
-            })),
-            insert: vi.fn(() => ({
-                select: vi.fn(() => ({
-                    single: vi.fn()
-                }))
-            }))
-        }))
-    } as unknown as SupabaseClient;
+describe("EnrollmentService", () => {
+  const userId = "db-user-uuid";
+  const courseSlug = "perfecting-life-transactions";
+  const lessonId = "lesson-1";
 
-    beforeEach(() => {
-        vi.clearAllMocks();
-        vi.mocked(getSupabaseForEnrollment).mockReturnValue(mockSupabaseClient);
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("Unit - gating", () => {
+    it("allows preview lessons for unauthenticated users", async () => {
+      const result = await canAccessLesson(null, courseSlug, lessonId, true);
+      expect(result).toBe(true);
+      expect(lessonAccessApiClient.canAccessLesson).not.toHaveBeenCalled();
     });
 
-    afterEach(() => {
-        vi.restoreAllMocks();
+    it("denies non-preview lessons for unauthenticated users", async () => {
+      const result = await canAccessLesson(null, courseSlug, lessonId, false);
+      expect(result).toBe(false);
+      expect(lessonAccessApiClient.canAccessLesson).not.toHaveBeenCalled();
     });
 
-    describe('isUserEnrolled', () => {
-        it('should return true when user is enrolled', async () => {
-            // Arrange
-            const userId = 'user-123';
-            const courseSlug = 'test-course';
-            const mockData = { id: 'enrollment-123', status: 'active' };
+    it("delegates full-content access checks to lesson access API for authenticated users", async () => {
+      vi.mocked(lessonAccessApiClient.canAccessLesson).mockResolvedValueOnce(
+        true
+      );
 
-            const mockChain = {
-                single: vi.fn().mockResolvedValue({
-                    data: mockData,
-                    error: null
-                })
-            };
+      const result = await canAccessLesson(userId, courseSlug, lessonId, false);
 
-            vi.mocked(mockSupabaseClient.from).mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockReturnValue({
-                        eq: vi.fn().mockReturnValue({
-                            eq: vi.fn().mockReturnValue(mockChain)
-                        })
-                    })
-                })
-            } as any);
+      expect(result).toBe(true);
+      expect(lessonAccessApiClient.canAccessLesson).toHaveBeenCalledWith(
+        courseSlug,
+        lessonId
+      );
+    });
+  });
 
-            // Act
-            const result = await isUserEnrolled(userId, courseSlug);
+  describe("Integration - enrollment endpoint orchestration", () => {
+    it("returns enrollment status from API client", async () => {
+      vi.mocked(enrollmentApiClient.isUserEnrolled).mockResolvedValueOnce(true);
 
-            // Assert
-            expect(result).toBe(true);
-            expect(mockSupabaseClient.from).toHaveBeenCalledWith('user_enrollments');
-        });
+      const result = await isUserEnrolled(userId, courseSlug);
 
-        it('should return false when user is not enrolled', async () => {
-            // Arrange
-            const userId = 'user-123';
-            const courseSlug = 'test-course';
-
-            const mockChain = {
-                single: vi.fn().mockResolvedValue({
-                    data: null,
-                    error: { code: 'PGRST116' } // No record found
-                })
-            };
-
-            vi.mocked(mockSupabaseClient.from).mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockReturnValue({
-                        eq: vi.fn().mockReturnValue({
-                            eq: vi.fn().mockReturnValue(mockChain)
-                        })
-                    })
-                })
-            } as any);
-
-            // Act
-            const result = await isUserEnrolled(userId, courseSlug);
-
-            // Assert
-            expect(result).toBe(false);
-        });
-
-        it('should return false on database error', async () => {
-            // Arrange
-            const userId = 'user-123';
-            const courseSlug = 'test-course';
-
-            const mockChain = {
-                single: vi.fn().mockResolvedValue({
-                    data: null,
-                    error: { code: 'UNKNOWN_ERROR', message: 'Database error' }
-                })
-            };
-
-            vi.mocked(mockSupabaseClient.from).mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockReturnValue({
-                        eq: vi.fn().mockReturnValue({
-                            eq: vi.fn().mockReturnValue(mockChain)
-                        })
-                    })
-                })
-            } as any);
-
-            // Act
-            const result = await isUserEnrolled(userId, courseSlug);
-
-            // Assert
-            expect(result).toBe(false);
-        });
+      expect(result).toBe(true);
+      expect(enrollmentApiClient.isUserEnrolled).toHaveBeenCalledWith(courseSlug);
     });
 
-    describe('getEnrollment', () => {
-        it('should return enrollment data when found', async () => {
-            // Arrange
-            const userId = 'user-123';
-            const courseSlug = 'test-course';
-            const mockData = {
-                id: 'enrollment-123',
-                user_id: userId,
-                course_slug: courseSlug,
-                started_at: '2025-01-13T00:00:00Z',
-                status: 'active',
-                enrollment_method: 'explicit'
-            };
+    it("creates enrollment through API and returns enrollment payload", async () => {
+      const mockEnrollment = {
+        id: "enroll-123",
+        userId,
+        courseSlug,
+        enrolledAt: "2026-02-25T00:00:00.000Z",
+        status: "active",
+        enrollmentMethod: "explicit",
+      };
 
-            const mockChain = {
-                single: vi.fn().mockResolvedValue({
-                    data: mockData,
-                    error: null
-                })
-            };
+      vi.mocked(enrollmentApiClient.enrollInCourse).mockResolvedValueOnce({
+        success: true,
+        enrollment: mockEnrollment,
+      });
 
-            vi.mocked(mockSupabaseClient.from).mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockReturnValue({
-                        eq: vi.fn().mockReturnValue(mockChain)
-                    })
-                })
-            } as any);
+      const result = await enrollInCourse(userId, courseSlug, "explicit");
 
-            // Act
-            const result = await getEnrollment(userId, courseSlug);
-
-            // Assert
-            expect(result).toEqual({
-                id: 'enrollment-123',
-                userId: userId,
-                courseSlug: courseSlug,
-                enrolledAt: '2025-01-13T00:00:00Z',
-                status: 'active',
-                enrollmentMethod: 'explicit',
-                cancelledAt: null
-            });
-        });
-
-        it('should return null when enrollment not found', async () => {
-            // Arrange
-            const userId = 'user-123';
-            const courseSlug = 'test-course';
-
-            const mockChain = {
-                single: vi.fn().mockResolvedValue({
-                    data: null,
-                    error: { code: 'PGRST116' }
-                })
-            };
-
-            vi.mocked(mockSupabaseClient.from).mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockReturnValue({
-                        eq: vi.fn().mockReturnValue(mockChain)
-                    })
-                })
-            } as any);
-
-            // Act
-            const result = await getEnrollment(userId, courseSlug);
-
-            // Assert
-            expect(result).toBeNull();
-        });
+      expect(result.success).toBe(true);
+      expect(result.enrollment).toEqual(mockEnrollment);
+      expect(enrollmentApiClient.enrollInCourse).toHaveBeenCalledWith(
+        courseSlug,
+        "explicit"
+      );
     });
 
-    describe('canAccessLesson', () => {
-        it('should allow access to preview lessons for any user', async () => {
-            // Act
-            const result = await canAccessLesson(null, 'test-course', 'lesson-1', true);
+    it("returns enrollment details from API client", async () => {
+      const mockEnrollment = {
+        id: "enroll-123",
+        userId,
+        courseSlug,
+        enrolledAt: "2026-02-25T00:00:00.000Z",
+        status: "active",
+        enrollmentMethod: "explicit",
+      };
+      vi.mocked(enrollmentApiClient.getEnrollment).mockResolvedValueOnce(
+        mockEnrollment
+      );
 
-            // Assert
-            expect(result).toBe(true);
-        });
+      const result = await getEnrollment(userId, courseSlug);
 
-        it('should deny access to non-preview lessons for unauthenticated users', async () => {
-            // Act
-            const result = await canAccessLesson(null, 'test-course', 'lesson-1', false);
-
-            // Assert
-            expect(result).toBe(false);
-        });
-
-        it('should allow access to non-preview lessons for enrolled users', async () => {
-            // Arrange
-            const userId = 'user-123';
-            
-            const mockChain = {
-                single: vi.fn().mockResolvedValue({
-                    data: { id: 'enrollment-123', status: 'active' },
-                    error: null
-                })
-            };
-
-            vi.mocked(mockSupabaseClient.from).mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockReturnValue({
-                        eq: vi.fn().mockReturnValue({
-                            eq: vi.fn().mockReturnValue(mockChain)
-                        })
-                    })
-                })
-            } as any);
-
-            // Act
-            const result = await canAccessLesson(userId, 'test-course', 'lesson-1', false);
-
-            // Assert
-            expect(result).toBe(true);
-        });
-
-        it('should deny access to non-preview lessons for non-enrolled users', async () => {
-            // Arrange
-            const userId = 'user-123';
-            
-            const mockChain = {
-                single: vi.fn().mockResolvedValue({
-                    data: null,
-                    error: { code: 'PGRST116' }
-                })
-            };
-
-            vi.mocked(mockSupabaseClient.from).mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockReturnValue({
-                        eq: vi.fn().mockReturnValue({
-                            eq: vi.fn().mockReturnValue(mockChain)
-                        })
-                    })
-                })
-            } as any);
-
-            // Act
-            const result = await canAccessLesson(userId, 'test-course', 'lesson-1', false);
-
-            // Assert
-            expect(result).toBe(false);
-        });
+      expect(result).toEqual(mockEnrollment);
+      expect(enrollmentApiClient.getEnrollment).toHaveBeenCalledWith(courseSlug);
     });
+  });
 
-    describe('validateEnrollmentEligibility', () => {
-        it('should return eligible for authenticated users', async () => {
-            // Act
-            const result = await validateEnrollmentEligibility('user-123', 'test-course');
+  describe("Smoke - happy path", () => {
+    it("supports enroll then lesson access flow", async () => {
+      vi.mocked(enrollmentApiClient.isUserEnrolled)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(true);
+      vi.mocked(enrollmentApiClient.enrollInCourse).mockResolvedValueOnce({
+        success: true,
+        enrollment: {
+          id: "enroll-abc",
+          userId,
+          courseSlug,
+          enrolledAt: "2026-02-25T00:00:00.000Z",
+          status: "active",
+          enrollmentMethod: "explicit",
+        },
+      });
+      vi.mocked(lessonAccessApiClient.canAccessLesson).mockResolvedValueOnce(
+        true
+      );
 
-            // Assert
-            expect(result.eligible).toBe(true);
-            expect(result.reason).toBeUndefined();
-        });
+      const beforeEnroll = await isUserEnrolled(userId, courseSlug);
+      const enrollmentResult = await enrollInCourse(userId, courseSlug);
+      const afterEnroll = await isUserEnrolled(userId, courseSlug);
+      const lessonAccess = await canAccessLesson(
+        userId,
+        courseSlug,
+        lessonId,
+        false
+      );
 
-        it('should return not eligible for unauthenticated users', async () => {
-            // Act
-            const result = await validateEnrollmentEligibility('', 'test-course');
-
-            // Assert
-            expect(result.eligible).toBe(false);
-            expect(result.reason).toBe('Authentication required');
-        });
+      expect(beforeEnroll).toBe(false);
+      expect(enrollmentResult.success).toBe(true);
+      expect(afterEnroll).toBe(true);
+      expect(lessonAccess).toBe(true);
     });
+  });
 });

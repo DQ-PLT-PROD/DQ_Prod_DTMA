@@ -6,6 +6,7 @@
     "scripts": {
         "dev:api": "node api/server.mjs",
         "dev": "npx vite",
+        "dev:all": "concurrently --names \"vite,api\" --prefix-colors \"cyan,yellow\" \"npm run dev\" \"npm run dev:api\"",
         "build": "npx vite build",
         "build:analyze": "npx vite build --mode analyze",
         "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
@@ -47,6 +48,7 @@
         "@typescript-eslint/parser": "^5.54.0",
         "@vitejs/plugin-react": "^4.2.1",
         "autoprefixer": "latest",
+        "concurrently": "^9.2.1",
         "eslint": "^8.50.0",
         "eslint-plugin-react-hooks": "^4.6.0",
         "eslint-plugin-react-refresh": "^0.4.1",

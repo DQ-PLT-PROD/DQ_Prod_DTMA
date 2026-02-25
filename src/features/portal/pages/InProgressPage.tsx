@@ -16,6 +16,7 @@ import { getUserEnrollments, getActualProgressStats, Enrollment } from "../servi
 import { fetchFullCourse } from "@/services/courseService";
 import { Course } from "../../../types/dtma-lms";
 import { getLearningSnapshot } from "../../learning/services/learningSnapshotService";
+import { RecommendationRail } from "@/features/recommendations/components/RecommendationRail";
 
 interface CourseWithProgress extends Enrollment {
     course?: Course | null;
