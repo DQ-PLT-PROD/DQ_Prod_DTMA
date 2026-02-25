@@ -77,10 +77,7 @@ describe("EnrollmentService", () => {
       const result = await isUserEnrolled(userId, courseSlug);
 
       expect(result).toBe(true);
-      expect(enrollmentApiClient.isUserEnrolled).toHaveBeenCalledWith(
-        courseSlug,
-        userId
-      );
+      expect(enrollmentApiClient.isUserEnrolled).toHaveBeenCalledWith(courseSlug);
     });
 
     it("creates enrollment through API and returns enrollment payload", async () => {
@@ -124,10 +121,7 @@ describe("EnrollmentService", () => {
       const result = await getEnrollment(userId, courseSlug);
 
       expect(result).toEqual(mockEnrollment);
-      expect(enrollmentApiClient.getEnrollment).toHaveBeenCalledWith(
-        courseSlug,
-        userId
-      );
+      expect(enrollmentApiClient.getEnrollment).toHaveBeenCalledWith(courseSlug);
     });
   });
 
