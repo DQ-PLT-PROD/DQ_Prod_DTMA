@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/lib/auth";
 import { RoleSwitcherProvider } from "@/features/instructor-portal";
@@ -45,6 +45,17 @@ const PageLoader = () => (
     </div>
   </div>
 );
+
+export const LegacyLearningRedirect = () => {
+  const [searchParams] = useSearchParams();
+  const courseId = searchParams.get("courseId");
+
+  if (courseId) {
+    return <Navigate to={`/portal/learning/${encodeURIComponent(courseId)}`} replace />;
+  }
+
+  return <Navigate to="/portal" replace />;
+};
 
 export function AppRouter() {
   return (
@@ -100,8 +111,8 @@ export function AppRouter() {
 
               <Route path="/portal/admin/audit-quizzes" element={<QuizAuditPage />} />
 
-              {/* Redirect /learning to /portal for backward compatibility */}
-              <Route path="/learning" element={<Navigate to="/portal" replace />} />
+              {/* Redirect /learning and legacy /learning?courseId=... to portal routes */}
+              <Route path="/learning" element={<LegacyLearningRedirect />} />
 
               {/* Auth Debug Panel - for testing authentication and user sync */}
               <Route path="/auth-debug" element={

@@ -114,13 +114,13 @@ class EnrollmentApiClient {
 
   /**
    * Check if user is enrolled in a course
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token.
+   * Keep the optional arg for backward compatibility, but do not send it.
    */
-  async isUserEnrolled(courseSlug: string, userId?: string): Promise<boolean> {
-    const queryParam = userId ? `?userId=${userId}` : ''
+  async isUserEnrolled(courseSlug: string, _userId?: string): Promise<boolean> {
     const result = await this.makeRequest(
       'GET',
-      `/enrollment/status/${courseSlug}${queryParam}`
+      `/enrollment/status/${courseSlug}`
     )
 
     if (result.success && result.data) {
@@ -132,13 +132,13 @@ class EnrollmentApiClient {
 
   /**
    * Get enrollment details for a user and course
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token.
+   * Keep the optional arg for backward compatibility, but do not send it.
    */
-  async getEnrollment(courseSlug: string, userId?: string) {
-    const queryParam = userId ? `?userId=${userId}` : ''
+  async getEnrollment(courseSlug: string, _userId?: string) {
     const result = await this.makeRequest(
       'GET',
-      `/enrollment/details/${courseSlug}${queryParam}`
+      `/enrollment/details/${courseSlug}`
     )
 
     if (result.success && result.data) {
@@ -191,13 +191,13 @@ class EnrollmentApiClient {
 
   /**
    * Get access contract for a user and course
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token.
+   * Keep the optional arg for backward compatibility, but do not send it.
    */
-  async getAccessContract(courseSlug: string, userId?: string) {
-    const queryParam = userId ? `?userId=${userId}` : ''
+  async getAccessContract(courseSlug: string, _userId?: string) {
     const result = await this.makeRequest(
       'GET',
-      `/enrollment/access/${courseSlug}${queryParam}`
+      `/enrollment/access/${courseSlug}`
     )
 
     if (result.success && result.data) {

@@ -153,7 +153,7 @@ export const getOrCreateEnrollment = async (
         }
 
         // Create new enrollment via API
-        const result = await enrollmentApiClient.enrollInCourse(courseSlug, 'auto', userId);
+        const result = await enrollmentApiClient.enrollInCourse(courseSlug, 'auto');
         
         if (result.success && result.enrollment) {
             return result.enrollment as Enrollment;
