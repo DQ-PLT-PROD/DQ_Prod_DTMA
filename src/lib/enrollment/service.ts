@@ -2,16 +2,11 @@
  * Enrollment Service for managing course enrollments
  * Implements DTMA Feature Specification 02 requirements
  * 
- * Uses Supabase service role for database operations to bypass RLS
- * since we're using Azure AD authentication instead of Supabase auth.
+ * Feature 02.1 Hardening: All operations now go through backend APIs
+ * No direct Supabase access - backend is the single source of truth
  */
-import { getSupabaseForEnrollment, isServiceRoleConfigured } from "../supabase/serviceClient";
-import { isSupabaseConfigured } from "../supabase/client";
-import type { Database } from "../supabase/types";
-
-// Type aliases for better readability
-type UserEnrollmentRow = Database['public']['Tables']['user_enrollments']['Row'];
-type UserEnrollmentInsert = Database['public']['Tables']['user_enrollments']['Insert'];
+import { enrollmentApiClient } from "../api/enrollmentApiClient";
+import { lessonAccessApiClient } from "../api/lessonAccessApiClient";
 
 // Types
 export interface CourseEnrollment {
@@ -50,59 +45,17 @@ export interface Subscription {
 }
 
 /**
- * Helper to get Supabase client for enrollment operations
- * Uses service role to bypass RLS for Azure AD authenticated users
- */
-const getEnrollmentSupabase = (): any => {
-    return getSupabaseForEnrollment();
-};
-
-/**
- * Helper to map database row to CourseEnrollment type
- */
-const mapRowToEnrollment = (row: UserEnrollmentRow): CourseEnrollment => ({
-    id: row.id,
-    userId: row.user_id,
-    courseSlug: row.course_slug,
-    enrolledAt: row.started_at,
-    status: (row.status as 'active' | 'cancelled' | 'expired') || 'active',
-    enrollmentMethod: (row.enrollment_method as 'explicit' | 'auto') || 'auto',
-    cancelledAt: (row as any).cancelled_at || null,
-});
-
-/**
  * Check if user is enrolled in a course
  * FR3: Access enforcement point
+ * Feature 02.1: Uses backend API
  */
 export const isUserEnrolled = async (
     userId: string,
     courseSlug: string
 ): Promise<boolean> => {
-    if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, cannot check enrollment");
-        return false;
-    }
-
     try {
-        const supabase = getEnrollmentSupabase();
-        const { data, error } = await supabase
-            .from("user_enrollments")
-            .select("id, status")
-            .eq("user_id", userId)
-            .eq("course_slug", courseSlug)
-            .eq("status", "active")
-            .single();
-
-        if (error) {
-            // If no record found, user is not enrolled
-            if (error.code === 'PGRST116') {
-                return false;
-            }
-            console.error("Error checking enrollment:", error);
-            return false;
-        }
-
-        return Boolean(data);
+        // Backend uses authenticated user from token, don't pass userId
+        return await enrollmentApiClient.isUserEnrolled(courseSlug);
     } catch (err) {
         console.error("Error checking enrollment:", err);
         return false;
@@ -112,34 +65,15 @@ export const isUserEnrolled = async (
 /**
  * Get enrollment details for a user and course
  * Spec requirement: getEnrollment(courseId)
+ * Feature 02.1: Uses backend API
  */
 export const getEnrollment = async (
     userId: string,
     courseSlug: string
 ): Promise<CourseEnrollment | null> => {
-    if (!isSupabaseConfigured()) {
-        return null;
-    }
-
     try {
-        const supabase = getEnrollmentSupabase();
-        const { data, error } = await supabase
-            .from("user_enrollments")
-            .select("*")
-            .eq("user_id", userId)
-            .eq("course_slug", courseSlug)
-            .single();
-
-        if (error) {
-            // If no record found, return null
-            if (error.code === 'PGRST116') {
-                return null;
-            }
-            console.error("Error getting enrollment:", error);
-            return null;
-        }
-
-        return mapRowToEnrollment(data);
+        // Backend uses authenticated user from token, don't pass userId
+        return await enrollmentApiClient.getEnrollment(courseSlug);
     } catch (err) {
         console.error("Error getting enrollment:", err);
         return null;
@@ -150,73 +84,28 @@ export const getEnrollment = async (
  * Explicitly enroll user in a course
  * FR1: Enrollment creation with explicit CTA
  * Spec requirement: enrollInCourse(courseId)
+ * Feature 02.1: Uses backend API (authenticated user from token)
  */
 export const enrollInCourse = async (
     userId: string,
     courseSlug: string,
     method: 'explicit' | 'auto' = 'explicit'
 ): Promise<EnrollmentResult> => {
-    if (!isSupabaseConfigured()) {
-        return {
-            success: false,
-            error: "Database not configured"
-        };
-    }
-
     try {
-        console.log('🎯 Starting enrollment process...');
-        console.log('User ID:', userId);
+        console.log('🎯 Starting enrollment process via API...');
         console.log('Course Slug:', courseSlug);
         console.log('Method:', method);
 
-        const supabase = getEnrollmentSupabase();
-        console.log('✅ Got Supabase client for enrollment');
-
-        // Check if already enrolled
-        console.log('🔍 Checking existing enrollment...');
-        const existingEnrollment = await getEnrollment(userId, courseSlug);
-        if (existingEnrollment && existingEnrollment.status === 'active') {
-            console.log('✅ User already enrolled');
-            return {
-                success: true,
-                enrollment: existingEnrollment
-            };
+        // Backend uses authenticated user from token, don't pass userId
+        const result = await enrollmentApiClient.enrollInCourse(courseSlug, method);
+        
+        if (result.success) {
+            console.log('✅ Enrollment created successfully via API');
+        } else {
+            console.error('❌ Enrollment failed:', result.error);
         }
 
-        // Create new enrollment
-        console.log('📝 Creating new enrollment...');
-        const enrollmentData: UserEnrollmentInsert = {
-            user_id: userId,
-            course_slug: courseSlug,
-            started_at: new Date().toISOString(),
-            last_accessed_at: new Date().toISOString(),
-            progress_pct: 0,
-            status: 'active',
-            enrollment_method: method
-        };
-
-        const { data, error } = await supabase
-            .from("user_enrollments")
-            .insert(enrollmentData)
-            .select()
-            .single();
-
-        if (error) {
-            console.error("❌ Error creating enrollment:", error);
-            console.error("Error code:", error.code);
-            console.error("Error message:", error.message);
-            console.error("Error details:", error.details);
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-
-        console.log('✅ Enrollment created successfully:', data);
-        return {
-            success: true,
-            enrollment: mapRowToEnrollment(data)
-        };
+        return result;
     } catch (err) {
         console.error("Unexpected error in enrollInCourse:", err);
         return {
@@ -240,28 +129,14 @@ export const unenrollFromCourse = async (
 
 /**
  * Get all enrollments for a user
+ * Feature 02.1: Uses backend API (authenticated user from token)
  */
 export const getUserEnrollments = async (
     userId: string
 ): Promise<CourseEnrollment[]> => {
-    if (!isSupabaseConfigured()) {
-        return [];
-    }
-
     try {
-        const supabase = getEnrollmentSupabase();
-        const { data, error } = await supabase
-            .from("user_enrollments")
-            .select("*")
-            .eq("user_id", userId)
-            .eq("status", "active")
-            .order("started_at", { ascending: false });
-
-        if (error || !data) {
-            return [];
-        }
-
-        return data.map(mapRowToEnrollment);
+        // Backend uses authenticated user from token, don't pass userId
+        return await enrollmentApiClient.getUserEnrollments();
     } catch (err) {
         console.error("Error getting user enrollments:", err);
         return [];
@@ -271,6 +146,7 @@ export const getUserEnrollments = async (
 /**
  * Check if user can access lesson content
  * FR2: Access rules implementation
+ * Feature 02.1: Uses backend API
  */
 export const canAccessLesson = async (
     userId: string | null,
@@ -288,8 +164,13 @@ export const canAccessLesson = async (
         return false;
     }
 
-    // Check if user is enrolled for full content access
-    return await isUserEnrolled(userId, courseSlug);
+    try {
+        // Check access via backend API
+        return await lessonAccessApiClient.canAccessLesson(courseSlug, lessonId);
+    } catch (err) {
+        console.error("Error checking lesson access:", err);
+        return false;
+    }
 };
 
 /**
@@ -322,51 +203,21 @@ export const validateEnrollmentEligibility = async (
 /**
  * Get user's active subscription (if any)
  * Spec requirement: Support subscription status in access contract
+ * Feature 02.1: Placeholder - backend API not yet implemented
  */
 export const getUserSubscription = async (
     userId: string
 ): Promise<Subscription | null> => {
-    if (!isSupabaseConfigured()) {
-        return null;
-    }
-
-    try {
-        const supabase = getEnrollmentSupabase();
-        const { data, error } = await supabase
-            .from("subscriptions")
-            .select("*")
-            .eq("user_id", userId)
-            .eq("status", "active")
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
-
-        if (error) {
-            // If no subscription found, return null (not an error)
-            if (error.code === 'PGRST116') {
-                return null;
-            }
-            console.error("Error getting subscription:", error);
-            return null;
-        }
-
-        return {
-            id: data.id,
-            userId: data.user_id,
-            planId: data.plan_id,
-            status: data.status as 'active' | 'inactive',
-            provider: data.provider,
-            createdAt: data.created_at,
-        };
-    } catch (err) {
-        console.error("Error getting subscription:", err);
-        return null;
-    }
+    // TODO: Implement backend API endpoint for subscriptions
+    // For now, return null (no subscription system in MVP)
+    console.warn('getUserSubscription: Backend API not yet implemented');
+    return null;
 };
 
 /**
  * Get Access Contract - Standardized interface for access control
  * Spec requirement: Stable read contract consumed by other features
+ * Feature 02.1: Uses backend API
  * 
  * This is the AUTHORITATIVE function for determining access rights.
  * All features should use this instead of querying tables directly.
@@ -384,26 +235,10 @@ export const getAccessContract = async (
         };
     }
 
-    if (!isSupabaseConfigured()) {
-        return {
-            isEnrolled: false,
-            enrollmentStatus: null,
-            subscriptionStatus: null,
-        };
-    }
-
     try {
-        // Get enrollment and subscription in parallel
-        const [enrollment, subscription] = await Promise.all([
-            getEnrollment(userId, courseSlug),
-            getUserSubscription(userId),
-        ]);
-
-        return {
-            isEnrolled: enrollment?.status === 'active',
-            enrollmentStatus: enrollment?.status || null,
-            subscriptionStatus: subscription?.status || null,
-        };
+        // Get access contract from backend API
+        // Don't pass userId — server derives user identity from the auth token
+        return await enrollmentApiClient.getAccessContract(courseSlug);
     } catch (err) {
         console.error("Error getting access contract:", err);
         return {
@@ -417,45 +252,15 @@ export const getAccessContract = async (
 /**
  * Cancel enrollment (spec-aligned naming)
  * Spec requirement: cancelEnrollment(courseId)
+ * Feature 02.1: Uses backend API (authenticated user from token)
  */
 export const cancelEnrollment = async (
     userId: string,
     courseSlug: string
 ): Promise<EnrollmentResult> => {
-    if (!isSupabaseConfigured()) {
-        return {
-            success: false,
-            error: "Database not configured"
-        };
-    }
-
     try {
-        const supabase = getEnrollmentSupabase();
-
-        const { data, error } = await supabase
-            .from("user_enrollments")
-            .update({
-                status: 'cancelled',
-                cancelled_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            })
-            .eq("user_id", userId)
-            .eq("course_slug", courseSlug)
-            .eq("status", "active")
-            .select()
-            .single();
-
-        if (error) {
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-
-        return {
-            success: true,
-            enrollment: data ? mapRowToEnrollment(data) : undefined
-        };
+        // Backend uses authenticated user from token, don't pass userId
+        return await enrollmentApiClient.cancelEnrollment(courseSlug);
     } catch (err) {
         console.error("Error cancelling enrollment:", err);
         return {
@@ -467,49 +272,20 @@ export const cancelEnrollment = async (
 
 /**
  * Re-enroll in a course (reactivate cancelled/expired enrollment)
+ * Feature 02.1: Uses backend API
  */
 export const reEnrollInCourse = async (
     userId: string,
     courseSlug: string
 ): Promise<EnrollmentResult> => {
-    if (!isSupabaseConfigured()) {
-        return {
-            success: false,
-            error: "Database not configured"
-        };
-    }
-
     try {
-        const supabase = getEnrollmentSupabase();
-
         // Check if there's a cancelled or expired enrollment
         const existingEnrollment = await getEnrollment(userId, courseSlug);
 
         if (existingEnrollment && (existingEnrollment.status === 'cancelled' || existingEnrollment.status === 'expired')) {
-            // Reactivate existing enrollment
-            const { data, error } = await supabase
-                .from("user_enrollments")
-                .update({
-                    status: 'active',
-                    cancelled_at: null,
-                    updated_at: new Date().toISOString()
-                })
-                .eq("user_id", userId)
-                .eq("course_slug", courseSlug)
-                .select()
-                .single();
-
-            if (error) {
-                return {
-                    success: false,
-                    error: error.message
-                };
-            }
-
-            return {
-                success: true,
-                enrollment: data ? mapRowToEnrollment(data) : undefined
-            };
+            // For now, just create a new enrollment
+            // TODO: Backend API should support reactivation
+            return await enrollInCourse(userId, courseSlug, 'explicit');
         } else {
             // No existing enrollment, create new one
             return await enrollInCourse(userId, courseSlug, 'explicit');

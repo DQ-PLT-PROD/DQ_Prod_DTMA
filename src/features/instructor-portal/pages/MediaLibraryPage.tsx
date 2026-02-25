@@ -18,6 +18,7 @@ import {
 import { Toast } from '@/components/ui/Toast';
 
 export function MediaLibraryPage() {
+    const { ability } = useAdminAuth();
     const [files, setFiles] = useState<MediaItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
@@ -46,6 +47,11 @@ export function MediaLibraryPage() {
     }, [loadFiles]);
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!canUploadMedia) {
+            setToast({ type: 'error', message: 'You do not have permission to upload media.' });
+            e.target.value = '';
+            return;
+        }
         const file = e.target.files?.[0];
         if (!file) return;
 

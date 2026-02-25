@@ -1,18 +1,42 @@
 /**
  * Lesson Access Control Middleware
  * Server-side enforcement of lesson access rules
- * Feature 02.1 - Day 2 Implementation
+ * Feature 02 - Optimized with Module Support
+ * 
+ * Access Rules:
+ * 1. Course Hero content - accessible to everyone
+ * 2. Module intro content - accessible to everyone (if module has intro)
+ * 3. Preview lessons (is_preview = true) - accessible to everyone
+ * 4. Full lessons - require active enrollment
+ * 5. Sequential access - users must complete previous lessons (optional)
+ * 6. Unauthenticated users - can only access public content
  */
 
 import { getCurrentUser } from './auth.mjs'
 
 /**
- * Lesson access rules:
- * 1. Preview lessons (is_preview = true) are accessible to everyone
- * 2. Full lessons require active enrollment
- * 3. Sequential access: users must complete previous lessons to access next ones
- * 4. Unauthenticated users can only access preview content
+ * Resolve auth user identity (Azure OID) to DB user UUID used by user_enrollments.user_id.
+ * Falls back to the provided value for backward compatibility with legacy environments.
  */
+const resolveEnrollmentUserId = async (supabaseClient, authUserId) => {
+  if (!authUserId) return null
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('users')
+      .select('id')
+      .eq('azure_user_id', authUserId)
+      .single()
+
+    if (!error && data?.id) {
+      return data.id
+    }
+  } catch (error) {
+    console.warn('Failed to resolve Azure user ID to DB user ID:', error)
+  }
+
+  return authUserId
+}
 
 /**
  * Check if user can access a specific lesson
@@ -60,11 +84,13 @@ export const checkLessonAccess = async (supabaseClient, userId, courseSlug, less
       }
     }
 
+    const enrollmentUserId = await resolveEnrollmentUserId(supabaseClient, userId)
+
     // Check enrollment status
     const { data: enrollment, error: enrollmentError } = await supabaseClient
       .from('user_enrollments')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', enrollmentUserId)
       .eq('course_slug', courseSlug)
       .eq('status', 'active')
       .single()
@@ -193,11 +219,66 @@ const checkSequentialAccess = async (supabaseClient, enrollmentId, courseSlug, c
 }
 
 /**
+ * Check if user can access module intro content
+ * Module intros are always accessible (public content)
+ */
+export const checkModuleAccess = async (supabaseClient, userId, courseSlug, moduleId) => {
+  try {
+    // Get module data
+    const { data: module, error: moduleError } = await supabaseClient
+      .from('modules')
+      .select('*')
+      .eq('id', moduleId)
+      .eq('course_slug', courseSlug)
+      .single()
+
+    if (moduleError || !module) {
+      console.error('Error fetching module:', moduleError)
+      return {
+        canAccess: false,
+        reason: 'Module not found',
+        accessType: 'denied'
+      }
+    }
+
+    // Module intro content is always accessible (public preview)
+    const hasIntroContent = !!(module.intro_content || module.intro_video_url)
+    
+    return {
+      canAccess: true,
+      reason: 'Module intro is public content',
+      accessType: 'module_intro',
+      module,
+      hasIntroContent
+    }
+
+  } catch (error) {
+    console.error('Error checking module access:', error)
+    return {
+      canAccess: false,
+      reason: 'Access check failed',
+      accessType: 'error'
+    }
+  }
+}
+
+/**
  * Get lesson access summary for a course
- * Returns access status for all lessons in the course
+ * Returns access status for all lessons and modules in the course
  */
 export const getCourseAccessSummary = async (supabaseClient, userId, courseSlug) => {
   try {
+    // Get all modules for the course (if any)
+    const { data: modules, error: modulesError } = await supabaseClient
+      .from('modules')
+      .select('*')
+      .eq('course_slug', courseSlug)
+      .order('order_index', { ascending: true })
+
+    if (modulesError && modulesError.code !== 'PGRST116') { // Ignore "table not found" error
+      console.warn('Error fetching course modules:', modulesError)
+    }
+
     // Get all lessons for the course
     const { data: lessons, error: lessonsError } = await supabaseClient
       .from('lessons')
@@ -219,6 +300,7 @@ export const getCourseAccessSummary = async (supabaseClient, userId, courseSlug)
       const accessResult = await checkLessonAccess(supabaseClient, userId, courseSlug, lesson.id, lesson)
       accessResults.push({
         lessonId: lesson.id,
+        moduleId: lesson.module_id,
         title: lesson.title,
         orderIndex: lesson.order_index,
         isPreview: lesson.is_preview,
@@ -232,10 +314,11 @@ export const getCourseAccessSummary = async (supabaseClient, userId, courseSlug)
     // Get enrollment info if user is authenticated
     let enrollment = null
     if (userId) {
+      const enrollmentUserId = await resolveEnrollmentUserId(supabaseClient, userId)
       const { data: enrollmentData } = await supabaseClient
         .from('user_enrollments')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', enrollmentUserId)
         .eq('course_slug', courseSlug)
         .eq('status', 'active')
         .single()
@@ -243,18 +326,36 @@ export const getCourseAccessSummary = async (supabaseClient, userId, courseSlug)
       enrollment = enrollmentData
     }
 
+    // Build module summary with intro access info
+    const moduleSummary = (modules || []).map(module => ({
+      id: module.id,
+      title: module.title,
+      description: module.description,
+      orderIndex: module.order_index,
+      hasIntro: !!(module.intro_content || module.intro_video_url),
+      introAccessible: true, // Module intros are always accessible
+      introContent: module.intro_content,
+      introVideoUrl: module.intro_video_url,
+      introPosterUrl: module.intro_poster_url,
+      lessons: accessResults.filter(l => l.moduleId === module.id)
+    }))
+
     return {
       success: true,
       courseSlug,
       userId,
       isEnrolled: !!enrollment,
       enrollmentStatus: enrollment?.status || null,
+      hasModules: (modules || []).length > 0,
+      modules: moduleSummary,
       lessons: accessResults,
       summary: {
         totalLessons: lessons.length,
+        totalModules: (modules || []).length,
         previewLessons: lessons.filter(l => l.is_preview).length,
         accessibleLessons: accessResults.filter(r => r.canAccess).length,
-        blockedLessons: accessResults.filter(r => !r.canAccess).length
+        blockedLessons: accessResults.filter(r => !r.canAccess).length,
+        modulesWithIntros: (modules || []).filter(m => m.intro_content || m.intro_video_url).length
       }
     }
 
@@ -357,6 +458,7 @@ export const enforceLessonAccess = (options = {}) => {
 
 export default {
   checkLessonAccess,
+  checkModuleAccess,
   getCourseAccessSummary,
   enforceLessonAccess
 }

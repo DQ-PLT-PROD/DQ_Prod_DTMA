@@ -1,38 +1,48 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOutIcon, ChevronDownIcon, UserIcon, BookOpenIcon, GraduationCapIcon, ArrowRightLeftIcon } from 'lucide-react';
+import { LogOutIcon, ChevronDownIcon, UserIcon, BookOpenIcon } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
-import { useRoleSwitcherOptional } from '@/features/instructor-portal';
+import { useAdminAuthOptional } from '@/lib/admin-auth';
 
 // Simplified for MVP - removed notifications.
 export function ProfileDropdown() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
+  // const roleSwitcher = useRoleSwitcherOptional();
   const {
     user,
+    databaseUser,
     logout,
     isLoading
   } = useAuth();
+  const adminAuth = useAdminAuthOptional();
+  const adminUser = adminAuth?.user ?? null;
+  const isAdminSession = Boolean(adminAuth?.session && adminUser);
+  const effectiveUser = isAdminSession && adminUser
+    ? {
+      id: adminUser.id,
+      name: (adminUser.user_metadata?.full_name as string) || adminUser.email || 'Admin User',
+      email: adminUser.email || '',
+    } as any
+    : user;
 
-  // Role switcher - optional to avoid breaking if provider isn't in tree
-  const roleSwitcher = useRoleSwitcherOptional();
   // Generate initials from user name if no avatar is available
   const getInitials = () => {
-    if (!user || !user.name) return '?';
-    if (user.givenName && user.familyName) {
-      return `${user.givenName.charAt(0)}${user.familyName.charAt(0)}`;
+    if (!effectiveUser || !effectiveUser.name) return '?';
+    if ((effectiveUser as any).givenName && (effectiveUser as any).familyName) {
+      return `${(effectiveUser as any).givenName.charAt(0)}${(effectiveUser as any).familyName.charAt(0)}`;
     }
-    const nameParts = user.name.split(' ');
+    const nameParts = effectiveUser.name.split(' ');
     if (nameParts.length >= 2) {
       return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`;
     }
-    return user.name.substring(0, 2).toUpperCase();
+    return effectiveUser.name.substring(0, 2).toUpperCase();
   };
   // Get user's first name for greeting
   const getFirstName = () => {
-    if (!user) return '';
-    return user.givenName || user.name.split(' ')[0];
+    if (!effectiveUser) return '';
+    return (effectiveUser as any).givenName || effectiveUser.name.split(' ')[0];
   };
   // Toggle dropdown
   const toggleDropdown = () => {
@@ -54,6 +64,12 @@ export function ProfileDropdown() {
   const handleLogout = () => {
     closeDropdown();
     setShowLogoutConfirmation(false);
+    if (isAdminSession && adminAuth) {
+      adminAuth.signOut().then(() => {
+        navigate('/admin/login', { replace: true });
+      });
+      return;
+    }
     logout();
   };
   // MVP: Profile navigation disabled for now
@@ -69,13 +85,13 @@ export function ProfileDropdown() {
     </div>;
   }
   // If no user is authenticated, don't show the dropdown
-  if (!user) {
+  if (!effectiveUser) {
     return null;
   }
   return <div className="relative">
     <button className="flex items-center" onClick={toggleDropdown} aria-label="User menu">
       <div className="relative w-10 h-10 rounded-full bg-[color:var(--md-surface)] text-[color:var(--md-primary)] flex items-center justify-center font-bold shadow-md-1">
-        {user.picture ? <img src={user.picture} alt={user.name} className="w-full h-full rounded-full object-cover" /> : getInitials()}
+        {(effectiveUser as any).picture ? <img src={(effectiveUser as any).picture} alt={effectiveUser.name} className="w-full h-full rounded-full object-cover" /> : getInitials()}
         {/* MVP: Removed notification indicator */}
       </div>
       <div className="flex items-center ml-2">
@@ -94,63 +110,22 @@ export function ProfileDropdown() {
             <UserIcon size={18} className="text-[color:var(--md-on-surface-variant)] mr-2" />
             <div className="ml-1">
               <p className="text-sm font-medium text-[color:var(--md-on-surface)]">
-                {user.name}
+                {effectiveUser.name}
               </p>
-              <p className="text-xs text-[color:var(--md-on-surface-variant)]">{user.email}</p>
+              <p className="text-xs text-[color:var(--md-on-surface-variant)]">{effectiveUser.email}</p>
             </div>
           </div>
         </div>
 
         {/* Navigation - Restored for Desktop */}
         <div className="py-1 border-b border-[color:var(--md-outline-variant)]">
-          <a href="/portal/my-courses/in-progress" className="flex items-center w-full text-left px-4 py-2 text-sm text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant)]">
+          <a href={isAdminSession ? "/instructor/dashboard" : "/portal/my-courses/in-progress"} className="flex items-center w-full text-left px-4 py-2 text-sm text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant)]">
             <div className="mr-3 text-[color:var(--md-primary)]">
               <BookOpenIcon size={16} className="text-[color:var(--md-primary)]" />
             </div>
-            My Learning
+            {isAdminSession ? 'Instructor Dashboard' : 'My Learning'}
           </a>
         </div>
-
-        {/* Role Switcher */}
-        {roleSwitcher && (
-          <div className="py-1 border-b border-[color:var(--md-outline-variant)]">
-            <div className="px-4 py-2">
-              <p className="text-xs font-medium text-[color:var(--md-on-surface-variant)] mb-2">
-                Switch Profile
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    roleSwitcher.setRole('learner');
-                    closeDropdown();
-                    navigate('/portal');
-                  }}
-                  className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${roleSwitcher.isLearner
-                      ? 'bg-[var(--md-primary)] text-white'
-                      : 'bg-[color:var(--md-surface-variant)] text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant-hover)]'
-                    }`}
-                >
-                  <BookOpenIcon size={14} />
-                  Learner
-                </button>
-                <button
-                  onClick={() => {
-                    roleSwitcher.setRole('instructor');
-                    closeDropdown();
-                    navigate('/instructor');
-                  }}
-                  className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${roleSwitcher.isInstructor
-                      ? 'bg-[var(--md-primary)] text-white'
-                      : 'bg-[color:var(--md-surface-variant)] text-[color:var(--md-on-surface-variant)] hover:bg-[color:var(--md-surface-variant-hover)]'
-                    }`}
-                >
-                  <GraduationCapIcon size={14} />
-                  Instructor
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* MVP: Notifications section commented out */}
         {/* 

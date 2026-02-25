@@ -10,7 +10,7 @@ import {
   Loader2,
   Download,
 } from "lucide-react";
-import { useAuth } from "../../../components/Header";
+import { useAuth } from "@/lib/auth";
 import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../../portal/components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";

@@ -6,7 +6,7 @@
 
 import { msalInstance } from '../auth/msal'
 
-const API_BASE = 'http://localhost:3001/api'
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 
 interface ApiResponse<T = any> {
   success?: boolean
@@ -16,6 +16,17 @@ interface ApiResponse<T = any> {
 }
 
 class EnrollmentApiClient {
+  private async parseResponseBody(response: Response): Promise<any> {
+    const contentType = response.headers.get('content-type') || ''
+
+    if (contentType.includes('application/json')) {
+      return response.json()
+    }
+
+    const text = await response.text()
+    return text ? { error: text.slice(0, 250) } : null
+  }
+
   /**
    * Get access token for API requests
    */
@@ -54,17 +65,22 @@ class EnrollmentApiClient {
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       }
 
-      // Add authentication header if token is available
-      if (token) {
-        options.headers = {
-          ...options.headers,
-          'Authorization': `Bearer ${token}`
+      // Enrollment APIs require authentication — fail fast if no token
+      if (!token) {
+        console.warn('No authentication token available for enrollment API request')
+        return {
+          success: false,
+          error: 'Authentication required. Please sign in and try again.'
         }
-      } else {
-        console.warn('Making API request without authentication token')
+      }
+
+      options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
       }
 
       if (body) {
@@ -72,13 +88,14 @@ class EnrollmentApiClient {
       }
 
       const response = await fetch(`${API_BASE}${endpoint}`, options)
-      const data = await response.json()
+      const data = await this.parseResponseBody(response)
 
       if (!response.ok) {
+        const statusError = `API request failed with status ${response.status}`
         return {
           success: false,
-          error: data.error || 'API request failed',
-          details: data.details
+          error: data?.error || statusError,
+          details: data?.details
         }
       }
 
@@ -97,13 +114,13 @@ class EnrollmentApiClient {
 
   /**
    * Check if user is enrolled in a course
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token.
+   * Keep the optional arg for backward compatibility, but do not send it.
    */
-  async isUserEnrolled(courseSlug: string, userId?: string): Promise<boolean> {
-    const queryParam = userId ? `?userId=${userId}` : ''
+  async isUserEnrolled(courseSlug: string, _userId?: string): Promise<boolean> {
     const result = await this.makeRequest(
       'GET',
-      `/enrollment/status/${courseSlug}${queryParam}`
+      `/enrollment/status/${courseSlug}`
     )
 
     if (result.success && result.data) {
@@ -115,13 +132,13 @@ class EnrollmentApiClient {
 
   /**
    * Get enrollment details for a user and course
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token.
+   * Keep the optional arg for backward compatibility, but do not send it.
    */
-  async getEnrollment(courseSlug: string, userId?: string) {
-    const queryParam = userId ? `?userId=${userId}` : ''
+  async getEnrollment(courseSlug: string, _userId?: string) {
     const result = await this.makeRequest(
       'GET',
-      `/enrollment/details/${courseSlug}${queryParam}`
+      `/enrollment/details/${courseSlug}`
     )
 
     if (result.success && result.data) {
@@ -133,13 +150,10 @@ class EnrollmentApiClient {
 
   /**
    * Enroll user in a course
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token - do not pass userId
    */
-  async enrollInCourse(courseSlug: string, method: 'explicit' | 'auto' = 'explicit', userId?: string) {
-    const requestBody: any = { courseSlug, method }
-    if (userId) {
-      requestBody.userId = userId
-    }
+  async enrollInCourse(courseSlug: string, method: 'explicit' | 'auto' = 'explicit') {
+    const requestBody = { courseSlug, method }
 
     const result = await this.makeRequest(
       'POST',
@@ -157,12 +171,11 @@ class EnrollmentApiClient {
 
   /**
    * Get all enrollments for a user
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token - do not pass userId
    */
-  async getUserEnrollments(userId?: string) {
-    // For authenticated requests, the backend will use the authenticated user's ID
-    // The userId parameter is kept for backward compatibility but may be ignored
-    const endpoint = userId ? `/enrollment/user/${userId}` : '/enrollment/user/me'
+  async getUserEnrollments() {
+    // Backend will use authenticated user's ID from token
+    const endpoint = '/enrollment/user/me'
     
     const result = await this.makeRequest(
       'GET',
@@ -178,13 +191,13 @@ class EnrollmentApiClient {
 
   /**
    * Get access contract for a user and course
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token.
+   * Keep the optional arg for backward compatibility, but do not send it.
    */
-  async getAccessContract(courseSlug: string, userId?: string) {
-    const queryParam = userId ? `?userId=${userId}` : ''
+  async getAccessContract(courseSlug: string, _userId?: string) {
     const result = await this.makeRequest(
       'GET',
-      `/enrollment/access/${courseSlug}${queryParam}`
+      `/enrollment/access/${courseSlug}`
     )
 
     if (result.success && result.data) {
@@ -204,13 +217,10 @@ class EnrollmentApiClient {
 
   /**
    * Cancel enrollment
-   * Note: userId parameter is now optional - backend will use authenticated user
+   * Backend uses authenticated user from token - do not pass userId
    */
-  async cancelEnrollment(courseSlug: string, userId?: string) {
-    const requestBody: any = { courseSlug }
-    if (userId) {
-      requestBody.userId = userId
-    }
+  async cancelEnrollment(courseSlug: string) {
+    const requestBody = { courseSlug }
 
     const result = await this.makeRequest(
       'POST',

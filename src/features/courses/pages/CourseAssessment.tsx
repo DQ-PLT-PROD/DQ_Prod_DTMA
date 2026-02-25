@@ -13,7 +13,9 @@ import {
   Square
 } from "lucide-react";
 import AchievementModal from "../../../components/AchievementModal";
-import { fetchCourseQuizzes } from "@/services/courseService";
+import { useAuth } from "@/lib/auth";
+import { fetchCourseQuizzes } from "../services/courseService";
+import { recordCourseCompletion, recordQuizAttempt } from "../../portal/services/achievementService";
 
 type QuizOption = {
   id: string;
@@ -68,6 +70,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
   courseSlug,
   variant = "page"
 }) => {
+  const { databaseUser } = useAuth();
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -79,6 +82,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
 
   const [showSummary, setShowSummary] = useState(false);
   const [showAchievementModal, setShowAchievementModal] = useState(false);
+  const [earnedBadge, setEarnedBadge] = useState<{ definition: any, shareToken?: string } | null>(null);
 
   useEffect(() => {
     const mapSupabaseQuiz = (quiz: any, idx: number): QuizQuestion => {
@@ -231,10 +235,33 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
     setShowFeedback(true);
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     if (isLastQuestion) {
       const finalScore = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
-      if (finalScore >= 70) {
+      const incorrectCount = totalQuestions - correctAnswers;
+      const passed = incorrectCount <= 5;
+
+      if (databaseUser?.id) {
+        const quizBadge = await recordQuizAttempt(databaseUser.id, courseSlug, finalScore, passed);
+        if (quizBadge) {
+          setEarnedBadge({
+            definition: quizBadge.badge,
+            shareToken: quizBadge.shareToken
+          });
+        }
+        
+        if (passed && allLessonsCompleted) {
+          const courseBadge = await recordCourseCompletion(databaseUser.id, courseSlug);
+          if (courseBadge) {
+            setEarnedBadge({
+              definition: courseBadge.badge,
+              shareToken: courseBadge.shareToken
+            });
+          }
+        }
+      }
+
+      if (passed) {
         setShowAchievementModal(true);
       } else {
         setShowSummary(true);
@@ -269,11 +296,6 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
     setShowAchievementModal(false);
   };
 
-  const handleTryAgain = () => {
-    setSelectedAnswerIds([]);
-    setShowFeedback(false);
-  };
-
   // Load previous answer when navigating
   useEffect(() => {
     if (!currentQuestion) return;
@@ -299,7 +321,8 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
 
   // Show summary screen
   if (showSummary) {
-    const passed = scorePercentage >= 70;
+    const incorrectCount = totalQuestions - correctAnswers;
+    const passed = incorrectCount <= 5;
 
     return (
       <div className={containerClass}>
@@ -331,7 +354,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
                   <div className="text-sm text-gray-600">Correct</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-red-500">{totalQuestions - correctAnswers}</div>
+              <div className="text-2xl font-bold text-red-500">{incorrectCount}</div>
                   <div className="text-sm text-gray-600">Incorrect</div>
                 </div>
                 <div>
@@ -545,26 +568,13 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
                   Submit Answer
                 </button>
               ) : (
-                // Correct logic for buttons: 
-                // If Correct -> Show Next
-                // If Incorrect -> Show Try Again
-                isCurrentlyCorrect ? (
-                  <button
-                    onClick={handleNextQuestion}
-                    className="px-6 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center gap-2"
-                  >
-                    {isLastQuestion ? "Finish Quiz" : "Next Question"}
-                    <ArrowRight size={16} />
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleTryAgain}
-                    className="px-6 py-2 bg-white border border-[#1839AD] text-[#1839AD] rounded-lg hover:bg-blue-50 transition flex items-center gap-2"
-                  >
-                    <RotateCcw size={16} />
-                    Try Again
-                  </button>
-                )
+                <button
+                  onClick={handleNextQuestion}
+                  className="px-6 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition flex items-center gap-2"
+                >
+                  {isLastQuestion ? "Finish Quiz" : "Next Question"}
+                  <ArrowRight size={16} />
+                </button>
               )}
             </div>
           </div>
@@ -579,8 +589,9 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
           setShowSummary(true);
         }}
         score={scorePercentage}
-        courseName="Perfecting Life Transactions: A Digital Builder's Blueprint"
-        userName="Digital Builder"
+        courseName={courseSlug === "plt-course-01" ? "Perfecting Life Transactions: A Digital Builder's Blueprint" : courseSlug}
+        userName={databaseUser?.name || "Digital Builder"}
+        badge={earnedBadge || undefined}
       />
     </div>
   );

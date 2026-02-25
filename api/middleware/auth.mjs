@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
+import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -84,19 +85,45 @@ const extractToken = (req) => {
   return parts[1];
 };
 
+let supabaseAdminClient = null;
+const getSupabaseAdminClient = () => {
+  if (supabaseAdminClient) return supabaseAdminClient;
+
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) {
+    return null;
+  }
+
+  supabaseAdminClient = createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+  return supabaseAdminClient;
+};
+
 // Validate Azure AD JWT token
 const validateAzureToken = async (token, tenantId, clientId, subdomain = null) => {
   return new Promise((resolve, reject) => {
     const client = getJwksClient(tenantId, subdomain);
     
     // Expected issuer based on configuration
-    const expectedIssuer = subdomain 
-      ? `https://${subdomain}.ciamlogin.com/${tenantId}/v2.0`
-      : `https://login.microsoftonline.com/${tenantId}/v2.0`;
+    // Azure CIAM can issue tokens with either subdomain or tenant ID format
+    const expectedIssuers = subdomain 
+      ? [
+          `https://${subdomain}.ciamlogin.com/${tenantId}/v2.0`,
+          `https://${tenantId}.ciamlogin.com/${tenantId}/v2.0`
+        ]
+      : [
+          `https://login.microsoftonline.com/${tenantId}/v2.0`,
+          `https://${tenantId}.ciamlogin.com/${tenantId}/v2.0`
+        ];
 
     const options = {
       audience: clientId,
-      issuer: expectedIssuer,
+      issuer: expectedIssuers,
       algorithms: ['RS256'],
       clockTolerance: 60, // Allow 60 seconds clock skew
     };
@@ -105,6 +132,20 @@ const validateAzureToken = async (token, tenantId, clientId, subdomain = null) =
       audience: options.audience,
       issuer: options.issuer,
       algorithms: options.algorithms
+    });
+
+    // Decode token without verification to see actual claims
+    const decodedWithoutVerify = jwt.decode(token, { complete: true });
+    console.log('🔍 Token claims (unverified):', {
+      header: decodedWithoutVerify?.header,
+      payload: {
+        iss: decodedWithoutVerify?.payload?.iss,
+        aud: decodedWithoutVerify?.payload?.aud,
+        sub: decodedWithoutVerify?.payload?.sub,
+        oid: decodedWithoutVerify?.payload?.oid,
+        exp: decodedWithoutVerify?.payload?.exp,
+        iat: decodedWithoutVerify?.payload?.iat
+      }
     });
 
     jwt.verify(token, getKey(client), options, (err, decoded) => {
@@ -285,6 +326,65 @@ export const authenticateUser = (options = {}) => {
   };
 };
 
+// Supabase JWT middleware for admin endpoints
+export const authenticateSupabaseUser = (options = {}) => {
+  const { required = true } = options;
+
+  return async (req, res, next) => {
+    try {
+      const token = extractToken(req);
+      if (!token) {
+        if (!required) return next();
+        res.statusCode = 401;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          error: 'Authentication required',
+          message: 'No Supabase access token provided'
+        }));
+        return;
+      }
+
+      const supabase = getSupabaseAdminClient();
+      if (!supabase) {
+        if (!required) return next();
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          error: 'Authentication configuration error',
+          message: 'Supabase server auth is not configured'
+        }));
+        return;
+      }
+
+      const { data, error } = await supabase.auth.getUser(token);
+      if (error || !data?.user) {
+        if (!required) return next();
+        res.statusCode = 401;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          error: 'Invalid authentication token',
+          message: 'The provided Supabase token is invalid or expired'
+        }));
+        return;
+      }
+
+      req.adminUser = data.user;
+      req.authProvider = 'supabase';
+      req.user = req.user || data.user;
+      return next();
+    } catch (error) {
+      if (!required) return next();
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({
+        error: 'Authentication error',
+        message: 'An error occurred during Supabase authentication'
+      }));
+      return;
+    }
+  };
+};
+
 // Middleware to require specific scopes
 export const requireScopes = (requiredScopes = []) => {
   return (req, res, next) => {
@@ -377,6 +477,7 @@ export const isAuthenticated = (req) => {
 
 export default {
   authenticateUser,
+  authenticateSupabaseUser,
   requireScopes,
   requireRoles,
   getCurrentUser,

@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { FadeInUpOnScroll, useInView } from "@/components/AnimationUtils";
 import {
   Users,
   ChevronRight,
@@ -12,22 +11,6 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { PageContainer } from "@/components/layouts/PageContainer";
-
-// Animated shape component
-const FloatingShape = ({ size, color, delay, duration, className = "" }) => {
-  return (
-    <div
-      className={`absolute rounded-full opacity-30 animate-float ${className}`}
-      style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        background: color,
-        animationDuration: `${duration}s`,
-        animationDelay: `${delay}s`,
-      }}
-    ></div>
-  );
-};
 
 // Form input component
 const FormInput = ({
@@ -167,89 +150,37 @@ const CTACard: React.FC<CTACardProps> = ({
   buttonText,
   buttonColor,
   onClick = () => { },
-  delay = 0,
   isExpanded = false,
   onExpand = undefined,
   children = null,
   isSuccess = false,
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [ref, isInView] = useInView({
-    threshold: 0.2,
-  });
-  const rippleRef = useRef<HTMLSpanElement>(null);
-
-  const handleRippleEffect = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (rippleRef.current) {
-      const button = e.currentTarget;
-      const rect = button.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      rippleRef.current.style.left = `${x}px`;
-      rippleRef.current.style.top = `${y}px`;
-      rippleRef.current.style.transform = "translate(-50%, -50%) scale(0)";
-      rippleRef.current.style.opacity = "1";
-
-      setTimeout(() => {
-        if (rippleRef.current) {
-          rippleRef.current.style.transform = "translate(-50%, -50%) scale(15)";
-          rippleRef.current.style.opacity = "0";
-        }
-      }, 10);
-    }
-  };
-
   return (
     <div
-      ref={ref}
-      className={`bg-white rounded-xl shadow-lg transition-all duration-500 relative overflow-hidden 
-        ${isInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"} 
-        ${isHovered ? "shadow-xl scale-[1.02]" : ""} 
-        ${isExpanded ? "p-8 md:col-span-2 lg:col-span-1" : "p-8"}`}
-      style={{
-        transitionDelay: `${delay}s`,
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className={`bg-white rounded-xl shadow-sm border border-gray-100 relative overflow-hidden ${isExpanded ? "p-8 md:col-span-2 lg:col-span-1" : "p-8"}`}
     >
-      {/* Card content */}
       <div className="relative z-10">
         {!isExpanded ? (
           <div className="flex flex-col items-center text-center">
             <p className="text-gray-600 mb-6">{description}</p>
             <div className="flex justify-center w-full">
               <button
-                onClick={(e) => {
-                  handleRippleEffect(e);
+                onClick={() => {
                   if (onExpand) {
                     onExpand();
                   } else {
                     onClick();
                   }
                 }}
-                className={`relative overflow-hidden font-medium transition-all duration-300 flex items-center ${buttonColor === "blue"
-                  ? "gap-2 px-5 py-2.5 h-11 rounded-full bg-[#1839AD] text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-white/40"
+                className={`font-medium transition-colors duration-200 flex items-center gap-2 ${buttonColor === "blue"
+                  ? "px-5 py-2.5 h-11 rounded-full bg-[#1839AD] text-white hover:bg-[#0d2b8a] focus:outline-none focus:ring-2 focus:ring-[#1839AD]/30"
                   : buttonColor === "green"
                     ? "px-6 py-3 rounded-lg shadow-md bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700"
                     : "px-6 py-3 rounded-lg shadow-md bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
-                  } ${isHovered ? "shadow-lg" : ""}`}
+                  }`}
               >
                 {buttonColor === "blue" ? "Get Started" : buttonText}
-                <ArrowRight
-                  size={16}
-                  className={`ml-1 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""
-                    }`}
-                />
-                <span
-                  ref={rippleRef}
-                  className="absolute rounded-full bg-white/20 pointer-events-none transition-all duration-700"
-                  style={{
-                    width: "10px",
-                    height: "10px",
-                    opacity: 0,
-                  }}
-                ></span>
+                <ArrowRight size={16} />
               </button>
             </div>
           </div>
@@ -280,20 +211,6 @@ const CTACard: React.FC<CTACardProps> = ({
           </>
         )}
       </div>
-      {/* Background glow effect */}
-      <div
-        className={`absolute inset-0 transition-opacity duration-700 ${isHovered ? "opacity-100" : "opacity-0"
-          }`}
-      >
-        <div
-          className={`absolute -inset-1 rounded-xl blur-xl ${buttonColor === "blue"
-            ? "bg-[#f8f9fb]"
-            : buttonColor === "green"
-              ? "bg-emerald-600/20"
-              : "bg-purple-600/20"
-            }`}
-        ></div>
-      </div>
     </div>
   );
 };
@@ -307,9 +224,6 @@ const CallToAction: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const [ref, isInView] = useInView({
-    threshold: 0.2,
-  });
 
   const handleSignIn = () => {
     login(); // Direct Microsoft auth
@@ -547,20 +461,11 @@ const CallToAction: React.FC = () => {
       id="final-cta"
       className="w-full h-full flex flex-col justify-center py-16 relative overflow-hidden"
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-      >
-        <div className="absolute -top-10 -left-24 h-40 w-40 rounded-full border-4 border-white/60" />
-        <div className="absolute -top-16 -right-24 h-48 w-48 rounded-full border-4 border-white/60" />
-      </div>
       <PageContainer className="relative">
         <div className="text-center mb-8">
-          <FadeInUpOnScroll className="space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold leading-tight text-[#030C2B]">
-              Ready to Grow in the AI Working Era?
-            </h2>
-          </FadeInUpOnScroll>
+          <h2 className="text-3xl md:text-4xl font-bold leading-tight text-[#030C2B]">
+            Ready to Grow in the AI Working Era?
+          </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-1 gap-8 items-start">

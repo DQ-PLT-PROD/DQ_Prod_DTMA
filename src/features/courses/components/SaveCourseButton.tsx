@@ -1,16 +1,15 @@
 /**
- * Save Course Button Component (Dev D - Feature D2)
+ * Save Course Button Component
  *
- * Allows users to save/bookmark courses for later
- * Uses localStorage for MVP (will be migrated to database post-MVP)
- *
- * @see docs/DTMA_DevD_Technical_Audit.md Section 4
+ * Allows users to save/bookmark courses for later.
+ * Uses SavedCoursesContext for shared state backed by Supabase persistence.
+ * Unauthenticated users are redirected to login on click.
  */
 
-import React, { useState, useEffect } from "react";
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import React, { useState } from "react";
+import { Bookmark, BookmarkCheck, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { isCourseSaved, toggleSavedCourse } from "../utils/savedCoursesManager";
+import { useSavedCourses } from "../context/SavedCoursesContext";
 
 interface SaveCourseButtonProps {
   courseSlug: string;
@@ -29,55 +28,35 @@ export const SaveCourseButton: React.FC<SaveCourseButtonProps> = ({
   className = "",
   onSaveChange,
 }) => {
-  const { user, databaseUser } = useAuth();
-  const [isSaved, setIsSaved] = useState(false);
+  const { user, login } = useAuth();
+  const { isSaved: checkSaved, toggleSave } = useSavedCourses();
+  const saved = checkSaved(courseSlug);
+  const [isLoading, setIsLoading] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Check saved status on mount and when user changes
-  useEffect(() => {
-    if (databaseUser?.id) {
-      const saved = isCourseSaved(databaseUser.id, courseSlug);
-      setIsSaved(saved);
-    } else {
-      setIsSaved(false);
-    }
-  }, [databaseUser?.id, courseSlug]);
-
-  const handleToggleSave = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent triggering parent click handlers
+  const handleToggleSave = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     e.preventDefault();
 
-    // Require authentication
-    if (!databaseUser?.id) {
-      console.log("⚠️ User must be logged in to save courses");
-      // Could show a toast or modal here
+    // Auth gating: redirect to login if not authenticated
+    if (!user) {
+      sessionStorage.setItem("pendingSaveCourseId", courseSlug);
+      sessionStorage.setItem("returnUrl", window.location.pathname);
+      login();
       return;
     }
 
-    // Toggle saved state
-    const success = toggleSavedCourse(databaseUser.id, courseSlug);
-
-    if (success) {
-      const newSavedState = !isSaved;
-      setIsSaved(newSavedState);
-
-      // Trigger animation
+    setIsLoading(true);
+    try {
+      await toggleSave(courseSlug);
       setIsAnimating(true);
       setTimeout(() => setIsAnimating(false), 300);
-
-      // Notify parent component
-      if (onSaveChange) {
-        onSaveChange(newSavedState);
-      }
-
-      console.log(
-        newSavedState ? "✅ Course saved" : "❌ Course unsaved",
-        courseSlug
-      );
+      onSaveChange?.(!saved);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Size classes
   const sizeClasses = {
     sm: "w-8 h-8 text-sm",
     md: "w-10 h-10 text-base",
@@ -101,29 +80,27 @@ export const SaveCourseButton: React.FC<SaveCourseButtonProps> = ({
           rounded-full
           transition-all duration-200
           ${
-            isSaved
+            saved
               ? "bg-blue-100 text-blue-600 hover:bg-blue-200"
               : "bg-gray-100 text-gray-600 hover:bg-gray-200"
           }
           ${isAnimating ? "scale-110" : "scale-100"}
-          ${
-            !databaseUser?.id
-              ? "opacity-50 cursor-not-allowed"
-              : "cursor-pointer"
-          }
+          cursor-pointer
           ${className}
         `}
-        disabled={!databaseUser?.id}
+        disabled={isLoading}
         title={
-          !databaseUser?.id
+          !user
             ? "Sign in to save courses"
-            : isSaved
+            : saved
             ? `Remove "${courseTitle || "course"}" from saved`
             : `Save "${courseTitle || "course"}" for later`
         }
-        aria-label={isSaved ? "Unsave course" : "Save course"}
+        aria-label={saved ? "Unsave course" : "Save course"}
       >
-        {isSaved ? (
+        {isLoading ? (
+          <Loader2 size={iconSizes[size]} className="animate-spin" />
+        ) : saved ? (
           <BookmarkCheck size={iconSizes[size]} className="fill-current" />
         ) : (
           <Bookmark size={iconSizes[size]} />
@@ -141,26 +118,29 @@ export const SaveCourseButton: React.FC<SaveCourseButtonProps> = ({
         rounded-lg font-medium
         transition-all duration-200
         ${
-          isSaved
+          saved
             ? "bg-blue-100 text-blue-700 hover:bg-blue-200 border-2 border-blue-300"
             : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300"
         }
         ${isAnimating ? "scale-105" : "scale-100"}
-        ${
-          !databaseUser?.id ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-        }
+        cursor-pointer
         ${className}
       `}
-      disabled={!databaseUser?.id}
+      disabled={isLoading}
       title={
-        !databaseUser?.id
+        !user
           ? "Sign in to save courses"
-          : isSaved
+          : saved
           ? "Remove from saved"
           : "Save for later"
       }
     >
-      {isSaved ? (
+      {isLoading ? (
+        <>
+          <Loader2 size={20} className="animate-spin" />
+          <span>Saving...</span>
+        </>
+      ) : saved ? (
         <>
           <BookmarkCheck size={20} className="fill-current" />
           <span>Saved</span>

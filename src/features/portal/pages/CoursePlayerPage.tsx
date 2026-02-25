@@ -13,16 +13,18 @@ import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
 import { Lesson, toUILesson } from "../../../types/course";
-import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "@/services/courseService";
+import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
 import {
     getOrCreateEnrollment,
     updateLessonProgress,
     updateEnrollmentProgress,
     syncLocalProgressToServer,
     getUserCourseProgress,
+    flushProgressQueue,
     Enrollment,
 } from "../services/progressService";
-import { isUserEnrolled } from "@/lib/enrollment";
+import { isUserEnrolled } from "../../courses/services/enrollmentService";
+import { PreviewContentGate } from "../components/PreviewContentGate";
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
 
 // Defined so we can pass context up to the layout if we needed to (e.g. theater mode)
@@ -191,6 +193,11 @@ const CoursePlayerPage: React.FC = () => {
 
         loadCourseData();
     }, [courseId, databaseUser?.id]);
+
+    useEffect(() => {
+        if (!databaseUser?.id) return;
+        flushProgressQueue();
+    }, [databaseUser?.id]);
 
     // Create a stable reference to lesson video URLs for the preload effect
     const lessonVideoUrls = useMemo(

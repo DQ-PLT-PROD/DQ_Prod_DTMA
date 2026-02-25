@@ -2,10 +2,10 @@ import http from 'http'
 import { parse } from 'url'
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'fs'
-import { join, dirname } from 'path'
+import { join, dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { authenticateUser, getCurrentUser, isAuthenticated } from './middleware/auth.mjs'
-import { checkLessonAccess, getCourseAccessSummary, enforceLessonAccess } from './middleware/lessonAccess.mjs'
+import { checkLessonAccess, checkModuleAccess, getCourseAccessSummary, enforceLessonAccess } from './middleware/lessonAccess.mjs'
 import { applyRateLimit, applyStrictRateLimit } from './middleware/rateLimiter.mjs'
 import { logRequest, logAuthEvent, logEnrollmentEvent, logAccessEvent } from './middleware/requestLogger.mjs'
 
@@ -13,11 +13,9 @@ import { logRequest, logAuthEvent, logEnrollmentEvent, logAccessEvent } from './
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-try {
-  const envPath = join(__dirname, '.env')
-  const envFile = readFileSync(envPath, 'utf8')
-
-  envFile.split('\n').forEach(line => {
+const loadEnvFile = (filePath) => {
+  const file = readFileSync(filePath, 'utf8')
+  file.split('\n').forEach(line => {
     const trimmed = line.trim()
     if (trimmed && !trimmed.startsWith('#')) {
       const [key, ...valueParts] = trimmed.split('=')
@@ -26,9 +24,20 @@ try {
       }
     }
   })
-  console.log('✅ Environment variables loaded from .env')
-} catch (err) {
-  console.log('⚠️ No .env file found, using system environment variables')
+}
+
+try {
+  // Try api/.env first (for deploy-specific overrides)
+  loadEnvFile(join(__dirname, '.env'))
+  console.log('✅ Environment variables loaded from api/.env')
+} catch {
+  try {
+    // Fall back to root .env (standard development setup)
+    loadEnvFile(join(__dirname, '../.env'))
+    console.log('✅ Environment variables loaded from root .env')
+  } catch {
+    console.log('⚠️ No .env file found, using system environment variables')
+  }
 }
 
 const PORT = process.env.API_PORT ? Number(process.env.API_PORT) : 3001
@@ -283,6 +292,19 @@ const lessonAccessHandlers = {
 
       console.log(`📈 Updating lesson progress for user ${userId} - course: ${courseSlug}, lesson: ${lessonId}`)
 
+      // Resolve Azure OID to Supabase DB user UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', userId)
+        .single()
+
+      if (userLookupError || !userData?.id) {
+        return sendError(res, 403, 'Active enrollment required')
+      }
+
+      const dbUserId = userData.id
+
       // Check if user has access to this lesson
       const accessResult = await checkLessonAccess(
         supabaseClient,
@@ -299,7 +321,7 @@ const lessonAccessHandlers = {
       const { data: enrollment, error: enrollmentError } = await supabaseClient
         .from('user_enrollments')
         .select('id')
-        .eq('user_id', userId)
+        .eq('user_id', dbUserId)
         .eq('course_slug', courseSlug)
         .eq('status', 'active')
         .single()
@@ -347,6 +369,199 @@ const lessonAccessHandlers = {
       console.error('Error updating lesson progress:', err)
       return sendError(res, 500, 'Failed to update lesson progress')
     }
+  },
+
+  // GET /api/lessons/module-intro/:courseSlug/:moduleId
+  async getModuleIntro(req, res, courseSlug, moduleId) {
+    const authenticatedUser = getCurrentUser(req);
+    const userId = authenticatedUser ? authenticatedUser.azureUserId : null;
+
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      console.log(`🎬 Getting module intro for user ${userId} - course: ${courseSlug}, module: ${moduleId}`)
+      
+      // Check module access (module intros are always accessible)
+      const accessResult = await checkModuleAccess(
+        supabaseClient,
+        userId,
+        courseSlug,
+        moduleId
+      )
+
+      if (!accessResult.canAccess) {
+        return sendError(res, 404, accessResult.reason)
+      }
+
+      const module = accessResult.module
+
+      return sendJSON(res, 200, {
+        success: true,
+        module: {
+          id: module.id,
+          title: module.title,
+          description: module.description,
+          orderIndex: module.order_index,
+          introContent: module.intro_content,
+          introVideoUrl: module.intro_video_url,
+          introPosterUrl: module.intro_poster_url,
+          hasIntroContent: accessResult.hasIntroContent
+        },
+        accessInfo: {
+          canAccess: true,
+          accessType: 'module_intro',
+          reason: 'Module intro is public content'
+        }
+      })
+    } catch (err) {
+      console.error('Error getting module intro:', err)
+      return sendError(res, 500, 'Failed to get module intro')
+    }
+  }
+}
+
+// Saved Courses API handlers
+const savedCoursesHandlers = {
+  // GET /api/saved-courses — list saved course slugs for authenticated user
+  async listSavedCourses(req, res) {
+    const authenticatedUser = getCurrentUser(req)
+    if (!authenticatedUser) {
+      return sendError(res, 401, 'Authentication required')
+    }
+
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      const azureUserId = authenticatedUser.azureUserId
+
+      // Resolve Azure OID → DB UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', azureUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        // User doesn't exist yet — return empty list
+        return sendJSON(res, 200, { savedCourseIds: [] })
+      }
+
+      const { data, error } = await supabaseClient
+        .from('saved_courses')
+        .select('course_id')
+        .eq('user_id', userData.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching saved courses:', error)
+        return sendError(res, 500, 'Failed to fetch saved courses')
+      }
+
+      const savedCourseIds = (data || []).map(row => row.course_id)
+      return sendJSON(res, 200, { savedCourseIds })
+    } catch (err) {
+      console.error('Error listing saved courses:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  },
+
+  // POST /api/saved-courses — save a course { courseId }
+  async saveCourse(req, res) {
+    const authenticatedUser = getCurrentUser(req)
+    if (!authenticatedUser) {
+      return sendError(res, 401, 'Authentication required')
+    }
+
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      const body = await parseBody(req)
+      const { courseId } = body
+
+      if (!courseId) {
+        return sendError(res, 400, 'Missing required field: courseId')
+      }
+
+      const azureUserId = authenticatedUser.azureUserId
+
+      // Resolve Azure OID → DB UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', azureUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendError(res, 404, 'User not found')
+      }
+
+      // Upsert to handle duplicate gracefully
+      const { error } = await supabaseClient
+        .from('saved_courses')
+        .upsert(
+          { user_id: userData.id, course_id: courseId },
+          { onConflict: 'user_id,course_id' }
+        )
+
+      if (error) {
+        console.error('Error saving course:', error)
+        return sendError(res, 500, 'Failed to save course')
+      }
+
+      return sendJSON(res, 200, { saved: true, courseId })
+    } catch (err) {
+      console.error('Error saving course:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  },
+
+  // DELETE /api/saved-courses/:courseId — unsave a course
+  async unsaveCourse(req, res, courseId) {
+    const authenticatedUser = getCurrentUser(req)
+    if (!authenticatedUser) {
+      return sendError(res, 401, 'Authentication required')
+    }
+
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      const azureUserId = authenticatedUser.azureUserId
+
+      // Resolve Azure OID → DB UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', azureUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendError(res, 404, 'User not found')
+      }
+
+      const { error } = await supabaseClient
+        .from('saved_courses')
+        .delete()
+        .eq('user_id', userData.id)
+        .eq('course_id', courseId)
+
+      if (error) {
+        console.error('Error unsaving course:', error)
+        return sendError(res, 500, 'Failed to unsave course')
+      }
+
+      return sendJSON(res, 200, { saved: false, courseId })
+    } catch (err) {
+      console.error('Error unsaving course:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
   }
 }
 
@@ -379,10 +594,23 @@ const enrollmentHandlers = {
     try {
       console.log(`🔍 Checking enrollment status for user ${targetUserId} in course ${courseSlug}`)
 
+      // Resolve Azure OID to Supabase DB user UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', targetUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendJSON(res, 200, { isEnrolled: false, enrollmentStatus: null })
+      }
+
+      const dbUserId = userData.id
+
       const { data, error } = await supabaseClient
         .from('user_enrollments')
         .select('id, status')
-        .eq('user_id', targetUserId)
+        .eq('user_id', dbUserId)
         .eq('course_slug', courseSlug)
         .eq('status', 'active')
         .single()
@@ -434,10 +662,23 @@ const enrollmentHandlers = {
     try {
       console.log(`📋 Getting enrollment details for user ${targetUserId} in course ${courseSlug}`)
 
+      // Resolve Azure OID to Supabase DB user UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', targetUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendJSON(res, 404, { error: 'Enrollment not found' })
+      }
+
+      const dbUserId = userData.id
+
       const { data, error } = await supabaseClient
         .from('user_enrollments')
         .select('*')
-        .eq('user_id', targetUserId)
+        .eq('user_id', dbUserId)
         .eq('course_slug', courseSlug)
         .single()
 
@@ -462,6 +703,7 @@ const enrollmentHandlers = {
 
   // POST /api/enrollment/enroll
   async enrollInCourse(req, res) {
+    let enrollmentCourseSlug = 'unknown'
     try {
       const body = await parseBody(req)
 
@@ -469,9 +711,9 @@ const enrollmentHandlers = {
       const authenticatedUser = getCurrentUser(req);
 
       // If user is authenticated, use their Azure user ID, otherwise require userId in body
-      const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : body.userId;
+      const azureUserId = authenticatedUser ? authenticatedUser.azureUserId : body.userId;
 
-      if (!targetUserId) {
+      if (!azureUserId) {
         return sendError(res, 400, 'User identification required')
       }
 
@@ -490,32 +732,79 @@ const enrollmentHandlers = {
       }
 
       const { courseSlug, method = 'explicit' } = body
+      enrollmentCourseSlug = courseSlug
 
       if (!supabaseClient) {
         return sendError(res, 503, 'Database not configured')
       }
 
-      console.log(`🎯 Starting enrollment process for user ${targetUserId} in course ${courseSlug}`)
-      logEnrollmentEvent('enrollment_attempt', courseSlug, targetUserId, { method });
+      console.log(`🎯 Starting enrollment process for user ${azureUserId} in course ${courseSlug}`)
+      logEnrollmentEvent('enrollment_attempt', courseSlug, azureUserId, { method });
+
+      // Look up the database user ID from Azure user ID
+      const { data: userData, error: userError } = await supabaseClient
+        .from('users')
+        .select('id, azure_user_id, email, name')
+        .eq('azure_user_id', azureUserId)
+        .single()
+
+      if (userError || !userData) {
+        console.error('❌ User not found in database:', { azureUserId, error: userError })
+        
+        // Try to create the user if they don't exist
+        if (userError?.code === 'PGRST116') {
+          console.log('📝 Creating user in database...')
+          
+          const newUserData = {
+            azure_user_id: azureUserId,
+            customer_id: `CUST_${Date.now()}_${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+            email: authenticatedUser?.email || `user-${azureUserId}@temp.com`,
+            name: authenticatedUser?.name || 'User',
+            last_login: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+
+          const { data: createdUser, error: createError } = await supabaseClient
+            .from('users')
+            .insert(newUserData)
+            .select('id')
+            .single()
+
+          if (createError || !createdUser) {
+            console.error('❌ Failed to create user:', createError)
+            logEnrollmentEvent('enrollment_error', courseSlug, azureUserId, { error: 'user_creation_failed' });
+            return sendError(res, 500, 'Failed to create user account', createError?.message)
+          }
+
+          console.log('✅ User created:', createdUser.id)
+          userData.id = createdUser.id
+        } else {
+          logEnrollmentEvent('enrollment_error', courseSlug, azureUserId, { error: 'user_lookup_failed' });
+          return sendError(res, 500, 'Failed to lookup user', userError?.message)
+        }
+      }
+
+      const dbUserId = userData.id
+      console.log(`✅ Found database user ID: ${dbUserId} for Azure user: ${azureUserId}`)
 
       // Check if already enrolled
       const { data: existingData, error: checkError } = await supabaseClient
         .from('user_enrollments')
         .select('*')
-        .eq('user_id', targetUserId)
+        .eq('user_id', dbUserId)
         .eq('course_slug', courseSlug)
         .single()
 
       if (checkError && checkError.code !== 'PGRST116') {
         console.error('Error checking existing enrollment:', checkError)
-        logEnrollmentEvent('enrollment_error', courseSlug, targetUserId, { error: checkError.message });
+        logEnrollmentEvent('enrollment_error', courseSlug, azureUserId, { error: checkError.message });
         return sendError(res, 500, 'Failed to check existing enrollment', checkError.message)
       }
 
       // If already enrolled and active, return existing enrollment
       if (existingData && existingData.status === 'active') {
         console.log('✅ User already enrolled')
-        logEnrollmentEvent('enrollment_duplicate', courseSlug, targetUserId, { status: existingData.status });
+        logEnrollmentEvent('enrollment_duplicate', courseSlug, azureUserId, { status: existingData.status });
         return sendJSON(res, 200, {
           success: true,
           enrollment: mapRowToEnrollment(existingData),
@@ -526,7 +815,7 @@ const enrollmentHandlers = {
       // Create new enrollment
       console.log('📝 Creating new enrollment...')
       const enrollmentData = {
-        user_id: targetUserId,
+        user_id: dbUserId,
         course_slug: courseSlug,
         started_at: new Date().toISOString(),
         last_accessed_at: new Date().toISOString(),
@@ -543,12 +832,12 @@ const enrollmentHandlers = {
 
       if (error) {
         console.error('❌ Error creating enrollment:', error)
-        logEnrollmentEvent('enrollment_failed', courseSlug, targetUserId, { error: error.message });
+        logEnrollmentEvent('enrollment_failed', courseSlug, azureUserId, { error: error.message });
         return sendError(res, 500, 'Failed to create enrollment', error.message)
       }
 
       console.log('✅ Enrollment created successfully')
-      logEnrollmentEvent('enrollment_success', courseSlug, targetUserId, {
+      logEnrollmentEvent('enrollment_success', courseSlug, azureUserId, {
         enrollmentId: data.id,
         method: method
       });
@@ -560,23 +849,30 @@ const enrollmentHandlers = {
       })
     } catch (err) {
       console.error('Unexpected error in enrollment:', err)
-      logEnrollmentEvent('enrollment_error', body?.courseSlug || 'unknown', targetUserId || 'unknown', {
+      const azureUserId = getCurrentUser(req)?.azureUserId || 'unknown';
+      logEnrollmentEvent('enrollment_error', enrollmentCourseSlug, azureUserId, {
         error: err.message
       });
       return sendError(res, 500, 'Internal server error')
     }
   },
 
-  // GET /api/enrollment/user/:userId
+  // GET /api/enrollment/user/:userId or /api/enrollment/user/me
   async getUserEnrollments(req, res, userId) {
     // Get authenticated user
     const authenticatedUser = getCurrentUser(req);
 
-    // If user is authenticated, use their Azure user ID instead of path param
-    const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : userId;
+    // If userId is null (from 'me' endpoint), use authenticated user
+    const azureUserId = !userId || userId === 'me' 
+      ? (authenticatedUser ? authenticatedUser.azureUserId : null)
+      : userId;
+
+    if (!azureUserId) {
+      return sendError(res, 401, 'Authentication required')
+    }
 
     // Security check: authenticated users can only get their own enrollments
-    if (authenticatedUser && userId !== authenticatedUser.azureUserId) {
+    if (authenticatedUser && userId && userId !== 'me' && userId !== authenticatedUser.azureUserId) {
       return sendError(res, 403, 'Cannot access enrollments for other users')
     }
 
@@ -585,12 +881,31 @@ const enrollmentHandlers = {
     }
 
     try {
-      console.log(`📚 Getting all enrollments for user ${targetUserId}`)
+      console.log(`📚 Getting all enrollments for Azure user ${azureUserId}`)
+
+      // Look up the database user ID from Azure user ID
+      const { data: userData, error: userError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', azureUserId)
+        .single()
+
+      if (userError || !userData) {
+        console.log('⚠️ User not found in database:', azureUserId)
+        // Return empty enrollments if user doesn't exist yet
+        return sendJSON(res, 200, {
+          success: true,
+          enrollments: [],
+          count: 0
+        })
+      }
+
+      const dbUserId = userData.id
 
       const { data, error } = await supabaseClient
         .from('user_enrollments')
         .select('*')
-        .eq('user_id', targetUserId)
+        .eq('user_id', dbUserId)
         .eq('status', 'active')
         .order('started_at', { ascending: false })
 
@@ -638,18 +953,37 @@ const enrollmentHandlers = {
     try {
       console.log(`🔐 Getting access contract for user ${targetUserId} in course ${courseSlug}`)
 
+      // Resolve Azure OID to Supabase DB user UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', targetUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendJSON(res, 200, {
+          isEnrolled: false,
+          enrollmentStatus: null,
+          subscriptionStatus: null,
+          courseSlug,
+          userId: targetUserId
+        })
+      }
+
+      const dbUserId = userData.id
+
       // Get enrollment and subscription in parallel
       const [enrollmentResult, subscriptionResult] = await Promise.all([
         supabaseClient
           .from('user_enrollments')
           .select('*')
-          .eq('user_id', targetUserId)
+          .eq('user_id', dbUserId)
           .eq('course_slug', courseSlug)
           .single(),
         supabaseClient
           .from('subscriptions')
           .select('*')
-          .eq('user_id', targetUserId)
+          .eq('user_id', dbUserId)
           .eq('status', 'active')
           .order('created_at', { ascending: false })
           .limit(1)
@@ -707,6 +1041,19 @@ const enrollmentHandlers = {
 
       console.log(`❌ Cancelling enrollment for user ${targetUserId} in course ${courseSlug}`)
 
+      // Resolve Azure OID to Supabase DB user UUID
+      const { data: userData, error: userLookupError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('azure_user_id', targetUserId)
+        .single()
+
+      if (userLookupError || !userData) {
+        return sendError(res, 404, 'Active enrollment not found')
+      }
+
+      const dbUserId = userData.id
+
       const { data, error } = await supabaseClient
         .from('user_enrollments')
         .update({
@@ -714,7 +1061,7 @@ const enrollmentHandlers = {
           cancelled_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
-        .eq('user_id', targetUserId)
+        .eq('user_id', dbUserId)
         .eq('course_slug', courseSlug)
         .eq('status', 'active')
         .select()
@@ -795,7 +1142,7 @@ const enrollmentHandlers = {
   }
 }
 
-const server = http.createServer(async (req, res) => {
+export const requestHandler = async (req, res) => {
   try {
     // Apply request logging middleware
     await applyMiddleware(logRequest, req, res);
@@ -862,8 +1209,43 @@ const server = http.createServer(async (req, res) => {
       if (pathParts[3] === 'progress' && pathParts[4] && pathParts[5] && req.method === 'POST') {
         return await lessonAccessHandlers.updateLessonProgress(req, res, pathParts[4], pathParts[5])
       }
-
+      
+      // GET /api/lessons/module-intro/:courseSlug/:moduleId
+      if (pathParts[3] === 'module-intro' && pathParts[4] && pathParts[5] && req.method === 'GET') {
+        return await lessonAccessHandlers.getModuleIntro(req, res, pathParts[4], pathParts[5])
+      }
+      
       return sendError(res, 404, 'Lesson endpoint not found')
+    }
+
+    // Saved Courses API routes (authentication required)
+    if (pathname.startsWith('/api/saved-courses')) {
+      // Apply authentication middleware
+      try {
+        await applyMiddleware(authenticateUser({ required: true }), req, res);
+      } catch (authError) {
+        console.error('❌ Authentication failed:', authError);
+        return; // Response already sent by middleware
+      }
+
+      const pathParts = pathname.split('/')
+
+      // GET /api/saved-courses — list saved courses
+      if (req.method === 'GET' && !pathParts[3]) {
+        return await savedCoursesHandlers.listSavedCourses(req, res)
+      }
+
+      // POST /api/saved-courses — save a course
+      if (req.method === 'POST' && !pathParts[3]) {
+        return await savedCoursesHandlers.saveCourse(req, res)
+      }
+
+      // DELETE /api/saved-courses/:courseId — unsave a course
+      if (req.method === 'DELETE' && pathParts[3]) {
+        return await savedCoursesHandlers.unsaveCourse(req, res, pathParts[3])
+      }
+
+      return sendError(res, 404, 'Saved courses endpoint not found')
     }
 
     // Enrollment API routes (authentication required)
@@ -894,9 +1276,11 @@ const server = http.createServer(async (req, res) => {
         return await enrollmentHandlers.enrollInCourse(req, res)
       }
 
-      // GET /api/enrollment/user/:userId
+      // GET /api/enrollment/user/:userId or /api/enrollment/user/me
       if (pathParts[3] === 'user' && pathParts[4] && req.method === 'GET') {
-        return await enrollmentHandlers.getUserEnrollments(req, res, pathParts[4])
+        // If 'me', use authenticated user, otherwise use provided userId
+        const userId = pathParts[4] === 'me' ? null : pathParts[4];
+        return await enrollmentHandlers.getUserEnrollments(req, res, userId)
       }
 
       // GET /api/enrollment/access/:courseSlug
@@ -961,32 +1345,44 @@ const server = http.createServer(async (req, res) => {
     console.error('Server error:', e)
     return sendError(res, 500, e?.message || 'Internal server error')
   }
-})
+}
 
-server.listen(PORT, () => {
-  console.log(`🚀 DTMA API Server listening on http://localhost:${PORT}`)
-  console.log(`📋 Available endpoints:`)
-  console.log(`   GET  /api/health - Health check`)
-  console.log(``)
-  console.log(`   📚 Lesson Access Endpoints:`)
-  console.log(`   GET  /api/lessons/access/:courseSlug/:lessonId - Check lesson access`)
-  console.log(`   GET  /api/lessons/course-access/:courseSlug - Get course access summary`)
-  console.log(`   GET  /api/lessons/content/:courseSlug/:lessonId - Get lesson content`)
-  console.log(`   POST /api/lessons/progress/:courseSlug/:lessonId - Update lesson progress`)
-  console.log(``)
-  console.log(`   🎓 Enrollment Endpoints:`)
-  console.log(`   GET  /api/enrollment/status/:courseSlug?userId=xxx - Check enrollment status`)
-  console.log(`   GET  /api/enrollment/details/:courseSlug?userId=xxx - Get enrollment details`)
-  console.log(`   POST /api/enrollment/enroll - Enroll in course`)
-  console.log(`   GET  /api/enrollment/user/:userId - Get user enrollments`)
-  console.log(`   GET  /api/enrollment/access/:courseSlug?userId=xxx - Get access contract`)
-  console.log(`   POST /api/enrollment/cancel - Cancel enrollment`)
-  console.log(``)
-  console.log(`   🧪 Development Endpoints:`)
-  console.log(`   POST /api/test/create-user - Create test user (dev only)`)
-  console.log(`   POST /api/stripe/* - Stripe mock endpoints`)
-  console.log(``)
-  console.log(`🔧 Configuration:`)
-  console.log(`   Supabase: ${supabaseClient ? '✅ Connected' : '❌ Not configured'}`)
-  console.log(`   Authentication: ${process.env.VITE_AZURE_TENANT_ID ? '✅ Configured' : '❌ Not configured'}`)
-})
+const server = http.createServer(requestHandler)
+const isDirectExecution = Boolean(process.argv[1]) && resolve(process.argv[1]) === __filename
+
+if (isDirectExecution) {
+  server.listen(PORT, () => {
+    console.log(`🚀 DTMA API Server listening on http://localhost:${PORT}`)
+    console.log(`📋 Available endpoints:`)
+    console.log(`   GET  /api/health - Health check`)
+    console.log(``)
+    console.log(`   📚 Lesson Access Endpoints:`)
+    console.log(`   GET  /api/lessons/access/:courseSlug/:lessonId - Check lesson access`)
+    console.log(`   GET  /api/lessons/course-access/:courseSlug - Get course access summary`)
+    console.log(`   GET  /api/lessons/content/:courseSlug/:lessonId - Get lesson content`)
+    console.log(`   POST /api/lessons/progress/:courseSlug/:lessonId - Update lesson progress`)
+    console.log(``)
+    console.log(`   🔖 Saved Courses Endpoints:`)
+    console.log(`   GET    /api/saved-courses - List saved course slugs`)
+    console.log(`   POST   /api/saved-courses - Save a course`)
+    console.log(`   DELETE /api/saved-courses/:courseId - Unsave a course`)
+    console.log(``)
+    console.log(`   🎓 Enrollment Endpoints:`)
+    console.log(`   GET  /api/enrollment/status/:courseSlug?userId=xxx - Check enrollment status`)
+    console.log(`   GET  /api/enrollment/details/:courseSlug?userId=xxx - Get enrollment details`)
+    console.log(`   POST /api/enrollment/enroll - Enroll in course`)
+    console.log(`   GET  /api/enrollment/user/:userId - Get user enrollments`)
+    console.log(`   GET  /api/enrollment/access/:courseSlug?userId=xxx - Get access contract`)
+    console.log(`   POST /api/enrollment/cancel - Cancel enrollment`)
+    console.log(``)
+    console.log(`   🧪 Development Endpoints:`)
+    console.log(`   POST /api/test/create-user - Create test user (dev only)`)
+    console.log(`   POST /api/stripe/* - Stripe mock endpoints`)
+    console.log(``)
+    console.log(`🔧 Configuration:`)
+    console.log(`   Supabase: ${supabaseClient ? '✅ Connected' : '❌ Not configured'}`)
+    console.log(`   Authentication: ${process.env.VITE_AZURE_TENANT_ID ? '✅ Configured' : '❌ Not configured'}`)
+  })
+}
+
+export default requestHandler

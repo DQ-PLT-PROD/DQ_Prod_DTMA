@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, X, Loader2, Search, ImageIcon, FilmIcon, FileIcon } from 'lucide-react';
 import { listLibraryFiles, uploadToLibrary, MediaItem } from '../../lib/mediaService';
+import { useAdminAuth } from '@/lib/admin-auth';
 import { Toast } from '@/components/ui/Toast';
 
 interface MediaPickerModalProps {
@@ -11,11 +12,13 @@ interface MediaPickerModalProps {
 }
 
 export function MediaPickerModal({ isOpen, onClose, onSelect, allowedTypes }: MediaPickerModalProps) {
+    const { ability } = useAdminAuth();
     const [files, setFiles] = useState<MediaItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+    const canUploadMedia = ability.can('upload', 'Media');
 
     useEffect(() => {
         if (isOpen) {
@@ -37,6 +40,11 @@ export function MediaPickerModal({ isOpen, onClose, onSelect, allowedTypes }: Me
     };
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!canUploadMedia) {
+            setToast({ type: 'error', message: 'You do not have permission to upload media.' });
+            e.target.value = '';
+            return;
+        }
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -94,14 +102,14 @@ export function MediaPickerModal({ isOpen, onClose, onSelect, allowedTypes }: Me
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <label className={`flex items-center gap-2 px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)] cursor-pointer transition-colors ${uploading ? 'opacity-70 pointer-events-none' : ''}`}>
+                    <label className={`flex items-center gap-2 px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)] cursor-pointer transition-colors ${(uploading || !canUploadMedia) ? 'opacity-70 pointer-events-none' : ''}`}>
                         {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                         <span>{uploading ? 'Uploading...' : 'Upload New'}</span>
                         <input
                             type="file"
                             className="hidden"
                             onChange={handleUpload}
-                            disabled={uploading}
+                            disabled={uploading || !canUploadMedia}
                             accept={allowedTypes ? allowedTypes.join(',') + (allowedTypes.includes('image/') ? ',image/*' : '') : undefined}
                         />
                     </label>
