@@ -125,6 +125,58 @@ const mapRowToEnrollment = (row) => ({
   cancelledAt: row.cancelled_at || null,
 })
 
+const generateCustomerId = () =>
+  `CUST_${Date.now()}_${Math.random().toString(36).slice(2, 11).toUpperCase()}`
+
+const ensureUserRecord = async (azureUserId, authenticatedUser = null) => {
+  const { data: existingUser, error: lookupError } = await supabaseClient
+    .from('users')
+    .select('id, azure_user_id, email, name')
+    .eq('azure_user_id', azureUserId)
+    .single()
+
+  if (!lookupError && existingUser) {
+    return { userData: existingUser, error: null }
+  }
+
+  if (lookupError && lookupError.code !== 'PGRST116') {
+    return { userData: null, error: lookupError }
+  }
+
+  const payload = {
+    azure_user_id: azureUserId,
+    customer_id: generateCustomerId(),
+    email: authenticatedUser?.email || `user-${azureUserId}@temp.com`,
+    name: authenticatedUser?.name || 'User',
+    last_login: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+
+  const { data: createdUser, error: createError } = await supabaseClient
+    .from('users')
+    .insert(payload)
+    .select('id, azure_user_id, email, name')
+    .single()
+
+  if (!createError && createdUser) {
+    return { userData: createdUser, error: null }
+  }
+
+  if (createError?.code === '23505') {
+    const { data: conflictedUser, error: conflictLookupError } = await supabaseClient
+      .from('users')
+      .select('id, azure_user_id, email, name')
+      .eq('azure_user_id', azureUserId)
+      .single()
+
+    if (!conflictLookupError && conflictedUser) {
+      return { userData: conflictedUser, error: null }
+    }
+  }
+
+  return { userData: null, error: createError || lookupError }
+}
+
 // Lesson Access API handlers
 const lessonAccessHandlers = {
   // GET /api/lessons/access/:courseSlug/:lessonId
@@ -424,7 +476,7 @@ const lessonAccessHandlers = {
 
 // Saved Courses API handlers
 const savedCoursesHandlers = {
-  // GET /api/saved-courses — list saved course slugs for authenticated user
+  // GET /api/saved-courses - list saved course slugs for authenticated user
   async listSavedCourses(req, res) {
     const authenticatedUser = getCurrentUser(req)
     if (!authenticatedUser) {
@@ -437,17 +489,14 @@ const savedCoursesHandlers = {
 
     try {
       const azureUserId = authenticatedUser.azureUserId
-
-      // Resolve Azure OID → DB UUID
-      const { data: userData, error: userLookupError } = await supabaseClient
-        .from('users')
-        .select('id')
-        .eq('azure_user_id', azureUserId)
-        .single()
+      const { userData, error: userLookupError } = await ensureUserRecord(
+        azureUserId,
+        authenticatedUser
+      )
 
       if (userLookupError || !userData) {
-        // User doesn't exist yet — return empty list
-        return sendJSON(res, 200, { savedCourseIds: [] })
+        console.error('Error ensuring user for saved courses list:', userLookupError)
+        return sendError(res, 500, 'Failed to resolve user account')
       }
 
       const { data, error } = await supabaseClient
@@ -469,7 +518,7 @@ const savedCoursesHandlers = {
     }
   },
 
-  // POST /api/saved-courses — save a course { courseId }
+  // POST /api/saved-courses - save a course { courseId }
   async saveCourse(req, res) {
     const authenticatedUser = getCurrentUser(req)
     if (!authenticatedUser) {
@@ -489,19 +538,16 @@ const savedCoursesHandlers = {
       }
 
       const azureUserId = authenticatedUser.azureUserId
-
-      // Resolve Azure OID → DB UUID
-      const { data: userData, error: userLookupError } = await supabaseClient
-        .from('users')
-        .select('id')
-        .eq('azure_user_id', azureUserId)
-        .single()
+      const { userData, error: userLookupError } = await ensureUserRecord(
+        azureUserId,
+        authenticatedUser
+      )
 
       if (userLookupError || !userData) {
-        return sendError(res, 404, 'User not found')
+        console.error('Error ensuring user for save course:', userLookupError)
+        return sendError(res, 500, 'Failed to resolve user account')
       }
 
-      // Upsert to handle duplicate gracefully
       const { error } = await supabaseClient
         .from('saved_courses')
         .upsert(
@@ -521,7 +567,7 @@ const savedCoursesHandlers = {
     }
   },
 
-  // DELETE /api/saved-courses/:courseId — unsave a course
+  // DELETE /api/saved-courses/:courseId - unsave a course
   async unsaveCourse(req, res, courseId) {
     const authenticatedUser = getCurrentUser(req)
     if (!authenticatedUser) {
@@ -534,16 +580,14 @@ const savedCoursesHandlers = {
 
     try {
       const azureUserId = authenticatedUser.azureUserId
-
-      // Resolve Azure OID → DB UUID
-      const { data: userData, error: userLookupError } = await supabaseClient
-        .from('users')
-        .select('id')
-        .eq('azure_user_id', azureUserId)
-        .single()
+      const { userData, error: userLookupError } = await ensureUserRecord(
+        azureUserId,
+        authenticatedUser
+      )
 
       if (userLookupError || !userData) {
-        return sendError(res, 404, 'User not found')
+        console.error('Error ensuring user for unsave course:', userLookupError)
+        return sendError(res, 500, 'Failed to resolve user account')
       }
 
       const { error } = await supabaseClient
@@ -564,7 +608,6 @@ const savedCoursesHandlers = {
     }
   }
 }
-
 // Enrollment API handlers
 const enrollmentHandlers = {
   // GET /api/enrollment/status/:courseSlug?userId=xxx

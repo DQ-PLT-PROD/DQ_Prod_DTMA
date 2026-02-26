@@ -8,6 +8,7 @@ import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
 import { isSupabaseConfigured } from "../../../lib/supabase/client";
 import { recordCourseCompletion } from "./achievementService";
 import { enrollmentApiClient } from "../../../lib/api/enrollmentApiClient";
+import { lessonAccessApiClient } from "../../../lib/api/lessonAccessApiClient";
 
 // Types
 export interface Enrollment {
@@ -55,6 +56,26 @@ type ProgressQueueItem =
     };
 
 const PROGRESS_QUEUE_KEY = "dtma_progress_queue_v1";
+const getProgressSupabase = () => getSupabaseForEnrollment();
+
+const mapEnrollmentRow = (row: any): Enrollment => ({
+    id: row.id,
+    userId: row.user_id,
+    courseSlug: row.course_slug,
+    startedAt: row.started_at,
+    completedAt: row.completed_at || undefined,
+    lastAccessedAt: row.last_accessed_at,
+    progressPct: Number(row.progress_pct) || 0,
+});
+
+const mapLessonProgressRow = (row: any): LessonProgress => ({
+    id: row.id,
+    enrollmentId: row.enrollment_id,
+    lessonId: row.lesson_id,
+    completed: Boolean(row.completed),
+    watchTimeSeconds: Number(row.watch_time_seconds) || 0,
+    completedAt: row.completed_at || undefined,
+});
 
 const readProgressQueue = (): ProgressQueueItem[] => {
     if (typeof window === "undefined") {
@@ -197,15 +218,18 @@ export const getUserCourseProgress = async (
             return { enrollment: null, lessonProgress: [] };
         }
 
-        // Get course access summary which includes progress info
-        const accessSummary = await lessonAccessApiClient.getCourseAccessSummary(courseSlug);
-        
-        // Convert to LessonProgress format (simplified - backend should provide this)
-        const lessonProgress: LessonProgress[] = [];
-        
+        const { data: lessonProgressRows, error: lessonProgressError } = await supabase
+            .from("lesson_progress")
+            .select("*")
+            .eq("enrollment_id", enrollmentData.id);
+
+        if (lessonProgressError) {
+            console.warn("Error loading lesson progress rows:", lessonProgressError);
+        }
+
         return { 
-            enrollment: enrollment as Enrollment, 
-            lessonProgress 
+            enrollment: mapEnrollmentRow(enrollmentData),
+            lessonProgress: (lessonProgressRows || []).map(mapLessonProgressRow),
         };
     } catch (err) {
         console.error("Error getting user course progress:", err);
@@ -291,10 +315,12 @@ export const updateEnrollmentProgress = async (
     courseSlug: string,
     progressPct: number
 ): Promise<boolean> => {
+    const boundedProgress = Math.min(Math.max(progressPct, 0), 100);
+
     if (!isSupabaseConfigured()) {
         enqueueProgress({
             type: "enrollment_progress",
-            payload: { userId, courseSlug, progressPct },
+            payload: { userId, courseSlug, progressPct: boundedProgress },
         });
         return false;
     }
@@ -305,9 +331,9 @@ export const updateEnrollmentProgress = async (
         const { error } = await supabase
             .from("user_enrollments")
             .update({
-                progress_pct: Math.min(Math.max(progressPct, 0), 100),
+                progress_pct: boundedProgress,
                 updated_at: new Date().toISOString(),
-                ...(progressPct >= 100 && { completed_at: new Date().toISOString() })
+                ...(boundedProgress >= 100 && { completed_at: new Date().toISOString() })
             })
             .eq("user_id", userId)
             .eq("course_slug", courseSlug);
@@ -316,12 +342,12 @@ export const updateEnrollmentProgress = async (
             console.error("Error updating enrollment progress:", error);
             enqueueProgress({
                 type: "enrollment_progress",
-                payload: { userId, courseSlug, progressPct },
+                payload: { userId, courseSlug, progressPct: boundedProgress },
             });
             return false;
         }
 
-        if (progressPct >= 100) {
+        if (boundedProgress >= 100) {
             await recordCourseCompletion(userId, courseSlug);
         }
         return true;
@@ -329,7 +355,7 @@ export const updateEnrollmentProgress = async (
         console.error("Unexpected error updating enrollment progress:", err);
         enqueueProgress({
             type: "enrollment_progress",
-            payload: { userId, courseSlug, progressPct },
+            payload: { userId, courseSlug, progressPct: boundedProgress },
         });
         return false;
     }

@@ -241,7 +241,7 @@ export const fetchFullCourse = async (slug: string): Promise<Course | null> => {
         const supabase = getSupabase();
         const { data, error } = await supabase
             .from("courses")
-            .select("*")
+            .select("*, lessons(type, estimated_duration_minutes)")
             .eq("slug", slug)
             .single();
 

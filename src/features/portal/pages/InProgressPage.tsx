@@ -2,7 +2,7 @@
  * InProgressPage - "In Progress" course list
  */
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
     Play,
     Clock,
@@ -13,7 +13,7 @@ import { PageContainer } from "../../../components/layouts/PageContainer";
 import { CourseListSkeleton } from "../../../components/loading/CourseListSkeleton";
 import { useAuth } from "@/lib/auth";
 import { getUserEnrollments, getActualProgressStats, Enrollment } from "../services/progressService";
-import { fetchFullCourse } from "@/services/courseService";
+import { fetchCourseLessons, fetchFullCourse } from "@/services/courseService";
 import { Course } from "../../../types/dtma-lms";
 import { getLearningSnapshot } from "../../learning/services/learningSnapshotService";
 import { RecommendationRail } from "@/features/recommendations/components/RecommendationRail";
@@ -21,7 +21,29 @@ import { RecommendationRail } from "@/features/recommendations/components/Recomm
 interface CourseWithProgress extends Enrollment {
     course?: Course | null;
     actualProgress?: { completedCount: number; totalCount: number; progressPct: number };
+    durationMinutes?: number;
 }
+
+const formatDurationLabel = (minutes?: number): string => {
+    if (!minutes || minutes <= 0) {
+        return "Duration unavailable";
+    }
+
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (!hours) return `${mins} min`;
+    if (!mins) return `${hours} hr`;
+    return `${hours} hr ${mins} min`;
+};
+
+const resolveDurationMinutes = async (courseSlug: string, course: Course | null): Promise<number> => {
+    if (course?.estimatedDurationMinutes && course.estimatedDurationMinutes > 0) {
+        return course.estimatedDurationMinutes;
+    }
+
+    const lessons = await fetchCourseLessons(courseSlug);
+    return lessons.reduce((total, lesson) => total + (lesson.estimatedDurationMinutes || 0), 0);
+};
 
 const InProgressPage: React.FC = () => {
     const navigate = useNavigate();
@@ -49,14 +71,14 @@ const InProgressPage: React.FC = () => {
                 setIsLoading(true);
                 const userEnrollments = await getUserEnrollments(databaseUser.id);
 
-                // Fetch course details AND actual progress for each enrollment
                 const enrollmentsWithCourses = await Promise.all(
                     userEnrollments.map(async (enrollment) => {
                         const [course, actualProgress] = await Promise.all([
                             fetchFullCourse(enrollment.courseSlug),
-                            getActualProgressStats(databaseUser.id, enrollment.courseSlug)
+                            getActualProgressStats(databaseUser.id, enrollment.courseSlug),
                         ]);
-                        return { ...enrollment, course, actualProgress };
+                        const durationMinutes = await resolveDurationMinutes(enrollment.courseSlug, course);
+                        return { ...enrollment, course, actualProgress, durationMinutes };
                     })
                 );
 
@@ -73,10 +95,10 @@ const InProgressPage: React.FC = () => {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
         });
     };
 
@@ -106,7 +128,6 @@ const InProgressPage: React.FC = () => {
     return (
         <PageContainer className="py-4 w-full">
             <div className="max-w-4xl mx-auto">
-                {/* Welcome Header */}
                 <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
                     <p className="text-sm text-gray-500">
                         Welcome{greetingName ? `, ${greetingName}` : ""}.
@@ -116,13 +137,11 @@ const InProgressPage: React.FC = () => {
                     </h1>
                 </div>
 
-                {/* Page Title */}
                 <div className="mb-6">
                     <h2 className="text-2xl font-bold text-gray-900">My Courses</h2>
                     <p className="text-gray-500 text-sm mt-1">In progress and ready to resume</p>
                 </div>
 
-                {/* In Progress Section */}
                 <div className="mb-8">
                     <div className="flex items-center gap-2 mb-4">
                         <Play size={18} className="text-[#1839AD]" />
@@ -166,7 +185,7 @@ const InProgressPage: React.FC = () => {
                                 const progressPct = enrollment.actualProgress?.progressPct ?? Math.round(enrollment.progressPct);
                                 const lastAccessedLabel = enrollment.lastAccessedAt
                                     ? `Last accessed ${formatDate(enrollment.lastAccessedAt)}`
-                                    : "Last accessed —";
+                                    : "Last accessed -";
                                 const isResuming = resumeCourseId === enrollment.courseSlug;
 
                                 return (
@@ -175,7 +194,6 @@ const InProgressPage: React.FC = () => {
                                         className="w-full text-left bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md hover:border-[#1839AD]/30 transition group"
                                     >
                                         <div className="flex items-start gap-4">
-                                            {/* Course Thumbnail */}
                                             <div className="w-24 h-16 rounded-lg bg-gray-200 overflow-hidden shrink-0">
                                                 {enrollment.course?.heroImageUrl ? (
                                                     <img
@@ -190,13 +208,11 @@ const InProgressPage: React.FC = () => {
                                                 )}
                                             </div>
 
-                                            {/* Course Info */}
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="font-medium text-gray-900 group-hover:text-[#1839AD] transition truncate">
                                                     {enrollment.course?.title || enrollment.courseSlug}
                                                 </h3>
 
-                                                {/* Progress Bar - uses actual lesson completion count as source of truth */}
                                                 <div className="flex items-center gap-3 mt-2">
                                                     <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                                                         <div
@@ -209,16 +225,15 @@ const InProgressPage: React.FC = () => {
                                                     </span>
                                                 </div>
 
-                                                {/* Meta Info */}
                                                 <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                                                     <span className="flex items-center gap-1">
                                                         <Clock size={12} />
-                                                        {lastAccessedLabel}
+                                                        {formatDurationLabel(enrollment.durationMinutes)}
                                                     </span>
+                                                    <span>{lastAccessedLabel}</span>
                                                 </div>
                                             </div>
 
-                                            {/* Continue CTA */}
                                             <button
                                                 type="button"
                                                 onClick={() =>
@@ -238,12 +253,10 @@ const InProgressPage: React.FC = () => {
                     )}
                 </div>
 
-                {/* Recommendations Section */}
                 <RecommendationRail
                     className="mb-8"
                     maxRecommendations={5}
-                    onRecommendationClick={(course, reason) => {
-                        // Navigate to course details page
+                    onRecommendationClick={(course) => {
                         navigate(`/courses/${course.slug}`);
                     }}
                 />

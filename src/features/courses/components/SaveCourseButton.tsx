@@ -48,7 +48,8 @@ export const SaveCourseButton: React.FC<SaveCourseButtonProps> = ({
 
     setIsLoading(true);
     try {
-      await toggleSave(courseSlug);
+      const didSync = await toggleSave(courseSlug);
+      if (!didSync) return;
       setIsAnimating(true);
       setTimeout(() => setIsAnimating(false), 300);
       onSaveChange?.(!saved);
