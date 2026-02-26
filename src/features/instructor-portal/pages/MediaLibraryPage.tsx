@@ -16,9 +16,11 @@ import {
     uploadToLibrary,
 } from '../lib/mediaService';
 import { Toast } from '@/components/ui/Toast';
+import { useAdminAuth } from '@/lib/admin-auth';
 
 export function MediaLibraryPage() {
     const { ability } = useAdminAuth();
+    const canUploadMedia = ability.can('upload', 'Media');
     const [files, setFiles] = useState<MediaItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
