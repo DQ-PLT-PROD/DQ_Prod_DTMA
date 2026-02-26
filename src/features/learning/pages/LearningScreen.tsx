@@ -25,6 +25,7 @@ import {
 import { isUserEnrolled, canAccessLesson } from "../../courses/services/enrollmentService";
 import { PreviewContentGate } from "../../portal/components/PreviewContentGate";
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
+import { countStandardLessons } from "../../../lib/courseContentStats";
 import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";
 import { FEATURES } from "../../../config/features";
 
@@ -218,6 +219,12 @@ const LearningScreen: React.FC = () => {
     () => lessons.filter((lesson) => lesson.completed).length,
     [lessons]
   );
+
+  const standardLessonCount = useMemo(
+    () => countStandardLessons(dbLessons),
+    [dbLessons]
+  );
+
   const currentLesson = lessons[currentLessonIndex];
   const currentLessonProgress =
     currentLesson && !currentLesson.completed && duration > 0
@@ -581,7 +588,7 @@ const LearningScreen: React.FC = () => {
 
                     <div className="flex-1 text-center">
                       <span className="text-sm text-gray-500">
-                        Lesson {currentLessonIndex + 1} of {lessons.length}
+                        Lesson {currentLessonIndex + 1} of {standardLessonCount || lessons.length}
                       </span>
                     </div>
 
@@ -612,7 +619,7 @@ const LearningScreen: React.FC = () => {
                       />
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      {completedCount} of {lessons.length} lessons completed
+                      {completedCount} of {standardLessonCount || lessons.length} lessons completed
                     </p>
                   </div>
                 </div>

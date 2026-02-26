@@ -3,6 +3,7 @@ import { isSupabaseConfigured } from "../../../lib/supabase/client";
 import { Course, Lesson as DbLesson, LessonType } from "../../../types/dtma-lms";
 import { CourseResource } from "../../courses/services/courseService";
 import type { Enrollment, LessonProgress } from "../../portal/services/progressService";
+import { countStandardLessons, sumStandardDuration } from "../../../lib/courseContentStats";
 
 export interface LearningSnapshot {
     course: Course | null;
@@ -95,6 +96,16 @@ const mapRowToLessonProgress = (row: any): LessonProgress => ({
     completedAt: row.completed_at || undefined,
 });
 
+/** Recalculate lesson count and duration from actual lesson data. */
+const patchCourseStats = (course: Course | null, lessons: DbLesson[]): Course | null => {
+    if (!course || lessons.length === 0) return course;
+    return {
+        ...course,
+        lessonCount: countStandardLessons(lessons),
+        estimatedDurationMinutes: sumStandardDuration(lessons),
+    };
+};
+
 const emptySnapshot = (): LearningSnapshot => ({
     course: null,
     lessons: [],
@@ -145,11 +156,15 @@ export const getLearningSnapshot = async (
                 const { data: fallbackData, error: fallbackError } = await fetchSnapshot(null);
                 if (!fallbackError) {
                     const rawFallback = fallbackData as any;
+                    const fallbackLessons = Array.isArray(rawFallback?.lessons)
+                        ? rawFallback.lessons.map(mapRowToLesson)
+                        : [];
                     const fallbackSnapshot: LearningSnapshot = {
-                        course: rawFallback?.course ? mapRowToCourse(rawFallback.course) : null,
-                        lessons: Array.isArray(rawFallback?.lessons)
-                            ? rawFallback.lessons.map(mapRowToLesson)
-                            : [],
+                        course: patchCourseStats(
+                            rawFallback?.course ? mapRowToCourse(rawFallback.course) : null,
+                            fallbackLessons,
+                        ),
+                        lessons: fallbackLessons,
                         resources: Array.isArray(rawFallback?.resources)
                             ? rawFallback.resources.map(mapRowToResource)
                             : [],
@@ -166,9 +181,13 @@ export const getLearningSnapshot = async (
         }
 
         const raw = data as any;
+        const snapshotLessons = Array.isArray(raw?.lessons) ? raw.lessons.map(mapRowToLesson) : [];
         const snapshot: LearningSnapshot = {
-            course: raw?.course ? mapRowToCourse(raw.course) : null,
-            lessons: Array.isArray(raw?.lessons) ? raw.lessons.map(mapRowToLesson) : [],
+            course: patchCourseStats(
+                raw?.course ? mapRowToCourse(raw.course) : null,
+                snapshotLessons,
+            ),
+            lessons: snapshotLessons,
             resources: Array.isArray(raw?.resources)
                 ? raw.resources.map(mapRowToResource)
                 : [],

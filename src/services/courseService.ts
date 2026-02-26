@@ -1,5 +1,6 @@
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { Course, CourseCatalogFilters, Lesson, Category, Quiz } from "@/types/dtma-lms";
+import { countStandardLessons, sumStandardDuration } from "@/lib/courseContentStats";
 
 // Types for quiz and resource data
 
@@ -25,13 +26,11 @@ const mapRowToCourse = (row: any): Course & { isComingSoon?: boolean; categoryNa
         const hasDetails = 'type' in row.lessons[0] || 'estimated_duration_minutes' in row.lessons[0];
 
         if (hasDetails) {
-            // Duration: Sum of all lessons
-            calculatedDuration = row.lessons.reduce((acc: number, lesson: any) =>
-                acc + (Number(lesson.estimated_duration_minutes) || 0), 0);
+            // Duration: Sum of standard lessons only (excludes intro/outro/quiz)
+            calculatedDuration = sumStandardDuration(row.lessons);
 
-            // Count: All lessons minus intro and outro
-            calculatedLessonCount = row.lessons.filter((l: any) =>
-                l.type !== 'intro' && l.type !== 'outro').length;
+            // Count: Only standard lessons (excludes intro, outro, quiz)
+            calculatedLessonCount = countStandardLessons(row.lessons);
         } else if (row.lessons[0].count) {
             // Handle simple count query
             calculatedLessonCount = row.lessons[0].count;
@@ -241,7 +240,7 @@ export const fetchFullCourse = async (slug: string): Promise<Course | null> => {
         const supabase = getSupabase();
         const { data, error } = await supabase
             .from("courses")
-            .select("*")
+            .select("*, course_categories(name), lessons(type, estimated_duration_minutes)")
             .eq("slug", slug)
             .single();
 
@@ -454,7 +453,7 @@ export const fetchRelatedCourses = async (slug: string, limit: number = 4): Prom
         // Fetch the full course data for the related courses with category names
         const { data: coursesData, error: coursesError } = await supabase
             .from("courses")
-            .select("*, course_categories(name)")
+            .select("*, course_categories(name), lessons(type, estimated_duration_minutes)")
             .in("slug", relatedSlugs)
             .eq("status", "published");
 

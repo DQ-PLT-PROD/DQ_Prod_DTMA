@@ -26,6 +26,7 @@ import {
 import { isUserEnrolled } from "../../courses/services/enrollmentService";
 import { PreviewContentGate } from "../components/PreviewContentGate";
 import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
+import { countStandardLessons } from "../../../lib/courseContentStats";
 
 // Defined so we can pass context up to the layout if we needed to (e.g. theater mode)
 // But for now we manage theater mode locally and just hide sidebar via pure CSS or similar, 
@@ -330,6 +331,11 @@ const CoursePlayerPage: React.FC = () => {
         [lessons]
     );
 
+    const standardLessonCount = useMemo(
+        () => countStandardLessons(dbLessons),
+        [dbLessons]
+    );
+
     const currentLesson = lessons[currentLessonIndex];
     const currentLessonProgress =
         currentLesson && !currentLesson.completed && duration > 0
@@ -577,7 +583,7 @@ const CoursePlayerPage: React.FC = () => {
 
                                 <div className="flex-1 text-center">
                                     <span className="text-sm text-gray-500">
-                                        Lesson {currentLessonIndex + 1} of {lessons.length}
+                                        Lesson {currentLessonIndex + 1} of {standardLessonCount || lessons.length}
                                     </span>
                                 </div>
 
@@ -608,7 +614,7 @@ const CoursePlayerPage: React.FC = () => {
                                     />
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1">
-                                    {completedCount} of {lessons.length} lessons completed
+                                    {completedCount} of {standardLessonCount || lessons.length} lessons completed
                                 </p>
                             </div>
                         </div>
@@ -617,7 +623,7 @@ const CoursePlayerPage: React.FC = () => {
                         <div className="lg:hidden mt-6 pb-20">
                             <div className="mb-3 px-1">
                                 <h3 className="font-semibold text-gray-900">Course Content</h3>
-                                <p className="text-xs text-gray-500">{completedCount} of {lessons.length} completed</p>
+                                <p className="text-xs text-gray-500">{completedCount} of {standardLessonCount || lessons.length} completed</p>
                             </div>
                             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                                 <CourseOutline
