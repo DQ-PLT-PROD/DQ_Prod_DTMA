@@ -1,4 +1,5 @@
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { countCountableLessons } from "@/lib/courses/lessonCount";
 import { Course, CourseCatalogFilters, Lesson, Category, Quiz } from "@/types/dtma-lms";
 
 // Types for quiz and resource data
@@ -18,7 +19,7 @@ export interface CourseResource {
 const mapRowToCourse = (row: any): Course & { isComingSoon?: boolean; categoryName?: string } => {
     // Calculate stats from lessons if available
     let calculatedDuration = row.estimated_duration_minutes || 0;
-    let calculatedLessonCount = row.lesson_count || 0;
+    let calculatedLessonCount = Number(row.lesson_count) || 0;
 
     if (Array.isArray(row.lessons) && row.lessons.length > 0) {
         // Check if we have detailed lesson data (not just count object)
@@ -29,12 +30,11 @@ const mapRowToCourse = (row: any): Course & { isComingSoon?: boolean; categoryNa
             calculatedDuration = row.lessons.reduce((acc: number, lesson: any) =>
                 acc + (Number(lesson.estimated_duration_minutes) || 0), 0);
 
-            // Count: All lessons minus intro and outro
-            calculatedLessonCount = row.lessons.filter((l: any) =>
-                l.type !== 'intro' && l.type !== 'outro').length;
+            // Count: All lessons except intro/outro
+            calculatedLessonCount = countCountableLessons(row.lessons);
         } else if (row.lessons[0].count) {
             // Handle simple count query
-            calculatedLessonCount = row.lessons[0].count;
+            calculatedLessonCount = Number(row.lessons[0].count) || 0;
         }
     }
 
@@ -241,7 +241,7 @@ export const fetchFullCourse = async (slug: string): Promise<Course | null> => {
         const supabase = getSupabase();
         const { data, error } = await supabase
             .from("courses")
-            .select("*")
+            .select("*, lessons(type, estimated_duration_minutes)")
             .eq("slug", slug)
             .single();
 
@@ -454,7 +454,7 @@ export const fetchRelatedCourses = async (slug: string, limit: number = 4): Prom
         // Fetch the full course data for the related courses with category names
         const { data: coursesData, error: coursesError } = await supabase
             .from("courses")
-            .select("*, course_categories(name)")
+            .select("*, course_categories(name), lessons(type, estimated_duration_minutes)")
             .in("slug", relatedSlugs)
             .eq("status", "published");
 
