@@ -66,18 +66,11 @@ if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
 const parseBody = (req) => {
   return new Promise((resolve, reject) => {
     let body = '';
-    req.on('data', chunk => {
-      body += chunk.toString();
-      console.log('📦 Received chunk:', chunk.toString());
-    });
+    req.on('data', chunk => body += chunk.toString());
     req.on('end', () => {
-      console.log('📦 Complete body string:', body);
       try {
-        const parsed = body ? JSON.parse(body) : {};
-        console.log('📦 Parsed body:', parsed);
-        resolve(parsed);
+        resolve(body ? JSON.parse(body) : {});
       } catch (e) {
-        console.error('❌ JSON parse error:', e.message);
         reject(e);
       }
     });
@@ -489,11 +482,9 @@ const savedCoursesHandlers = {
 
     try {
       const body = await parseBody(req)
-      console.log('📥 Save course request body:', body)
       const { courseId } = body
 
       if (!courseId) {
-        console.log('❌ Missing courseId in body:', body)
         return sendError(res, 400, 'Missing required field: courseId')
       }
 
