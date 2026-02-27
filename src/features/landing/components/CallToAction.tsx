@@ -165,13 +165,7 @@ const CTACard: React.FC<CTACardProps> = ({
             <p className="text-gray-600 mb-6">{description}</p>
             <div className="flex justify-center w-full">
               <button
-                onClick={() => {
-                  if (onExpand) {
-                    onExpand();
-                  } else {
-                    onClick();
-                  }
-                }}
+                onClick={onExpand ?? onClick}
                 className={`font-medium transition-colors duration-200 flex items-center gap-2 ${buttonColor === "blue"
                   ? "px-5 py-2.5 h-11 rounded-full bg-[#1839AD] text-white hover:bg-[#0d2b8a] focus:outline-none focus:ring-2 focus:ring-[#1839AD]/30"
                   : buttonColor === "green"

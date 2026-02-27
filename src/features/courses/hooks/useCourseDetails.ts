@@ -35,9 +35,9 @@ export function useCourseDetails({ itemId, shouldTakeAction = true }: UseCourseD
             const course = await fetchFullCourse(itemId);
             setItem(course);
 
-            // Fetch related courses if available
-            if (course?.relatedCourses && course.relatedCourses.length > 0) {
-                const related = await fetchRelatedCourses(course.relatedCourses);
+            // Fetch related courses using explicit DB relationships for this course.
+            if (course?.slug) {
+                const related = await fetchRelatedCourses(course.slug, 4);
                 setRelatedItems(related);
             } else {
                 setRelatedItems([]);

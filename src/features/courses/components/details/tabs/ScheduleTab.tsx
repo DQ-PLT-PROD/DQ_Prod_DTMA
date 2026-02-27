@@ -27,13 +27,18 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ item }) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  const displayLessonCount = Number(item?.lessonCount);
+  const safeLessonCount = Number.isFinite(displayLessonCount) && displayLessonCount >= 0
+    ? displayLessonCount
+    : steps.length;
+
   return (
     <div className="space-y-6">
 
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-gray-900">Course Schedule</h3>
         <div className="text-sm text-gray-500 font-medium">
-          {steps.length} Lessons • {item.duration || ""}
+          {safeLessonCount} Lessons • {item.duration || ""}
         </div>
       </div>
 
