@@ -9,6 +9,16 @@ interface ScheduleTabProps {
 const ScheduleTab: React.FC<ScheduleTabProps> = ({ item }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
+  // Helper to format duration from minutes
+  const formatDuration = (minutes: number): string => {
+    if (!minutes) return "15 mins"; // Default fallback
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins} mins`;
+    if (mins === 0) return `${hours} hr`;
+    return `${hours} hr ${mins} mins`;
+  };
+
   const steps: Array<{ title: string; description?: string; duration?: string; type?: 'video' | 'reading' }> = useMemo(() => {
     const ap = Array.isArray(item?.applicationProcess) ? item.applicationProcess : [];
     // If no applicationProcess, we rely on the empty state below
@@ -17,11 +27,11 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ item }) => {
       .map((s: any) => ({
         title: s?.title || (typeof s?.week === "number" ? `Week ${s.week}` : ""),
         description: typeof s?.description === "string" ? s.description : "",
-        duration: s?.duration || "15 mins",
-        type: 'video'
+        duration: s?.estimatedDurationMinutes ? formatDuration(s.estimatedDurationMinutes) : (s?.duration || "15 mins"),
+        type: s?.type === 'reading' ? 'reading' : 'video'
       }))
       .filter((s) => s.title);
-  }, [item?.applicationProcess, item?.lessonCount]);
+  }, [item?.applicationProcess]);
 
   const toggleStep = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
