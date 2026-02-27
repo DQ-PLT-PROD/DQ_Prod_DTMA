@@ -140,7 +140,7 @@ export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[
 
     try {
         const supabase = getSupabase();
-        let query = supabase
+        let query: any = supabase
             .from("courses")
             .select("*, course_categories(name), lessons(type, estimated_duration_minutes)")
             .eq("status", "published");
