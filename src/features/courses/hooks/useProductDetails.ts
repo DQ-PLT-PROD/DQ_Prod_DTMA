@@ -103,14 +103,24 @@ export function useProductDetails({
             : course.lessonCount;
 
         if (!applicationProcess || applicationProcess.length === 0) {
-            applicationProcess = lessonList.map((lesson) => ({
-                week: lesson.orderIndex,
-                title: lesson.title,
-                description: lesson.content || "",
-                estimatedDurationMinutes: lesson.estimatedDurationMinutes || 0,
-                type: lesson.type,
-            }));
+            applicationProcess = lessonList.map((lesson) => {
+                console.log('📚 Mapping lesson to applicationProcess:', {
+                    title: lesson.title,
+                    estimatedDurationMinutes: lesson.estimatedDurationMinutes,
+                    type: lesson.type
+                });
+                return {
+                    week: lesson.orderIndex,
+                    title: lesson.title,
+                    description: lesson.content || "",
+                    estimatedDurationMinutes: lesson.estimatedDurationMinutes || 0,
+                    type: lesson.type,
+                };
+            });
         }
+        
+        console.log('📊 Final applicationProcess:', applicationProcess);
+        console.log('📊 Lesson count:', lessonCount);
 
         const introLesson =
             course.introLessonId &&
@@ -125,6 +135,7 @@ export function useProductDetails({
 
         return {
             id: course.slug,
+            slug: course.slug,  // Ensure slug is explicitly set
             title: course.title,
             description: course.longDescription || course.shortDescription,
             category: category?.name,

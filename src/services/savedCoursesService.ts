@@ -57,7 +57,11 @@ export async function fetchSavedCourseIds(): Promise<string[]> {
 }
 
 export async function saveCourse(courseId: string): Promise<boolean> {
-  const data = await makeRequest<{ saved: boolean }>('POST', '/saved-courses', { courseId })
+  console.log('💾 Saving course:', courseId)
+  const requestBody = { courseId }
+  console.log('💾 Request body:', requestBody)
+  const data = await makeRequest<{ saved: boolean }>('POST', '/saved-courses', requestBody)
+  console.log('💾 Save response:', data)
   return data.saved
 }
 

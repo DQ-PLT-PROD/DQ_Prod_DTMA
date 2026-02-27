@@ -21,15 +21,25 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ item }) => {
 
   const steps: Array<{ title: string; description?: string; duration?: string; type?: 'video' | 'reading' }> = useMemo(() => {
     const ap = Array.isArray(item?.applicationProcess) ? item.applicationProcess : [];
+    console.log('🗓️ ScheduleTab - applicationProcess:', ap);
     // If no applicationProcess, we rely on the empty state below
 
     return ap
-      .map((s: any) => ({
-        title: s?.title || (typeof s?.week === "number" ? `Week ${s.week}` : ""),
-        description: typeof s?.description === "string" ? s.description : "",
-        duration: s?.estimatedDurationMinutes ? formatDuration(s.estimatedDurationMinutes) : (s?.duration || "15 mins"),
-        type: s?.type === 'reading' ? 'reading' : 'video'
-      }))
+      .map((s: any) => {
+        const result = {
+          title: s?.title || (typeof s?.week === "number" ? `Week ${s.week}` : ""),
+          description: typeof s?.description === "string" ? s.description : "",
+          duration: s?.estimatedDurationMinutes ? formatDuration(s.estimatedDurationMinutes) : (s?.duration || "15 mins"),
+          type: s?.type === 'reading' ? 'reading' : 'video'
+        };
+        console.log('🗓️ Mapped step:', { 
+          title: result.title, 
+          estimatedDurationMinutes: s?.estimatedDurationMinutes,
+          duration: result.duration,
+          type: result.type
+        });
+        return result;
+      })
       .filter((s) => s.title);
   }, [item?.applicationProcess]);
 
