@@ -8,6 +8,7 @@ import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
 import { isSupabaseConfigured } from "../../../lib/supabase/client";
 import { recordCourseCompletion } from "./achievementService";
 import { enrollmentApiClient } from "../../../lib/api/enrollmentApiClient";
+import { lessonAccessApiClient } from "../../../lib/api/lessonAccessApiClient";
 
 // Types
 export interface Enrollment {
@@ -34,6 +35,16 @@ export interface LocalLesson {
     completed: boolean;
 }
 
+const mapEnrollmentRow = (row: any): Enrollment => ({
+    id: row.id,
+    userId: row.user_id,
+    courseSlug: row.course_slug,
+    startedAt: row.started_at,
+    completedAt: row.completed_at ?? undefined,
+    lastAccessedAt: row.last_accessed_at,
+    progressPct: row.progress_pct ?? 0,
+});
+
 type ProgressQueueItem =
     | {
         type: "lesson_progress";
@@ -55,6 +66,7 @@ type ProgressQueueItem =
     };
 
 const PROGRESS_QUEUE_KEY = "dtma_progress_queue_v1";
+const getProgressSupabase = getSupabaseForEnrollment;
 
 const readProgressQueue = (): ProgressQueueItem[] => {
     if (typeof window === "undefined") {
@@ -203,8 +215,8 @@ export const getUserCourseProgress = async (
         // Convert to LessonProgress format (simplified - backend should provide this)
         const lessonProgress: LessonProgress[] = [];
         
-        return { 
-            enrollment: enrollment as Enrollment, 
+        return {
+            enrollment: mapEnrollmentRow(enrollmentData),
             lessonProgress 
         };
     } catch (err) {

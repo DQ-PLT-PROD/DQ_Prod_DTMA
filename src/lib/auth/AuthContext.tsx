@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useRef,
 } from "react";
 import { useMsal } from "@azure/msal-react";
 import {
@@ -71,6 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loginInProgress, setLoginInProgress] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const extractionPromisesRef = useRef<Map<string, Promise<UserProfile | null>>>(
+    new Map()
+  );
+  const additionalInfoFetchedForRef = useRef<string | null>(null);
 
   const useMockAuth = (import.meta as any).env.VITE_USE_MOCK_AUTH === "true";
   const bypassMode = (import.meta as any).env.VITE_BYPASS_AZURE_AUTH === "true";
@@ -153,135 +158,161 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     account: any
   ): Promise<UserProfile | null> => {
     if (!account) return null;
+    const accountKey =
+      account.localAccountId || account.homeAccountId || account.username;
 
-    console.log("🔍 Extracting user info from account:", account);
-    console.log("🔍 Account properties:", {
-      localAccountId: account.localAccountId,
-      homeAccountId: account.homeAccountId,
-      name: account.name,
-      username: account.username,
-    });
-
-    // Validate and process ID token claims
-    const idTokenClaims = account.idTokenClaims || {};
-    const validatedClaims = validateAndLogClaims(idTokenClaims);
-
-    // Extract user profile from validated claims
-    const userProfile = extractUserProfile(validatedClaims);
-
-    // Fallback to account properties if claims are insufficient
-    if (!userProfile.id || userProfile.id === "unknown-user") {
-      userProfile.id =
-        account.localAccountId || account.homeAccountId || "user-" + Date.now();
-    }
-
-    if (!userProfile.name || userProfile.name === "User") {
-      userProfile.name = account.name || account.username || "User";
-    }
-
-    // Fetch email from Microsoft Graph API
-    try {
-      const tokenRequest = {
-        scopes: ["User.Read"],
-        account,
-      };
-
-      const response = await instance.acquireTokenSilent(tokenRequest);
-      if (response?.accessToken) {
-        const graphUser = await fetchUserFromGraph(response.accessToken);
-        const graphEmail = graphUser?.mail || graphUser?.userPrincipalName;
-        if (graphEmail) {
-          userProfile.email = graphEmail;
-          console.log("✅ Email fetched from Graph API:", graphEmail);
-        }
+    if (accountKey) {
+      const inFlight = extractionPromisesRef.current.get(accountKey);
+      if (inFlight) {
+        console.log("⏳ Reusing in-flight user extraction for account:", accountKey);
+        return inFlight;
       }
-    } catch (error) {
-      console.warn("⚠️ Could not fetch email from Graph API:", error);
     }
 
-    // Fallback to account username if Graph fetch failed
-    if (!userProfile.email || userProfile.email === "user@domain.com") {
-      userProfile.email = account.username || "user@domain.com";
-    }
-
-    console.log("✅ Final extracted user info:", userProfile);
-
-    // Sync user with database
-    try {
-      console.log("🔄 Syncing user with database...");
-      console.log("🔧 Supabase config check:", {
-        url: !!import.meta.env.VITE_SUPABASE_URL,
-        key: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
-        urlValue: import.meta.env.VITE_SUPABASE_URL?.substring(0, 20) + "...",
+    const runExtraction = async (): Promise<UserProfile | null> => {
+      console.log("🔍 Extracting user info from account:", account);
+      console.log("🔍 Account properties:", {
+        localAccountId: account.localAccountId,
+        homeAccountId: account.homeAccountId,
+        name: account.name,
+        username: account.username,
       });
 
-      const azureUserId = account.localAccountId || account.homeAccountId;
+      // Validate and process ID token claims
+      const idTokenClaims = account.idTokenClaims || {};
+      const validatedClaims = validateAndLogClaims(idTokenClaims);
 
-      // Check if user already exists
-      let dbUser = await getUserByAzureId(azureUserId);
+      // Extract user profile from validated claims
+      const userProfile = extractUserProfile(validatedClaims);
 
-      if (!dbUser) {
-        // Create new user in database
-        console.log("👤 Creating new user in database...");
-        dbUser = await syncUserWithDatabase(
-          userProfile,
-          azureUserId,
-          account.idTokenClaims
-        );
-
-        if (dbUser) {
-          console.log("✅ New user created successfully:", {
-            id: dbUser.id,
-            customerId: dbUser.customer_id,
-            email: dbUser.email,
-          });
-        } else {
-          console.error("❌ Failed to create user in database");
-        }
-      } else {
-        // Update last login
-        console.log("🔄 Updating existing user last login...");
-        const updateSuccess = await updateUserLastLogin(azureUserId);
-        console.log(
-          updateSuccess
-            ? "✅ Last login updated"
-            : "❌ Failed to update last login"
-        );
+      // Fallback to account properties if claims are insufficient
+      if (!userProfile.id || userProfile.id === "unknown-user") {
+        userProfile.id =
+          account.localAccountId ||
+          account.homeAccountId ||
+          "user-" + Date.now();
       }
 
-      if (dbUser) {
-        setDatabaseUser(dbUser);
+      if (!userProfile.name || userProfile.name === "User") {
+        userProfile.name = account.name || account.username || "User";
+      }
 
-        console.log("✅ User synced with database:", {
-          customerId: dbUser.customer_id,
-          azureUserId: azureUserId,
-          lastLogin: dbUser.last_login,
-        });
-
-        // Enhance user profile with database info
-        const enhancedProfile: UserProfile = {
-          ...userProfile,
-          customerId: dbUser.customer_id,
-          jobTitle: dbUser.job_title || (userProfile as any).jobTitle,
-          department: dbUser.department || (userProfile as any).department,
-          officeLocation:
-            dbUser.office_location || (userProfile as any).officeLocation,
+      // Fetch email from Microsoft Graph API
+      try {
+        const tokenRequest = {
+          scopes: ["User.Read"],
+          account,
         };
 
-        return enhancedProfile;
-      } else {
-        console.error("❌ No database user available after sync attempt");
+        const response = await instance.acquireTokenSilent(tokenRequest);
+        if (response?.accessToken) {
+          const graphUser = await fetchUserFromGraph(response.accessToken);
+          const graphEmail = graphUser?.mail || graphUser?.userPrincipalName;
+          if (graphEmail) {
+            userProfile.email = graphEmail;
+            console.log("✅ Email fetched from Graph API:", graphEmail);
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ Could not fetch email from Graph API:", error);
       }
-    } catch (error) {
-      console.error("❌ Error syncing user with database:", error);
-      console.error("❌ Error details:", {
-        message: error instanceof Error ? error.message : "Unknown error",
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-      // Continue without database sync - don't block authentication
+
+      // Fallback to account username if Graph fetch failed
+      if (!userProfile.email || userProfile.email === "user@domain.com") {
+        userProfile.email = account.username || "user@domain.com";
+      }
+
+      console.log("✅ Final extracted user info:", userProfile);
+
+      // Sync user with database
+      try {
+        console.log("🔄 Syncing user with database...");
+        console.log("🔧 Supabase config check:", {
+          url: !!import.meta.env.VITE_SUPABASE_URL,
+          key: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+          urlValue: import.meta.env.VITE_SUPABASE_URL?.substring(0, 20) + "...",
+        });
+
+        const azureUserId = account.localAccountId || account.homeAccountId;
+
+        // Check if user already exists
+        let dbUser = await getUserByAzureId(azureUserId);
+
+        if (!dbUser) {
+          // Create new user in database
+          console.log("👤 Creating new user in database...");
+          dbUser = await syncUserWithDatabase(
+            userProfile,
+            azureUserId,
+            account.idTokenClaims
+          );
+
+          if (dbUser) {
+            console.log("✅ New user created successfully:", {
+              id: dbUser.id,
+              customerId: dbUser.customer_id,
+              email: dbUser.email,
+            });
+          } else {
+            console.error("❌ Failed to create user in database");
+          }
+        } else {
+          // Update last login
+          console.log("🔄 Updating existing user last login...");
+          const updateSuccess = await updateUserLastLogin(azureUserId);
+          console.log(
+            updateSuccess
+              ? "✅ Last login updated"
+              : "❌ Failed to update last login"
+          );
+        }
+
+        if (dbUser) {
+          setDatabaseUser(dbUser);
+
+          console.log("✅ User synced with database:", {
+            customerId: dbUser.customer_id,
+            azureUserId: azureUserId,
+            lastLogin: dbUser.last_login,
+          });
+
+          // Enhance user profile with database info
+          const enhancedProfile: UserProfile = {
+            ...userProfile,
+            customerId: dbUser.customer_id,
+            jobTitle: dbUser.job_title || (userProfile as any).jobTitle,
+            department: dbUser.department || (userProfile as any).department,
+            officeLocation:
+              dbUser.office_location || (userProfile as any).officeLocation,
+          };
+
+          return enhancedProfile;
+        } else {
+          console.error("❌ No database user available after sync attempt");
+        }
+      } catch (error) {
+        console.error("❌ Error syncing user with database:", error);
+        console.error("❌ Error details:", {
+          message: error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        // Continue without database sync - don't block authentication
+      }
+
+      return userProfile;
+    };
+
+    const extractionPromise = runExtraction().finally(() => {
+      if (accountKey) {
+        extractionPromisesRef.current.delete(accountKey);
+      }
+    });
+
+    if (accountKey) {
+      extractionPromisesRef.current.set(accountKey, extractionPromise);
     }
 
-    return userProfile;
+    return extractionPromise;
   };
 
   // State for the current user (will be set asynchronously for real Azure AD)
@@ -671,36 +702,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing authentication on mount and try to get additional user info
   useEffect(() => {
-    if (!useMockAuth && !bypassMode) {
-      const activeAccount = instance.getActiveAccount();
-      if (activeAccount) {
-        console.log("🔍 Found active account on mount:", activeAccount);
-
-        // Extract user info and sync with database first
-        extractUserFromAccount(activeAccount).then((userProfile) => {
-          if (userProfile) {
-            setCurrentUser(userProfile);
-
-            // Then try to acquire additional user information
-            acquireUserInfo(activeAccount).then((tokenResponse) => {
-              if (tokenResponse) {
-                console.log("✅ Additional user info acquired");
-              }
-            });
-          }
-        });
-      } else if (accounts.length > 0) {
-        console.log("🔍 Setting active account from accounts array");
-        instance.setActiveAccount(accounts[0]);
-
-        extractUserFromAccount(accounts[0]).then((userProfile) => {
-          if (userProfile) {
-            setCurrentUser(userProfile);
-            acquireUserInfo(accounts[0]);
-          }
-        });
-      }
+    if (useMockAuth || bypassMode) {
+      return;
     }
+
+    const activeAccount = instance.getActiveAccount();
+    if (!activeAccount) {
+      return;
+    }
+
+    const accountKey =
+      activeAccount.localAccountId ||
+      activeAccount.homeAccountId ||
+      activeAccount.username;
+    if (accountKey && additionalInfoFetchedForRef.current === accountKey) {
+      return;
+    }
+
+    if (accountKey) {
+      additionalInfoFetchedForRef.current = accountKey;
+    }
+
+    console.log("🔍 Found active account on mount:", activeAccount);
+    acquireUserInfo(activeAccount).then((tokenResponse) => {
+      if (tokenResponse) {
+        console.log("✅ Additional user info acquired");
+      }
+    });
   }, [useMockAuth, bypassMode, instance]);
 
   return (

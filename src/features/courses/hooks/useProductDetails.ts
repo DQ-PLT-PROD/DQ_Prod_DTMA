@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchCourseWithContent, fetchRelatedCourses, fetchCourseLessons, fetchCategories } from "@/services/courseService";
+import { countCountableLessons } from "@/lib/courses/lessonCount";
 import { Course, Category } from "@/types/dtma-lms";
 
 export interface UseProductDetailsArgs {
@@ -97,6 +98,9 @@ export function useProductDetails({
         const category = categories.find((c) => c.id === course.categoryId || c.slug === course.categoryId);
         // Use lessons passed in, fallback to empty if not provided
         const lessonList = courseLessons.length ? courseLessons : [];
+        const lessonCount = lessonList.length > 0
+            ? countCountableLessons(lessonList)
+            : course.lessonCount;
 
         if (!applicationProcess) {
             applicationProcess = lessonList.map((lesson) => ({
@@ -124,7 +128,7 @@ export function useProductDetails({
             category: category?.name,
             categorySlug: category?.slug,
             duration: formatDuration(course.estimatedDurationMinutes),
-            lessonCount: course.lessonCount,
+            lessonCount,
             learningOutcomes: course.learningOutcomes || [],
             skillsGained: course.skillsGained || [],
             keyHighlights: highlights,

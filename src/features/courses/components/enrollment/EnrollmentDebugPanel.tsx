@@ -3,7 +3,7 @@
  * Testing component for enrollment functionality
  */
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../../auth/context/AuthContext';
+import { useAuth } from '@/lib/auth';
 import {
     isUserEnrolled,
     enrollInCourse,

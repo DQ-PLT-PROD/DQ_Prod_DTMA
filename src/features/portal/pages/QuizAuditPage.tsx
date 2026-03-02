@@ -28,12 +28,12 @@ export const QuizAuditPage: React.FC = () => {
                             courseSlug: course.slug,
                             id: q.id,
                             orderIndex: q.orderIndex,
-                            question: q.question,
+                            question: q.question || "",
                             correctAnswer: Array.isArray(q.correctAnswer)
                                 ? q.correctAnswer.map(String)
                                 : [String(q.correctAnswer)],
                             explanation: q.explanation,
-                            options: q.options,
+                            options: q.options || [],
                         });
                     });
                 }

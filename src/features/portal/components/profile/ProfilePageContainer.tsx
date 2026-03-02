@@ -22,6 +22,7 @@ import ProfileTabs from "./ProfileTabs";
 import ProfileSectionAccordion from "./ProfileSectionAccordion";
 import {
   computeProfileCompletion,
+  SectionCompletion,
   ProfileSectionId,
   ProfileTabId,
 } from "../../utils/profileCompletion";
@@ -257,7 +258,7 @@ const ProfilePageContainer: React.FC = () => {
     WEEKLY_CAPACITY_OPTIONS.find((option) => option.value === profile.weeklyLearningCapacity)
       ?.label || "Not set";
 
-  const incompleteRequiredSections = Object.values(completion.sections).filter(
+  const incompleteRequiredSections = (Object.values(completion.sections) as SectionCompletion[]).filter(
     (section) => section.isRequired && !section.isComplete
   );
 
