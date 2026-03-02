@@ -19,6 +19,7 @@ import {
 } from '../lib/mediaService';
 import { Toast } from '@/components/ui/Toast';
 import { useAdminAuth } from '@/lib/admin-auth';
+import { RenameMediaModal } from '../components/media/RenameMediaModal';
 
 export function MediaLibraryPage() {
     const { ability } = useAdminAuth();
@@ -29,6 +30,7 @@ export function MediaLibraryPage() {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [renamingPath, setRenamingPath] = useState<string | null>(null);
+    const [renameTarget, setRenameTarget] = useState<MediaItem | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [toast, setToast] = useState<{
@@ -106,13 +108,14 @@ export function MediaLibraryPage() {
             setToast({ type: 'error', message: 'You do not have permission to rename media.' });
             return;
         }
+        setRenameTarget(file);
+    };
 
-        const proposedName = window.prompt('Enter new file name', file.name);
-        if (!proposedName) return;
-
+    const submitRename = async (proposedName: string) => {
+        if (!renameTarget) return;
         try {
-            setRenamingPath(file.id);
-            await renameLibraryFile(file.id, proposedName);
+            setRenamingPath(renameTarget.id);
+            await renameLibraryFile(renameTarget.id, proposedName);
             setToast({ type: 'success', message: 'File renamed successfully' });
             await loadFiles();
         } catch (err) {
@@ -120,6 +123,7 @@ export function MediaLibraryPage() {
             setToast({ type: 'error', message: msg });
         } finally {
             setRenamingPath(null);
+            setRenameTarget(null);
         }
     };
 
@@ -304,6 +308,15 @@ export function MediaLibraryPage() {
                     isVisible={!!toast}
                 />
             )}
+            <RenameMediaModal
+                isOpen={!!renameTarget}
+                initialName={renameTarget?.name ?? ''}
+                isSubmitting={!!renamingPath}
+                onClose={() => {
+                    if (!renamingPath) setRenameTarget(null);
+                }}
+                onSubmit={submitRename}
+            />
         </div>
     );
 }
