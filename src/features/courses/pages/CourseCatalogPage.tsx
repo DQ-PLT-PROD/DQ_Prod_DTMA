@@ -14,6 +14,7 @@ import { fetchCourses, fetchCategories } from "@/services/courseService";
 import { fetchIndustryTree, NestedFilterOption as IndustryNode } from "../services/filterService";
 import { PageContainer } from "../../../components/layouts/PageContainer";
 import { AIWidgetStandalone } from "@/lib/ai-widget";
+import { ComingSoonEmptyState } from "../components/ComingSoonEmptyState";
 
 // Get config once at module level to avoid recreation on every render
 const courseConfig = getCourseConfig();
@@ -438,15 +439,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
                                 onRetry={retryFetch}
                             />
                         ) : filteredItems.length === 0 ? (
-                            <div className="text-center text-gray-600 py-10 bg-white rounded-lg border border-gray-200">
-                                <p className="mb-3">No courses match these filters.</p>
-                                <button
-                                    onClick={resetFilters}
-                                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
-                                >
-                                    Reset filters
-                                </button>
-                            </div>
+                            <ComingSoonEmptyState onBrowseAll={resetFilters} />
                         ) : (
                             <CourseGrid
                                 items={filteredItems}

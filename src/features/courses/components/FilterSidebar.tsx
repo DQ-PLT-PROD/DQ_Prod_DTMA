@@ -19,6 +19,7 @@ interface AccordionSectionProps {
   isOpen: boolean;
   onToggle: () => void;
   children: React.ReactNode;
+  showComingSoon?: boolean;
 }
 
 interface FilterSidebarProps {
@@ -47,6 +48,7 @@ const AccordionSection: React.FC<AccordionSectionProps> = ({
   isOpen,
   onToggle,
   children,
+  showComingSoon = false,
 }) => {
   return (
     <div className="border-b border-gray-100 py-3">
@@ -55,7 +57,20 @@ const AccordionSection: React.FC<AccordionSectionProps> = ({
         onClick={onToggle}
         aria-expanded={isOpen}
       >
-        {title}
+        <div className="flex items-center gap-2">
+          <span>{title}</span>
+          {showComingSoon && (
+            <span
+              className="inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white rounded-full"
+              style={{
+                backgroundColor: '#0030E3',
+                letterSpacing: '0.5px',
+              }}
+            >
+              COMING SOON
+            </span>
+          )}
+        </div>
         {isOpen ? (
           <ChevronUp size={16} className="text-gray-500" />
         ) : (
@@ -261,18 +276,24 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   return (
     <>
       <div className="space-y-2">
-        {filteredFilterConfig.map(config => (
-          <AccordionSection
-            key={config.id}
-            title={config.title}
-            isOpen={singleOpen ? openSection === config.id : openSections[config.id] || false}
-            onToggle={() => toggleSection(config.id)}
-          >
-            <div className={spacingClass}>
-              {config.options.map((option) => renderOption(config.id, option))}
-            </div>
-          </AccordionSection>
-        ))}
+        {filteredFilterConfig.map(config => {
+          // Show "Coming Soon" badge for Industry, Role (audienceLevel), and Level (levelTag)
+          const showComingSoon = ['industry', 'audienceLevel', 'levelTag'].includes(config.id);
+          
+          return (
+            <AccordionSection
+              key={config.id}
+              title={config.title}
+              isOpen={singleOpen ? openSection === config.id : openSections[config.id] || false}
+              onToggle={() => toggleSection(config.id)}
+              showComingSoon={showComingSoon}
+            >
+              <div className={spacingClass}>
+                {config.options.map((option) => renderOption(config.id, option))}
+              </div>
+            </AccordionSection>
+          );
+        })}
       </div>
       {tooltip && typeof document !== 'undefined' && createPortal(
         <div

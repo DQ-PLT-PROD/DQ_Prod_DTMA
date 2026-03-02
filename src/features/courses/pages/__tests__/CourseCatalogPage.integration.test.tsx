@@ -123,7 +123,7 @@ describe("CourseCatalogPage Integration (D2)", () => {
     expect(screen.getByText(/Courses/)).toBeInTheDocument();
   });
 
-  it("should show empty state when no courses match filters", async () => {
+  it("should show coming soon empty state when no courses match filters", async () => {
     const { fetchCourses } = await import("@/services/courseService");
     vi.mocked(fetchCourses).mockResolvedValueOnce([]);
 
@@ -136,13 +136,15 @@ describe("CourseCatalogPage Integration (D2)", () => {
     await waitFor(
       () => {
         expect(
-          screen.getByText(/No courses match these filters/)
+          screen.getByText(/Expanding Our Horizons/)
         ).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
-    // Should show reset filters button
-    expect(screen.getByText(/Reset filters/)).toBeInTheDocument();
+    // Should show the coming soon message and CTA
+    expect(screen.getByText(/We are currently curating expert-led content/)).toBeInTheDocument();
+    expect(screen.getByText(/Notify Me When Available/)).toBeInTheDocument();
+    expect(screen.getByText(/Browse All Active Courses/)).toBeInTheDocument();
   });
 });

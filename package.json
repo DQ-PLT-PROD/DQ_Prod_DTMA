@@ -29,6 +29,7 @@
         "@tanstack/react-virtual": "^3.13.18",
         "clsx": "^2.1.1",
         "date-fns": "^4.0.0",
+        "framer-motion": "^12.34.3",
         "graphql": "^16.11.0",
         "jsonwebtoken": "^9.0.3",
         "jwks-rsa": "^3.2.2",
