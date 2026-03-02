@@ -102,11 +102,13 @@ export function useProductDetails({
             ? countCountableLessons(lessonList)
             : course.lessonCount;
 
-        if (!applicationProcess) {
+        if (!applicationProcess || applicationProcess.length === 0) {
             applicationProcess = lessonList.map((lesson) => ({
                 week: lesson.orderIndex,
                 title: lesson.title,
                 description: lesson.content || "",
+                estimatedDurationMinutes: lesson.estimatedDurationMinutes || 0,
+                type: lesson.type,
             }));
         }
 
@@ -123,6 +125,7 @@ export function useProductDetails({
 
         return {
             id: course.slug,
+            slug: course.slug,  // Ensure slug is explicitly set
             title: course.title,
             description: course.longDescription || course.shortDescription,
             category: category?.name,

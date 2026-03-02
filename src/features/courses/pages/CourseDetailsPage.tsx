@@ -566,7 +566,7 @@ const CourseDetailsPage: React.FC = () => {
                 />
                 {!item.isComingSoon && (
                   <SaveCourseFullButton
-                    courseSlug={item.slug}
+                    courseSlug={item.slug || item.id}
                     courseTitle={item.title}
                     className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
                   />
