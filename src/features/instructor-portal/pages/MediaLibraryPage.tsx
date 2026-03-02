@@ -5,6 +5,7 @@ import {
     FilmIcon,
     ImageIcon,
     Loader2,
+    Pencil,
     Search,
     Trash2,
     Upload,
@@ -13,6 +14,7 @@ import {
     deleteLibraryFile,
     listLibraryFiles,
     MediaItem,
+    renameLibraryFile,
     uploadToLibrary,
 } from '../lib/mediaService';
 import { Toast } from '@/components/ui/Toast';
@@ -21,9 +23,12 @@ import { useAdminAuth } from '@/lib/admin-auth';
 export function MediaLibraryPage() {
     const { ability } = useAdminAuth();
     const canUploadMedia = ability.can('upload', 'Media');
+    const canDeleteMedia = ability.can('delete', 'Media');
+    const canRenameMedia = canUploadMedia || canDeleteMedia;
     const [files, setFiles] = useState<MediaItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [renamingPath, setRenamingPath] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [toast, setToast] = useState<{
@@ -76,6 +81,10 @@ export function MediaLibraryPage() {
     };
 
     const handleDelete = async (filePath: string) => {
+        if (!canDeleteMedia) {
+            setToast({ type: 'error', message: 'You do not have permission to delete media.' });
+            return;
+        }
         if (
             !window.confirm(
                 'Are you sure you want to delete this file? This action cannot be undone.'
@@ -89,6 +98,28 @@ export function MediaLibraryPage() {
             setFiles((prev) => prev.filter((f) => f.id !== filePath));
         } catch (err) {
             setToast({ type: 'error', message: 'Failed to delete file' });
+        }
+    };
+
+    const handleRename = async (file: MediaItem) => {
+        if (!canRenameMedia) {
+            setToast({ type: 'error', message: 'You do not have permission to rename media.' });
+            return;
+        }
+
+        const proposedName = window.prompt('Enter new file name', file.name);
+        if (!proposedName) return;
+
+        try {
+            setRenamingPath(file.id);
+            await renameLibraryFile(file.id, proposedName);
+            setToast({ type: 'success', message: 'File renamed successfully' });
+            await loadFiles();
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Rename failed';
+            setToast({ type: 'error', message: msg });
+        } finally {
+            setRenamingPath(null);
         }
     };
 
@@ -234,14 +265,31 @@ export function MediaLibraryPage() {
                                 >
                                     <Copy className="h-4 w-4" />
                                 </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleDelete(file.id)}
-                                    className="rounded-full bg-white p-2 text-red-600 hover:bg-red-50"
-                                    title="Delete"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
+                                {canRenameMedia && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRename(file)}
+                                        disabled={renamingPath === file.id}
+                                        className="rounded-full bg-white p-2 text-gray-700 hover:bg-gray-50 hover:text-[var(--md-primary)] disabled:cursor-not-allowed disabled:opacity-60"
+                                        title="Rename"
+                                    >
+                                        {renamingPath === file.id ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Pencil className="h-4 w-4" />
+                                        )}
+                                    </button>
+                                )}
+                                {canDeleteMedia && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDelete(file.id)}
+                                        className="rounded-full bg-white p-2 text-red-600 hover:bg-red-50"
+                                        title="Delete"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}

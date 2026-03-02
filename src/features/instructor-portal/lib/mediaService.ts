@@ -64,6 +64,20 @@ function makeStoragePath(originalName: string): string {
     return path;
 }
 
+function sanitizeFilenamePreservingExtension(inputName: string, fallbackExtension = ''): string {
+    const trimmed = inputName.trim();
+    const hasDot = trimmed.includes('.');
+    const rawBase = hasDot ? trimmed.slice(0, trimmed.lastIndexOf('.')) : trimmed;
+    const rawExt = hasDot ? trimmed.slice(trimmed.lastIndexOf('.')).toLowerCase() : fallbackExtension;
+    const safeBase = rawBase
+        .replace(/[^a-zA-Z0-9.-]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '')
+        .slice(0, 80) || 'file';
+    const safeExt = rawExt.replace(/[^a-z0-9.]/g, '') || '';
+    return `${safeBase}${safeExt}`;
+}
+
 export async function listLibraryFiles(folderPath = ''): Promise<MediaItem[]> {
     const supabase = getSupabaseClient();
     if (!supabase) throw new Error('Database connection unavailable');
@@ -220,4 +234,26 @@ export async function deleteLibraryFile(filePath: string): Promise<void> {
 
     const { error } = await supabase.storage.from(BUCKET).remove([filePath]);
     if (error) throw error;
+}
+
+export async function renameLibraryFile(filePath: string, newName: string): Promise<string> {
+    const supabase = getSupabaseClient();
+    if (!supabase) throw new Error('Database connection unavailable');
+
+    const lastSlashIndex = filePath.lastIndexOf('/');
+    const currentName = lastSlashIndex >= 0 ? filePath.slice(lastSlashIndex + 1) : filePath;
+    const parentPath = lastSlashIndex >= 0 ? filePath.slice(0, lastSlashIndex) : '';
+    const currentExt = currentName.includes('.') ? currentName.slice(currentName.lastIndexOf('.')).toLowerCase() : '';
+
+    const sanitizedName = sanitizeFilenamePreservingExtension(newName, currentExt);
+    const targetPath = parentPath ? `${parentPath}/${sanitizedName}` : sanitizedName;
+
+    if (targetPath === filePath) {
+        return targetPath;
+    }
+
+    const { error } = await supabase.storage.from(BUCKET).move(filePath, targetPath);
+    if (error) throw new Error(error.message || 'Rename failed');
+
+    return targetPath;
 }
