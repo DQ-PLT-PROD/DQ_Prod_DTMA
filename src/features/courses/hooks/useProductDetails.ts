@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { fetchCourseWithContent, fetchRelatedCourses, fetchCourseLessons, fetchCategories } from "@/services/courseService";
 import { countCountableLessons } from "@/lib/courses/lessonCount";
 import { Course, Category } from "@/types/dtma-lms";
+import { calculateTotalDurationFromLessons } from "@/utils/videoMetadata";
 
 export interface UseProductDetailsArgs {
     itemId?: string;
@@ -108,6 +109,7 @@ export function useProductDetails({
                 title: lesson.title,
                 description: lesson.content || "",
                 estimatedDurationMinutes: lesson.estimatedDurationMinutes || 0,
+                durationSec: lesson.durationSec,
                 type: lesson.type,
             }));
         }
@@ -174,7 +176,26 @@ export function useProductDetails({
             // Use lessons from DB, or empty if not available
             const courseLessons = lessons && lessons.length > 0 ? lessons : [];
             const courseResources = resources || [];
-            const mapped = mapCourseToItem(course, courseLessons, courseResources);
+            
+            // Calculate ACTUAL duration from video files
+            let actualDurationMinutes = 0;
+            try {
+                actualDurationMinutes = await calculateTotalDurationFromLessons(courseLessons);
+            } catch (err) {
+                console.warn('Failed to calculate video durations, using lesson estimates:', err);
+                // Fallback to lesson estimates if video loading fails
+                actualDurationMinutes = courseLessons.reduce((total, lesson) => {
+                    return total + (lesson.estimatedDurationMinutes || 0);
+                }, 0);
+            }
+            
+            // Update the course object with actual duration before mapping
+            const courseWithActualDuration = {
+                ...course,
+                estimatedDurationMinutes: actualDurationMinutes || course.estimatedDurationMinutes
+            };
+            
+            const mapped = mapCourseToItem(courseWithActualDuration, courseLessons, courseResources);
             if (mapped) {
                 setItem(mapped);
             }

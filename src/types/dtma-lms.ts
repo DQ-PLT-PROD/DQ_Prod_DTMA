@@ -50,9 +50,11 @@ export interface Lesson {
   type: LessonType;
   orderIndex: number;
   estimatedDurationMinutes: number;
+  durationSec?: number; // Exact duration in seconds
   videoUrl?: string;
   resourceUrl?: string;
   content?: string;
+  isPreview?: boolean; // For preview content access control
 }
 
 export interface QuizQuestion {

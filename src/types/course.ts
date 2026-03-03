@@ -24,14 +24,21 @@ export const toUILesson = (dbLesson: {
     title: string;
     type?: LessonType;
     estimatedDurationMinutes: number;
+    durationSec?: number; // Exact duration in seconds
     videoUrl?: string;
     resourceUrl?: string;
     content?: string;
     isPreview?: boolean; // Add isPreview field from database
 }, orderIndex: number, completedIds: Set<string> = new Set()): Lesson => {
-    // Use loading state initially - actual duration will be populated from video metadata
-    // This ensures all lessons show accurate durations from the video files
-    const durationStr = '--:--';
+    // Format duration from seconds to MM:SS display format
+    const formatDuration = (seconds?: number): string => {
+        if (!seconds || seconds <= 0) return '--:--';
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${String(secs).padStart(2, '0')}`;
+    };
+
+    const durationStr = formatDuration(dbLesson.durationSec);
 
     return {
         id: dbLesson.id,

@@ -266,9 +266,11 @@ const mapRowToLesson = (row: any): Lesson => {
         type: row.type as 'intro' | 'standard' | 'outro' | 'quiz',
         orderIndex: row.order_index,
         estimatedDurationMinutes: row.estimated_duration_minutes || 0,
+        durationSec: row.duration_sec || undefined,
         videoUrl: row.video_url || undefined,
         resourceUrl: row.resource_url || undefined,
         content: row.content || undefined,
+        isPreview: row.is_preview || false,
     };
 };
 

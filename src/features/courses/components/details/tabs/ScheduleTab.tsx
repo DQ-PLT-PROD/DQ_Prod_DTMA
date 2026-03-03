@@ -9,14 +9,22 @@ interface ScheduleTabProps {
 const ScheduleTab: React.FC<ScheduleTabProps> = ({ item }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  // Helper to format duration from minutes
-  const formatDuration = (minutes: number): string => {
-    if (!minutes) return "15 mins"; // Default fallback
+  // Helper to format duration from minutes or seconds
+  const formatDuration = (minutes?: number, seconds?: number): string => {
+    // Prefer seconds if available for exact display
+    if (seconds && seconds > 0) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${String(secs).padStart(2, '0')}`;
+    }
+    
+    // Fallback to minutes
+    if (!minutes) return "5 mins";
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    if (hours === 0) return `${mins} mins`;
+    if (hours === 0) return `${mins} min${mins !== 1 ? 's' : ''}`;
     if (mins === 0) return `${hours} hr`;
-    return `${hours} hr ${mins} mins`;
+    return `${hours} hr ${mins} min`;
   };
 
   const steps: Array<{ title: string; description?: string; duration?: string; type?: 'video' | 'reading' }> = useMemo(() => {
@@ -32,7 +40,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ item }) => {
       .map((s: any) => ({
         title: s?.title || (typeof s?.week === "number" ? `Week ${s.week}` : ""),
         description: typeof s?.description === "string" ? s.description : "",
-        duration: s?.estimatedDurationMinutes ? formatDuration(s.estimatedDurationMinutes) : (s?.duration || "15 mins"),
+        duration: formatDuration(s?.estimatedDurationMinutes, s?.durationSec) || (s?.duration || "5 mins"),
         type: s?.type === 'reading' ? 'reading' : 'video'
       }))
       .filter((s) => s.title);

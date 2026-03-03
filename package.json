@@ -55,6 +55,7 @@
         "eslint-plugin-react-refresh": "^0.4.1",
         "jsdom": "^23.2.0",
         "postcss": "latest",
+        "puppeteer": "^24.37.5",
         "rollup-plugin-visualizer": "^6.0.5",
         "tailwindcss": "3.4.17",
         "vercel": "^41.0.2",
