@@ -1,4 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useSearchParams,
+} from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/lib/auth";
 import { AdminAuthProvider } from "@/lib/admin-auth";
@@ -6,38 +12,122 @@ import { SavedCoursesProvider } from "@/features/courses/context/SavedCoursesCon
 import { App } from "./App";
 
 // Lazy load page components for code splitting
-const CourseCatalogPage = lazy(() => import("./features/courses/pages/CourseCatalogPage").then(m => ({ default: m.CourseCatalogPage })));
-const CourseDetailsPage = lazy(() => import("./features/courses/pages/CourseDetailsPage"));
-const DashboardRouter = lazy(() => import("./features/dashboard/pages/DashboardRouter"));
+const CourseCatalogPage = lazy(() =>
+  import("./features/courses/pages/CourseCatalogPage").then((m) => ({
+    default: m.CourseCatalogPage,
+  })),
+);
+const CourseDetailsPage = lazy(
+  () => import("./features/courses/pages/CourseDetailsPage"),
+);
+const DashboardRouter = lazy(
+  () => import("./features/dashboard/pages/DashboardRouter"),
+);
 const ProtectedRoute = lazy(() => import("@/components/auth/ProtectedRoute"));
-const AdminProtectedRoute = lazy(() => import("@/components/auth/AdminProtectedRoute"));
+const AdminProtectedRoute = lazy(
+  () => import("@/components/auth/AdminProtectedRoute"),
+);
 const NotFound = lazy(() => import("./features/app/pages/NotFound"));
-const PortalLayout = lazy(() => import("./features/portal/layout/PortalLayout").then(m => ({ default: m.PortalLayout })));
-const InProgressPage = lazy(() => import("./features/portal/pages/InProgressPage"));
-const SavedCoursesPage = lazy(() => import("./features/portal/pages/SavedCoursesPage"));
-const CoursePlayerPage = lazy(() => import("./features/portal/pages/CoursePlayerPage"));
+const PortalLayout = lazy(() =>
+  import("./features/portal/layout/PortalLayout").then((m) => ({
+    default: m.PortalLayout,
+  })),
+);
+const InProgressPage = lazy(
+  () => import("./features/portal/pages/InProgressPage"),
+);
+const SavedCoursesPage = lazy(
+  () => import("./features/portal/pages/SavedCoursesPage"),
+);
+const CoursePlayerPage = lazy(
+  () => import("./features/portal/pages/CoursePlayerPage"),
+);
 const BadgesPage = lazy(() => import("./features/portal/pages/BadgesPage"));
-const BadgeSharePage = lazy(() => import("./features/portal/pages/BadgeSharePage"));
-const LearnerOnboarding = lazy(() => import("./features/dashboard/pages/onboarding"));
+const BadgeSharePage = lazy(
+  () => import("./features/portal/pages/BadgeSharePage"),
+);
+const LearnerOnboarding = lazy(
+  () => import("./features/dashboard/pages/onboarding"),
+);
 const ProfilePage = lazy(() => import("./features/portal/pages/ProfilePage"));
-const QuizAuditPage = lazy(() => import("./features/portal/pages/QuizAuditPage").then(m => ({ default: m.QuizAuditPage })));
-const ComingSoon = lazy(() => import("./features/app/pages/ComingSoon").then(m => ({ default: m.ComingSoon })));
-const AuthDebugPanel = lazy(() => import("@/components/auth/AuthDebugPanel").then(m => ({ default: m.AuthDebugPanel })));
-const EnrollmentGuard = lazy(() => import("./features/courses/components/guards/EnrollmentGuard").then(m => ({ default: m.EnrollmentGuard })));
-const PaymentSuccessHandler = lazy(() => import("./features/courses/components/payment/PaymentSuccessHandler").then(m => ({ default: m.PaymentSuccessHandler })));
-const AdminLoginPage = lazy(() => import("./features/admin-auth/pages/AdminLoginPage"));
-const AdminLogoutPage = lazy(() => import("./features/admin-auth/pages/AdminLogoutPage"));
+const QuizAuditPage = lazy(() =>
+  import("./features/portal/pages/QuizAuditPage").then((m) => ({
+    default: m.QuizAuditPage,
+  })),
+);
+const ComingSoon = lazy(() =>
+  import("./features/app/pages/ComingSoon").then((m) => ({
+    default: m.ComingSoon,
+  })),
+);
+const AuthDebugPanel = lazy(() =>
+  import("@/components/auth/AuthDebugPanel").then((m) => ({
+    default: m.AuthDebugPanel,
+  })),
+);
+const EnrollmentGuard = lazy(() =>
+  import("./features/courses/components/guards/EnrollmentGuard").then((m) => ({
+    default: m.EnrollmentGuard,
+  })),
+);
+const PaymentSuccessHandler = lazy(() =>
+  import("./features/courses/components/payment/PaymentSuccessHandler").then(
+    (m) => ({ default: m.PaymentSuccessHandler }),
+  ),
+);
+const AdminLoginPage = lazy(
+  () => import("./features/admin-auth/pages/AdminLoginPage"),
+);
+const AdminLogoutPage = lazy(
+  () => import("./features/admin-auth/pages/AdminLogoutPage"),
+);
+const ContributorsPage = lazy(() =>
+  import("./features/contributors/pages/ContributorsPage").then((m) => ({
+    default: m.default,
+  })),
+);
 
 // Instructor Portal lazy imports
-const InstructorLayout = lazy(() => import("./features/instructor-portal/layout/InstructorLayout").then(m => ({ default: m.InstructorLayout })));
-const InstructorDashboard = lazy(() => import("./features/instructor-portal/pages/InstructorDashboard").then(m => ({ default: m.InstructorDashboard })));
-const CourseManagementPage = lazy(() => import("./features/instructor-portal/pages/CourseManagementPage").then(m => ({ default: m.CourseManagementPage })));
-const CourseForm = lazy(() => import("./features/instructor-portal/components/course-management/CourseForm").then(m => ({ default: m.CourseForm })));
-const ModuleForm = lazy(() => import("./features/instructor-portal/components/course-management/ModuleForm").then(m => ({ default: m.ModuleForm })));
-const LessonForm = lazy(() => import("./features/instructor-portal/components/course-management/LessonForm").then(m => ({ default: m.LessonForm })));
-const MediaLibraryPage = lazy(() => import("./features/instructor-portal/pages/MediaLibraryPage").then(m => ({ default: m.MediaLibraryPage })));
-const QuizEditor = lazy(() => import("./features/instructor-portal/pages/QuizEditor").then(m => ({ default: m.QuizEditor })));
-
+const InstructorLayout = lazy(() =>
+  import("./features/instructor-portal/layout/InstructorLayout").then((m) => ({
+    default: m.InstructorLayout,
+  })),
+);
+const InstructorDashboard = lazy(() =>
+  import("./features/instructor-portal/pages/InstructorDashboard").then(
+    (m) => ({ default: m.InstructorDashboard }),
+  ),
+);
+const CourseManagementPage = lazy(() =>
+  import("./features/instructor-portal/pages/CourseManagementPage").then(
+    (m) => ({ default: m.CourseManagementPage }),
+  ),
+);
+const CourseForm = lazy(() =>
+  import("./features/instructor-portal/components/course-management/CourseForm").then(
+    (m) => ({ default: m.CourseForm }),
+  ),
+);
+const ModuleForm = lazy(() =>
+  import("./features/instructor-portal/components/course-management/ModuleForm").then(
+    (m) => ({ default: m.ModuleForm }),
+  ),
+);
+const LessonForm = lazy(() =>
+  import("./features/instructor-portal/components/course-management/LessonForm").then(
+    (m) => ({ default: m.LessonForm }),
+  ),
+);
+const MediaLibraryPage = lazy(() =>
+  import("./features/instructor-portal/pages/MediaLibraryPage").then((m) => ({
+    default: m.MediaLibraryPage,
+  })),
+);
+const QuizEditor = lazy(() =>
+  import("./features/instructor-portal/pages/QuizEditor").then((m) => ({
+    default: m.QuizEditor,
+  })),
+);
 
 // Loading fallback component
 const PageLoader = () => (
@@ -54,7 +144,12 @@ export const LegacyLearningRedirect = () => {
   const courseId = searchParams.get("courseId");
 
   if (courseId) {
-    return <Navigate to={`/portal/learning/${encodeURIComponent(courseId)}`} replace />;
+    return (
+      <Navigate
+        to={`/portal/learning/${encodeURIComponent(courseId)}`}
+        replace
+      />
+    );
   }
 
   return <Navigate to="/portal" replace />;
@@ -65,20 +160,32 @@ export function AppRouter() {
     <BrowserRouter>
       <AuthProvider>
         <SavedCoursesProvider>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
               <Route path="/" element={<App />} />
 
               {/* Course routes */}
               <Route path="/courses" element={<CourseCatalogPage />} />
               <Route path="/courses/:itemId" element={<CourseDetailsPage />} />
 
+              {/* Contributors marketplace */}
+              <Route path="/contributors" element={<ContributorsPage />} />
+
               {/* Payment success handler */}
-              <Route path="/payment/success" element={<PaymentSuccessHandler />} />
+              <Route
+                path="/payment/success"
+                element={<PaymentSuccessHandler />}
+              />
 
               {/* Legacy marketplace routes - redirect to new course routes */}
-              <Route path="/marketplace/courses" element={<Navigate to="/courses" replace />} />
-              <Route path="/marketplace/courses/:itemId" element={<Navigate to="/courses/:itemId" replace />} />
+              <Route
+                path="/marketplace/courses"
+                element={<Navigate to="/courses" replace />}
+              />
+              <Route
+                path="/marketplace/courses/:itemId"
+                element={<Navigate to="/courses/:itemId" replace />}
+              />
 
               {/* Dashboard */}
               <Route
@@ -92,36 +199,51 @@ export function AppRouter() {
 
               {/* Portal / Learning */}
               <Route path="/portal" element={<PortalLayout />}>
-                <Route index element={<Navigate to="my-courses/in-progress" replace />} />
-                <Route path="onboarding" element={<LearnerOnboarding layout="portal" />} />
+                <Route
+                  index
+                  element={<Navigate to="my-courses/in-progress" replace />}
+                />
+                <Route
+                  path="onboarding"
+                  element={<LearnerOnboarding layout="portal" />}
+                />
                 <Route path="profile" element={<ProfilePage />} />
-                <Route path="my-courses/in-progress" element={<InProgressPage />} />
+                <Route
+                  path="my-courses/in-progress"
+                  element={<InProgressPage />}
+                />
                 <Route path="saved" element={<SavedCoursesPage />} />
                 <Route path="badges" element={<BadgesPage />} />
-                <Route 
-                  path="learning/:courseId" 
+                <Route
+                  path="learning/:courseId"
                   element={
                     <EnrollmentGuard>
                       <CoursePlayerPage />
                     </EnrollmentGuard>
-                  } 
+                  }
                 />
               </Route>
 
               {/* Public Share Routes */}
               <Route path="/badges/share/:token" element={<BadgeSharePage />} />
 
-              <Route path="/portal/admin/audit-quizzes" element={<QuizAuditPage />} />
+              <Route
+                path="/portal/admin/audit-quizzes"
+                element={<QuizAuditPage />}
+              />
 
               {/* Redirect /learning and legacy /learning?courseId=... to portal routes */}
               <Route path="/learning" element={<LegacyLearningRedirect />} />
 
               {/* Auth Debug Panel - for testing authentication and user sync */}
-              <Route path="/auth-debug" element={
-                <div className="min-h-screen bg-gray-100 py-8">
-                  <AuthDebugPanel />
-                </div>
-              } />
+              <Route
+                path="/auth-debug"
+                element={
+                  <div className="min-h-screen bg-gray-100 py-8">
+                    <AuthDebugPanel />
+                  </div>
+                }
+              />
 
               {/* Admin Auth */}
               <Route
@@ -154,15 +276,42 @@ export function AppRouter() {
               >
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<InstructorDashboard />} />
-                <Route path="course-management" element={<CourseManagementPage />} />
-                <Route path="course-management/course/new" element={<CourseForm />} />
-                <Route path="course-management/course/:id" element={<CourseForm />} />
-                <Route path="course-management/module/new" element={<ModuleForm />} />
-                <Route path="course-management/module/:id" element={<ModuleForm />} />
-                <Route path="course-management/lesson/new" element={<LessonForm />} />
-                <Route path="course-management/lesson/:id" element={<LessonForm />} />
-                <Route path="course-management/quiz/new" element={<QuizEditor />} />
-                <Route path="course-management/quiz/:id" element={<QuizEditor />} />
+                <Route
+                  path="course-management"
+                  element={<CourseManagementPage />}
+                />
+                <Route
+                  path="course-management/course/new"
+                  element={<CourseForm />}
+                />
+                <Route
+                  path="course-management/course/:id"
+                  element={<CourseForm />}
+                />
+                <Route
+                  path="course-management/module/new"
+                  element={<ModuleForm />}
+                />
+                <Route
+                  path="course-management/module/:id"
+                  element={<ModuleForm />}
+                />
+                <Route
+                  path="course-management/lesson/new"
+                  element={<LessonForm />}
+                />
+                <Route
+                  path="course-management/lesson/:id"
+                  element={<LessonForm />}
+                />
+                <Route
+                  path="course-management/quiz/new"
+                  element={<QuizEditor />}
+                />
+                <Route
+                  path="course-management/quiz/:id"
+                  element={<QuizEditor />}
+                />
                 <Route path="media" element={<MediaLibraryPage />} />
                 <Route path="students" element={<ComingSoon />} />
                 <Route path="learning-paths" element={<ComingSoon />} />
@@ -175,14 +324,35 @@ export function AppRouter() {
               <Route path="/coming-soon/:feature" element={<ComingSoon />} />
 
               {/* Legacy routes - redirect to 404 */}
-              <Route path="/growth-areas-marketplace" element={<Navigate to="/404" replace />} />
-              <Route path="/growth-areas" element={<Navigate to="/404" replace />} />
-              <Route path="/business-directory-marketplace" element={<Navigate to="/404" replace />} />
-              <Route path="/discover-abudhabi" element={<Navigate to="/404" replace />} />
+              <Route
+                path="/growth-areas-marketplace"
+                element={<Navigate to="/404" replace />}
+              />
+              <Route
+                path="/growth-areas"
+                element={<Navigate to="/404" replace />}
+              />
+              <Route
+                path="/business-directory-marketplace"
+                element={<Navigate to="/404" replace />}
+              />
+              <Route
+                path="/discover-abudhabi"
+                element={<Navigate to="/404" replace />}
+              />
               <Route path="/forms/*" element={<Navigate to="/404" replace />} />
-              <Route path="/documentation" element={<Navigate to="/coming-soon/documentation" replace />} />
-              <Route path="/documentation/*" element={<Navigate to="/coming-soon/documentation" replace />} />
-              <Route path="/marketplace/*" element={<Navigate to="/courses" replace />} />
+              <Route
+                path="/documentation"
+                element={<Navigate to="/coming-soon/documentation" replace />}
+              />
+              <Route
+                path="/documentation/*"
+                element={<Navigate to="/coming-soon/documentation" replace />}
+              />
+              <Route
+                path="/marketplace/*"
+                element={<Navigate to="/courses" replace />}
+              />
 
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/404" replace />} />

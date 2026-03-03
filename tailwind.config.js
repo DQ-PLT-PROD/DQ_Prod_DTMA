@@ -91,7 +91,13 @@ module.exports = {
         },
       },
       fontFamily: {
-        display: ["Roboto", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        display: [
+          "Roboto",
+          "Helvetica Neue",
+          "Helvetica",
+          "Arial",
+          "sans-serif",
+        ],
         body: ["Roboto", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
       },
       borderRadius: {
@@ -103,13 +109,38 @@ module.exports = {
       },
       boxShadow: {
         "md-1": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)", // shadow-sm equivalent
-        "md-2": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)", // shadow-md equivalent
-        "md-3": "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04)", // shadow-xl equivalent
+        "md-2":
+          "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)", // shadow-md equivalent
+        "md-3":
+          "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04)", // shadow-xl equivalent
       },
       zIndex: {
         400: 400,
       },
+      animation: {
+        "float-slow": "float 20s ease-in-out infinite",
+        "float-medium": "float 15s ease-in-out infinite",
+        "float-fast": "float 10s ease-in-out infinite",
+        "scroll-left": "scroll-left 40s linear infinite",
+        "scroll-right": "scroll-right 40s linear infinite",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0px) translateX(0px)" },
+          "25%": { transform: "translateY(-20px) translateX(10px)" },
+          "50%": { transform: "translateY(-40px) translateX(-10px)" },
+          "75%": { transform: "translateY(-20px) translateX(10px)" },
+        },
+        "scroll-left": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        "scroll-right": {
+          "0%": { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(0)" },
+        },
+      },
     },
   },
-  plugins: [require('@tailwindcss/typography')],
+  plugins: [require("@tailwindcss/typography")],
 };

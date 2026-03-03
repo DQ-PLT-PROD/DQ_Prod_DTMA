@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import HeroSection from "../components/HeroSection";
-import ProofAndTrust from "../components/ProofAndTrust";
-import SixPerspectivesSection from "../components/SixPerspectivesSection";
-import CourseCatalogSection from "../components/CourseCatalogSection";
-import SixXDDeepDiveSection from "../components/SixXDDeepDiveSection";
+import AboutDTMA from "../components/AboutDTMA";
+import FeaturedCourses from "../components/FeaturedCourses";
+import WhyChooseUs from "../components/WhyChooseUs";
+import ExpertInstructors from "../components/ExpertInstructors";
+import TrustedPartners from "../components/TrustedPartners";
 import HowYouLearn from "../components/HowYouLearn";
 import CallToAction from "../components/CallToAction";
 import { AIWidgetStandalone } from "@/lib/ai-widget";
@@ -20,7 +21,8 @@ import { AIWidgetStandalone } from "@/lib/ai-widget";
  * scroll-mt-16          — 64px snap offset so content clears the fixed header
  *                         (matches --header-h: 64px defined in index.css)
  */
-const SECTION = "min-h-screen w-full flex flex-col justify-center snap-start scroll-mt-16";
+const SECTION =
+  "min-h-screen w-full flex flex-col justify-center snap-start scroll-mt-16";
 
 const HomePage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -51,30 +53,33 @@ const HomePage: React.FC = () => {
           <HeroSection />
         </section>
 
-        {/* ── Section 2 — Metrics + Benefits ───────────────────────────────── */}
-        <section className={`${SECTION} bg-gray-50`}>
-          <ProofAndTrust />
-        </section>
-
-        {/* ── Section 4 — The 6X Perspectives of Digital ───────────────────── */}
-        <section className={`${SECTION} bg-gray-50`}>
-          <SixPerspectivesSection />
-        </section>
-
-        {/* ── Section 5 — Course Catalog ──────────────────────────────────────
-            Catalogue content can exceed one viewport height on smaller screens;
-            min-h-screen ensures it never looks short on large displays.         */}
+        {/* ── Section 2 — About DTMA ─────────────────────────────────────────── */}
         <section className={`${SECTION} bg-white`}>
-          <CourseCatalogSection />
+          <AboutDTMA />
         </section>
 
-        {/* ── Section 6 — Dive deep into 6X Perspectives (CTA bridge) ─────── */}
+        {/* ── Section 3 — Featured Courses ───────────────────────────────────── */}
         <section className={`${SECTION} bg-gray-50`}>
-          <SixXDDeepDiveSection />
+          <FeaturedCourses />
+        </section>
+
+        {/* ── Section 4 — Why Choose Us ──────────────────────────────────────── */}
+        <section className={`${SECTION} bg-white`}>
+          <WhyChooseUs />
+        </section>
+
+        {/* ── Section 5 — Expert Instructors ─────────────────────────────────── */}
+        <section className="w-full snap-start scroll-mt-16 bg-gray-50">
+          <ExpertInstructors />
+        </section>
+
+        {/* ── Section 6 — Trusted Partners ───────────────────────────────────── */}
+        <section className="w-full snap-start scroll-mt-16 bg-white">
+          <TrustedPartners />
         </section>
 
         {/* ── Section 7 — How Learning Works ───────────────────────────────── */}
-        <section className={`${SECTION} bg-[#f7f9fc]`}>
+        <section className={`${SECTION} bg-gray-50`}>
           <HowYouLearn />
         </section>
 
