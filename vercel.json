@@ -1,8 +1,14 @@
 {
+  "functions": {
+    "api/[...path].mjs": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "source": "/api/:path*",
+      "destination": "/api/[...path].mjs"
     },
     {
       "source": "/((?!api/|assets/|.*\\..*).*)",
