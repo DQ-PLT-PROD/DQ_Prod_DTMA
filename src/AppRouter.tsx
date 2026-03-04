@@ -37,7 +37,6 @@ const ModuleForm = lazy(() => import("./features/instructor-portal/components/co
 const LessonForm = lazy(() => import("./features/instructor-portal/components/course-management/LessonForm").then(m => ({ default: m.LessonForm })));
 const MediaLibraryPage = lazy(() => import("./features/instructor-portal/pages/MediaLibraryPage").then(m => ({ default: m.MediaLibraryPage })));
 const QuizEditor = lazy(() => import("./features/instructor-portal/pages/QuizEditor").then(m => ({ default: m.QuizEditor })));
-const MeasureVideoDurations = lazy(() => import("./pages/MeasureVideoDurations"));
 
 
 // Loading fallback component
@@ -123,9 +122,6 @@ export function AppRouter() {
                   <AuthDebugPanel />
                 </div>
               } />
-
-              {/* Video Duration Measurement Tool */}
-              <Route path="/measure-videos" element={<MeasureVideoDurations />} />
 
               {/* Admin Auth */}
               <Route
