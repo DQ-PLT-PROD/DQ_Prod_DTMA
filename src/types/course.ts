@@ -6,6 +6,7 @@ import { LessonType } from "./dtma-lms";
  */
 export interface Lesson {
     id: number | string;
+    moduleId?: string;
     title: string;
     duration: string; // Display format like "08:12"
     completed: boolean;
@@ -21,6 +22,7 @@ export interface Lesson {
  */
 export const toUILesson = (dbLesson: {
     id: string;
+    moduleId?: string;
     title: string;
     type?: LessonType;
     estimatedDurationMinutes: number;
@@ -35,6 +37,7 @@ export const toUILesson = (dbLesson: {
 
     return {
         id: dbLesson.id,
+        moduleId: dbLesson.moduleId,
         title: dbLesson.title,
         duration: durationStr,
         completed: completedIds.has(dbLesson.id),

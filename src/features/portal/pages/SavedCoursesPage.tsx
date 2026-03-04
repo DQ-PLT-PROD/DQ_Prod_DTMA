@@ -72,15 +72,15 @@ const SavedCoursesPage: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         {/* Page Title */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Saved Courses</h2>
-          <p className="text-gray-500 text-sm mt-1">Courses you've bookmarked for later</p>
+          <h2 className="text-2xl font-bold text-gray-900">Saved Modules</h2>
+          <p className="text-gray-500 text-sm mt-1">Modules you've bookmarked for later</p>
         </div>
 
         {/* Saved Section */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Bookmark size={18} className="text-[#1839AD]" />
-            <h2 className="text-lg font-semibold text-gray-900">Bookmarked</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Bookmarked Modules</h2>
             {!isLoading && user && (
               <span className="text-xs font-bold bg-[#1839AD] text-white px-2 py-0.5 rounded-full">
                 {courses.length}
@@ -95,8 +95,8 @@ const SavedCoursesPage: React.FC = () => {
           ) : !user ? (
             <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
               <BookOpen className="mx-auto mb-4 text-gray-400" size={48} />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Sign in to see your saved courses</h3>
-              <p className="text-gray-500 mb-4">Save courses to revisit them anytime</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Sign in to see your saved modules</h3>
+              <p className="text-gray-500 mb-4">Save modules to revisit them anytime</p>
               <button
                 onClick={() => navigate("/courses")}
                 className="px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition"
@@ -107,8 +107,8 @@ const SavedCoursesPage: React.FC = () => {
           ) : courses.length === 0 ? (
             <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
               <Bookmark className="mx-auto mb-4 text-gray-400" size={48} />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">You haven't saved any courses yet</h3>
-              <p className="text-gray-500 mb-4">Browse the catalog and bookmark courses for later</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">You haven't saved any modules yet</h3>
+              <p className="text-gray-500 mb-4">Browse the catalog and bookmark modules for later</p>
               <button
                 onClick={() => navigate("/courses")}
                 className="px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition"
@@ -172,10 +172,10 @@ const SavedCoursesPage: React.FC = () => {
                         </button>
                         <button
                           type="button"
-                          onClick={() => navigate(`/courses/${course.slug}`)}
+                          onClick={() => navigate(`/modules/${course.slug}`)}
                           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#1839AD] text-white text-sm font-semibold hover:bg-[#132b7c] transition"
                         >
-                          Open Course
+                          Open Module
                         </button>
                       </div>
                     </div>

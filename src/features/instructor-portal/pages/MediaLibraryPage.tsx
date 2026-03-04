@@ -21,9 +21,11 @@ import { useAdminAuth } from '@/lib/admin-auth';
 export function MediaLibraryPage() {
     const { ability } = useAdminAuth();
     const canUploadMedia = ability.can('upload', 'Media');
+    const canDeleteMedia = ability.can('delete', 'Media');
     const [files, setFiles] = useState<MediaItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [toast, setToast] = useState<{
@@ -76,6 +78,10 @@ export function MediaLibraryPage() {
     };
 
     const handleDelete = async (filePath: string) => {
+        if (!canDeleteMedia) {
+            setToast({ type: 'error', message: 'You do not have permission to delete media.' });
+            return;
+        }
         if (
             !window.confirm(
                 'Are you sure you want to delete this file? This action cannot be undone.'
@@ -84,11 +90,15 @@ export function MediaLibraryPage() {
             return;
 
         try {
+            setDeletingFileId(filePath);
             await deleteLibraryFile(filePath);
             setToast({ type: 'success', message: 'File deleted' });
             setFiles((prev) => prev.filter((f) => f.id !== filePath));
         } catch (err) {
-            setToast({ type: 'error', message: 'Failed to delete file' });
+            const message = err instanceof Error ? err.message : 'Failed to delete file';
+            setToast({ type: 'error', message });
+        } finally {
+            setDeletingFileId(null);
         }
     };
 
@@ -123,7 +133,7 @@ export function MediaLibraryPage() {
                 </div>
                 <label
                     className={`flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 transition-colors bg-[var(--md-primary)] text-white hover:bg-[var(--md-primary-hover)] ${
-                        uploading ? 'pointer-events-none opacity-70' : ''
+                        uploading || !canUploadMedia ? 'pointer-events-none opacity-70' : ''
                     }`}
                 >
                     {uploading ? (
@@ -140,7 +150,7 @@ export function MediaLibraryPage() {
                         type="file"
                         className="hidden"
                         onChange={handleUpload}
-                        disabled={uploading}
+                        disabled={uploading || !canUploadMedia}
                     />
                 </label>
             </div>
@@ -234,14 +244,21 @@ export function MediaLibraryPage() {
                                 >
                                     <Copy className="h-4 w-4" />
                                 </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleDelete(file.id)}
-                                    className="rounded-full bg-white p-2 text-red-600 hover:bg-red-50"
-                                    title="Delete"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
+                                {canDeleteMedia && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDelete(file.id)}
+                                        disabled={deletingFileId === file.id}
+                                        className="rounded-full bg-white p-2 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                        title="Delete"
+                                    >
+                                        {deletingFileId === file.id ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Trash2 className="h-4 w-4" />
+                                        )}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}

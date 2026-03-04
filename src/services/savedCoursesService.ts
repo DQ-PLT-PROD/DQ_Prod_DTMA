@@ -1,67 +1,105 @@
-/**
- * Saved Courses Service
- * Frontend API client for saved/bookmarked courses
- */
+import { isSupabaseConfigured } from "@/lib/supabase/client";
+import { getSupabaseForEnrollment } from "@/lib/supabase/serviceClient";
 
-import { msalInstance } from '@/lib/auth/msal'
+type SavedModuleRow = {
+  modules?: {
+    slug?: string | null;
+  } | null;
+};
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+type ModuleRow = {
+  id: string;
+  slug: string;
+};
 
-async function getAccessToken(): Promise<string | null> {
-  try {
-    const activeAccount = msalInstance.getActiveAccount()
-    if (!activeAccount) return null
+const getSavedSupabase = () => getSupabaseForEnrollment();
 
-    const response = await msalInstance.acquireTokenSilent({
-      scopes: ['openid', 'profile', 'email'],
-      account: activeAccount,
-    })
-    return response.idToken || response.accessToken
-  } catch {
-    return null
-  }
-}
-
-async function makeRequest<T>(method: string, endpoint: string, body?: unknown): Promise<T> {
-  const token = await getAccessToken()
-  if (!token) {
-    throw new Error('Authentication required')
+const resolveModuleBySlug = async (moduleSlug: string): Promise<ModuleRow | null> => {
+  if (!isSupabaseConfigured()) {
+    return null;
   }
 
-  const options: RequestInit = {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+  const supabase = getSavedSupabase();
+  const { data, error } = await supabase
+    .from("modules")
+    .select("id, slug")
+    .eq("slug", moduleSlug)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to resolve saved module slug:", error);
+    return null;
   }
 
-  if (body) {
-    options.body = JSON.stringify(body)
+  return (data as ModuleRow | null) ?? null;
+};
+
+export const fetchSavedCourseIds = async (userId: string): Promise<string[]> => {
+  if (!userId || !isSupabaseConfigured()) {
+    return [];
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, options)
+  const supabase = getSavedSupabase();
+  const { data, error } = await (supabase.from("saved_modules" as any) as any)
+    .select("modules!inner(slug)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
 
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}))
-    throw new Error(data?.error || `Request failed with status ${response.status}`)
+  if (error || !Array.isArray(data)) {
+    console.error("Failed to fetch saved modules:", error);
+    return [];
   }
 
-  return response.json()
-}
+  return data
+    .map((row: SavedModuleRow) => row.modules?.slug)
+    .filter((slug: string | null | undefined): slug is string => typeof slug === "string" && slug.length > 0);
+};
 
-export async function fetchSavedCourseIds(): Promise<string[]> {
-  const data = await makeRequest<{ savedCourseIds: string[] }>('GET', '/saved-courses')
-  return data.savedCourseIds
-}
+export const saveCourse = async (userId: string, moduleSlug: string): Promise<void> => {
+  if (!userId || !moduleSlug || !isSupabaseConfigured()) {
+    throw new Error("Missing learner or module context");
+  }
 
-export async function saveCourse(courseId: string): Promise<boolean> {
-  const data = await makeRequest<{ saved: boolean }>('POST', '/saved-courses', { courseId })
-  return data.saved
-}
+  const module = await resolveModuleBySlug(moduleSlug);
+  if (!module) {
+    throw new Error("Module not found");
+  }
 
-export async function unsaveCourse(courseId: string): Promise<boolean> {
-  await makeRequest<{ saved: boolean }>('DELETE', `/saved-courses/${encodeURIComponent(courseId)}`)
-  return true
-}
+  const supabase = getSavedSupabase();
+  const { error } = await (supabase.from("saved_modules" as any) as any)
+    .upsert(
+      {
+        user_id: userId,
+        module_id: module.id,
+      },
+      { onConflict: "user_id,module_id" }
+    );
+
+  if (error) {
+    console.error("Failed to save module:", error);
+    throw error;
+  }
+};
+
+export const unsaveCourse = async (userId: string, moduleSlug: string): Promise<void> => {
+  if (!userId || !moduleSlug || !isSupabaseConfigured()) {
+    throw new Error("Missing learner or module context");
+  }
+
+  const module = await resolveModuleBySlug(moduleSlug);
+  if (!module) {
+    return;
+  }
+
+  const supabase = getSavedSupabase();
+  const { error } = await (supabase.from("saved_modules" as any) as any)
+    .delete()
+    .eq("user_id", userId)
+    .eq("module_id", module.id);
+
+  if (error) {
+    console.error("Failed to unsave module:", error);
+    throw error;
+  }
+};

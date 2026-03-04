@@ -41,7 +41,7 @@ export function useProductDetails({
     }, []);
 
     // Map DTMA course to the unified item shape used by details page
-    const mapCourseToItem = (course: Course, courseLessons: any[] = [], courseResources: any[] = []): ProductItem | null => {
+    const mapCourseToItem = (course: Course, courseLessons: any[] = [], courseResources: any[] = [], courseModules: any[] = []): ProductItem | null => {
         if (!course) return null;
 
         // Attempt to parse timeline JSON string into steps
@@ -96,6 +96,8 @@ export function useProductDetails({
         // Provider info removed
 
         const category = categories.find((c) => c.id === course.categoryId || c.slug === course.categoryId);
+        const containerCourseTitle = (course as any).containerCourseTitle;
+        const containerCourseSlug = (course as any).containerCourseSlug;
         // Use lessons passed in, fallback to empty if not provided
         const lessonList = courseLessons.length ? courseLessons : [];
         const lessonCount = lessonList.length > 0
@@ -109,6 +111,7 @@ export function useProductDetails({
                 description: lesson.content || "",
                 estimatedDurationMinutes: lesson.estimatedDurationMinutes || 0,
                 type: lesson.type,
+                moduleId: lesson.moduleId,
             }));
         }
 
@@ -128,8 +131,8 @@ export function useProductDetails({
             slug: course.slug,  // Ensure slug is explicitly set
             title: course.title,
             description: course.longDescription || course.shortDescription,
-            category: category?.name,
-            categorySlug: category?.slug,
+            category: containerCourseTitle || category?.name,
+            categorySlug: containerCourseSlug || category?.slug,
             duration: formatDuration(course.estimatedDurationMinutes),
             lessonCount,
             learningOutcomes: course.learningOutcomes || [],
@@ -150,10 +153,14 @@ export function useProductDetails({
             levelTag: course.levelTag,
             audienceLevel: course.audienceLevel,
             heroImageUrl: course.heroImageUrl,
+            thumbnailUrl: course.thumbnailUrl,
             introLessonId: course.introLessonId || firstIntro?.id,
             introVideoUrl: course.introVideoUrl || firstIntro?.videoUrl,
             introVideoPosterUrl: posterUrl,
             resources: courseResources,
+            modules: courseModules,
+            containerCourseTitle,
+            containerCourseSlug,
         } as any;
     };
 
@@ -162,7 +169,7 @@ export function useProductDetails({
         setLoading(true);
         setError(null);
         try {
-            const { course, lessons, resources } = await fetchCourseWithContent(itemId);
+            const { course, modules, lessons, resources } = await fetchCourseWithContent(itemId);
             if (!course) {
                 // No fallback - show error state
                 setItem(null);
@@ -174,7 +181,8 @@ export function useProductDetails({
             // Use lessons from DB, or empty if not available
             const courseLessons = lessons && lessons.length > 0 ? lessons : [];
             const courseResources = resources || [];
-            const mapped = mapCourseToItem(course, courseLessons, courseResources);
+            const courseModules = modules || [];
+            const mapped = mapCourseToItem(course, courseLessons, courseResources, courseModules);
             if (mapped) {
                 setItem(mapped);
             }
@@ -186,16 +194,20 @@ export function useProductDetails({
                 slug: c.slug,
                 title: c.title,
                 description: c.shortDescription,
-                category: (c as any).categoryName || c.categoryId,
+                category: (c as any).containerCourseTitle || (c as any).categoryName || c.categoryId,
+                categorySlug: (c as any).containerCourseSlug || c.categoryId,
                 duration: formatDuration(c.estimatedDurationMinutes),
                 lessonCount: c.lessonCount,
                 levelTag: c.levelTag,
                 audienceLevel: c.audienceLevel,
+                thumbnailUrl: c.thumbnailUrl,
                 heroImageUrl: c.heroImageUrl,
                 introVideoUrl: c.introVideoUrl,
                 rating: c.rating ?? 4.6,
                 reviewCount: c.reviewCount ?? 24,
                 isComingSoon: (c as any).isComingSoon || false,
+                containerCourseTitle: (c as any).containerCourseTitle,
+                containerCourseSlug: (c as any).containerCourseSlug,
             })));
 
             if (shouldTakeAction) {

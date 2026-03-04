@@ -143,16 +143,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
       try {
         setLoading(true);
 
-        const slugCandidates = Array.from(
-          new Set([courseSlug, "plt-course-01"])
-        );
-
-        let finalQuizzes: QuizQuestion[] | null = null;
-        for (const slug of slugCandidates) {
-          finalQuizzes = await loadQuizzesForSlug(slug);
-          if (finalQuizzes) break;
-        }
-
+        const finalQuizzes = await loadQuizzesForSlug(courseSlug);
         setQuestions(finalQuizzes ?? []);
         setCurrentQuestionIndex(0);
         setUserAnswers([]);
@@ -341,7 +332,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
 
               <p className="text-gray-600 mb-6">
                 {passed
-                  ? "You've successfully completed the course assessment."
+                  ? "You've successfully completed the module assessment."
                   : "You're on the right track. Review the materials and try again."
                 }
               </p>
@@ -372,7 +363,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center justify-center gap-2"
               >
                 <ArrowLeft size={16} />
-                Back to Course
+                Back to Module
               </button>
 
               {!passed && (
@@ -589,7 +580,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
           setShowSummary(true);
         }}
         score={scorePercentage}
-        courseName={courseSlug === "plt-course-01" ? "Perfecting Life Transactions: A Digital Builder's Blueprint" : courseSlug}
+          courseName={courseSlug}
         userName={databaseUser?.name || "Digital Builder"}
         badge={earnedBadge || undefined}
       />

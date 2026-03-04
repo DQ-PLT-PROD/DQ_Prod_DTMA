@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, X, Loader2, Search, ImageIcon, FilmIcon, FileIcon } from 'lucide-react';
-import { listLibraryFiles, uploadToLibrary, MediaItem } from '../../lib/mediaService';
+import { Upload, X, Loader2, Search, ImageIcon, FilmIcon, FileIcon, Trash2 } from 'lucide-react';
+import { deleteLibraryFile, listLibraryFiles, uploadToLibrary, MediaItem } from '../../lib/mediaService';
 import { useAdminAuth } from '@/lib/admin-auth';
 import { Toast } from '@/components/ui/Toast';
 
@@ -9,16 +9,27 @@ interface MediaPickerModalProps {
     onClose: () => void;
     onSelect: (url: string) => void;
     allowedTypes?: string[]; // e.g. ['image/']
+    currentUrl?: string;
+    onDeleteUrl?: (url: string) => void;
 }
 
-export function MediaPickerModal({ isOpen, onClose, onSelect, allowedTypes }: MediaPickerModalProps) {
+export function MediaPickerModal({
+    isOpen,
+    onClose,
+    onSelect,
+    allowedTypes,
+    currentUrl,
+    onDeleteUrl,
+}: MediaPickerModalProps) {
     const { ability } = useAdminAuth();
     const [files, setFiles] = useState<MediaItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
     const canUploadMedia = ability.can('upload', 'Media');
+    const canDeleteMedia = ability.can('delete', 'Media');
 
     useEffect(() => {
         if (isOpen) {
@@ -59,6 +70,38 @@ export function MediaPickerModal({ isOpen, onClose, onSelect, allowedTypes }: Me
         } finally {
             setUploading(false);
             e.target.value = '';
+        }
+    };
+
+    const handleSelect = (file: MediaItem) => {
+        if (!file.url) return;
+        onSelect(file.url);
+        onClose();
+    };
+
+    const handleDelete = async (file: MediaItem) => {
+        if (!canDeleteMedia) {
+            setToast({ type: 'error', message: 'You do not have permission to delete media.' });
+            return;
+        }
+
+        if (!window.confirm(`Delete "${file.name}" from the media library? This cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            setDeletingFileId(file.id);
+            await deleteLibraryFile(file.id);
+            setFiles((current) => current.filter((item) => item.id !== file.id));
+            if (file.url && currentUrl === file.url) {
+                onDeleteUrl?.(file.url);
+            }
+            setToast({ type: 'success', message: 'File deleted successfully' });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Failed to delete file';
+            setToast({ type: 'error', message });
+        } finally {
+            setDeletingFileId(null);
         }
     };
 
@@ -130,32 +173,50 @@ export function MediaPickerModal({ isOpen, onClose, onSelect, allowedTypes }: Me
                             <p className="mt-1 text-sm text-gray-500">Upload a new file or adjust search</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                             {filteredFiles.map((file) => (
-                                <button
+                                <div
                                     key={file.id}
-                                    onClick={() => {
-                                        if (file.url) {
-                                            onSelect(file.url);
-                                            onClose();
-                                        }
-                                    }}
-                                    className="group relative bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md hover:border-[var(--md-primary)] transition-all text-left"
+                                    className="group overflow-hidden rounded-lg border border-gray-200 bg-white transition-all hover:border-[var(--md-primary)] hover:shadow-md"
                                 >
-                                    <div className="aspect-square bg-gray-100 flex items-center justify-center p-2 relative">
-                                        {file.metadata?.mimetype?.startsWith('image/') && file.url ? (
-                                            <img src={file.url} alt={file.name} className="w-full h-full object-cover rounded-md" />
-                                        ) : (
-                                            getFileIcon(file.metadata?.mimetype)
-                                        )}
-                                        {/* Hover overlay hint */}
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                                    </div>
-                                    <div className="p-2 border-t border-gray-100">
-                                        <p className="text-xs font-medium text-gray-900 truncate">{file.name}</p>
-                                        <p className="text-[10px] text-gray-500 mt-0.5">{(file.metadata?.size ? (file.metadata.size / 1024).toFixed(1) : '0')} KB</p>
-                                    </div>
-                                </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleSelect(file)}
+                                        className="block w-full text-left"
+                                    >
+                                        <div className="relative flex aspect-square items-center justify-center bg-gray-100 p-2">
+                                            {file.metadata?.mimetype?.startsWith('image/') && file.url ? (
+                                                <img src={file.url} alt={file.name} className="h-full w-full rounded-md object-cover" />
+                                            ) : (
+                                                getFileIcon(file.metadata?.mimetype)
+                                            )}
+                                            <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
+                                        </div>
+                                        <div className="border-t border-gray-100 p-2">
+                                            <p className="truncate text-xs font-medium text-gray-900">{file.name}</p>
+                                            <p className="mt-0.5 text-[10px] text-gray-500">
+                                                {(file.metadata?.size ? (file.metadata.size / 1024).toFixed(1) : '0')} KB
+                                            </p>
+                                        </div>
+                                    </button>
+                                    {canDeleteMedia && (
+                                        <div className="border-t border-gray-100 px-2 py-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDelete(file)}
+                                                disabled={deletingFileId === file.id}
+                                                className="flex w-full items-center justify-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                            >
+                                                {deletingFileId === file.id ? (
+                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                ) : (
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                )}
+                                                Delete
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     )}

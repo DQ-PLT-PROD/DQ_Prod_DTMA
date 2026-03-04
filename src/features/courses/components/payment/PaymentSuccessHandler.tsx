@@ -36,7 +36,7 @@ export const PaymentSuccessHandler: React.FC = () => {
                 setStatus('error');
                 setMessage('Payment was cancelled. You can try again from the course page.');
                 setTimeout(() => {
-                    navigate(`/courses/${courseSlug}`);
+                    navigate(`/modules/${courseSlug}`);
                 }, 3000);
                 return;
             }

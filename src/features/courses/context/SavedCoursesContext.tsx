@@ -37,7 +37,7 @@ export const SavedCoursesProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const load = async () => {
       try {
-        const ids = await fetchSavedCourseIds();
+        const ids = await fetchSavedCourseIds(databaseUser.id);
         if (!cancelled) {
           setSavedCourseIds(new Set(ids));
           setIsLoaded(true);
@@ -60,11 +60,11 @@ export const SavedCoursesProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // Delay to let the initial fetch complete first
       const timer = setTimeout(async () => {
         try {
-          await saveCourse(pendingCourseId);
+          await saveCourse(databaseUser.id, pendingCourseId);
           setSavedCourseIds(prev => new Set([...prev, pendingCourseId]));
-          showToast("Course saved!", "success");
+          showToast("Module saved!", "success");
         } catch {
-          showToast("Failed to save course", "error");
+          showToast("Failed to save module", "error");
         }
       }, 1000);
       return () => { cancelled = true; clearTimeout(timer); };
@@ -95,11 +95,11 @@ export const SavedCoursesProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       try {
         if (wasSaved) {
-          await unsaveCourse(courseSlug);
-          showToast("Course removed from saved", "info");
+          await unsaveCourse(databaseUser!.id, courseSlug);
+          showToast("Module removed from saved", "info");
         } else {
-          await saveCourse(courseSlug);
-          showToast("Course saved!", "success");
+          await saveCourse(databaseUser!.id, courseSlug);
+          showToast("Module saved!", "success");
         }
       } catch {
         // Revert on failure
@@ -115,7 +115,7 @@ export const SavedCoursesProvider: React.FC<{ children: React.ReactNode }> = ({ 
         showToast("Something went wrong. Please try again.", "error");
       }
     },
-    [savedCourseIds, showToast]
+    [databaseUser?.id, savedCourseIds, showToast]
   );
 
   return (

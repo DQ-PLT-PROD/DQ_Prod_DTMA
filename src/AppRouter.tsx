@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/lib/auth";
 import { AdminAuthProvider } from "@/lib/admin-auth";
@@ -60,6 +60,16 @@ export const LegacyLearningRedirect = () => {
   return <Navigate to="/portal" replace />;
 };
 
+export const LegacyCourseContainerRedirect = () => {
+  const { itemId } = useParams<{ itemId: string }>();
+
+  if (!itemId) {
+    return <Navigate to="/courses" replace />;
+  }
+
+  return <Navigate to={`/courses?course=${encodeURIComponent(itemId)}`} replace />;
+};
+
 export function AppRouter() {
   return (
     <BrowserRouter>
@@ -71,14 +81,15 @@ export function AppRouter() {
 
               {/* Course routes */}
               <Route path="/courses" element={<CourseCatalogPage />} />
-              <Route path="/courses/:itemId" element={<CourseDetailsPage />} />
+              <Route path="/courses/:itemId" element={<LegacyCourseContainerRedirect />} />
+              <Route path="/modules/:itemId" element={<CourseDetailsPage />} />
 
               {/* Payment success handler */}
               <Route path="/payment/success" element={<PaymentSuccessHandler />} />
 
               {/* Legacy marketplace routes - redirect to new course routes */}
               <Route path="/marketplace/courses" element={<Navigate to="/courses" replace />} />
-              <Route path="/marketplace/courses/:itemId" element={<Navigate to="/courses/:itemId" replace />} />
+              <Route path="/marketplace/courses/:itemId" element={<LegacyCourseContainerRedirect />} />
 
               {/* Dashboard */}
               <Route

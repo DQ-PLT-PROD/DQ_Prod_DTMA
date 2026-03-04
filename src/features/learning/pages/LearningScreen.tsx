@@ -15,7 +15,7 @@ import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../../portal/components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
 import { Lesson, toUILesson } from "../../../types/course";
-import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
+import { fetchCourseLessons, fetchCourseModules, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
 import {
   getUserCourseProgress,
   updateLessonProgress,
@@ -24,7 +24,7 @@ import {
 } from "../../portal/services/progressService";
 import { isUserEnrolled, canAccessLesson } from "../../courses/services/enrollmentService";
 import { PreviewContentGate } from "../../portal/components/PreviewContentGate";
-import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
+import { Lesson as DBLesson, Course, Module } from "../../../types/dtma-lms";
 import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";
 import { FEATURES } from "../../../config/features";
 
@@ -36,6 +36,7 @@ const LearningScreen: React.FC = () => {
   const courseId = searchParams.get('courseId') || DEFAULT_COURSE_SLUG;
 
   const [course, setCourse] = useState<Course | null>(null);
+  const [modules, setModules] = useState<Module[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [dbLessons, setDbLessons] = useState<DBLesson[]>([]);
   const [resources, setResources] = useState<CourseResource[]>([]);
@@ -66,13 +67,15 @@ const LearningScreen: React.FC = () => {
     const loadCourseData = async () => {
       try {
         setIsLoading(true);
-        const [fetchedCourse, fetchedLessons, fetchedResources] = await Promise.all([
+        const [fetchedCourse, fetchedModules, fetchedLessons, fetchedResources] = await Promise.all([
           fetchFullCourse(courseId),
+          fetchCourseModules(courseId),
           fetchCourseLessons(courseId),
           fetchCourseResources(courseId),
         ]);
 
         setCourse(fetchedCourse);
+        setModules(fetchedModules);
 
         if (fetchedLessons.length > 0) {
           setDbLessons(fetchedLessons);
@@ -213,6 +216,14 @@ const LearningScreen: React.FC = () => {
     () => lessons[currentLessonIndex],
     [lessons, currentLessonIndex]
   );
+
+  const activeModuleThumbnail = useMemo(() => {
+    if (!activeLesson?.moduleId) {
+      return course?.heroImageUrl;
+    }
+
+    return modules.find((module) => module.id === activeLesson.moduleId)?.thumbnailUrl || course?.heroImageUrl;
+  }, [activeLesson?.moduleId, course?.heroImageUrl, modules]);
 
   const completedCount = useMemo(
     () => lessons.filter((lesson) => lesson.completed).length,
@@ -545,7 +556,7 @@ const LearningScreen: React.FC = () => {
                     >
                       <VideoPlayer
                         src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
-                        poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
+                        poster={activeModuleThumbnail || "/images/placeholders/course-fallback.png"}
                         isPlaying={isPlaying}
                         volume={volume}
                         playbackRate={playbackRate}

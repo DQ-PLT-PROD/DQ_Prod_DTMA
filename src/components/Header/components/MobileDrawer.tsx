@@ -8,7 +8,7 @@ import {
   BRAND_PRIMARY,
 } from "../../../constants/branding";
 import { useAuth } from "@/lib/auth";
-import { COURSE_CATEGORIES } from "../../../constants/navigation";
+
 
 interface MobileDrawerProps {
   onSignIn: () => void;
