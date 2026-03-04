@@ -333,15 +333,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ "data-id": dataId }) => {
             </span>
           </button>
 
-          <button
-            onClick={scrollToCategories}
+          <Link
+            to="/courses?category=economy-4-0"
             className="px-10 py-4 text-white font-semibold text-lg bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-full shadow-lg transform transition-all duration-300 hover:bg-white/20 hover:-translate-y-1 hover:shadow-xl text-center flex items-center justify-center overflow-hidden group tracking-wide min-w-[260px]"
           >
             <span className="relative z-10">Explore Courses</span>
             <span className="absolute inset-0 overflow-hidden rounded-lg">
               <span className="absolute inset-0 bg-white/20 transform scale-0 opacity-0 group-hover:scale-[2.5] group-hover:opacity-100 rounded-full transition-all duration-700 origin-center"></span>
             </span>
-          </button>
+          </Link>
         </div>
       </PageContainer>
     </div>

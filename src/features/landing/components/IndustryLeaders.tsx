@@ -4,9 +4,9 @@ import { PageContainer } from "@/components/layouts/PageContainer";
 
 const IndustryLeaders: React.FC = () => {
   return (
-    <div className="w-full flex flex-col justify-center py-12 sm:py-16">
+    <div className="w-full flex flex-col justify-center py-8 sm:py-12">
       <PageContainer>
-        <div className="text-center max-w-3xl mx-auto space-y-6">
+        <div className="text-center max-w-3xl mx-auto space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold text-[#030C2B] leading-tight">
             Learn from Industry Leaders
           </h2>

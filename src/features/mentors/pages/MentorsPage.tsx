@@ -26,11 +26,11 @@ const MentorsPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Header transparent={false} />
 
-      <main className="pt-24 pb-16">
+      <main className="pt-20 pb-12">
         <PageContainer>
           {/* Header Section */}
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#030C2B] mb-4">
+          <div className="text-center max-w-3xl mx-auto mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-[#030C2B] mb-3">
               Meet Our Expert Contributors
             </h1>
             <p className="text-lg text-gray-600">
@@ -40,7 +40,7 @@ const MentorsPage: React.FC = () => {
           </div>
 
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-8">
+          <div className="max-w-2xl mx-auto mb-6">
             <input
               type="text"
               placeholder="Search by name, expertise, or keywords..."
@@ -51,7 +51,7 @@ const MentorsPage: React.FC = () => {
           </div>
 
           {/* Results Count */}
-          <div className="mb-6">
+          <div className="mb-4">
             <p className="text-sm text-gray-600">
               Showing {filteredMentors.length} of {mentors.length} contributors
             </p>
