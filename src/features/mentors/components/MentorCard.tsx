@@ -20,38 +20,26 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor }) => {
       onClick={handleClick}
     >
       {/* Header with Avatar and Info */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-start gap-4">
-          {/* Avatar */}
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-            {mentor.profileImage ? (
-              <img
-                src={mentor.profileImage}
-                alt={mentor.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="w-8 h-8 text-gray-400" />
-            )}
-          </div>
-
-          {/* Name and Organization */}
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
-              {mentor.name}
-            </h3>
-            <p className="text-sm text-gray-500">{mentor.organization}</p>
-          </div>
+      <div className="flex items-start gap-4 mb-4">
+        {/* Avatar */}
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+          {mentor.profileImage ? (
+            <img
+              src={mentor.profileImage}
+              alt={mentor.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <User className="w-8 h-8 text-gray-400" />
+          )}
         </div>
 
-        {/* Works Count */}
-        <div className="text-right">
-          <p className="text-xs text-gray-400 uppercase tracking-wider">
-            Works
-          </p>
-          <p className="text-2xl font-bold text-gray-900">
-            {mentor.worksCount}
-          </p>
+        {/* Name and Organization */}
+        <div className="flex-1">
+          <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
+            {mentor.name}
+          </h3>
+          <p className="text-sm text-gray-500">{mentor.organization}</p>
         </div>
       </div>
 
