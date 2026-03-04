@@ -45,7 +45,8 @@ const makeComingSoonPlaceholder = (id: string, title: string) => ({
   id,
   slug: id,
   title,
-  shortDescription: "We're crafting new courses for this category. Check back soon!",
+  shortDescription:
+    "We're crafting new courses for this category. Check back soon!",
   categoryName: "",
   _categorySlug: "",
   levelTag: "",
@@ -107,8 +108,14 @@ const CourseCatalogSection: React.FC = () => {
     const filtered = allCourses.filter((c) => c._categorySlug === selectedTab);
     if (filtered.length > 0) return filtered;
     const catTitle =
-      COURSE_CATEGORIES.find((c) => c.slug === selectedTab)?.title || selectedTab;
-    return [makeComingSoonPlaceholder(`cs-${selectedTab}`, `${catTitle} — Coming Soon`)];
+      COURSE_CATEGORIES.find((c) => c.slug === selectedTab)?.title ||
+      selectedTab;
+    return [
+      makeComingSoonPlaceholder(
+        `cs-${selectedTab}`,
+        `${catTitle} — Coming Soon`,
+      ),
+    ];
   })();
 
   return (
@@ -119,8 +126,13 @@ const CourseCatalogSection: React.FC = () => {
             className="text-3xl md:text-4xl font-bold text-gray-900"
             style={{ textShadow: "0 8px 20px rgba(3, 12, 43, 0.1)" }}
           >
-            Explore our course catalog to find the right sense-making course for you
+            Explore Our Courses
           </h2>
+          <p className="text-lg text-gray-600">
+            Find the right course for you from a curated selection of practical,
+            role-based learning paths designed to enhance your skills and drive
+            digital success.
+          </p>
         </div>
 
         {/* Category selector pills */}
@@ -178,6 +190,16 @@ const CourseCatalogSection: React.FC = () => {
               ))}
             </div>
           )}
+        </div>
+
+        {/* CTA Section */}
+        <div className="mt-12 text-center">
+          <a
+            href="/courses"
+            className="inline-flex items-center gap-2 px-8 py-3 bg-[#1839AD] text-white rounded-full hover:bg-[#0d2b8a] transition-colors font-semibold shadow-sm"
+          >
+            Browse Full Course Catalog
+          </a>
         </div>
       </PageContainer>
     </div>

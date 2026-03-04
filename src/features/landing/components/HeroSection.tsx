@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { Send, ArrowRight, Layers } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Send, ArrowRight, Layers } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from '@/lib/auth';
+import { useAuth } from "@/lib/auth";
 import { PageContainer } from "@/components/layouts/PageContainer";
-import { BRAND_BACKDROP_BLUR, BRAND_GRADIENT, BRAND_PRIMARY } from "@/constants/branding";
+import {
+  BRAND_BACKDROP_BLUR,
+  BRAND_GRADIENT,
+  BRAND_PRIMARY,
+} from "@/constants/branding";
 
 // Augment Window for Voiceflow chat widget
 declare global {
@@ -21,13 +25,11 @@ declare global {
 }
 
 interface HeroSectionProps {
-  'data-id'?: string;
+  "data-id"?: string;
 }
 
-const HeroSection: React.FC<HeroSectionProps> = ({
-  'data-id': dataId
-}) => {
-  const [prompt, setPrompt] = useState('');
+const HeroSection: React.FC<HeroSectionProps> = ({ "data-id": dataId }) => {
+  const [prompt, setPrompt] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -39,15 +41,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedProgress = localStorage.getItem('courseProgress');
+    if (typeof window !== "undefined") {
+      const savedProgress = localStorage.getItem("courseProgress");
       setHasStarted(!!savedProgress);
     }
   }, []);
 
   const handleHeroAction = () => {
     if (user) {
-      navigate('/portal');
+      navigate("/portal");
     } else {
       login(); // Direct Microsoft auth
     }
@@ -75,61 +77,69 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
     try {
       // Check if Voiceflow is loaded and ready with proper type checking
-      if (typeof window !== 'undefined' &&
+      if (
+        typeof window !== "undefined" &&
         window.voiceflow?.chat &&
-        typeof window.voiceflow.chat.interact === 'function') {
-
-        console.log('Sending prompt to Voiceflow:', prompt);
+        typeof window.voiceflow.chat.interact === "function"
+      ) {
+        console.log("Sending prompt to Voiceflow:", prompt);
 
         // Send the user's prompt as a text message to Voiceflow
         window.voiceflow.chat.interact({
-          type: 'text',
-          payload: prompt
+          type: "text",
+          payload: prompt,
         });
 
         // Open the chatbot widget after sending the message
         setTimeout(() => {
           // Try different methods to open the chat widget with proper type checking
           if (window.voiceflow?.chat) {
-            if (typeof window.voiceflow.chat.open === 'function') {
+            if (typeof window.voiceflow.chat.open === "function") {
               window.voiceflow.chat.open();
-            } else if (typeof window.voiceflow.chat.show === 'function') {
+            } else if (typeof window.voiceflow.chat.show === "function") {
               window.voiceflow.chat.show();
             } else {
               // Fallback: try to click the launcher button programmatically
-              const launcherButton = document.querySelector('.vfrc-launcher') as HTMLElement;
+              const launcherButton = document.querySelector(
+                ".vfrc-launcher",
+              ) as HTMLElement;
               if (launcherButton) {
                 launcherButton.click();
               }
             }
           }
 
-          setPrompt(''); // Clear the input
+          setPrompt(""); // Clear the input
           setIsProcessing(false);
         }, 300);
-
       } else {
-        console.error('Voiceflow chat not available. Make sure KfBot component is loaded.');
+        console.error(
+          "Voiceflow chat not available. Make sure KfBot component is loaded.",
+        );
 
         // Fallback: Wait a bit and try again
         setTimeout(() => {
-          if (window.voiceflow?.chat &&
-            typeof window.voiceflow.chat.interact === 'function') {
+          if (
+            window.voiceflow?.chat &&
+            typeof window.voiceflow.chat.interact === "function"
+          ) {
             window.voiceflow.chat.interact({
-              type: 'text',
-              payload: prompt
+              type: "text",
+              payload: prompt,
             });
 
             // Try to open the chatbot widget
             setTimeout(() => {
               if (window.voiceflow?.chat) {
-                if (typeof window.voiceflow.chat.open === 'function') {
+                if (typeof window.voiceflow.chat.open === "function") {
                   window.voiceflow.chat.open();
-                } else if (typeof window.voiceflow.chat.show === 'function') {
+                } else if (typeof window.voiceflow.chat.show === "function") {
                   window.voiceflow.chat.show();
                 } else {
                   // Fallback: try to click the launcher button programmatically
-                  const launcherButton = document.querySelector('.vfrc-launcher') as HTMLElement;
+                  const launcherButton = document.querySelector(
+                    ".vfrc-launcher",
+                  ) as HTMLElement;
                   if (launcherButton) {
                     launcherButton.click();
                   }
@@ -137,25 +147,25 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               }
             }, 300);
 
-            setPrompt('');
+            setPrompt("");
           } else {
-            alert('Chat service is not ready. Please try again in a moment.');
+            alert("Chat service is not ready. Please try again in a moment.");
           }
           setIsProcessing(false);
         }, 1000);
       }
     } catch (error) {
-      console.error('Error sending message to Voiceflow:', error);
-      alert('There was an error connecting to the chat. Please try again.');
+      console.error("Error sending message to Voiceflow:", error);
+      alert("There was an error connecting to the chat. Please try again.");
       setIsProcessing(false);
     }
   };
 
   const scrollToMarketplaces = () => {
-    const marketplacesSection = document.getElementById('marketplaces-section');
+    const marketplacesSection = document.getElementById("marketplaces-section");
     if (marketplacesSection) {
       marketplacesSection.scrollIntoView({
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   };
@@ -177,7 +187,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     "What skills do leaders need in the AI working era?",
     "How do I apply the 6XD Framework?",
     "Which DTMA courses help me redesign workflows?",
-    "How can I earn the Digital Qatalyst badge?"
+    "How can I earn the Digital Qatalyst badge?",
   ];
 
   // Handle suggestion pill clicks
@@ -190,48 +200,50 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
     try {
       // Check if Voiceflow is loaded and ready with proper type checking
-      if (typeof window !== 'undefined' &&
+      if (
+        typeof window !== "undefined" &&
         window.voiceflow?.chat &&
-        typeof window.voiceflow.chat.interact === 'function') {
-
-        console.log('Sending suggestion to Voiceflow:', suggestion);
+        typeof window.voiceflow.chat.interact === "function"
+      ) {
+        console.log("Sending suggestion to Voiceflow:", suggestion);
 
         // Send the suggestion as a text message to Voiceflow
         window.voiceflow.chat.interact({
-          type: 'text',
-          payload: suggestion
+          type: "text",
+          payload: suggestion,
         });
 
         // Open the chatbot widget after sending the message
         setTimeout(() => {
           // Try different methods to open the chat widget with proper type checking
           if (window.voiceflow?.chat) {
-            if (typeof window.voiceflow.chat.open === 'function') {
+            if (typeof window.voiceflow.chat.open === "function") {
               window.voiceflow.chat.open();
-            } else if (typeof window.voiceflow.chat.show === 'function') {
+            } else if (typeof window.voiceflow.chat.show === "function") {
               window.voiceflow.chat.show();
             } else {
               // Fallback: try to click the launcher button programmatically
-              const launcherButton = document.querySelector('.vfrc-launcher') as HTMLElement;
+              const launcherButton = document.querySelector(
+                ".vfrc-launcher",
+              ) as HTMLElement;
               if (launcherButton) {
                 launcherButton.click();
               }
             }
           }
 
-          setPrompt(''); // Clear the input
+          setPrompt(""); // Clear the input
           setIsProcessing(false);
         }, 300);
-
       } else {
-        console.error('Voiceflow chat not available for suggestion.');
+        console.error("Voiceflow chat not available for suggestion.");
         setIsProcessing(false);
-        alert('Chat service is not ready. Please try again in a moment.');
+        alert("Chat service is not ready. Please try again in a moment.");
       }
     } catch (error) {
-      console.error('Error sending suggestion to Voiceflow:', error);
+      console.error("Error sending suggestion to Voiceflow:", error);
       setIsProcessing(false);
-      alert('There was an error connecting to the chat. Please try again.');
+      alert("There was an error connecting to the chat. Please try again.");
     }
   };
 
@@ -240,10 +252,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       className="relative w-full overflow-hidden"
       style={{
         backgroundImage: `${BRAND_GRADIENT}, url('/images/landing/background-image.png')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundBlendMode: 'overlay',
-        height: '100vh',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundBlendMode: "overlay",
+        height: "100vh",
         backdropFilter: BRAND_BACKDROP_BLUR,
         WebkitBackdropFilter: BRAND_BACKDROP_BLUR,
       }}
@@ -258,10 +270,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           className="absolute inset-0 scale-105 blur-sm"
           style={{
             backgroundImage: "url('/images/landing/background-image.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: 'blur(3px)',
-            transform: 'scale(1.05)',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(3px)",
+            transform: "scale(1.05)",
           }}
         ></div>
       </div>
@@ -294,30 +306,45 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       <PageContainer className="h-full py-16 md:py-24 flex flex-col justify-center items-center gap-8 relative z-10 text-center">
         <div className="space-y-5 w-full flex flex-col items-center text-center">
           <h1 className="text-[48px] md:text-[56px] leading-[1.2] font-bold text-white tracking-[-0.5px] max-w-3xl mx-auto">
-            Gain clarity in a noisy Digital World
+            Master the Skills to Thrive in the Digital Era
           </h1>
           <p className="text-[18px] leading-[1.5] text-white/80 font-semibold max-w-2xl mx-auto">
-            Develop the structured understanding, practical tools, and strategic clarity required to drive digital transformation — guided by the D6 Framework crafted from our 15 years of leading successful digital initiatives.
+            Acquire the skills and competencies needed to excel in the evolving
+            digital landscape and drive successful transformation.
           </p>
         </div>
 
         {/* AI Prompt Interface removed as requested */}
 
-        <button
-          onClick={handleHeroAction}
-          className="px-10 py-4 text-white font-semibold text-lg bg-primary rounded-full shadow-lg transform transition-all duration-300 hover:bg-primary-dark hover:-translate-y-1 hover:shadow-xl text-center flex items-center justify-center overflow-hidden group tracking-wide min-w-[260px]"
-        >
-          <span className="relative z-10">
-            {user ? (hasStarted ? "Resume Course" : "Start Course") : "Get Started"}
-          </span>
-          <span className="absolute inset-0 overflow-hidden rounded-lg">
-            <span className="absolute inset-0 bg-white/20 transform scale-0 opacity-0 group-hover:scale-[2.5] group-hover:opacity-100 rounded-full transition-all duration-700 origin-center"></span>
-          </span>
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <button
+            onClick={handleHeroAction}
+            className="px-10 py-4 text-white font-semibold text-lg bg-primary rounded-full shadow-lg transform transition-all duration-300 hover:bg-primary-dark hover:-translate-y-1 hover:shadow-xl text-center flex items-center justify-center overflow-hidden group tracking-wide min-w-[260px]"
+          >
+            <span className="relative z-10">
+              {user
+                ? hasStarted
+                  ? "Resume Course"
+                  : "Start Course"
+                : "Get Started"}
+            </span>
+            <span className="absolute inset-0 overflow-hidden rounded-lg">
+              <span className="absolute inset-0 bg-white/20 transform scale-0 opacity-0 group-hover:scale-[2.5] group-hover:opacity-100 rounded-full transition-all duration-700 origin-center"></span>
+            </span>
+          </button>
 
+          <button
+            onClick={scrollToCategories}
+            className="px-10 py-4 text-white font-semibold text-lg bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-full shadow-lg transform transition-all duration-300 hover:bg-white/20 hover:-translate-y-1 hover:shadow-xl text-center flex items-center justify-center overflow-hidden group tracking-wide min-w-[260px]"
+          >
+            <span className="relative z-10">Explore Courses</span>
+            <span className="absolute inset-0 overflow-hidden rounded-lg">
+              <span className="absolute inset-0 bg-white/20 transform scale-0 opacity-0 group-hover:scale-[2.5] group-hover:opacity-100 rounded-full transition-all duration-700 origin-center"></span>
+            </span>
+          </button>
+        </div>
       </PageContainer>
-
-    </div >
+    </div>
   );
 };
 

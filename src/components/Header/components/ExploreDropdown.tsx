@@ -18,7 +18,6 @@ import { COURSE_CATEGORIES } from "../../../constants/navigation";
 
 // Note: I'm deleting the local big array and the interface.
 
-
 // TODO: Add more categories or fetch dynamically
 interface ExploreDropdownProps {
   isCompact?: boolean;
@@ -39,7 +38,10 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
         setFocusedIndex(-1);
       }
@@ -51,7 +53,11 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
   // Handle keyboard navigation
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (!isOpen) {
-      if (event.key === "Enter" || event.key === " " || event.key === "ArrowDown") {
+      if (
+        event.key === "Enter" ||
+        event.key === " " ||
+        event.key === "ArrowDown"
+      ) {
         event.preventDefault();
         setIsOpen(true);
         setFocusedIndex(0);
@@ -71,7 +77,9 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
         break;
       case "ArrowUp":
         event.preventDefault();
-        setFocusedIndex((prev) => (prev <= 0 ? COURSE_CATEGORIES.length - 1 : prev - 1));
+        setFocusedIndex((prev) =>
+          prev <= 0 ? COURSE_CATEGORIES.length - 1 : prev - 1,
+        );
         break;
       case "Enter":
       case " ":
@@ -109,9 +117,9 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
         onKeyDown={handleKeyDown}
         aria-expanded={isOpen}
         aria-haspopup="true"
-        aria-label="Explore courses menu"
+        aria-label="Courses menu"
       >
-        <span>Explore Courses</span>
+        <span>Courses</span>
         <ChevronDownIcon
           size={16}
           className={`ml-1 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
@@ -139,12 +147,17 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
               return (
                 <a
                   key={category.slug}
-                  ref={(el) => { itemRefs.current[index] = el; }}
+                  ref={(el) => {
+                    itemRefs.current[index] = el;
+                  }}
                   href={category.href}
                   target={external ? "_blank" : undefined}
                   rel={external ? "noopener noreferrer" : undefined}
-                  className={`flex items-start px-4 py-3 text-left hover:bg-[color:var(--md-surface-variant)] focus:bg-[color:var(--md-surface-variant)] focus:outline-none transition-colors duration-150 ${focusedIndex === index ? "bg-[color:var(--md-surface-variant)]" : ""
-                    }`}
+                  className={`flex items-start px-4 py-3 text-left hover:bg-[color:var(--md-surface-variant)] focus:bg-[color:var(--md-surface-variant)] focus:outline-none transition-colors duration-150 ${
+                    focusedIndex === index
+                      ? "bg-[color:var(--md-surface-variant)]"
+                      : ""
+                  }`}
                   role="menuitem"
                   tabIndex={-1}
                   onClick={(e) => {
@@ -157,7 +170,10 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
                   onFocus={() => setFocusedIndex(index)}
                 >
                   <div className="flex-shrink-0 mt-0.5">
-                    <Icon size={20} className="text-[color:var(--md-primary)]" />
+                    <Icon
+                      size={20}
+                      className="text-[color:var(--md-primary)]"
+                    />
                   </div>
                   <div className="ml-3 flex-1 min-w-0">
                     <p className="text-sm font-medium text-[color:var(--md-on-surface)]">
@@ -169,7 +185,9 @@ export function ExploreDropdown({ isCompact = false }: ExploreDropdownProps) {
                       </p>
                     )}
                   </div>
-                  <span className="text-base text-[color:var(--md-on-surface-variant)]">❯</span>
+                  <span className="text-base text-[color:var(--md-on-surface-variant)]">
+                    ❯
+                  </span>
                 </a>
               );
             })}

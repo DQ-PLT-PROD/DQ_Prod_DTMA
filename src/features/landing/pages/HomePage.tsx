@@ -7,6 +7,7 @@ import SixPerspectivesSection from "../components/SixPerspectivesSection";
 import CourseCatalogSection from "../components/CourseCatalogSection";
 import SixXDDeepDiveSection from "../components/SixXDDeepDiveSection";
 import HowYouLearn from "../components/HowYouLearn";
+import IndustryLeaders from "../components/IndustryLeaders";
 import CallToAction from "../components/CallToAction";
 import { AIWidgetStandalone } from "@/lib/ai-widget";
 
@@ -20,7 +21,8 @@ import { AIWidgetStandalone } from "@/lib/ai-widget";
  * scroll-mt-16          — 64px snap offset so content clears the fixed header
  *                         (matches --header-h: 64px defined in index.css)
  */
-const SECTION = "min-h-screen w-full flex flex-col justify-center snap-start scroll-mt-16";
+const SECTION =
+  "min-h-screen w-full flex flex-col justify-center snap-start scroll-mt-16";
 
 const HomePage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -56,29 +58,29 @@ const HomePage: React.FC = () => {
           <ProofAndTrust />
         </section>
 
-        {/* ── Section 4 — The 6X Perspectives of Digital ───────────────────── */}
-        <section className={`${SECTION} bg-gray-50`}>
-          <SixPerspectivesSection />
-        </section>
-
-        {/* ── Section 5 — Course Catalog ──────────────────────────────────────
+        {/* ── Section 3 — Course Catalog ──────────────────────────────────────
             Catalogue content can exceed one viewport height on smaller screens;
             min-h-screen ensures it never looks short on large displays.         */}
         <section className={`${SECTION} bg-white`}>
           <CourseCatalogSection />
         </section>
 
-        {/* ── Section 6 — Dive deep into 6X Perspectives (CTA bridge) ─────── */}
+        {/* ── Section 4 — The 6X Perspectives of Digital ───────────────────── */}
         <section className={`${SECTION} bg-gray-50`}>
-          <SixXDDeepDiveSection />
+          <SixPerspectivesSection />
         </section>
 
-        {/* ── Section 7 — How Learning Works ───────────────────────────────── */}
+        {/* ── Section 5 — How Learning Works ───────────────────────────────── */}
         <section className={`${SECTION} bg-[#f7f9fc]`}>
           <HowYouLearn />
         </section>
 
-        {/* ── Section 8 — CTA + Footer ──────────────────────────────────────── */}
+        {/* ── Section 6 — Learn from Industry Leaders ──────────────────────── */}
+        <section className={`${SECTION} bg-gray-50`}>
+          <IndustryLeaders />
+        </section>
+
+        {/* ── Section 7 — CTA + Footer ──────────────────────────────────────── */}
         <section className="min-h-screen w-full flex flex-col justify-between snap-start scroll-mt-16 bg-white relative">
           <div className="flex-grow flex flex-col justify-center">
             <CallToAction />

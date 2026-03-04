@@ -5,39 +5,39 @@ import { PageContainer } from "@/components/layouts/PageContainer";
 const perspectives = [
   {
     number: 1,
-    title: "Digital Economy (DE)",
+    title: "Digital Economy",
     description:
-      "Navigating the opportunities and challenges in the new economy. Understand how digital forces are reshaping markets, value creation, and competitive dynamics.",
+      "Understand how to leverage emerging technologies to drive growth in the digital economy.",
   },
   {
     number: 2,
-    title: "Digital Cognitive Organization (DCO)",
+    title: "Digital Cognitive Organizations",
     description:
-      "Where organizations are headed in the age of digital transformation. Explore how cognition, culture, and structure evolve in digitally native enterprises.",
+      "Master the design and management of intelligent organizations using AI and automation.",
   },
   {
     number: 3,
     title: "Digital Business Platform (DBP)",
     description:
-      "What legacy value or orchestration engine powers the future? Decode the platform models and ecosystems that underpin modern digital businesses.",
+      "Decode the platform models and ecosystems that underpin modern digital businesses.",
   },
   {
     number: 4,
-    title: "Digital Transformation (DT2.0)",
+    title: "Digital Transformation",
     description:
-      "How to design and deploy next-generation transformation frameworks. Move beyond first-wave digitization toward continuous, systemic transformation.",
+      "Gain the skills needed to lead and implement digital transformation strategies within organizations.",
   },
   {
     number: 5,
-    title: "Digital Worker & Workspace (DW/WS)",
+    title: "Digital Workers & Workspaces",
     description:
-      "Who are the orchestrators of the new digital workspace? Equip yourself for the hybrid, AI-augmented working environment of today and tomorrow.",
+      "Build and manage a digitally empowered workforce with flexible, collaborative work environments.",
   },
   {
     number: 6,
-    title: "Digital Accelerators",
+    title: "Digital Accelerators & Tools",
     description:
-      "When will we get there? Exploring tools to accelerate transformation. Apply the emerging technologies and methodologies that compress the transformation timeline.",
+      "Learn the tools and accelerators that make transformation processes faster and more efficient.",
   },
 ];
 
@@ -46,30 +46,16 @@ const SixPerspectivesSection: React.FC = () => {
     <div className="w-full flex flex-col justify-center py-16 sm:py-20">
       <PageContainer>
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <p className="text-xs font-semibold tracking-widest text-[#1839AD] uppercase">
-            The D6 Framework
-          </p>
           <h2
             className="text-3xl md:text-4xl font-bold text-gray-900"
             style={{ textShadow: "0 8px 20px rgba(3, 12, 43, 0.1)" }}
           >
-            The 6X Perspectives of Digital
+            Explore Digital Transformation with 6XD
           </h2>
           <p className="text-lg text-gray-600">
-            Make sense of digital in a structured manner, from 6 critical digital angles defined by Digital Qatalyst through 15+ years of experience orchestrating digital transformation
+            Built on the 6XD framework, our courses equip you with the skills to
+            lead and succeed in digital transformation.
           </p>
-        </div>
-
-        <div className="flex justify-center mt-5">
-          <a
-            href="https://digitalqatalyst.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 py-2 text-sm font-medium text-[#1839AD] hover:text-[#0d2b8a] hover:underline transition-colors duration-150"
-          >
-            Learn more about Digital Qatalyst
-            <ArrowRight size={14} className="flex-shrink-0" />
-          </a>
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -91,6 +77,28 @@ const SixPerspectivesSection: React.FC = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
+          <a
+            href="https://digitalqatalyst.com/insights"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-8 py-3 bg-[#1839AD] text-white rounded-full hover:bg-[#0d2b8a] transition-colors font-semibold inline-flex items-center gap-2 shadow-sm min-w-[200px] justify-center"
+          >
+            Explore Insights
+            <ArrowRight className="w-5 h-5" />
+          </a>
+          <a
+            href="https://digitalqatalyst.com/6xd-book"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-8 py-3 bg-white text-[#1839AD] border-2 border-[#1839AD] rounded-full hover:bg-blue-50 transition-colors font-semibold inline-flex items-center gap-2 min-w-[200px] justify-center"
+          >
+            Read 6XD Book
+            <ArrowRight className="w-5 h-5" />
+          </a>
         </div>
       </PageContainer>
     </div>
