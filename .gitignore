@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 api-knowledgehub-server
 magic_patterns_media_marketplace
+DQ-Prod-DTMA-API
 .env
 dist
 dist-ssr
