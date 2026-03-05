@@ -6,6 +6,8 @@ interface ProfileTabConfig {
   label: string;
   completionPct?: number;
   missingRequiredCount?: number;
+  disabled?: boolean;
+  disabledLabel?: string;
 }
 
 interface ProfileTabsProps {
@@ -20,19 +22,32 @@ const ProfileTabs: React.FC<ProfileTabsProps> = ({ tabs, activeTab, onTabChange 
       <div className="flex w-full gap-2 border-b border-gray-200 pb-2">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTab;
+          const isDisabled = Boolean(tab.disabled);
+          const stateClassName = isDisabled
+            ? "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400"
+            : isActive
+              ? "border-[#1839AD] bg-[#1839AD]/10 text-[#1839AD]"
+              : "border-gray-200 text-gray-600 hover:border-[#1839AD]/40";
           return (
             <button
               key={tab.id}
               type="button"
-              onClick={() => onTabChange(tab.id)}
-              className={`shrink-0 rounded-lg border px-3 py-2 text-left transition md:flex-1 ${
-                isActive
-                  ? "border-[#1839AD] bg-[#1839AD]/10 text-[#1839AD]"
-                  : "border-gray-200 text-gray-600 hover:border-[#1839AD]/40"
-              }`}
+              onClick={() => {
+                if (!isDisabled) {
+                  onTabChange(tab.id);
+                }
+              }}
+              disabled={isDisabled}
+              className={`shrink-0 rounded-lg border px-3 py-2 text-left transition md:flex-1 ${stateClassName}`}
             >
               <div className="text-sm font-semibold">{tab.label}</div>
-              {typeof tab.completionPct === "number" && (
+              {isDisabled ? (
+                <div className="mt-1 flex items-center gap-2 text-xs">
+                  <span className="rounded-full bg-gray-300 px-2 py-0.5 text-gray-600">
+                    {tab.disabledLabel || "Coming soon"}
+                  </span>
+                </div>
+              ) : typeof tab.completionPct === "number" ? (
                 <div className="mt-1 flex items-center gap-2 text-xs">
                   <span>{tab.completionPct}% complete</span>
                   {tab.missingRequiredCount ? (
@@ -41,7 +56,7 @@ const ProfileTabs: React.FC<ProfileTabsProps> = ({ tabs, activeTab, onTabChange 
                     </span>
                   ) : null}
                 </div>
-              )}
+              ) : null}
             </button>
           );
         })}

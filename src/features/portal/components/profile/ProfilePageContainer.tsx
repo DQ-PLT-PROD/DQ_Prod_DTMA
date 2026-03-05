@@ -74,6 +74,7 @@ const ProfilePageContainer: React.FC = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [savingTab, setSavingTab] = useState<EditableTabId | null>(null);
+  const disabledTabs = useMemo<ProfileTabId[]>(() => ["identity", "goals"], []);
 
   const userKey = databaseUser?.azure_user_id ?? null;
   const loadedKeyRef = useRef<string | null>(null);
@@ -238,12 +239,16 @@ const ProfilePageContainer: React.FC = () => {
       label: "Learning Identity",
       completionPct: completion.tabs.identity.completionPct,
       missingRequiredCount: completion.tabs.identity.missingRequiredFields.length,
+      disabled: true,
+      disabledLabel: "Coming soon",
     },
     {
       id: "goals" as const,
       label: "Goals & Interests",
       completionPct: completion.tabs.goals.completionPct,
       missingRequiredCount: completion.tabs.goals.missingRequiredFields.length,
+      disabled: true,
+      disabledLabel: "Coming soon",
     },
   ];
 
@@ -274,11 +279,23 @@ const ProfilePageContainer: React.FC = () => {
 
   const jumpToSection = (sectionId: ProfileSectionId) => {
     const section = completion.sections[sectionId];
+    if (disabledTabs.includes(section.tabId)) {
+      showToast("This tab is coming soon.", "info");
+      return;
+    }
     setActiveTab(section.tabId);
     setOpenSections((previous) => ({
       ...previous,
       [section.tabId]: sectionId,
     }));
+  };
+
+  const handleTabChange = (tabId: ProfileTabId) => {
+    if (disabledTabs.includes(tabId)) {
+      showToast("This tab is coming soon.", "info");
+      return;
+    }
+    setActiveTab(tabId);
   };
   const buildTabPayload = (tabId: EditableTabId): UpsertProfileInput => {
     if (tabId === "personal") {
@@ -487,6 +504,8 @@ const ProfilePageContainer: React.FC = () => {
         isComplete={completion.sections.location_time.isComplete}
         isOpen={openSections.personal === "location_time"}
         onToggle={() => toggleSection("personal", "location_time")}
+        disabled
+        disabledLabel="Coming soon"
       >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
@@ -730,7 +749,7 @@ const ProfilePageContainer: React.FC = () => {
                 <p className="text-sm text-gray-500">Refreshing profile data...</p>
               ) : null}
 
-              <ProfileTabs tabs={tabItems} activeTab={activeTab} onTabChange={setActiveTab} />
+              <ProfileTabs tabs={tabItems} activeTab={activeTab} onTabChange={handleTabChange} />
 
               {renderActiveTab()}
 
