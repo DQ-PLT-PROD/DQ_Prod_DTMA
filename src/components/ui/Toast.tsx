@@ -3,6 +3,7 @@
  * Simple success/error toast notifications
  */
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CheckCircle, X, AlertCircle } from 'lucide-react';
 
 export interface ToastProps {
@@ -37,15 +38,16 @@ export const Toast: React.FC<ToastProps> = ({
   if (!isVisible && !isAnimating) return null;
 
   const getToastStyles = () => {
-    const baseStyles = "fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-[var(--md-radius-md)] shadow-md-2 border transition-all duration-300 max-w-md bg-[color:var(--md-surface)]";
+    const baseStyles = "fixed top-4 right-4 flex items-center gap-3 px-4 py-3 rounded-[var(--md-radius-md)] shadow-md-2 border transition-all duration-300 max-w-md bg-[color:var(--md-surface)]";
+    const zIndex = "!z-[99999]"; // Force highest z-index
 
     if (type === 'success') {
-      return `${baseStyles} border-green-200 text-green-800`;
+      return `${baseStyles} ${zIndex} border-green-200 text-green-800`;
     }
     if (type === 'error') {
-      return `${baseStyles} border-red-200 text-red-800`;
+      return `${baseStyles} ${zIndex} border-red-200 text-red-800`;
     }
-    return `${baseStyles} border-[color:var(--md-outline-variant)] text-[color:var(--md-on-surface-variant)]`;
+    return `${baseStyles} ${zIndex} border-[color:var(--md-outline-variant)] text-[color:var(--md-on-surface-variant)]`;
   };
 
   const getIcon = () => {
@@ -54,11 +56,16 @@ export const Toast: React.FC<ToastProps> = ({
     return <AlertCircle size={20} className="text-[color:var(--md-primary)]" />;
   };
 
-  return (
+  const toastElement = (
     <div 
       className={`${getToastStyles()} ${
         isAnimating ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
       }`}
+      style={{ 
+        zIndex: 999999, 
+        position: 'fixed',
+        isolation: 'isolate'
+      }}
     >
       {getIcon()}
       <span className="flex-1 font-medium">{message}</span>
@@ -73,6 +80,9 @@ export const Toast: React.FC<ToastProps> = ({
       </button>
     </div>
   );
+
+  // Render using portal to ensure it's at document root level
+  return createPortal(toastElement, document.body);
 };
 
 /**

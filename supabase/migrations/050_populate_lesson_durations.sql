@@ -4,26 +4,20 @@
 -- Update lessons with realistic durations based on lesson type
 UPDATE lessons
 SET estimated_duration_minutes = CASE
-  -- Intro lessons: 5-10 minutes
+  -- Intro lessons: 5 minutes
   WHEN type = 'intro' THEN 5
   
-  -- Outro lessons: 5-10 minutes
+  -- Outro lessons: 5 minutes
   WHEN type = 'outro' THEN 5
   
-  -- Quiz lessons: 10-15 minutes
-  WHEN type = 'quiz' THEN 10
+  -- Quiz lessons: 5 minutes
+  WHEN type = 'quiz' THEN 5
   
-  -- Standard lessons: 20-45 minutes (varies by content)
-  WHEN type = 'standard' THEN 
-    CASE 
-      -- Shorter lessons (based on order_index pattern)
-      WHEN order_index % 3 = 0 THEN 25
-      WHEN order_index % 3 = 1 THEN 35
-      ELSE 30
-    END
+  -- Standard lessons: 5 minutes (actual video duration)
+  WHEN type = 'standard' THEN 5
   
   -- Default fallback
-  ELSE 20
+  ELSE 5
 END
 WHERE estimated_duration_minutes = 0 OR estimated_duration_minutes IS NULL;
 
