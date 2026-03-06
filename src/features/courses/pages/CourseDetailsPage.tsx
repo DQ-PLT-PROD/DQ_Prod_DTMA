@@ -70,6 +70,8 @@ const CourseDetailsPage: React.FC = () => {
   }, []);
 
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const detailItemName = "Module";
+  const detailItemNamePlural = "Modules";
 
   // Auto-hide scroll indicator
   useEffect(() => {
@@ -93,11 +95,11 @@ const CourseDetailsPage: React.FC = () => {
   const seeAllHref = useMemo(() => {
     const params = new URLSearchParams();
     const courseItem: any = item || {};
-    if (courseItem?.categorySlug)
+    if (courseItem?.containerCourseSlug) {
+      params.set("course", courseItem.containerCourseSlug);
+    } else if (courseItem?.categorySlug) {
       params.set("category", courseItem.categorySlug);
-    if (courseItem?.audienceLevel)
-      params.set("audience", courseItem.audienceLevel);
-    if (courseItem?.levelTag) params.set("level", courseItem.levelTag);
+    }
     const qs = params.toString();
     return qs ? `/courses?${qs}` : "/courses";
   }, [item]);
@@ -298,17 +300,17 @@ const CourseDetailsPage: React.FC = () => {
         <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[300px] flex-grow">
           <div className="text-center">
             <h2 className="text-xl font-medium text-gray-900 mb-2">
-              {config.itemName} Not Found
+              {detailItemName} Not Found
             </h2>
             <p className="text-gray-500 mb-4">
-              The {config.itemName.toLowerCase()} you're looking for doesn't
+              The {detailItemName.toLowerCase()} you're looking for doesn't
               exist or has been removed.
             </p>
             <Link
               to={config.route}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-block"
             >
-              Back to {config.itemNamePlural}
+              Back to {detailItemNamePlural}
             </Link>
           </div>
         </div>
@@ -379,7 +381,7 @@ const CourseDetailsPage: React.FC = () => {
             <div>
               <p className="text-gray-600 text-lg mb-6">
                 Additional information about this{" "}
-                {config.itemName.toLowerCase()}.
+                {detailItemName.toLowerCase()}.
               </p>
               {tab.renderContent(item)}
             </div>
@@ -388,7 +390,7 @@ const CourseDetailsPage: React.FC = () => {
         return (
           <div>
             <p className="text-gray-600 text-lg mb-6">
-              Additional information about this {config.itemName.toLowerCase()}.
+              Additional information about this {detailItemName.toLowerCase()}.
             </p>
             <p className="text-gray-500">Content for {tab.label} tab</p>
           </div>
@@ -574,7 +576,7 @@ const CourseDetailsPage: React.FC = () => {
                 <button
                   onClick={handleShare}
                   className="p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl text-white hover:bg-white/20 transition-colors"
-                  aria-label="Share Course"
+                  aria-label="Share Module"
                 >
                   <Share2Icon size={20} />
                 </button>
@@ -652,13 +654,13 @@ const CourseDetailsPage: React.FC = () => {
           <PageContainer>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
-                Related {config.itemNamePlural}
+                Related {detailItemNamePlural}
               </h2>
               <Link
                 to={seeAllHref}
                 className="text-blue-600 font-medium hover:text-blue-800 flex items-center"
               >
-                See All {config.itemNamePlural}
+                See All {detailItemNamePlural}
                 <ChevronRightIcon size={16} className="ml-1" />
               </Link>
             </div>

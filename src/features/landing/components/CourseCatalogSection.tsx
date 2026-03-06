@@ -1,37 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { Star } from "lucide-react";
+import { Star, BookOpenIcon } from "lucide-react";
 import { CourseCard } from "@/features/courses/components/CourseCard";
 import { CourseCardSkeleton } from "@/components/SkeletonLoader";
-import { fetchCourses } from "@/services/courseService";
-import { COURSE_CATEGORIES } from "@/constants/navigation";
+import { fetchCourses, fetchPublishedCoursesForNav, CourseNavItem } from "@/services/courseService";
 import { PageContainer } from "@/components/layouts/PageContainer";
 
 const POPULAR_ID = "popular";
 
 /**
  * Map a marketplace-format course (from fetchCourses) to CourseCard props.
- *
- * fetchCourses returns toMarketplaceItem() shape, NOT the raw Course type:
- *   description  = shortDescription
- *   categorySlug = categoryId (DB slug)
- *   heroImageUrl = hero image
- *   duration     = pre-formatted string (empty for isComingSoon)
- *   isComingSoon = re-attached by the service
- *
- * We also preserve categorySlug as a non-CourseCard extra field so we can
- * filter by it without keeping a separate raw copy.
  */
 const toCourseCardProps = (course: any) => ({
   id: course.id,
   slug: course.slug,
   title: course.title,
   shortDescription: course.description || "",
-  categoryName: course.categoryName || "",
-  // preserved for tab filtering — not passed to CourseCard
+  categoryName: course.categoryName || course.containerCourseTitle || "",
   _categorySlug: course.categorySlug || "",
+  _courseSlug: course.courseSlug || course.containerCourseSlug || "",
   levelTag: course.levelTag || "",
   audienceLevel: course.audienceLevel || "",
-  // duration is pre-formatted by formatDuration(); override to "Coming Soon" when applicable
   duration: course.isComingSoon ? "Coming Soon" : course.duration || "55 mins",
   lessonCount: course.lessonCount,
   thumbnailUrl: course.heroImageUrl,
@@ -49,6 +37,7 @@ const makeComingSoonPlaceholder = (id: string, title: string) => ({
     "We're crafting new courses for this category. Check back soon!",
   categoryName: "",
   _categorySlug: "",
+  _courseSlug: "",
   levelTag: "",
   audienceLevel: "",
   duration: "Coming Soon",
@@ -69,8 +58,10 @@ const POPULAR_FALLBACK = [
 const CourseCatalogSection: React.FC = () => {
   /** Mapped featured courses — source for the Popular tab. */
   const [featuredCourses, setFeaturedCourses] = useState<any[]>([]);
-  /** All mapped courses — filtered per-category tab. */
+  /** All mapped courses — filtered per-course tab. */
   const [allCourses, setAllCourses] = useState<any[]>([]);
+  /** Published courses for nav pills (courses = categories). */
+  const [navCourses, setNavCourses] = useState<CourseNavItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState(POPULAR_ID);
 
@@ -78,22 +69,19 @@ const CourseCatalogSection: React.FC = () => {
     const loadCourses = async () => {
       try {
         setLoading(true);
-        /**
-         * Two parallel calls — same data sources the page previously used:
-         *   - featured: same query as the old Featured Courses (Home.tsx)
-         *   - all:      full catalog for per-category filtering
-         * Both are served from the courseService in-memory cache after first load.
-         */
-        const [featuredRaw, allRaw] = await Promise.all([
+        const [featuredRaw, allRaw, navItems] = await Promise.all([
           fetchCourses({ featured: true, excludeHeavyFields: true }),
           fetchCourses({ excludeHeavyFields: true }),
+          fetchPublishedCoursesForNav(),
         ]);
         setFeaturedCourses(featuredRaw.map(toCourseCardProps));
         setAllCourses(allRaw.map(toCourseCardProps));
+        setNavCourses(navItems);
       } catch (err) {
         console.error("Error loading courses for catalog:", err);
         setFeaturedCourses([]);
         setAllCourses([]);
+        setNavCourses([]);
       } finally {
         setLoading(false);
       }
@@ -105,17 +93,12 @@ const CourseCatalogSection: React.FC = () => {
     if (selectedTab === POPULAR_ID) {
       return featuredCourses.length > 0 ? featuredCourses : POPULAR_FALLBACK;
     }
-    const filtered = allCourses.filter((c) => c._categorySlug === selectedTab);
+    // Filter to show the modules for the selected course container.
+    const filtered = allCourses.filter((c) => c._courseSlug === selectedTab);
     if (filtered.length > 0) return filtered;
-    const catTitle =
-      COURSE_CATEGORIES.find((c) => c.slug === selectedTab)?.title ||
-      selectedTab;
-    return [
-      makeComingSoonPlaceholder(
-        `cs-${selectedTab}`,
-        `${catTitle} — Coming Soon`,
-      ),
-    ];
+    const courseTitle =
+      navCourses.find((c) => c.slug === selectedTab)?.title || selectedTab;
+    return [makeComingSoonPlaceholder(`cs-${selectedTab}`, `${courseTitle} — Coming Soon`)];
   })();
 
   return (
@@ -135,7 +118,7 @@ const CourseCatalogSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Category selector pills */}
+        {/* Course selector pills (courses = categories) */}
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
           <button
             onClick={() => setSelectedTab(POPULAR_ID)}
@@ -150,13 +133,12 @@ const CourseCatalogSection: React.FC = () => {
             Popular
           </button>
 
-          {COURSE_CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
-            const isActive = selectedTab === cat.slug;
+          {navCourses.map((course) => {
+            const isActive = selectedTab === course.slug;
             return (
               <button
-                key={cat.slug}
-                onClick={() => setSelectedTab(cat.slug)}
+                key={course.slug}
+                onClick={() => setSelectedTab(course.slug)}
                 className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold border transition-all duration-200 ${
                   isActive
                     ? "bg-[#1839AD] border-[#1839AD] text-white shadow-md"
@@ -164,8 +146,8 @@ const CourseCatalogSection: React.FC = () => {
                 }`}
                 aria-pressed={isActive}
               >
-                <Icon size={15} className="flex-shrink-0" />
-                {cat.title}
+                <BookOpenIcon size={15} className="flex-shrink-0" />
+                {course.title}
               </button>
             );
           })}

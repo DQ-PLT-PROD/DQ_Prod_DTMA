@@ -43,9 +43,22 @@ export interface Course {
   industry?: string;
 }
 
+export interface Module {
+  id: string;
+  slug: string;
+  courseSlug: string;
+  title: string;
+  description?: string;
+  thumbnailUrl?: string;
+  orderIndex: number;
+  estimatedDurationMinutes?: number;
+  status?: "draft" | "published" | "archived";
+}
+
 export interface Lesson {
   id: string;
   courseId: string;
+  moduleId?: string;
   title: string;
   type: LessonType;
   orderIndex: number;
@@ -53,6 +66,7 @@ export interface Lesson {
   videoUrl?: string;
   resourceUrl?: string;
   content?: string;
+  isPreview?: boolean;
 }
 
 export interface QuizQuestion {
@@ -97,6 +111,7 @@ export interface CourseCatalogFilters {
   topics?: string[];
   levelTags?: string[];
   industries?: string[];
+  courseSlugs?: string[];
   featured?: boolean;
   excludeHeavyFields?: boolean;
 }

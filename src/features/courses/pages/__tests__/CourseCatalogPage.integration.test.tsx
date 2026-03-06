@@ -66,13 +66,17 @@ vi.mock("../../services/filterService", () => ({
   fetchIndustryTree: vi.fn(() => Promise.resolve([])),
 }));
 
-vi.mock("../../../../components/Header", () => ({
-  Header: () => <div>Header</div>,
+vi.mock("@/lib/auth", () => ({
   useAuth: () => ({
     user: null,
     databaseUser: null,
     login: vi.fn(),
   }),
+  AuthProvider: ({ children }: { children: any }) => children,
+}));
+
+vi.mock("../../../../components/Header", () => ({
+  Header: () => <div>Header</div>,
 }));
 
 vi.mock("../../../../components/Footer", () => ({
@@ -105,7 +109,7 @@ describe("CourseCatalogPage Integration (D2)", () => {
   it("should parse filters from URL on mount", async () => {
     render(
       <MemoryRouter
-        initialEntries={["/courses?category=leadership&level=beginner"]}
+        initialEntries={["/courses?category=leadership&levelTag=beginner&course=leadership"]}
       >
         <CourseCatalogPage />
       </MemoryRouter>
@@ -114,13 +118,13 @@ describe("CourseCatalogPage Integration (D2)", () => {
     // Wait for page to load
     await waitFor(
       () => {
-        expect(screen.getByText(/Showing/)).toBeInTheDocument();
+        expect(screen.getByText("Test Course 1")).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
-    // Filters should be applied (check for active chips or filtered results)
-    expect(screen.getByText(/Courses/)).toBeInTheDocument();
+    expect(screen.getAllByText("Leadership").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Beginner").length).toBeGreaterThan(0);
   });
 
   it("should show empty state when no courses match filters", async () => {

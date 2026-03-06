@@ -1,24 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDownIcon } from "lucide-react";
-import {
-  BuildingIcon,
-  CreditCardIcon,
-  UsersIcon,
-  GraduationCapIcon,
-  TrendingUpIcon,
-  LucideProps,
-} from "lucide-react";
-
 import { COURSE_CATEGORIES } from "../../../constants/navigation";
-
-// Local interface REMOVED in favor of shared type if needed, or we just rely on the constant's inferred type.
-// But actually, the file uses `interface CourseCategory` locally.
-// I will import the values and remove the local definition.
-
-// Note: I'm deleting the local big array and the interface.
-
-// TODO: Add more categories or fetch dynamically
 interface ExploreDropdownProps {
   isCompact?: boolean;
 }

@@ -130,6 +130,11 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
         setFilters(initialFilters);
     }, [filterConfig.length, location.search]); // Re-run when filterConfig loads or URL changes
 
+    const selectedCourseSlug = useMemo(
+        () => new URLSearchParams(location.search).get("course") || undefined,
+        [location.search]
+    );
+
     // Fetch courses based on filters and search query - SERVER-SIDE FILTERING
     useEffect(() => {
         // Don't fetch until filter config is initialized
@@ -148,6 +153,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
                     levelTags: toArrayFilter(filters.levelTag),
                     industries: toArrayFilter(filters.industry),
                     topics: toArrayFilter(filters.topic),
+                    courseSlugs: selectedCourseSlug ? [selectedCourseSlug] : undefined,
                     excludeHeavyFields: true,
                 };
 
@@ -174,7 +180,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
         };
 
         loadItems();
-    }, [filters, searchQuery, filterConfig.length]); // Use filterConfig.length to only trigger when it's populated
+    }, [filters, searchQuery, filterConfig.length, selectedCourseSlug]); // Include course container filter changes from the URL
 
     // Handle filter changes
     const handleFilterChange = useCallback(

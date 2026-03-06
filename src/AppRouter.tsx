@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useParams,
   useSearchParams,
 } from "react-router-dom";
 import { Suspense, lazy } from "react";
@@ -154,6 +155,18 @@ export const LegacyLearningRedirect = () => {
   return <Navigate to="/portal" replace />;
 };
 
+export const LegacyCourseContainerRedirect = () => {
+  const { itemId } = useParams<{ itemId: string }>();
+
+  if (!itemId) {
+    return <Navigate to="/courses" replace />;
+  }
+
+  return (
+    <Navigate to={`/courses?course=${encodeURIComponent(itemId)}`} replace />
+  );
+};
+
 export function AppRouter() {
   return (
     <BrowserRouter>
@@ -165,7 +178,8 @@ export function AppRouter() {
 
               {/* Course routes */}
               <Route path="/courses" element={<CourseCatalogPage />} />
-              <Route path="/courses/:itemId" element={<CourseDetailsPage />} />
+              <Route path="/courses/:itemId" element={<LegacyCourseContainerRedirect />} />
+              <Route path="/modules/:itemId" element={<CourseDetailsPage />} />
 
               {/* Mentors/Contributors routes */}
               <Route path="/mentors" element={<MentorsPage />} />
@@ -184,7 +198,7 @@ export function AppRouter() {
               />
               <Route
                 path="/marketplace/courses/:itemId"
-                element={<Navigate to="/courses/:itemId" replace />}
+                element={<LegacyCourseContainerRedirect />}
               />
 
               {/* Dashboard */}
