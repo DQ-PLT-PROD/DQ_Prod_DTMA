@@ -27,6 +27,8 @@ export interface Mentor {
   mentorshipApproach?: string;
   notableProjects?: string;
   speakingEngagements?: string[];
+  academicBackground?: string;
+  industryContributions?: string;
   testimonials?: {
     quote: string;
     author: string;

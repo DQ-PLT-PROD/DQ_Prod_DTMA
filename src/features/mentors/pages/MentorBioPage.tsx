@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Globe, Linkedin, User } from "lucide-react";
+import { ArrowLeft, ArrowRight, Globe, Linkedin, User } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PageContainer } from "@/components/layouts/PageContainer";
