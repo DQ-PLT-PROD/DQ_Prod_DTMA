@@ -10,8 +10,7 @@ import { ErrorDisplay, CourseCardSkeleton } from "../../../components/SkeletonLo
 import { getCourseConfig } from "../../../utils/courseConfig";
 import { Header } from "../../../components/Header";
 import { Footer } from "../../../components/Footer";
-import { fetchCourses, fetchCategories } from "@/services/courseService";
-import { fetchIndustryTree, NestedFilterOption as IndustryNode } from "../services/filterService";
+import { fetchCourses, fetchPublishedCoursesForNav } from "@/services/courseService";
 import { PageContainer } from "../../../components/layouts/PageContainer";
 import { AIWidgetStandalone } from "@/lib/ai-widget";
 
@@ -64,37 +63,21 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
 
         const loadFilterOptions = async () => {
             try {
-                // Fetch categories from database
-                const [categories, industryTree] = await Promise.all([
-                    fetchCategories(),
-                    fetchIndustryTree(),
-                ]);
+                const publishedCourses = await fetchPublishedCoursesForNav();
 
-                const toSidebarOptions = (nodes: IndustryNode[]) =>
-                    nodes.map((node) => ({
-                        id: node.slug,
-                        name: node.name,
-                        description: node.description,
-                        children: node.children ? toSidebarOptions(node.children) : undefined,
-                    }));
-
-                // Use canonical config for filter shape, refresh categories from DB
+                // Use canonical config for filter shape, refresh published courses from DB
                 const filterOptions: FilterConfig[] = config.filterCategories
                     .map((fc) =>
-                        fc.id === "category"
+                        fc.id === "course"
                             ? {
                                 ...fc,
-                                options: categories.map((category) => ({
-                                    id: category.slug,
-                                    name: category.name,
+                                options: publishedCourses.map((course) => ({
+                                    id: course.slug,
+                                    name: course.title,
+                                    description: course.shortDescription,
                                 })),
                             }
-                            : fc.id === "industry"
-                                ? {
-                                    ...fc,
-                                    options: toSidebarOptions(industryTree),
-                                }
-                                : fc
+                            : fc
                     );
                 setFilterConfig(filterOptions);
             } catch (err) {
@@ -115,7 +98,9 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
         filterConfig.forEach((fc) => {
             const paramValue = searchParams.get(fc.id);
             // Support comma-separated values for multi-select
-            initialFilters[fc.id] = paramValue
+            initialFilters[fc.id] = fc.disabled
+                ? []
+                : paramValue
                 ? paramValue.split(',').map(v => v.trim()).filter(v => v)
                 : [];
         });
@@ -130,11 +115,6 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
         setFilters(initialFilters);
     }, [filterConfig.length, location.search]); // Re-run when filterConfig loads or URL changes
 
-    const selectedCourseSlug = useMemo(
-        () => new URLSearchParams(location.search).get("course") || undefined,
-        [location.search]
-    );
-
     // Fetch courses based on filters and search query - SERVER-SIDE FILTERING
     useEffect(() => {
         // Don't fetch until filter config is initialized
@@ -148,12 +128,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
                 // Build server-side filter object
                 const serverFilters = {
                     search: searchQuery.trim() || undefined,
-                    categories: toArrayFilter(filters.category),
-                    audienceLevels: toArrayFilter(filters.audienceLevel),
-                    levelTags: toArrayFilter(filters.levelTag),
-                    industries: toArrayFilter(filters.industry),
-                    topics: toArrayFilter(filters.topic),
-                    courseSlugs: selectedCourseSlug ? [selectedCourseSlug] : undefined,
+                    courseSlugs: toArrayFilter(filters.course),
                     excludeHeavyFields: true,
                 };
 
@@ -180,7 +155,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
         };
 
         loadItems();
-    }, [filters, searchQuery, filterConfig.length, selectedCourseSlug]); // Include course container filter changes from the URL
+    }, [filters, searchQuery, filterConfig.length]);
 
     // Handle filter changes
     const handleFilterChange = useCallback(
@@ -270,6 +245,9 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
             const selectedValues = Array.isArray(val) ? val : val ? [val] : [];
             selectedValues.forEach((selected) => {
                 const config = filterConfig.find((c) => c.id === key);
+                if (config?.disabled) {
+                    return;
+                }
                 const optionLabel = findOptionName(config?.options, selected) || selected;
                 chips.push({ key, value: selected, label: optionLabel });
             });

@@ -111,7 +111,7 @@ export const CourseGrid: React.FC<CourseGridProps> = ({
             Showing {totalItems} Courses
           </h2>
           <div className="text-sm text-gray-500 hidden sm:block">
-            Refine by category, industry, role, or level
+            Refine by course. More filters are coming soon.
           </div>
         </div>
         {/* Mobile-friendly header */}

@@ -1,6 +1,6 @@
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { countCountableLessons } from "@/lib/courses/lessonCount";
-import { Category, Course, CourseCatalogFilters, Lesson, Module, Quiz } from "@/types/dtma-lms";
+import { Category, Course, CourseCatalogFilters, Lesson, Module, Quiz, QuizQuestion } from "@/types/dtma-lms";
 
 export interface CourseResource {
   id: string;
@@ -19,6 +19,33 @@ export interface CourseNavItem {
   shortDescription: string;
   heroImageUrl?: string;
   thumbnailUrl?: string;
+}
+
+export interface LearnerQuizQuestion {
+  id: string;
+  quizId: string;
+  question: string;
+  type: QuizQuestion["type"];
+  options: { id: string; text: string }[];
+}
+
+export interface LearnerQuizSession {
+  quizId: string;
+  title: string;
+  description?: string;
+  passingScore: number;
+  timeLimitMinutes?: number;
+  maxAttempts?: number;
+  shuffleQuestions: boolean;
+  hideAnswers: boolean;
+  questions: LearnerQuizQuestion[];
+}
+
+export interface LearnerQuizAnswerEvaluation {
+  questionId: string;
+  isCorrect: boolean;
+  hideAnswers: boolean;
+  explanation?: string;
 }
 
 type CourseRow = {
@@ -160,6 +187,36 @@ const mapQuizRow = (row: QuizRow): Quiz => ({
   correctAnswer: row.correct_answer,
   explanation: row.explanation || undefined,
 });
+
+const normalizeQuizQuestionType = (value?: string | null): QuizQuestion["type"] => {
+  if (
+    value === "single_select" ||
+    value === "multi_select" ||
+    value === "true_false" ||
+    value === "text"
+  ) {
+    return value;
+  }
+
+  return "single_select";
+};
+
+const normalizeQuizOptions = (value: any): { id: string; text: string }[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((option, index) => {
+    if (typeof option === "string") {
+      return { id: String(index), text: option };
+    }
+
+    return {
+      id: String(option?.id ?? option?.value ?? index),
+      text: String(option?.text ?? option?.label ?? `Option ${index + 1}`),
+    };
+  });
+};
 
 const mapResourceRow = (row: ResourceRow): CourseResource => ({
   id: row.id,
@@ -620,6 +677,153 @@ export const fetchCourseResources = async (moduleSlug: string): Promise<CourseRe
   }
 };
 
+export const fetchLearningModuleContent = async (moduleSlug: string): Promise<{
+  course: Course | null;
+  modules: Module[];
+  lessons: Lesson[];
+  resources: CourseResource[];
+}> => {
+  if (!isSupabaseConfigured()) {
+    return {
+      course: null,
+      modules: [],
+      lessons: [],
+      resources: [],
+    };
+  }
+
+  try {
+    const { moduleRow, courseRow } = await resolveModuleContext(moduleSlug);
+    if (!moduleRow || !courseRow) {
+      return {
+        course: null,
+        modules: [],
+        lessons: [],
+        resources: [],
+      };
+    }
+
+    const supabase = getSupabase();
+    const [lessonsResponse, resourcesResponse] = await Promise.all([
+      supabase
+        .from("lessons")
+        .select("id, course_slug, module_id, title, type, order_index, estimated_duration_minutes, video_url, resource_url, content, is_preview")
+        .eq("module_id", moduleRow.id)
+        .order("order_index", { ascending: true }),
+      supabase
+        .from("course_resources")
+        .select("*")
+        .eq("course_slug", moduleRow.course_slug)
+        .order("order_index", { ascending: true }),
+    ]);
+
+    if (lessonsResponse.error) {
+      console.warn("Error fetching learning lessons:", lessonsResponse.error.message);
+    }
+
+    if (resourcesResponse.error) {
+      console.warn("Error fetching learning resources:", resourcesResponse.error.message);
+    }
+
+    const lessons = ((lessonsResponse.data || []) as LessonRow[]).map(mapLessonRow);
+    const resources = ((resourcesResponse.data || []) as ResourceRow[]).map(mapResourceRow);
+
+    return {
+      course: toCourseLikeDetail(moduleRow, courseRow, lessons),
+      modules: [mapModuleRow(moduleRow)],
+      lessons,
+      resources,
+    };
+  } catch (error) {
+    console.error("Unexpected error fetching learning module content:", error);
+    return {
+      course: null,
+      modules: [],
+      lessons: [],
+      resources: [],
+    };
+  }
+};
+
+export const fetchLearnerQuizSession = async (
+  moduleSlug: string
+): Promise<LearnerQuizSession | null> => {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await (getSupabase() as any).rpc("get_published_module_quiz", {
+      p_module_slug: moduleSlug,
+    });
+
+    if (error) {
+      console.warn("Error fetching learner quiz session:", error.message);
+      return null;
+    }
+
+    if (!data || !Array.isArray(data.questions)) {
+      return null;
+    }
+
+    return {
+      quizId: String(data.quizId ?? ""),
+      title: String(data.title ?? "Module Assessment"),
+      description: data.description || undefined,
+      passingScore: Number(data.passingScore ?? 80),
+      timeLimitMinutes: data.timeLimitMinutes ? Number(data.timeLimitMinutes) : undefined,
+      maxAttempts: data.maxAttempts ? Number(data.maxAttempts) : undefined,
+      shuffleQuestions: Boolean(data.shuffleQuestions),
+      hideAnswers: Boolean(data.hideAnswers),
+      questions: data.questions.map((question: any) => ({
+        id: String(question.id),
+        quizId: String(question.quizId ?? data.quizId ?? ""),
+        question: String(question.question ?? ""),
+        type: normalizeQuizQuestionType(question.type),
+        options: normalizeQuizOptions(question.options),
+      })),
+    };
+  } catch (error) {
+    console.warn("Unexpected error fetching learner quiz session:", error);
+    return null;
+  }
+};
+
+export const evaluateLearnerQuizAnswer = async (
+  questionId: string,
+  selectedAnswerIds: string[]
+): Promise<LearnerQuizAnswerEvaluation | null> => {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await (getSupabase() as any).rpc("evaluate_published_quiz_answer", {
+      p_question_id: questionId,
+      p_selected_answer_ids: selectedAnswerIds,
+    });
+
+    if (error) {
+      console.warn("Error evaluating learner quiz answer:", error.message);
+      return null;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return {
+      questionId: String(data.questionId ?? questionId),
+      isCorrect: Boolean(data.isCorrect),
+      hideAnswers: Boolean(data.hideAnswers),
+      explanation: data.explanation || undefined,
+    };
+  } catch (error) {
+    console.warn("Unexpected error evaluating learner quiz answer:", error);
+    return null;
+  }
+};
+
 export const fetchCourseWithContent = async (slug: string): Promise<{
   course: Course | null;
   modules: Module[];
@@ -627,11 +831,10 @@ export const fetchCourseWithContent = async (slug: string): Promise<{
   quizzes: Quiz[];
   resources: CourseResource[];
 }> => {
-  const [course, modules, lessons, quizzes, resources] = await Promise.all([
+  const [course, modules, lessons, resources] = await Promise.all([
     fetchFullCourse(slug),
     fetchCourseModules(slug),
     fetchCourseLessons(slug),
-    fetchCourseQuizzes(slug),
     fetchCourseResources(slug),
   ]);
 
@@ -639,7 +842,7 @@ export const fetchCourseWithContent = async (slug: string): Promise<{
     course,
     modules,
     lessons,
-    quizzes,
+    quizzes: [],
     resources,
   };
 };

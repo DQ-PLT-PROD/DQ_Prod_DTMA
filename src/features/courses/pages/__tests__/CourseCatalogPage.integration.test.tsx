@@ -54,16 +54,12 @@ vi.mock("@/services/courseService", () => ({
       },
     ])
   ),
-  fetchCategories: vi.fn(() =>
+  fetchPublishedCoursesForNav: vi.fn(() =>
     Promise.resolve([
-      { slug: "leadership", name: "Leadership" },
-      { slug: "technology", name: "Technology" },
+      { slug: "test-course-1", title: "Test Course 1", shortDescription: "Short desc 1" },
+      { slug: "test-course-2", title: "Test Course 2", shortDescription: "Short desc 2" },
     ])
   ),
-}));
-
-vi.mock("../../services/filterService", () => ({
-  fetchIndustryTree: vi.fn(() => Promise.resolve([])),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -107,9 +103,11 @@ describe("CourseCatalogPage Integration (D2)", () => {
   });
 
   it("should parse filters from URL on mount", async () => {
+    const { fetchCourses } = await import("@/services/courseService");
+
     render(
       <MemoryRouter
-        initialEntries={["/courses?category=leadership&levelTag=beginner&course=leadership"]}
+        initialEntries={["/courses?course=test-course-1"]}
       >
         <CourseCatalogPage />
       </MemoryRouter>
@@ -123,13 +121,18 @@ describe("CourseCatalogPage Integration (D2)", () => {
       { timeout: 3000 }
     );
 
-    expect(screen.getAllByText("Leadership").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Beginner").length).toBeGreaterThan(0);
+    await waitFor(() => {
+      expect(vi.mocked(fetchCourses)).toHaveBeenCalledWith(
+        expect.objectContaining({
+          courseSlugs: ["test-course-1"],
+        })
+      );
+    });
   });
 
   it("should show empty state when no courses match filters", async () => {
     const { fetchCourses } = await import("@/services/courseService");
-    vi.mocked(fetchCourses).mockResolvedValueOnce([]);
+    vi.mocked(fetchCourses).mockResolvedValue([]);
 
     render(
       <BrowserRouter>

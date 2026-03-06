@@ -17,6 +17,15 @@ export interface Lesson {
     isPreview?: boolean; // For preview content access control
 }
 
+function formatEstimatedDuration(minutes: number): string {
+    if (!minutes || minutes <= 0) {
+        return '--:--';
+    }
+
+    const wholeMinutes = Math.max(0, Math.round(minutes));
+    return `${String(wholeMinutes).padStart(2, '0')}:00`;
+}
+
 /**
  * Convert database lesson to UI lesson format
  */
@@ -31,9 +40,7 @@ export const toUILesson = (dbLesson: {
     content?: string;
     isPreview?: boolean; // Add isPreview field from database
 }, orderIndex: number, completedIds: Set<string> = new Set()): Lesson => {
-    // Use loading state initially - actual duration will be populated from video metadata
-    // This ensures all lessons show accurate durations from the video files
-    const durationStr = '--:--';
+    const durationStr = formatEstimatedDuration(dbLesson.estimatedDurationMinutes);
 
     return {
         id: dbLesson.id,
