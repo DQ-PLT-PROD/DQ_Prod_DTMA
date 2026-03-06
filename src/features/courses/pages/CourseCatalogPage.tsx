@@ -38,6 +38,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
         "Browse practical, bite-sized courses on Economy 4.0, Digital Organizations, Transformation, and Future Design.";
     const allowPromoCards = config.showPromoCards !== false;
     const hasInitialized = useRef(false);
+    const latestLoadRequestRef = useRef(0);
 
     // State for items and filtering
     const [items, setItems] = useState<any[]>([]);
@@ -51,6 +52,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
 
     // State for filter options
     const [filterConfig, setFilterConfig] = useState<FilterConfig[]>([]);
+    const [hydratedLocationKey, setHydratedLocationKey] = useState<string | null>(null);
 
     // Loading and error states
     const [loading, setLoading] = useState(true);
@@ -107,19 +109,19 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
         initialFilters["topic"] = searchParams.get("topic")?.split(',').map(v => v.trim()).filter(v => v) || [];
 
         // Also set search query from URL
-        const searchParam = searchParams.get("search") || searchParams.get("q");
-        if (searchParam) {
-            setSearchQuery(searchParam);
-        }
-
+        const searchParam = searchParams.get("search") || searchParams.get("q") || "";
+        setSearchQuery(searchParam);
         setFilters(initialFilters);
+        setHydratedLocationKey(location.search);
     }, [filterConfig.length, location.search]); // Re-run when filterConfig loads or URL changes
 
     // Fetch courses based on filters and search query - SERVER-SIDE FILTERING
     useEffect(() => {
         // Don't fetch until filter config is initialized
-        if (filterConfig.length === 0) return;
+        if (filterConfig.length === 0 || hydratedLocationKey !== location.search) return;
 
+        let isActive = true;
+        const requestId = ++latestLoadRequestRef.current;
         const loadItems = async () => {
             setLoading(true);
             setError(null);
@@ -141,21 +143,33 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
 
                 // Fetch filtered courses from server
                 const courses = await fetchCourses(cleanFilters as any);
+                if (!isActive || requestId !== latestLoadRequestRef.current) {
+                    return;
+                }
 
                 setItems(courses);
                 setFilteredItems(courses);
-                setLoading(false);
             } catch (err) {
+                if (!isActive || requestId !== latestLoadRequestRef.current) {
+                    return;
+                }
                 console.error("Error loading courses:", err);
                 setError("Failed to load courses");
                 setItems([]);
                 setFilteredItems([]);
-                setLoading(false);
+            } finally {
+                if (isActive && requestId === latestLoadRequestRef.current) {
+                    setLoading(false);
+                }
             }
         };
 
-        loadItems();
-    }, [filters, searchQuery, filterConfig.length]);
+        void loadItems();
+
+        return () => {
+            isActive = false;
+        };
+    }, [filters, searchQuery, filterConfig.length, hydratedLocationKey, location.search]);
 
     // Handle filter changes
     const handleFilterChange = useCallback(
@@ -257,6 +271,12 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
         }
         return chips;
     }, [filters, filterConfig, searchQuery]);
+
+    const emptyStateMessage = useMemo(() => {
+        return toArrayFilter(filters.course).length > 0
+            ? "This course does not have any published modules yet."
+            : "No modules match these filters.";
+    }, [filters.course]);
 
     const clearChip = useCallback((key: string, value?: string) => {
         if (key === "search") {
@@ -423,7 +443,7 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
                             />
                         ) : filteredItems.length === 0 ? (
                             <div className="text-center text-gray-600 py-10 bg-white rounded-lg border border-gray-200">
-                                <p className="mb-3">No courses match these filters.</p>
+                                <p className="mb-3">{emptyStateMessage}</p>
                                 <button
                                     onClick={resetFilters}
                                     className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
@@ -439,6 +459,8 @@ export const CourseCatalogPage: React.FC<CourseCatalogPageProps> = ({
                                 promoCards={allowPromoCards ? promoCards : []}
                                 onTagClick={handleTagFilter}
                                 showSaveButton={false}
+                                resultsLabelSingular="Module"
+                                resultsLabelPlural="Modules"
                             />
                         )}
                     </div>
