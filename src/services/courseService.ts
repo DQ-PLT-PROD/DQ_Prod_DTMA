@@ -5,6 +5,7 @@ import { Category, Course, CourseCatalogFilters, Lesson, Module, Quiz, QuizQuest
 export interface CourseResource {
   id: string;
   courseSlug: string;
+  moduleId?: string;
   title: string;
   type: "whitepaper" | "pdf" | "template" | "tool" | "worksheet" | "other";
   description?: string;
@@ -79,6 +80,9 @@ type ModuleRow = {
   course_slug: string;
   title: string;
   description?: string | null;
+  learning_outcomes?: string[] | null;
+  skills_gained?: string[] | null;
+  upon_completion?: string | null;
   thumbnail_url?: string | null;
   order_index?: number | null;
   estimated_duration_minutes?: number | null;
@@ -122,6 +126,7 @@ type QuizRow = {
 type ResourceRow = {
   id: string;
   course_slug: string;
+  module_id?: string | null;
   title: string;
   type: "whitepaper" | "pdf" | "template" | "tool" | "worksheet" | "other";
   description?: string | null;
@@ -221,6 +226,7 @@ const normalizeQuizOptions = (value: any): { id: string; text: string }[] => {
 const mapResourceRow = (row: ResourceRow): CourseResource => ({
   id: row.id,
   courseSlug: row.course_slug,
+  moduleId: row.module_id || undefined,
   title: row.title,
   type: row.type,
   description: row.description || undefined,
@@ -235,6 +241,9 @@ const mapModuleRow = (row: ModuleRow): Module => ({
   courseSlug: row.course_slug,
   title: row.title,
   description: row.description || undefined,
+  learningOutcomes: row.learning_outcomes || undefined,
+  skillsGained: row.skills_gained || undefined,
+  uponCompletion: row.upon_completion || undefined,
   thumbnailUrl: row.thumbnail_url || undefined,
   orderIndex: Number(row.order_index || 0),
   estimatedDurationMinutes: Number(row.estimated_duration_minutes || 0),
@@ -336,7 +345,9 @@ const resolvePublishedModuleRows = async (courseSlugs: string[]): Promise<Module
 
   const supabase = getSupabase();
   const { data, error } = await (supabase.from("modules" as any) as any)
-    .select("id, slug, course_slug, title, description, thumbnail_url, order_index, estimated_duration_minutes, status")
+    .select(
+      "id, slug, course_slug, title, description, learning_outcomes, skills_gained, upon_completion, thumbnail_url, order_index, estimated_duration_minutes, status"
+    )
     .eq("status", "published")
     .in("course_slug", courseSlugs)
     .order("order_index", { ascending: true });
@@ -414,7 +425,7 @@ const toMarketplaceItem = (
     levelTag: courseRow.level_tag || "",
     audienceLevel: toAudienceLevel(courseRow.audience_level),
     topicTags: courseRow.topic_tags || [],
-    tags: [courseRow.level_tag, courseRow.audience_level, ...(courseRow.topic_tags || []).slice(0, 2)].filter(Boolean),
+    tags: [courseRow.title].filter(Boolean),
     heroImageUrl: moduleRow.thumbnail_url || undefined,
     thumbnailUrl: moduleRow.thumbnail_url || undefined,
     introVideoUrl: firstPlayableLesson?.videoUrl,
@@ -422,7 +433,7 @@ const toMarketplaceItem = (
     rating: courseRow.rating ?? 4.6,
     reviewCount: courseRow.review_count ?? 24,
     formUrl: courseRow.enrollment_url || undefined,
-    learningOutcomes: courseRow.learning_outcomes || [],
+    learningOutcomes: moduleRow.learning_outcomes ?? courseRow.learning_outcomes ?? [],
     startDate: courseRow.start_date || undefined,
     isFeatured: Boolean(courseRow.is_featured),
     isComingSoon: Boolean(courseRow.is_coming_soon),
@@ -439,7 +450,9 @@ const resolveModuleContext = async (moduleSlug: string): Promise<{
 
   const supabase = getSupabase();
   const { data: moduleData, error: moduleError } = await (supabase.from("modules" as any) as any)
-    .select("id, slug, course_slug, title, description, thumbnail_url, order_index, estimated_duration_minutes, status")
+    .select(
+      "id, slug, course_slug, title, description, learning_outcomes, skills_gained, upon_completion, thumbnail_url, order_index, estimated_duration_minutes, status"
+    )
     .eq("slug", moduleSlug)
     .single();
 
@@ -504,9 +517,9 @@ const toCourseLikeDetail = (
     rating: courseRow.rating || undefined,
     reviewCount: courseRow.review_count || undefined,
     enrollmentUrl: courseRow.enrollment_url || undefined,
-    learningOutcomes: courseRow.learning_outcomes || [],
-    skillsGained: courseRow.skills_gained || [],
-    uponCompletion: courseRow.upon_completion || undefined,
+    learningOutcomes: moduleRow.learning_outcomes ?? courseRow.learning_outcomes ?? [],
+    skillsGained: moduleRow.skills_gained ?? courseRow.skills_gained ?? [],
+    uponCompletion: moduleRow.upon_completion ?? courseRow.upon_completion ?? undefined,
     startDate: courseRow.start_date || undefined,
     industry: courseRow.industry || undefined,
     containerCourseSlug: moduleRow.course_slug,
@@ -662,7 +675,7 @@ export const fetchCourseResources = async (moduleSlug: string): Promise<CourseRe
     const { data, error } = await getSupabase()
       .from("course_resources")
       .select("*")
-      .eq("course_slug", moduleRow.course_slug)
+      .eq("module_id", moduleRow.id)
       .order("order_index", { ascending: true });
 
     if (error) {
@@ -713,7 +726,7 @@ export const fetchLearningModuleContent = async (moduleSlug: string): Promise<{
       supabase
         .from("course_resources")
         .select("*")
-        .eq("course_slug", moduleRow.course_slug)
+        .eq("module_id", moduleRow.id)
         .order("order_index", { ascending: true }),
     ]);
 
@@ -862,7 +875,9 @@ export const fetchRelatedCourses = async (
     }
 
     const { data, error } = await (getSupabase().from("modules" as any) as any)
-      .select("id, slug, course_slug, title, description, thumbnail_url, order_index, estimated_duration_minutes, status")
+      .select(
+        "id, slug, course_slug, title, description, learning_outcomes, skills_gained, upon_completion, thumbnail_url, order_index, estimated_duration_minutes, status"
+      )
       .eq("course_slug", moduleRow.course_slug)
       .eq("status", "published")
       .neq("slug", slug)

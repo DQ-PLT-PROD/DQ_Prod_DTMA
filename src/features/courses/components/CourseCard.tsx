@@ -17,7 +17,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Clock, Lock, Volume2, VolumeX } from "lucide-react";
+import { BookOpen, Clock, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import {
   getAccessContract,
@@ -201,17 +201,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({
           </div>
         )}
 
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2 z-20">
-          {course.audienceLevel && (
-            <span className="px-2 py-1 bg-white/90 backdrop-blur-sm text-purple-700 text-[10px] font-bold uppercase tracking-wider rounded-md shadow-sm border border-purple-100">
-              {course.audienceLevel}
-            </span>
-          )}
-        </div>
-
-        {/* Coming Soon Badge - Removed as per design request */}
-
         {/* Save Button */}
         {showSaveButton && !course.isComingSoon && (
           <div className="absolute top-3 right-3 z-30">
@@ -243,11 +232,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({
           {course.categoryName && (
             <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">
               {course.categoryName}
-            </span>
-          )}
-          {course.levelTag && (
-            <span className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-              {course.levelTag}
             </span>
           )}
         </div>

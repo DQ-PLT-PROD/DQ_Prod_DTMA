@@ -185,7 +185,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ item }) => {
     <div className="space-y-6">
 
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-gray-900">Course Schedule</h3>
+        <h3 className="text-xl font-bold text-gray-900">Module Outline</h3>
         <div className="text-sm text-gray-500 font-medium">
           {safeLessonCount} Lessons • {item.duration || ""}
         </div>

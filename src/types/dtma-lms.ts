@@ -49,6 +49,9 @@ export interface Module {
   courseSlug: string;
   title: string;
   description?: string;
+  learningOutcomes?: string[];
+  skillsGained?: string[];
+  uponCompletion?: string;
   thumbnailUrl?: string;
   orderIndex: number;
   estimatedDurationMinutes?: number;

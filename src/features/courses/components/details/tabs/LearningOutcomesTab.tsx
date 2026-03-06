@@ -13,11 +13,11 @@ const LearningOutcomesTab: React.FC<LearningOutcomesTabProps> = ({ outcomes, ski
   return (
     <div className="space-y-6">
       <p className="text-gray-600 text-lg mb-6">
-        What you'll learn from this course and the skills you'll develop.
+        What learners will take away from this module.
       </p>
       {/* Core Learning Outcomes - simplified numbered list */}
       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-        <h3 className="text-xl font-bold text-gray-900 mb-4">Core Learning Outcomes</h3>
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Learning Outcomes</h3>
         <ol className="space-y-3">
           {list.map((outcome, index) => (
             <li key={index} className="pl-2">
@@ -47,7 +47,7 @@ const LearningOutcomesTab: React.FC<LearningOutcomesTabProps> = ({ outcomes, ski
         {uponCompletion ? (
           <p className="text-gray-700 mb-3">{uponCompletion}</p>
         ) : (
-          <p className="text-gray-700 mb-3">Course completion benefits will be provided by the training partner.</p>
+          <p className="text-gray-700 mb-3">Completion details for this module have not been added yet.</p>
         )}
         <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded border border-blue-100 flex items-start gap-2">
           <InfoIcon

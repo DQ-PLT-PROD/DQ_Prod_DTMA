@@ -98,6 +98,7 @@ export function useProductDetails({
         const category = categories.find((c) => c.id === course.categoryId || c.slug === course.categoryId);
         const containerCourseTitle = (course as any).containerCourseTitle;
         const containerCourseSlug = (course as any).containerCourseSlug;
+        const moduleCourseLabel = containerCourseTitle || category?.name;
         // Use lessons passed in, fallback to empty if not provided
         const lessonList = courseLessons.length ? courseLessons : [];
         const lessonCount = lessonList.length > 0
@@ -142,7 +143,7 @@ export function useProductDetails({
             applicationProcess,
             serviceApplication: course.uponCompletion,
             uponCompletion: course.uponCompletion,
-            tags: [category?.name, course.levelTag, course.audienceLevel, ...course.topicTags].filter(Boolean),
+            tags: [moduleCourseLabel].filter(Boolean),
             // provider: { name: providerName, logoUrl: providerLogo, description: course.providerDescription },
             providerLocation: course.location || "UAE",
             rating: course.rating ?? 4.7,

@@ -305,6 +305,9 @@ export interface Database {
                     course_slug: string
                     title: string
                     description: string | null
+                    learning_outcomes: string[] | null
+                    skills_gained: string[] | null
+                    upon_completion: string | null
                     thumbnail_url: string | null
                     order_index: number
                     estimated_duration_minutes: number | null
@@ -318,6 +321,9 @@ export interface Database {
                     course_slug: string
                     title: string
                     description?: string | null
+                    learning_outcomes?: string[] | null
+                    skills_gained?: string[] | null
+                    upon_completion?: string | null
                     thumbnail_url?: string | null
                     order_index: number
                     estimated_duration_minutes?: number | null
@@ -331,6 +337,9 @@ export interface Database {
                     course_slug?: string
                     title?: string
                     description?: string | null
+                    learning_outcomes?: string[] | null
+                    skills_gained?: string[] | null
+                    upon_completion?: string | null
                     thumbnail_url?: string | null
                     order_index?: number
                     estimated_duration_minutes?: number | null
@@ -383,6 +392,7 @@ export interface Database {
                 Row: {
                     id: string
                     course_slug: string
+                    module_id: string | null
                     title: string
                     type: string
                     description: string | null
@@ -394,6 +404,7 @@ export interface Database {
                 Insert: {
                     id?: string
                     course_slug: string
+                    module_id?: string | null
                     title: string
                     type: string
                     description?: string | null
@@ -405,6 +416,7 @@ export interface Database {
                 Update: {
                     id?: string
                     course_slug?: string
+                    module_id?: string | null
                     title?: string
                     type?: string
                     description?: string | null

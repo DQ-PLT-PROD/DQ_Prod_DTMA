@@ -4,9 +4,7 @@ import {
   ArrowRight,
   BookOpen,
   CheckCircle2,
-  CheckSquare,
   RotateCcw,
-  Square,
   Trophy,
   XCircle,
 } from "lucide-react";
@@ -451,13 +449,19 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
               const isSelected = selectedAnswerIds.includes(option.id);
               const showGreen = showFeedback && isSelected && isCurrentlyCorrect;
               const showRed = showFeedback && isSelected && !isCurrentlyCorrect;
+              const inputType = isMultiSelect ? "checkbox" : "radio";
+              const accentClass = showFeedback
+                ? showGreen
+                  ? "accent-green-600"
+                  : showRed
+                    ? "accent-red-600"
+                    : "accent-[#1839AD]"
+                : "accent-[#1839AD]";
 
               return (
-                <button
+                <label
                   key={option.id}
-                  onClick={() => handleAnswerToggle(option.id)}
-                  disabled={showFeedback}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition ${
+                  className={`w-full text-left p-4 rounded-lg border-2 transition flex items-center gap-3 ${
                     isSelected
                       ? showFeedback
                         ? showGreen
@@ -469,46 +473,27 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
                       : "border-gray-200 hover:border-gray-300"
                   } ${showFeedback ? "cursor-default" : "cursor-pointer"}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-5 h-5 flex items-center justify-center ${
-                        isSelected
-                          ? showFeedback
-                            ? showGreen
-                              ? "text-green-500"
-                              : "text-red-500"
-                            : "text-[#1839AD]"
-                          : "text-gray-300"
-                      }`}
-                    >
-                      {isSelected ? (
-                        isMultiSelect ? (
-                          <CheckSquare size={24} className="fill-current" />
-                        ) : (
-                          <div className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center">
-                            <div className="w-2.5 h-2.5 rounded-full bg-current" />
-                          </div>
-                        )
-                      ) : isMultiSelect ? (
-                        <Square size={24} />
+                  <input
+                    type={inputType}
+                    name={currentQuestion.id}
+                    checked={isSelected}
+                    onChange={() => handleAnswerToggle(option.id)}
+                    disabled={showFeedback}
+                    className={`mt-0.5 h-5 w-5 shrink-0 cursor-pointer ${accentClass}`}
+                  />
+
+                  <span className="flex-1 text-gray-800">{option.text}</span>
+
+                  {showFeedback && isSelected && (
+                    <div className="ml-auto">
+                      {isCurrentlyCorrect ? (
+                        <CheckCircle2 size={20} className="text-green-500" />
                       ) : (
-                        <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
+                        <XCircle size={20} className="text-red-500" />
                       )}
                     </div>
-
-                    <span className="text-gray-800">{option.text}</span>
-
-                    {showFeedback && isSelected && (
-                      <div className="ml-auto">
-                        {isCurrentlyCorrect ? (
-                          <CheckCircle2 size={20} className="text-green-500" />
-                        ) : (
-                          <XCircle size={20} className="text-red-500" />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </button>
+                  )}
+                </label>
               );
             })}
           </div>

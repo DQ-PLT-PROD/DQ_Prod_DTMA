@@ -31,16 +31,16 @@ const ResourcesTab: React.FC<ResourcesTabProps> = ({ resources = [] as Resource[
     return (
         <div className="space-y-8">
             <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Course Resources</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Module Resources</h3>
                 {resources.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                         <FileText className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-                        <p className="text-gray-500">No resources available for this course yet.</p>
+                        <p className="text-gray-500">No resources available for this module yet.</p>
                     </div>
                 ) : (
                     <>
                         <p className="text-gray-600 mb-6">
-                            Access downloadable materials to support your learning journey.
+                            Access downloadable materials that support this module.
                         </p>
 
                         <div className="grid gap-4">

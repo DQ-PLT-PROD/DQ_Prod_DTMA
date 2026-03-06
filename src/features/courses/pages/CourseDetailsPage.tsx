@@ -32,7 +32,6 @@ import { ErrorDisplay } from "../../../components/SkeletonLoader";
 import { useProductDetails } from "../hooks/useProductDetails";
 import { CourseMeta } from "../../../components/ui/CourseMeta";
 import { Tag } from "../../../components/ui/Tag";
-import { AudienceFitIndicator } from "../components/details/AudienceFitIndicator";
 import { CourseCard } from "@/features/courses/components/CourseCard";
 import { EnrollmentButton } from "@/features/courses/components/enrollment/EnrollmentButton";
 import { CourseDetailSkeleton } from "@/components/loading/CourseDetailSkeleton.tsx";
@@ -346,12 +345,6 @@ const CourseDetailsPage: React.FC = () => {
               config={config}
               highlights={highlights}
             />
-            {/* Audience Fit Indicator - DTMA Specific */}
-            {(item as any).audienceLevel && (
-              <AudienceFitIndicator
-                audienceLevel={(item as any).audienceLevel}
-              />
-            )}
           </div>
         );
 
@@ -510,22 +503,6 @@ const CourseDetailsPage: React.FC = () => {
                     className="bg-blue-500/10 text-blue-300 border-blue-500/20 backdrop-blur-sm"
                   >
                     {(item as any).category}
-                  </Tag>
-                )}
-                {(item as any).audienceLevel && (
-                  <Tag
-                    variant="audience"
-                    className="bg-purple-500/10 text-purple-300 border-purple-500/20 backdrop-blur-sm"
-                  >
-                    {(item as any).audienceLevel}
-                  </Tag>
-                )}
-                {(item as any).levelTag && (
-                  <Tag
-                    variant="level"
-                    className="bg-white/10 text-gray-200 border-white/10 backdrop-blur-sm"
-                  >
-                    {(item as any).levelTag}
                   </Tag>
                 )}
               </div>

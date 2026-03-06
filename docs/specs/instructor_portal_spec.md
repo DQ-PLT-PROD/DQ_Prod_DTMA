@@ -153,8 +153,13 @@ Manage reusable modules that group lessons.
 
 **FR2: Module Editor**
 - Route: `/instructor/course-management/module/:id`
-- Fields: Module Title, Course Selector, Length, Status, Thumbnail.
+- Fields: Module Title, Course Selector, Length, Status, Module Description, Learning Outcomes, Skills Gained, Upon Completion, Thumbnail.
 - Thumbnail management must support direct URL entry, Media Library selection, and local upload.
+
+**FR2a: Module Resources**
+- Manage learner-facing module resources directly inside the Module Editor.
+- Support document upload (for example PDF, worksheet, whitepaper) and manual URL entry.
+- Persist resources with an explicit `module_id` relationship so the learner Resources tab reflects module-managed content.
 
 **FR3: Relationships**
 - A Module belongs to exactly one Course.
@@ -168,6 +173,9 @@ Manage reusable modules that group lessons.
 - [ ] Modules list pulls from database.
 - [ ] Modules table shows Course, Length, and Status.
 - [ ] Can create/edit a module with a required parent course.
+- [ ] Module description is editable and appears on the learner module detail page.
+- [ ] Learning outcomes, skills gained, and upon completion text are editable per module and appear in the learner Learning Outcomes tab.
+- [ ] Resources uploaded in the module editor appear only on that module's learner Resources tab.
 
 ---
 
@@ -294,7 +302,7 @@ Manage media assets stored in Supabase Storage.
 | Learning Paths tab | `CourseManagementPage.tsx` | Remove or keep as stub (Coming Soon) |
 | Course Form fields | `CourseForm.tsx` | Keep only title, description, and status inputs |
 | Course category references | `CourseForm.tsx`, `CoursesSection.tsx` | Remove category from top-level course management |
-| Module hierarchy | `ModuleForm.tsx`, `ModulesSection.tsx`, database | Store module parent with `course_id`, expose module status/length, and manage module thumbnails |
+| Module hierarchy | `ModuleForm.tsx`, `ModulesSection.tsx`, database | Store module parent with `course_id`, expose module status/length, manage learner-facing module copy, and persist module-scoped resources |
 | Lesson hierarchy | `LessonForm.tsx`, `LessonsSection.tsx` | Require module selection and remove preview UI |
 | Media Library tab | `CourseManagementPage.tsx` | Add new component |
 | Instructor route guard | `AppRouter.tsx` | Use Supabase-based `AdminProtectedRoute` |
