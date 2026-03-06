@@ -11,25 +11,31 @@ interface FooterProps {
 const FOOTER_GRADIENT = "var(--brand-gradient)";
 
 const ABOUT_TEXT = [
-  "DTMA (Digital Transformation and Management Academy) equips professionals and organizations with essential digital skills through AI-driven, bite-sized learning paths. Using the 6XD framework, we offer practical, personalized courses for digital workers and leaders across six key digital economy perspectives.",
-  "Our courses help both individuals and executives stay ahead in a fast-changing landscape by focusing on real-world application, innovation, and adaptability to future-proof careers and drive business transformation.",
+  "DTMA (Digital Transformation and Management Academy) equips professionals and organizations with essential digital skills to navigate the evolving digital landscape. Through AI-driven, bite-sized learning, we offer practical, personalized courses for digital workers and leaders across key digital economy perspectives.",
 ];
 
 const QUICK_LINKS = [
   { label: "Explore Courses", href: "/courses" },
   { label: "Help Center", href: "/coming-soon/help-center" },
-  FEATURES.GROWTH_AREAS && { label: "Explore the AI Working Era", href: "/discover-abudhabi" },
+  FEATURES.GROWTH_AREAS && {
+    label: "Explore the AI Working Era",
+    href: "/discover-abudhabi",
+  },
   { label: "Privacy Policy", href: "/coming-soon/privacy-policy" },
   { label: "Terms of Service", href: "/coming-soon/terms-of-service" },
 ].filter(Boolean) as { label: string; href: string }[];
 
 export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [message, setMessage] = useState("");
 
   const handleSubscribe = async (
-    event: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
+    event:
+      | React.FormEvent<HTMLFormElement>
+      | React.MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault();
     event.stopPropagation();
@@ -55,7 +61,10 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
 
   if (isLoggedIn) {
     return (
-      <footer data-id={dataId} className="bg-[color:var(--md-background)] border-t border-[color:var(--md-outline-variant)] w-full h-10">
+      <footer
+        data-id={dataId}
+        className="bg-[color:var(--md-background)] border-t border-[color:var(--md-outline-variant)] w-full h-10"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
           <div className="flex items-center space-x-3 text-xs text-[color:var(--md-on-surface-variant)]">
             <span>(c) 2025 DTMA</span>
@@ -74,7 +83,11 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-6">
         <div className="flex items-center justify-between gap-4">
-          <img src="/logo/dtma-logo-white.svg" alt="DTMA" className="h-10 w-auto" />
+          <img
+            src="/logo/dtma-logo-white.svg"
+            alt="DTMA"
+            className="h-10 w-auto"
+          />
           <div className="flex items-center gap-4 text-white">
             <a
               href="https://www.linkedin.com/company/digitalqatalyst/posts/?feedView=all"
@@ -104,7 +117,9 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
           <div className="space-y-4 text-blue-100 text-sm leading-relaxed">
             <h3 className="font-semibold text-lg text-white">About Us</h3>
             {ABOUT_TEXT.map((paragraph) => (
-              <p key={paragraph} className="text-blue-50">{paragraph}</p>
+              <p key={paragraph} className="text-blue-50">
+                {paragraph}
+              </p>
             ))}
           </div>
 
@@ -126,8 +141,8 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
           <div className="space-y-4 self-start">
             <h3 className="font-semibold text-lg text-white">Subscribe</h3>
             <p className="text-blue-50 text-sm leading-relaxed">
-              Stay updated with the latest insights, courses, and tools for the AI working era
-              from DTMA.
+              Stay updated with the latest insights, courses, and tools for the
+              AI working era from DTMA.
             </p>
             <form onSubmit={handleSubscribe} className="space-y-2">
               <div className="bg-white rounded-full flex items-center justify-between px-4 py-2.5 text-gray-900 shadow-md-1">
@@ -151,8 +166,9 @@ export function Footer({ "data-id": dataId, isLoggedIn = false }: FooterProps) {
               </div>
               {message && (
                 <p
-                  className={`text-xs ${status === "success" ? "text-green-100" : "text-red-100"
-                    }`}
+                  className={`text-xs ${
+                    status === "success" ? "text-green-100" : "text-red-100"
+                  }`}
                 >
                   {message}
                 </p>

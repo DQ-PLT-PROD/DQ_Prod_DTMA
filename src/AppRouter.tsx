@@ -64,6 +64,7 @@ const MentorsPage = lazy(() => import("./features/mentors/pages/MentorsPage"));
 const MentorBioPage = lazy(
   () => import("./features/mentors/pages/MentorBioPage"),
 );
+const AboutPage = lazy(() => import("./features/about/pages/AboutPage"));
 const AuthDebugPanel = lazy(() =>
   import("@/components/auth/AuthDebugPanel").then((m) => ({
     default: m.AuthDebugPanel,
@@ -84,6 +85,24 @@ const AdminLoginPage = lazy(
 );
 const AdminLogoutPage = lazy(
   () => import("./features/admin-auth/pages/AdminLogoutPage"),
+);
+
+// Team bio pages lazy imports
+const DrStephaneNiangoPage = lazy(
+  () => import("./features/team/pages/DrStephaneNiangoPage"),
+);
+const MarkKerryPage = lazy(() => import("./features/team/pages/MarkKerryPage"));
+const BilalWaqarPage = lazy(
+  () => import("./features/team/pages/BilalWaqarPage"),
+);
+const KaylynnOceannePage = lazy(
+  () => import("./features/team/pages/KaylynnOceannePage"),
+);
+const StephenMuemaPage = lazy(
+  () => import("./features/team/pages/StephenMuemaPage"),
+);
+const IreneMusyokiPage = lazy(
+  () => import("./features/team/pages/IreneMusyokiPage"),
 );
 
 // Instructor Portal lazy imports
@@ -170,6 +189,29 @@ export function AppRouter() {
               {/* Mentors/Contributors routes */}
               <Route path="/mentors" element={<MentorsPage />} />
               <Route path="/mentors/:slug" element={<MentorBioPage />} />
+
+              {/* About page */}
+              <Route path="/about" element={<AboutPage />} />
+
+              {/* Team bio pages */}
+              <Route
+                path="/team/dr-stephane-niango"
+                element={<DrStephaneNiangoPage />}
+              />
+              <Route path="/team/mark-kerry" element={<MarkKerryPage />} />
+              <Route path="/team/bilal-waqar" element={<BilalWaqarPage />} />
+              <Route
+                path="/team/kaylynn-oceanne"
+                element={<KaylynnOceannePage />}
+              />
+              <Route
+                path="/team/stephen-muema"
+                element={<StephenMuemaPage />}
+              />
+              <Route
+                path="/team/irene-musyoki"
+                element={<IreneMusyokiPage />}
+              />
 
               {/* Payment success handler */}
               <Route
