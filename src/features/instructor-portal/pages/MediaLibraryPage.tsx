@@ -5,6 +5,7 @@ import {
     FilmIcon,
     ImageIcon,
     Loader2,
+    Pencil,
     Search,
     Trash2,
     Upload,
@@ -13,10 +14,12 @@ import {
     deleteLibraryFile,
     listLibraryFiles,
     MediaItem,
+    renameLibraryFile,
     uploadToLibrary,
 } from '../lib/mediaService';
 import { Toast } from '@/components/ui/Toast';
 import { useAdminAuth } from '@/lib/admin-auth';
+import { RenameMediaModal } from '../components/media/RenameMediaModal';
 
 export function MediaLibraryPage() {
     const { ability } = useAdminAuth();
@@ -273,6 +276,15 @@ export function MediaLibraryPage() {
                     isVisible={!!toast}
                 />
             )}
+            <RenameMediaModal
+                isOpen={!!renameTarget}
+                initialName={renameTarget?.name ?? ''}
+                isSubmitting={!!renamingPath}
+                onClose={() => {
+                    if (!renamingPath) setRenameTarget(null);
+                }}
+                onSubmit={submitRename}
+            />
         </div>
     );
 }
