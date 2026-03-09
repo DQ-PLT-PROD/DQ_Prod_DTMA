@@ -116,6 +116,126 @@ const mapRowToEnrollment = (row) => ({
   cancelledAt: row.cancelled_at || null,
 })
 
+// Load external API configuration
+const KF_API_BASE_URL = process.env.KF_API_BASE_URL || 'https://kfrealexpressserver.vercel.app/api/v1'
+const KF_API_TOKEN = process.env.KF_API_TOKEN
+
+// Public CTA handlers (no authentication required)
+const publicCTAHandlers = {
+  // POST /api/public/cta/partner
+  async submitPartnerForm(req, res) {
+    try {
+      const body = await parseBody(req)
+
+      // Validate required fields
+      const validationError = validateRequired(body, ['name', 'email', 'serviceCategory', 'message'])
+      if (validationError) {
+        return sendError(res, 400, validationError)
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(body.email)) {
+        return sendError(res, 400, 'Invalid email format')
+      }
+
+      // Check if external API is configured
+      if (!KF_API_TOKEN) {
+        console.error('❌ KF_API_TOKEN not configured')
+        return sendError(res, 503, 'External service not configured')
+      }
+
+      console.log(`📧 Submitting partner form for ${body.email}`)
+
+      // Forward request to external API
+      const response = await fetch(`${KF_API_BASE_URL}/partner/create-partnership`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${KF_API_TOKEN}`
+        },
+        body: JSON.stringify({
+          Name: body.name,
+          Email: body.email,
+          ServiceCategory: body.serviceCategory,
+          Message: body.message
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => '')
+        console.error(`❌ External API error (${response.status}):`, errorText)
+        return sendError(res, 502, 'Failed to submit partnership request')
+      }
+
+      console.log('✅ Partner form submitted successfully')
+      return sendJSON(res, 200, {
+        success: true,
+        message: 'Partnership request submitted successfully'
+      })
+    } catch (err) {
+      console.error('Error submitting partner form:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  },
+
+  // POST /api/public/cta/contact
+  async submitContactForm(req, res) {
+    try {
+      const body = await parseBody(req)
+
+      // Validate required fields
+      const validationError = validateRequired(body, ['name', 'email', 'message'])
+      if (validationError) {
+        return sendError(res, 400, validationError)
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(body.email)) {
+        return sendError(res, 400, 'Invalid email format')
+      }
+
+      // Check if external API is configured
+      if (!KF_API_TOKEN) {
+        console.error('❌ KF_API_TOKEN not configured')
+        return sendError(res, 503, 'External service not configured')
+      }
+
+      console.log(`📧 Submitting contact form for ${body.email}`)
+
+      // Forward request to external API
+      const response = await fetch(`${KF_API_BASE_URL}/contact/contact-us`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${KF_API_TOKEN}`
+        },
+        body: JSON.stringify({
+          name: body.name,
+          email: body.email,
+          message: body.message
+        })
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => '')
+        console.error(`❌ External API error (${response.status}):`, errorText)
+        return sendError(res, 502, 'Failed to submit contact request')
+      }
+
+      console.log('✅ Contact form submitted successfully')
+      return sendJSON(res, 200, {
+        success: true,
+        message: 'Contact request submitted successfully'
+      })
+    } catch (err) {
+      console.error('Error submitting contact form:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  }
+}
+
 // Lesson Access API handlers
 const lessonAccessHandlers = {
   // GET /api/lessons/access/:courseSlug/:lessonId
@@ -925,6 +1045,26 @@ const server = http.createServer(async (req, res) => {
       return sendError(res, 404, 'Test endpoint not found')
     }
 
+    // Public CTA endpoints (no auth required)
+    if (pathname.startsWith('/api/public/cta/')) {
+      // Apply strict rate limiting for public endpoints
+      await applyMiddleware(applyStrictRateLimit, req, res);
+
+      const pathParts = pathname.split('/')
+
+      // POST /api/public/cta/partner
+      if (pathParts[4] === 'partner' && req.method === 'POST') {
+        return await publicCTAHandlers.submitPartnerForm(req, res)
+      }
+
+      // POST /api/public/cta/contact
+      if (pathParts[4] === 'contact' && req.method === 'POST') {
+        return await publicCTAHandlers.submitContactForm(req, res)
+      }
+
+      return sendError(res, 404, 'CTA endpoint not found')
+    }
+
     // Stripe endpoints (existing) - no auth required for webhooks
     if (pathname === '/api/stripe/create-checkout-session' && req.method === 'POST') {
       const body = await parseBody(req);
@@ -968,6 +1108,10 @@ server.listen(PORT, () => {
   console.log(`📋 Available endpoints:`)
   console.log(`   GET  /api/health - Health check`)
   console.log(``)
+  console.log(`   🌐 Public CTA Endpoints (No Auth):`)
+  console.log(`   POST /api/public/cta/partner - Submit partnership form`)
+  console.log(`   POST /api/public/cta/contact - Submit contact form`)
+  console.log(``)
   console.log(`   📚 Lesson Access Endpoints:`)
   console.log(`   GET  /api/lessons/access/:courseSlug/:lessonId - Check lesson access`)
   console.log(`   GET  /api/lessons/course-access/:courseSlug - Get course access summary`)
@@ -989,4 +1133,5 @@ server.listen(PORT, () => {
   console.log(`🔧 Configuration:`)
   console.log(`   Supabase: ${supabaseClient ? '✅ Connected' : '❌ Not configured'}`)
   console.log(`   Authentication: ${process.env.VITE_AZURE_TENANT_ID ? '✅ Configured' : '❌ Not configured'}`)
+  console.log(`   External CTA API: ${KF_API_TOKEN ? '✅ Configured' : '❌ Not configured'}`)
 })

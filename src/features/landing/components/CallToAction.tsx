@@ -399,19 +399,20 @@ const CallToAction: React.FC = () => {
     setPartnerSubmitError(null);
 
     try {
+      // SECURITY: Call backend proxy instead of external API directly
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
       const response = await fetch(
-        "https://kfrealexpressserver.vercel.app/api/v1/partner/create-partnership",
+        `${apiBaseUrl}/public/cta/partner`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer enquiry1234",
           },
           body: JSON.stringify({
-            Name: partnerFormData.name,
-            Email: partnerFormData.email,
-            ServiceCategory: partnerFormData.serviceCategory,
-            Message: partnerFormData.message,
+            name: partnerFormData.name,
+            email: partnerFormData.email,
+            serviceCategory: partnerFormData.serviceCategory,
+            message: partnerFormData.message,
           }),
         }
       );
@@ -436,7 +437,7 @@ const CallToAction: React.FC = () => {
       } else {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Submission failed (${response.status})`
+          errorData.error || `Submission failed (${response.status})`
         );
       }
     } catch (error) {
@@ -460,13 +461,14 @@ const CallToAction: React.FC = () => {
     setContactSubmitError(null);
 
     try {
+      // SECURITY: Call backend proxy instead of external API directly
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
       const response = await fetch(
-        "https://kfrealexpressserver.vercel.app/api/v1/contact/contact-us",
+        `${apiBaseUrl}/public/cta/contact`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer enquiry1234",
           },
           body: JSON.stringify({
             name: contactFormData.name,
@@ -495,7 +497,7 @@ const CallToAction: React.FC = () => {
       } else {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Submission failed (${response.status})`
+          errorData.error || `Submission failed (${response.status})`
         );
       }
     } catch (error) {
