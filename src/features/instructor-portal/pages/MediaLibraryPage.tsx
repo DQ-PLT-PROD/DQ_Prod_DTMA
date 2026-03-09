@@ -29,6 +29,8 @@ export function MediaLibraryPage() {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
+    const [renameTarget, setRenameTarget] = useState<MediaItem | null>(null);
+    const [renamingPath, setRenamingPath] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [toast, setToast] = useState<{
@@ -102,6 +104,22 @@ export function MediaLibraryPage() {
             setToast({ type: 'error', message });
         } finally {
             setDeletingFileId(null);
+        }
+    };
+
+    const submitRename = async (newName: string) => {
+        if (!renameTarget) return;
+        try {
+            setRenamingPath(renameTarget.id);
+            await renameLibraryFile(renameTarget.id, newName);
+            setToast({ type: 'success', message: 'File renamed' });
+            setRenameTarget(null);
+            await loadFiles();
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to rename file';
+            setToast({ type: 'error', message });
+        } finally {
+            setRenamingPath(null);
         }
     };
 
@@ -239,6 +257,16 @@ export function MediaLibraryPage() {
                                 </p>
                             </div>
                             <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                                {canUploadMedia && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setRenameTarget(file)}
+                                        className="rounded-full bg-white p-2 text-gray-700 hover:bg-gray-50 hover:text-[var(--md-primary)]"
+                                        title="Rename"
+                                    >
+                                        <Pencil className="h-4 w-4" />
+                                    </button>
+                                )}
                                 <button
                                     type="button"
                                     onClick={() => copyToClipboard(file.url)}
