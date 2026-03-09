@@ -1,20 +1,34 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
-import { fetchSavedCourseIds, saveCourse, unsaveCourse } from "@/services/savedCoursesService";
-import { useToast, Toast } from "@/components/ui/Toast";
+import {
+  fetchSavedCourseIds,
+  saveCourse as saveCourseRemote,
+  unsaveCourse as unsaveCourseRemote,
+} from "@/services/savedCoursesService";
+import {
+  getSavedCourses as getLocalSavedCourses,
+  saveCourse as saveCourseLocal,
+  unsaveCourse as unsaveCourseLocal,
+  importSavedCourses,
+} from "../utils/savedCoursesManager";
+import { useToast } from "@/components/ui/Toast";
 
 interface SavedCoursesContextType {
   savedCourseIds: Set<string>;
   isLoaded: boolean;
+  loadError: string | null;
   isSaved: (courseSlug: string) => boolean;
-  toggleSave: (courseSlug: string) => Promise<void>;
+  toggleSave: (courseSlug: string) => Promise<boolean>;
+  refreshSavedCourses: () => Promise<void>;
 }
 
 const SavedCoursesContext = createContext<SavedCoursesContextType>({
   savedCourseIds: new Set(),
   isLoaded: false,
+  loadError: null,
   isSaved: () => false,
-  toggleSave: async () => {},
+  toggleSave: async () => false,
+  refreshSavedCourses: async () => {},
 });
 
 export const useSavedCourses = () => useContext(SavedCoursesContext);
@@ -23,55 +37,78 @@ export const SavedCoursesProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const { user, databaseUser } = useAuth();
   const [savedCourseIds, setSavedCourseIds] = useState<Set<string>>(new Set());
   const [isLoaded, setIsLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const { showToast, ToastComponent } = useToast();
 
-  // Fetch saved courses on login
-  useEffect(() => {
+  const refreshSavedCourses = useCallback(async () => {
     if (!user || !databaseUser?.id) {
       setSavedCourseIds(new Set());
+      setLoadError(null);
       setIsLoaded(false);
       return;
     }
 
-    let cancelled = false;
+    setLoadError(null);
 
-    const load = async () => {
-      try {
-        const ids = await fetchSavedCourseIds(databaseUser.id);
-        if (!cancelled) {
-          setSavedCourseIds(new Set(ids));
-          setIsLoaded(true);
-        }
-      } catch (err) {
-        console.error("Failed to load saved courses:", err);
-        if (!cancelled) {
-          setIsLoaded(true); // still mark loaded so UI isn't stuck
-        }
-      }
-    };
+    try {
+      const ids = await fetchSavedCourseIds();
+      setSavedCourseIds(new Set(ids));
+      importSavedCourses(databaseUser.id, ids);
+    } catch (err) {
+      console.error("Failed to load saved courses:", err);
+      const localIds = getLocalSavedCourses(databaseUser.id);
+      setSavedCourseIds(new Set(localIds));
+      setLoadError("Could not sync saved courses from server. Showing your local saved list.");
+    } finally {
+      setIsLoaded(true);
+    }
+  }, [databaseUser?.id, user]);
 
-    load();
-
-    // Handle pending save after login redirect
-    const pendingCourseId = sessionStorage.getItem("pendingSaveCourseId");
-    if (pendingCourseId) {
-      sessionStorage.removeItem("pendingSaveCourseId");
-      sessionStorage.removeItem("returnUrl");
-      // Delay to let the initial fetch complete first
-      const timer = setTimeout(async () => {
-        try {
-          await saveCourse(databaseUser.id, pendingCourseId);
-          setSavedCourseIds(prev => new Set([...prev, pendingCourseId]));
-          showToast("Module saved!", "success");
-        } catch {
-          showToast("Failed to save module", "error");
-        }
-      }, 1000);
-      return () => { cancelled = true; clearTimeout(timer); };
+  useEffect(() => {
+    if (!user || !databaseUser?.id) {
+      setSavedCourseIds(new Set());
+      setLoadError(null);
+      setIsLoaded(false);
+      return;
     }
 
-    return () => { cancelled = true; };
-  }, [user, databaseUser?.id]);
+    setIsLoaded(false);
+    void refreshSavedCourses();
+  }, [databaseUser?.id, refreshSavedCourses, user]);
+
+  useEffect(() => {
+    if (!user || !databaseUser?.id || !isLoaded) {
+      return;
+    }
+
+    const pendingCourseId = sessionStorage.getItem("pendingSaveCourseId");
+    if (!pendingCourseId) {
+      return;
+    }
+
+    sessionStorage.removeItem("pendingSaveCourseId");
+    sessionStorage.removeItem("returnUrl");
+
+    const timer = setTimeout(async () => {
+      if (savedCourseIds.has(pendingCourseId)) {
+        return;
+      }
+
+      saveCourseLocal(databaseUser.id, pendingCourseId);
+      setSavedCourseIds((prev) => new Set([...prev, pendingCourseId]));
+
+      try {
+        await saveCourseRemote(pendingCourseId);
+        setLoadError(null);
+        showToast("Course saved!", "success");
+      } catch {
+        setLoadError("Saved courses are being kept locally until server sync succeeds.");
+        showToast("Saved locally. Server sync failed.", "info");
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [databaseUser?.id, isLoaded, savedCourseIds, showToast, user]);
 
   const isSaved = useCallback(
     (courseSlug: string) => savedCourseIds.has(courseSlug),
@@ -80,10 +117,14 @@ export const SavedCoursesProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const toggleSave = useCallback(
     async (courseSlug: string) => {
+      if (!databaseUser?.id) {
+        showToast("Sign in to save courses.", "error");
+        return false;
+      }
+
       const wasSaved = savedCourseIds.has(courseSlug);
 
-      // Optimistic update
-      setSavedCourseIds(prev => {
+      setSavedCourseIds((prev) => {
         const next = new Set(prev);
         if (wasSaved) {
           next.delete(courseSlug);
@@ -93,33 +134,48 @@ export const SavedCoursesProvider: React.FC<{ children: React.ReactNode }> = ({ 
         return next;
       });
 
+      if (wasSaved) {
+        unsaveCourseLocal(databaseUser.id, courseSlug);
+      } else {
+        saveCourseLocal(databaseUser.id, courseSlug);
+      }
+
       try {
         if (wasSaved) {
-          await unsaveCourse(databaseUser!.id, courseSlug);
-          showToast("Module removed from saved", "info");
+          await unsaveCourseRemote(courseSlug);
+          showToast("Course removed from saved", "info");
         } else {
-          await saveCourse(databaseUser!.id, courseSlug);
-          showToast("Module saved!", "success");
+          await saveCourseRemote(courseSlug);
+          showToast("Course saved!", "success");
         }
+
+        setLoadError(null);
+        return true;
       } catch {
-        // Revert on failure
-        setSavedCourseIds(prev => {
+        setSavedCourseIds((prev) => {
           const reverted = new Set(prev);
           if (wasSaved) {
             reverted.add(courseSlug);
+            saveCourseLocal(databaseUser.id, courseSlug);
           } else {
             reverted.delete(courseSlug);
+            unsaveCourseLocal(databaseUser.id, courseSlug);
           }
           return reverted;
         });
-        showToast("Something went wrong. Please try again.", "error");
+
+        setLoadError("Saved courses could not sync with server. Try again.");
+        showToast("Failed to sync saved courses. Please try again.", "error");
+        return false;
       }
     },
     [databaseUser?.id, savedCourseIds, showToast]
   );
 
   return (
-    <SavedCoursesContext.Provider value={{ savedCourseIds, isLoaded, isSaved, toggleSave }}>
+    <SavedCoursesContext.Provider
+      value={{ savedCourseIds, isLoaded, loadError, isSaved, toggleSave, refreshSavedCourses }}
+    >
       {children}
       {ToastComponent}
     </SavedCoursesContext.Provider>

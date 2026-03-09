@@ -2,6 +2,8 @@ import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { getSupabaseForEnrollment } from "@/lib/supabase/serviceClient";
 import { enrollInCourse, getEnrollment as getModuleEnrollment, getUserEnrollments as getModuleEnrollments } from "@/lib/enrollment";
 import { recordCourseCompletion } from "./achievementService";
+import { enrollmentApiClient } from "../../../lib/api/enrollmentApiClient";
+import { lessonAccessApiClient } from "../../../lib/api/lessonAccessApiClient";
 
 type ModuleRow = {
     id: string;
@@ -434,10 +436,12 @@ export const updateEnrollmentProgress = async (
     courseSlug: string,
     progressPct: number
 ): Promise<boolean> => {
+    const boundedProgress = Math.min(Math.max(progressPct, 0), 100);
+
     if (!isSupabaseConfigured()) {
         enqueueProgress({
             type: "enrollment_progress",
-            payload: { userId, courseSlug, progressPct },
+            payload: { userId, courseSlug, progressPct: boundedProgress },
         });
         return false;
     }
@@ -464,7 +468,7 @@ export const updateEnrollmentProgress = async (
             console.error("Error updating enrollment progress:", error);
             enqueueProgress({
                 type: "enrollment_progress",
-                payload: { userId, courseSlug, progressPct },
+                payload: { userId, courseSlug, progressPct: boundedProgress },
             });
             return false;
         }
@@ -478,7 +482,7 @@ export const updateEnrollmentProgress = async (
         console.error("Unexpected error updating enrollment progress:", err);
         enqueueProgress({
             type: "enrollment_progress",
-            payload: { userId, courseSlug, progressPct },
+            payload: { userId, courseSlug, progressPct: boundedProgress },
         });
         return false;
     }

@@ -1,105 +1,133 @@
-import { isSupabaseConfigured } from "@/lib/supabase/client";
-import { getSupabaseForEnrollment } from "@/lib/supabase/serviceClient";
+import { msalInstance } from "@/lib/auth/msal";
 
-type SavedModuleRow = {
-  modules?: {
-    slug?: string | null;
-  } | null;
-};
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504])
 
-type ModuleRow = {
-  id: string;
-  slug: string;
-};
+export class SavedCoursesServiceError extends Error {
+  status?: number
+  constructor(message: string, status?: number) {
+    super(message)
+    this.name = 'SavedCoursesServiceError'
+    this.status = status
+  }
+}
 
-const getSavedSupabase = () => getSupabaseForEnrollment();
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const resolveModuleBySlug = async (moduleSlug: string): Promise<ModuleRow | null> => {
-  if (!isSupabaseConfigured()) {
-    return null;
+async function getAccessToken(): Promise<string | null> {
+  const activeAccount = msalInstance.getActiveAccount()
+  if (!activeAccount) return null
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response = await msalInstance.acquireTokenSilent({
+        scopes: ['openid', 'profile', 'email'],
+        account: activeAccount,
+      })
+      return response.idToken || response.accessToken
+    } catch (error) {
+      if (attempt === 1) {
+        return null
+      }
+      await sleep(250)
+    }
   }
 
-  const supabase = getSavedSupabase();
-  const { data, error } = await supabase
-    .from("modules")
-    .select("id, slug")
-    .eq("slug", moduleSlug)
-    .eq("status", "published")
-    .maybeSingle();
+  return null
+}
 
-  if (error) {
-    console.error("Failed to resolve saved module slug:", error);
-    return null;
+const parseResponse = async (response: Response): Promise<any> => {
+  if (response.status === 204) {
+    return {}
   }
 
-  return (data as ModuleRow | null) ?? null;
-};
-
-export const fetchSavedCourseIds = async (userId: string): Promise<string[]> => {
-  if (!userId || !isSupabaseConfigured()) {
-    return [];
+  const contentType = response.headers.get('content-type') || ''
+  if (contentType.includes('application/json')) {
+    return response.json()
   }
 
-  const supabase = getSavedSupabase();
-  const { data, error } = await (supabase.from("saved_modules" as any) as any)
-    .select("modules!inner(slug)")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+  const text = await response.text()
+  return text ? { error: text } : {}
+}
 
-  if (error || !Array.isArray(data)) {
-    console.error("Failed to fetch saved modules:", error);
-    return [];
+const shouldRetryError = (error: unknown): boolean => {
+  if (error instanceof SavedCoursesServiceError) {
+    return Boolean(error.status && RETRYABLE_STATUS.has(error.status))
   }
 
-  return data
-    .map((row: SavedModuleRow) => row.modules?.slug)
-    .filter((slug: string | null | undefined): slug is string => typeof slug === "string" && slug.length > 0);
-};
-
-export const saveCourse = async (userId: string, moduleSlug: string): Promise<void> => {
-  if (!userId || !moduleSlug || !isSupabaseConfigured()) {
-    throw new Error("Missing learner or module context");
+  if (!(error instanceof Error)) {
+    return false
   }
 
-  const module = await resolveModuleBySlug(moduleSlug);
-  if (!module) {
-    throw new Error("Module not found");
+  return /Failed to fetch|NetworkError|Load failed/i.test(error.message)
+}
+
+async function makeRequest<T>(method: string, endpoint: string, body?: unknown): Promise<T> {
+  const token = await getAccessToken()
+  if (!token) {
+    throw new SavedCoursesServiceError('Authentication required')
   }
 
-  const supabase = getSavedSupabase();
-  const { error } = await (supabase.from("saved_modules" as any) as any)
-    .upsert(
-      {
-        user_id: userId,
-        module_id: module.id,
-      },
-      { onConflict: "user_id,module_id" }
-    );
+  const maxRetries = method === 'GET' ? 2 : 1
 
-  if (error) {
-    console.error("Failed to save module:", error);
-    throw error;
+  for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      })
+
+      const data = await parseResponse(response)
+
+      if (!response.ok) {
+        const error = new SavedCoursesServiceError(
+          data?.error || `Request failed with status ${response.status}`,
+          response.status,
+        )
+
+        if (attempt < maxRetries && shouldRetryError(error)) {
+          await sleep(300 * (attempt + 1))
+          continue
+        }
+
+        throw error
+      }
+
+      return data as T
+    } catch (error) {
+      if (attempt < maxRetries && shouldRetryError(error)) {
+        await sleep(300 * (attempt + 1))
+        continue
+      }
+
+      if (error instanceof SavedCoursesServiceError) {
+        throw error
+      }
+
+      const message = error instanceof Error ? error.message : 'Request failed'
+      throw new SavedCoursesServiceError(message)
+    }
   }
-};
 
-export const unsaveCourse = async (userId: string, moduleSlug: string): Promise<void> => {
-  if (!userId || !moduleSlug || !isSupabaseConfigured()) {
-    throw new Error("Missing learner or module context");
-  }
+  throw new SavedCoursesServiceError('Request failed after retries')
+}
 
-  const module = await resolveModuleBySlug(moduleSlug);
-  if (!module) {
-    return;
-  }
+export async function fetchSavedCourseIds(): Promise<string[]> {
+  const data = await makeRequest<{ savedCourseIds: string[] }>('GET', '/saved-courses')
+  return Array.isArray(data.savedCourseIds) ? data.savedCourseIds : []
+}
 
-  const supabase = getSavedSupabase();
-  const { error } = await (supabase.from("saved_modules" as any) as any)
-    .delete()
-    .eq("user_id", userId)
-    .eq("module_id", module.id);
+export async function saveCourse(courseId: string): Promise<boolean> {
+  const data = await makeRequest<{ saved: boolean }>('POST', '/saved-courses', { courseId })
+  return Boolean(data.saved)
+}
 
-  if (error) {
-    console.error("Failed to unsave module:", error);
-    throw error;
-  }
-};
+export async function unsaveCourse(courseId: string): Promise<boolean> {
+  const data = await makeRequest<{ saved: boolean }>('DELETE', `/saved-courses/${encodeURIComponent(courseId)}`)
+  return data.saved === false
+}

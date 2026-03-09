@@ -11,6 +11,8 @@ interface ProfileSectionAccordionProps {
   isOpen: boolean;
   onToggle: () => void;
   children: React.ReactNode;
+  disabled?: boolean;
+  disabledLabel?: string;
 }
 
 const requirementLabel: Record<SectionRequirement, string> = {
@@ -28,18 +30,35 @@ const ProfileSectionAccordion: React.FC<ProfileSectionAccordionProps> = ({
   isOpen,
   onToggle,
   children,
+  disabled = false,
+  disabledLabel = "Coming soon",
 }) => {
+  const effectiveIsOpen = disabled ? false : isOpen;
+
   return (
-    <section className="w-full rounded-xl border border-gray-200 bg-white">
+    <section
+      className={`w-full rounded-xl border ${
+        disabled ? "border-gray-300 bg-gray-100" : "border-gray-200 bg-white"
+      }`}
+    >
       <button
         type="button"
-        onClick={onToggle}
-        className="flex w-full items-start justify-between gap-3 px-4 py-4 text-left"
-        aria-expanded={isOpen}
+        onClick={() => {
+          if (!disabled) {
+            onToggle();
+          }
+        }}
+        disabled={disabled}
+        className={`flex w-full items-start justify-between gap-3 px-4 py-4 text-left ${
+          disabled ? "cursor-not-allowed opacity-80" : ""
+        }`}
+        aria-expanded={effectiveIsOpen}
       >
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+            <h3 className={`text-base font-semibold ${disabled ? "text-gray-500" : "text-gray-900"}`}>
+              {title}
+            </h3>
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                 requirement === "required"
@@ -58,15 +77,22 @@ const ProfileSectionAccordion: React.FC<ProfileSectionAccordionProps> = ({
             >
               {completionPct}% complete
             </span>
+            {disabled ? (
+              <span className="rounded-full bg-gray-300 px-2 py-0.5 text-xs font-medium text-gray-600">
+                {disabledLabel}
+              </span>
+            ) : null}
           </div>
-          <p className="mt-1 text-sm text-gray-600">{description}</p>
+          <p className={`mt-1 text-sm ${disabled ? "text-gray-500" : "text-gray-600"}`}>
+            {description}
+          </p>
         </div>
         <ChevronDown
           size={18}
-          className={`mt-1 shrink-0 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`mt-1 shrink-0 text-gray-500 transition-transform ${effectiveIsOpen ? "rotate-180" : ""}`}
         />
       </button>
-      {isOpen ? <div className="border-t border-gray-100 px-4 py-4">{children}</div> : null}
+      {effectiveIsOpen ? <div className="border-t border-gray-100 px-4 py-4">{children}</div> : null}
     </section>
   );
 };
