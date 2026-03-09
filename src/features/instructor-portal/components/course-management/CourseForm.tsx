@@ -1,168 +1,64 @@
-/**
- * CourseForm Component for Instructor Portal
- * 
- * Form for creating and editing courses.
- * Adapted from DWS Admin App for DTMA integration.
- */
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeftIcon, SaveIcon, UploadIcon, Image as ImageIcon } from 'lucide-react';
-import { getSupabaseClient } from '../../lib/dbClient';
-import { uploadLMSFile } from '../../lib/storage';
-import { useAdminAuth } from '@/lib/admin-auth';
+import { ArrowLeftIcon, SaveIcon } from 'lucide-react';
 import { Toast } from '@/components/ui/Toast';
-import { MediaPickerModal } from '../../components/media/MediaPickerModal';
-import {
-    DEPARTMENTS,
-    LMS_ITEM_PROVIDERS,
-    COURSE_TYPES,
-    SFIA_LEVEL_CODES,
-    AUDIENCE_OPTIONS
-} from '../../constants/courseConstants';
-import { AlertTriangleIcon, CheckIcon, ChevronDownIcon, XIcon } from 'lucide-react';
-
-interface CategoryOption {
-    slug: string;
-    name: string;
-    description: string | null;
-}
+import { useAdminAuth } from '@/lib/admin-auth';
+import { getSupabaseClient } from '../../lib/dbClient';
 
 interface CourseFormData {
     slug: string;
     title: string;
-    provider: string;
     description: string;
-    category: string;
-    delivery_mode: string;
-    duration: number;
-    level_code: string;
-    department: string;
-    audience: string;
-    status: string;
-    highlights: string[];
-    outcomes: string[];
-    course_type: string;
-    track: string;
-    rating: number;
-    review_count: number;
-    image_url: string;
-    excerpt: string;
-    faq: unknown[];
+    status: 'draft' | 'published' | 'archived';
+}
+
+function slugify(value: string) {
+    return value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+}
+
+function deriveExcerpt(description: string) {
+    const firstLine = description
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .find(Boolean);
+
+    if (!firstLine) return null;
+    return firstLine.length <= 180 ? firstLine : `${firstLine.slice(0, 177)}...`;
 }
 
 export function CourseForm() {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
-    const isEditing = id && id !== 'new';
-
+    const isEditing = Boolean(id && id !== 'new');
+    const { ability } = useAdminAuth();
     const [formData, setFormData] = useState<CourseFormData>({
         slug: '',
         title: '',
-        provider: '',
         description: '',
-        category: '',
-        delivery_mode: '',
-        duration: 0,
-        level_code: '',
-        department: '',
-        audience: '',
         status: 'draft',
-        highlights: [],
-        outcomes: [],
-        course_type: '',
-        track: '',
-        rating: 0,
-        review_count: 0,
-        image_url: '',
-        excerpt: '',
-        faq: [],
     });
-
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [originalStatus, setOriginalStatus] = useState<'draft' | 'published' | 'archived'>('draft');
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
-    const [highlightInput, setHighlightInput] = useState('');
-    const [outcomeInput, setOutcomeInput] = useState('');
-
-    // Image upload state
-    const [uploadingImage, setUploadingImage] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [showMediaPicker, setShowMediaPicker] = useState(false);
-
-    // Categories from course_categories table
-    const [categories, setCategories] = useState<CategoryOption[]>([]);
-    const [categoriesLoading, setCategoriesLoading] = useState(true);
-    // Custom Category State (for adding new category not yet in DB)
-    const [showCustomCategoryWarn, setShowCustomCategoryWarn] = useState(false);
-    const [isCustomCategory, setIsCustomCategory] = useState(false);
-    const [customCategoryInput, setCustomCategoryInput] = useState('');
-    const [customCategoryDescription, setCustomCategoryDescription] = useState('');
-    const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
-    const categoryDropdownRef = useRef<HTMLDivElement>(null);
-    const { ability } = useAdminAuth();
     const canCreateCourse = ability.can('create', 'Course');
     const canUpdateCourse = ability.can('update', 'Course');
     const canPublishCourse = ability.can('publish', 'Course');
     const canUnpublishCourse = ability.can('unpublish', 'Course');
-    const canCreateCategory = ability.can('create', 'Category');
-    const canUploadMedia = ability.can('upload', 'Media');
     const canSubmit = isEditing ? canUpdateCourse : canCreateCourse;
 
     useEffect(() => {
-        loadCategories();
-    }, []);
-
-    useEffect(() => {
         if (isEditing && id) {
-            loadCourse(id);
+            void loadCourse(id);
         }
     }, [id, isEditing]);
 
-    const loadCategories = async () => {
-        const supabase = getSupabaseClient();
-        if (!supabase) return;
-        try {
-            setCategoriesLoading(true);
-            const { data, error } = await supabase
-                .from('course_categories')
-                .select('slug, name, description')
-                .eq('is_active', true)
-                .order('display_order', { ascending: true });
-            if (error) throw error;
-            setCategories((data ?? []).map((r) => ({ slug: r.slug, name: r.name, description: r.description })));
-        } catch (err) {
-            console.error('Error loading categories:', err);
-        } finally {
-            setCategoriesLoading(false);
-        }
-    };
-
-    // Check if loaded category exists in fetched list (otherwise treat as custom/orphaned)
-    useEffect(() => {
-        if (formData.category && categories.length > 0) {
-            const exists = categories.some((c) => c.slug === formData.category);
-            setIsCustomCategory(!exists);
-            if (!exists) {
-                setCustomCategoryInput(formData.category);
-            }
-        }
-    }, [formData.category, categories]);
-
-    // Close category dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target as Node)) {
-                setCategoryDropdownOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
     const loadCourse = async (courseId: string) => {
-        // ... (existing loadCourse implementation) ...
         try {
             setLoading(true);
             const supabase = getSupabaseClient();
@@ -172,37 +68,21 @@ export function CourseForm() {
 
             const { data, error } = await supabase
                 .from('courses')
-                .select('*')
+                .select('slug, title, short_description, long_description, status')
                 .eq('id', courseId)
                 .single();
 
             if (error) throw error;
-            if (data) {
-                const row = data as Record<string, unknown>;
-                setFormData({
-                    slug: (row.slug as string) ?? '',
-                    title: (row.title as string) ?? '',
-                    provider: '',
-                    description: (row.long_description as string) ?? (row.short_description as string) ?? '',
-                    category: (row.category_id as string) ?? '',
-                    delivery_mode: (row.delivery_mode as string) ?? '',
-                    duration: Number(row.estimated_duration_minutes) || 0,
-                    level_code: (row.level_tag as string) ?? '',
-                    department: '',
-                    audience: (row.audience_level as string) ?? '',
-                    status: (row.status as string) ?? 'draft',
-                    highlights: Array.isArray(row.skills_gained) ? (row.skills_gained as string[]) : [],
-                    outcomes: Array.isArray(row.learning_outcomes) ? (row.learning_outcomes as string[]) : [],
-                    course_type: '',
-                    track: '',
-                    rating: Number(row.rating) || 0,
-                    review_count: Number(row.review_count) || 0,
-                    image_url: (row.hero_image_url as string) ?? '',
-                    excerpt: (row.short_description as string) ?? '',
-                    faq: [],
-                });
-                setOriginalStatus(((row.status as string) ?? 'draft') as 'draft' | 'published' | 'archived');
-            }
+            if (!data) return;
+
+            const nextStatus = ((data.status as CourseFormData['status'] | null) ?? 'draft');
+            setFormData({
+                slug: data.slug ?? '',
+                title: data.title ?? '',
+                description: data.long_description ?? data.short_description ?? '',
+                status: nextStatus,
+            });
+            setOriginalStatus(nextStatus);
         } catch (error: unknown) {
             console.error('Error loading course:', error);
             const message = error instanceof Error ? error.message : 'Failed to load course';
@@ -212,116 +92,14 @@ export function CourseForm() {
         }
     };
 
-    // ... (handleImageUpload and others remain the same) ...
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!canUploadMedia) {
-            setToast({ type: 'error', message: 'You do not have permission to upload media.' });
-            e.target.value = '';
-            return;
-        }
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        // Use slug or generate a temporary one for new courses
-        const courseSlug = formData.slug || formData.title.toLowerCase().replace(/\s+/g, '-') || 'temp-new-course';
-
-        if (!formData.title && (!courseSlug || courseSlug === 'temp-new-course')) {
-            setToast({ type: 'error', message: 'Please enter a course title first' });
-            return;
-        }
-
-        try {
-            setUploadingImage(true);
-            setUploadProgress(0);
-
-            const result = await uploadLMSFile({
-                file,
-                courseSlug,
-                itemType: 'thumbnail',
-                itemId: id !== 'new' ? id : undefined,
-                onProgress: (progress) => {
-                    setUploadProgress(progress);
-                },
-            });
-
-            setFormData({ ...formData, image_url: result.publicUrl });
-            setUploadProgress(100);
-            setToast({ type: 'success', message: 'Thumbnail uploaded successfully' });
-        } catch (error: unknown) {
-            console.error('Error uploading image:', error);
-            const message = error instanceof Error ? error.message : 'Failed to upload image';
-            setToast({ type: 'error', message });
-            setUploadProgress(0);
-        } finally {
-            setUploadingImage(false);
-        }
-    };
-
-    const addHighlight = () => {
-        if (highlightInput.trim()) {
-            setFormData({
-                ...formData,
-                highlights: [...formData.highlights, highlightInput.trim()],
-            });
-            setHighlightInput('');
-        }
-    };
-
-    const removeHighlight = (index: number) => {
-        setFormData({
-            ...formData,
-            highlights: formData.highlights.filter((_, i) => i !== index),
-        });
-    };
-
-    const addOutcome = () => {
-        if (outcomeInput.trim()) {
-            setFormData({
-                ...formData,
-                outcomes: [...formData.outcomes, outcomeInput.trim()],
-            });
-            setOutcomeInput('');
-        }
-    };
-
-    const removeOutcome = (index: number) => {
-        setFormData({
-            ...formData,
-            outcomes: formData.outcomes.filter((_, i) => i !== index),
-        });
-    };
-
-    /** Map form data to actual public.courses table columns (avoids 400 from invalid column names). */
-    const formDataToCourseRow = (): Record<string, unknown> => {
-        const slug = formData.slug?.trim() || formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        return {
-            slug,
-            title: formData.title?.trim() || '',
-            short_description: formData.excerpt?.trim() || formData.description?.trim() || null,
-            long_description: formData.description?.trim() || null,
-            category_id: formData.category?.trim() || null,
-            audience_level: formData.audience?.trim() || null,
-            level_tag: formData.level_code?.trim() || null,
-            estimated_duration_minutes: formData.duration ? Number(formData.duration) : null,
-            delivery_mode: formData.delivery_mode?.trim() || null,
-            status: formData.status || 'draft',
-            hero_image_url: formData.image_url?.trim() || null,
-            rating: formData.rating != null ? Number(formData.rating) : null,
-            review_count: formData.review_count != null ? Number(formData.review_count) : null,
-            learning_outcomes: Array.isArray(formData.outcomes) && formData.outcomes.length > 0 ? formData.outcomes : null,
-            skills_gained: Array.isArray(formData.highlights) && formData.highlights.length > 0 ? formData.highlights : null,
-            updated_at: new Date().toISOString(),
-        };
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
         if (!canSubmit) {
             setToast({ type: 'error', message: `You do not have permission to ${isEditing ? 'update' : 'create'} courses.` });
             return;
         }
-        if (!formData.category?.trim()) {
-            setToast({ type: 'error', message: 'Please select a category.' });
+        if (!formData.title.trim() || !formData.description.trim()) {
+            setToast({ type: 'error', message: 'Title and description are required.' });
             return;
         }
         if (formData.status === 'published' && !canPublishCourse) {
@@ -332,35 +110,35 @@ export function CourseForm() {
             setToast({ type: 'error', message: 'You do not have permission to unpublish courses.' });
             return;
         }
-        setSaving(true);
+
         try {
+            setSaving(true);
             const supabase = getSupabaseClient();
             if (!supabase) {
                 throw new Error('Database connection unavailable');
             }
 
-            const dataToSave = formDataToCourseRow();
+            const slug = formData.slug || slugify(formData.title);
+            const description = formData.description.trim();
+            const payload = {
+                slug,
+                title: formData.title.trim(),
+                short_description: deriveExcerpt(description),
+                long_description: description,
+                status: formData.status,
+                updated_at: new Date().toISOString(),
+            };
 
             if (isEditing && id) {
-                const { id: _id, ...updatePayload } = dataToSave as { id?: string; [k: string]: unknown };
-                const { error } = await supabase
-                    .from('courses')
-                    .update(updatePayload)
-                    .eq('id', id);
-
+                const { error } = await supabase.from('courses').update(payload).eq('id', id);
                 if (error) throw error;
             } else {
-                const { error } = await supabase
-                    .from('courses')
-                    .insert([dataToSave]);
-
+                const { error } = await supabase.from('courses').insert([payload]);
                 if (error) throw error;
             }
 
             setToast({ type: 'success', message: `Course ${isEditing ? 'updated' : 'created'} successfully` });
-            setTimeout(() => {
-                navigate('/instructor/course-management?tab=courses');
-            }, 1000);
+            window.setTimeout(() => navigate('/instructor/course-management?tab=courses'), 700);
         } catch (error: unknown) {
             console.error('Error saving course:', error);
             const message = error instanceof Error ? error.message : 'Failed to save course';
@@ -370,61 +148,11 @@ export function CourseForm() {
         }
     };
 
-
-    const handleCategorySelect = (value: string) => {
-        if (value === 'custom_new') {
-            setShowCustomCategoryWarn(true);
-            setCategoryDropdownOpen(false);
-        } else {
-            setFormData({ ...formData, category: value });
-            setIsCustomCategory(false);
-            setCategoryDropdownOpen(false);
-        }
-    };
-
-    const categoryDisplayLabel = formData.category
-        ? categories.find((c) => c.slug === formData.category)?.name ?? formData.category
-        : '';
-
-    const confirmCustomCategory = async () => {
-        if (!canCreateCategory) {
-            setToast({ type: 'error', message: 'You do not have permission to create categories.' });
-            return;
-        }
-        const name = customCategoryInput.trim();
-        if (!name) return;
-        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        if (!slug) return;
-        const supabase = getSupabaseClient();
-        if (!supabase) return;
-        try {
-            const { error } = await supabase.from('course_categories').insert({
-                slug,
-                name,
-                description: customCategoryDescription.trim() || null,
-            });
-            if (error) throw error;
-            await loadCategories();
-            setFormData({ ...formData, category: slug });
-            setIsCustomCategory(false);
-            setShowCustomCategoryWarn(false);
-            setCustomCategoryInput('');
-            setCustomCategoryDescription('');
-            setToast({ type: 'success', message: `Category "${name}" added.` });
-        } catch (err) {
-            console.error('Error adding category:', err);
-            const msg = err instanceof Error ? err.message : 'Failed to add category';
-            setToast({ type: 'error', message: msg });
-        }
-    };
-
-    // ... (render logic) ...
-
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--md-primary)] mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--md-primary)] mx-auto" />
                     <p className="mt-4 text-[color:var(--md-on-surface-variant)]">Loading course...</p>
                 </div>
             </div>
@@ -445,461 +173,76 @@ export function CourseForm() {
                     <h1 className="text-2xl font-bold text-gray-900">
                         {isEditing ? 'Edit Course' : 'Create Course'}
                     </h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Courses sit at the top of the hierarchy. Modules and lessons are managed separately.
+                    </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-6 space-y-6">
                     <div className="space-y-4">
-                        <h2 className="text-lg font-semibold text-gray-800 border-b pb-2">Basic Information</h2>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                                <input
-                                    type="text"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                    value={formData.slug}
-                                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                    placeholder="Auto-generated from title"
-                                />
-                            </div>
-
-                            {/* Provider - commented out */}
-                            {/* <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Provider *</label>
-                                <select
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                    value={formData.provider}
-                                    onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
-                                >
-                                    <option value="">Select provider</option>
-                                    {LMS_ITEM_PROVIDERS.map((provider) => (
-                                        <option key={provider} value={provider}>
-                                            {provider}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div> */}
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                                <div className="space-y-3" ref={categoryDropdownRef}>
-                                    <input
-                                        type="hidden"
-                                        name="category"
-                                        value={formData.category}
-                                        readOnly
-                                        tabIndex={-1}
-                                        aria-hidden="true"
-                                    />
-                                    <div className="relative">
-                                        <button
-                                            type="button"
-                                            disabled={categoriesLoading}
-                                            onClick={() => setCategoryDropdownOpen((o) => !o)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)] disabled:opacity-50 text-left flex items-center justify-between bg-white"
-                                        >
-                                            <span className={!categoryDisplayLabel ? 'text-gray-500' : ''}>
-                                                {categoriesLoading ? 'Loading...' : categoryDisplayLabel || 'Select category'}
-                                            </span>
-                                            <ChevronDownIcon
-                                                className={`h-4 w-4 text-gray-400 shrink-0 transition-transform ${categoryDropdownOpen ? 'rotate-180' : ''}`}
-                                            />
-                                        </button>
-                                        {categoryDropdownOpen && (
-                                            <div className="absolute z-10 mt-1 w-full min-w-0 bg-white border border-gray-200 rounded-lg shadow-lg py-1 max-h-60 overflow-auto overflow-x-hidden">
-                                                <div className="px-3 py-2 text-gray-700 font-bold text-sm border-b border-gray-100">
-                                                    Select category
-                                                </div>
-                                                {categories.map((category) => (
-                                                    <button
-                                                        key={category.slug}
-                                                        type="button"
-                                                        onClick={() => handleCategorySelect(category.slug)}
-                                                        className="w-full px-3 py-2 text-left text-sm text-gray-900 hover:bg-gray-50 flex items-center"
-                                                    >
-                                                        {category.name}
-                                                    </button>
-                                                ))}
-                                                <div className="border-t border-gray-100 mt-1 pt-1 px-2">
-                                                    <div className="px-1 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                                        Add new
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleCategorySelect('custom_new')}
-                                                        disabled={!canCreateCategory}
-                                                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--md-primary)] text-white hover:bg-[var(--md-primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    >
-                                                        Add category
-                                                    </button>
-                                                </div>
-                                                {isCustomCategory && formData.category && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleCategorySelect(formData.category)}
-                                                        className="w-full px-3 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 border-t border-gray-100"
-                                                    >
-                                                        {formData.category}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Create new category form */}
-                                    {showCustomCategoryWarn && (
-                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
-                                            <div className="flex items-start gap-3">
-                                                <AlertTriangleIcon className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
-                                                <div className="flex-1 space-y-3">
-                                                    <h4 className="text-sm font-medium text-blue-800">Add new category</h4>
-                                                    <p className="text-xs text-blue-700">
-                                                        New categories are stored in the database and will appear in the dropdown for future courses.
-                                                    </p>
-                                                    <div className="space-y-2">
-                                                        <input
-                                                            type="text"
-                                                            value={customCategoryInput}
-                                                            onChange={(e) => setCustomCategoryInput(e.target.value)}
-                                                            placeholder="Category name (e.g. Emerging Technologies)"
-                                                            className="w-full text-sm px-3 py-1.5 border border-blue-300 rounded focus:border-blue-500 focus:outline-none"
-                                                        />
-                                                        <input
-                                                            type="text"
-                                                            value={customCategoryDescription}
-                                                            onChange={(e) => setCustomCategoryDescription(e.target.value)}
-                                                            placeholder="Description (optional)"
-                                                            className="w-full text-sm px-3 py-1.5 border border-blue-300 rounded focus:border-blue-500 focus:outline-none"
-                                                        />
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            type="button"
-                                                            onClick={confirmCustomCategory}
-                                                            disabled={!canCreateCategory}
-                                                            className="flex items-center px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        >
-                                                            <CheckIcon className="h-4 w-4 mr-1" />
-                                                            Add category
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setShowCustomCategoryWarn(false);
-                                                                setCustomCategoryInput('');
-                                                                setCustomCategoryDescription('');
-                                                            }}
-                                                            className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded text-sm"
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Orphaned/legacy category indicator */}
-                                    {isCustomCategory && !showCustomCategoryWarn && formData.category && (
-                                        <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-50 px-3 py-2 rounded-lg border border-orange-100">
-                                            <AlertTriangleIcon className="h-3 w-3" />
-                                            <span>Category &quot;{formData.category}&quot; is not in the categories list. Consider selecting a different category or creating it via &quot;Create new category&quot;.</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Delivery Mode - commented out */}
-                            {/* <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Mode</label>
-                                <select
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                    value={formData.delivery_mode}
-                                    onChange={(e) => setFormData({ ...formData, delivery_mode: e.target.value })}
-                                >
-                                    <option value="">Select delivery mode</option>
-                                    <option value="online">Online</option>
-                                    <option value="in-person">In-Person</option>
-                                    <option value="hybrid">Hybrid</option>
-                                </select>
-                            </div> */}
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes) *</label>
-                                <input
-                                    type="number"
-                                    required
-                                    min="0"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                    value={formData.duration}
-                                    onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) || 0 })}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Course Type</label>
-                                <select
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                    value={formData.course_type}
-                                    onChange={(e) => setFormData({ ...formData, course_type: e.target.value })}
-                                >
-                                    <option value="">Select course type</option>
-                                    {COURSE_TYPES.map((type) => (
-                                        <option key={type} value={type}>
-                                            {type}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* SFIA Level - commented out */}
-                            {/* <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">SFIA Level</label>
-                                <select
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                    value={formData.level_code}
-                                    onChange={(e) => setFormData({ ...formData, level_code: e.target.value })}
-                                >
-                                    <option value="">Select SFIA level</option>
-                                    {SFIA_LEVEL_CODES.map((level) => (
-                                        <option key={level} value={level}>
-                                            {level}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div> */}
-
-                            {/* Department - commented out */}
-                            {/* <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                                <select
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                    value={formData.department}
-                                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                                >
-                                    <option value="">Select department</option>
-                                    {DEPARTMENTS.map((dept) => (
-                                        <option key={dept} value={dept}>
-                                            {dept}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div> */}
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Audience</label>
-                                <select
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                    value={formData.audience}
-                                    onChange={(e) => setFormData({ ...formData, audience: e.target.value })}
-                                >
-                                    <option value="">Select audience</option>
-                                    {AUDIENCE_OPTIONS.map((audience) => (
-                                        <option key={audience} value={audience}>
-                                            {audience}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Status *</label>
-                                <select
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                    value={formData.status}
-                                    onChange={(e) => {
-                                        const nextStatus = e.target.value;
-                                        if (nextStatus === 'published' && !canPublishCourse) {
-                                            setToast({ type: 'error', message: 'You do not have permission to publish courses.' });
-                                            return;
-                                        }
-                                        if (formData.status === 'published' && nextStatus !== 'published' && !canUnpublishCourse) {
-                                            setToast({ type: 'error', message: 'You do not have permission to unpublish courses.' });
-                                            return;
-                                        }
-                                        setFormData({ ...formData, status: nextStatus });
-                                    }}
-                                >
-                                    <option value="draft">Draft</option>
-                                    <option value="published" disabled={!canPublishCourse}>Published</option>
-                                    <option value="archived">Archived</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                                <div className="space-y-2">
-                                    <div className="flex items-center space-x-2">
-                                        <input
-                                            type="text"
-                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                            value={formData.image_url}
-                                            onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                                            placeholder="https://..."
-                                        />
-                                        <label className={`px-4 py-2 rounded-lg cursor-pointer flex items-center transition-colors ${(uploadingImage || !canUploadMedia)
-                                            ? 'bg-[var(--md-surface-variant)] text-[var(--md-on-surface-variant)]'
-                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                            }`}>
-                                            <UploadIcon className="h-4 w-4 mr-2" />
-                                            {uploadingImage ? `${uploadProgress}%` : 'Upload'}
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={handleImageUpload}
-                                                disabled={uploadingImage || !canUploadMedia}
-                                            />
-                                        </label>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                if (!canUploadMedia) {
-                                                    setToast({ type: 'error', message: 'You do not have permission to upload media.' });
-                                                    return;
-                                                }
-                                                setShowMediaPicker(true);
-                                            }}
-                                            disabled={!canUploadMedia}
-                                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <ImageIcon className="h-4 w-4 mr-2" />
-                                            Library
-                                        </button>
-                                    </div>
-
-                                    {uploadingImage && uploadProgress > 0 && (
-                                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                            <div
-                                                className="bg-[var(--md-primary)] h-1.5 rounded-full transition-all duration-300"
-                                                style={{ width: `${uploadProgress}%` }}
-                                            ></div>
-                                        </div>
-                                    )}
-
-                                    {formData.image_url && !uploadingImage && (
-                                        <div className="mt-2 relative group w-32 h-20">
-                                            <img
-                                                src={formData.image_url}
-                                                alt="Preview"
-                                                className="w-full h-full object-cover rounded-lg border border-gray-200"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                        <h2 className="text-lg font-semibold text-gray-800 border-b pb-2">Course Details</h2>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Excerpt (Short Summary) *</label>
-                            <textarea
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Title <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                type="text"
                                 required
-                                rows={2}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                value={formData.excerpt}
-                                onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                                placeholder="A short summary of the course"
+                                value={formData.title}
+                                onChange={(event) => setFormData((current) => ({ ...current, title: event.target.value }))}
+                                placeholder="e.g. Mastering Economy 4.0"
                             />
+                            {!isEditing && formData.title.trim() && (
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Slug preview: <span className="font-mono">{slugify(formData.title)}</span>
+                                </p>
+                            )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Description <span className="text-red-500">*</span>
+                            </label>
                             <textarea
                                 required
-                                rows={4}
+                                rows={8}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
                                 value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                onChange={(event) => setFormData((current) => ({ ...current, description: event.target.value }))}
+                                placeholder="Describe the course and the learning journey it covers."
                             />
                         </div>
-                    </div>
 
-                    {/* Highlights */}
-                    <div className="space-y-4">
-                        <h2 className="text-lg font-semibold text-gray-800 border-b pb-2">Highlights</h2>
-                        <div className="flex space-x-2">
-                            <input
-                                type="text"
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                value={highlightInput}
-                                onChange={(e) => setHighlightInput(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addHighlight())}
-                                placeholder="Add a highlight"
-                            />
-                            <button
-                                type="button"
-                                onClick={addHighlight}
-                                className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)]"
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Status <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                                required
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
+                                value={formData.status}
+                                onChange={(event) => {
+                                    const nextStatus = event.target.value as CourseFormData['status'];
+                                    if (nextStatus === 'published' && !canPublishCourse) {
+                                        setToast({ type: 'error', message: 'You do not have permission to publish courses.' });
+                                        return;
+                                    }
+                                    if (formData.status === 'published' && nextStatus !== 'published' && !canUnpublishCourse) {
+                                        setToast({ type: 'error', message: 'You do not have permission to unpublish courses.' });
+                                        return;
+                                    }
+                                    setFormData((current) => ({ ...current, status: nextStatus }));
+                                }}
                             >
-                                Add
-                            </button>
-                        </div>
-                        <div className="space-y-2">
-                            {formData.highlights.map((highlight, index) => (
-                                <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                    <span className="text-sm text-gray-700">{highlight}</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => removeHighlight(index)}
-                                        className="text-red-600 hover:text-red-800 text-sm"
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            ))}
+                                <option value="draft">Draft</option>
+                                <option value="published" disabled={!canPublishCourse}>Published</option>
+                                <option value="archived">Archived</option>
+                            </select>
                         </div>
                     </div>
 
-                    {/* Outcomes */}
-                    <div className="space-y-4">
-                        <h2 className="text-lg font-semibold text-gray-800 border-b pb-2">Learning Outcomes</h2>
-                        <div className="flex space-x-2">
-                            <input
-                                type="text"
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
-                                value={outcomeInput}
-                                onChange={(e) => setOutcomeInput(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addOutcome())}
-                                placeholder="Add a learning outcome"
-                            />
-                            <button
-                                type="button"
-                                onClick={addOutcome}
-                                className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)]"
-                            >
-                                Add
-                            </button>
-                        </div>
-                        <div className="space-y-2">
-                            {formData.outcomes.map((outcome, index) => (
-                                <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                    <span className="text-sm text-gray-700">{outcome}</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => removeOutcome(index)}
-                                        className="text-red-600 hover:text-red-800 text-sm"
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Actions */}
                     <div className="flex justify-end space-x-4 pt-4 border-t">
                         <button
                             type="button"
@@ -914,7 +257,7 @@ export function CourseForm() {
                             className="px-4 py-2 bg-[var(--md-primary)] text-white rounded-lg hover:bg-[var(--md-primary-hover)] disabled:opacity-50 flex items-center"
                         >
                             <SaveIcon className="h-4 w-4 mr-2" />
-                            {saving ? 'Saving...' : isEditing ? 'Update' : 'Create'}
+                            {saving ? 'Saving...' : isEditing ? 'Update Course' : 'Create Course'}
                         </button>
                     </div>
                 </form>
@@ -928,16 +271,6 @@ export function CourseForm() {
                     isVisible={!!toast}
                 />
             )}
-
-            <MediaPickerModal
-                isOpen={showMediaPicker}
-                onClose={() => setShowMediaPicker(false)}
-                onSelect={(url) => {
-                    setFormData({ ...formData, image_url: url });
-                    setShowMediaPicker(false);
-                }}
-                allowedTypes={['image/']}
-            />
         </div>
     );
 }

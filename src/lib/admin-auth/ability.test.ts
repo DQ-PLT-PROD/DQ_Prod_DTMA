@@ -16,6 +16,7 @@ describe('buildAdminAbility', () => {
         expect(ability.can('create', 'Course')).toBe(true);
         expect(ability.can('update', 'Lesson')).toBe(true);
         expect(ability.can('publish', 'Course')).toBe(true);
+        expect(ability.can('publish', 'Module')).toBe(true);
         expect(ability.can('delete', 'Course')).toBe(false);
         expect(ability.can('delete', 'Media')).toBe(false);
     });
@@ -26,6 +27,7 @@ describe('buildAdminAbility', () => {
         expect(ability.can('delete', 'Course')).toBe(true);
         expect(ability.can('delete', 'Module')).toBe(true);
         expect(ability.can('delete', 'Lesson')).toBe(true);
+        expect(ability.can('publish', 'Module')).toBe(true);
         expect(ability.can('upload', 'Media')).toBe(true);
         expect(ability.can('delete', 'Media')).toBe(true);
     });

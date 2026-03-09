@@ -65,16 +65,21 @@ export function Header({
 
   // Handle sign in - direct Microsoft auth
   const handleSignIn = () => {
-    console.log('🖱️ Sign In button clicked!');
-    console.log('🔍 Current auth state before login:', { user: !!user, userEmail: user?.email });
+    console.log("🖱️ Sign In button clicked!");
+    console.log("🔍 Current auth state before login:", {
+      user: !!user,
+      userEmail: user?.email,
+    });
 
     // Prevent multiple clicks
     if (user) {
-      console.log('⚠️ User already logged in, ignoring click');
+      console.log("⚠️ User already logged in, ignoring click");
       return;
     }
 
-    console.log('🎓 Will redirect to learning page after successful authentication');
+    console.log(
+      "🎓 Will redirect to learning page after successful authentication",
+    );
     login();
   };
 
@@ -131,12 +136,13 @@ export function Header({
   return (
     <>
       <header
-        className={`w-full transition-all duration-300 ${isSticky
-          ? "fixed top-0 left-0 right-0 z-50 shadow-md-2"
-          : isTransparent
-            ? "absolute top-0 left-0 right-0 z-50"
-            : "relative z-50"
-          }`}
+        className={`w-full transition-all duration-300 ${
+          isSticky
+            ? "fixed top-0 left-0 right-0 z-50 shadow-md-2"
+            : isTransparent
+              ? "absolute top-0 left-0 right-0 z-50"
+              : "relative z-50"
+        }`}
         data-id={dataId}
         style={{
           background: isTransparent ? "rgba(0, 0, 0, 0.3)" : HEADER_GRADIENT,
@@ -145,12 +151,16 @@ export function Header({
         }}
       >
         <div
-          className={`flex w-full items-center justify-between text-white transition-all duration-300 ${isSticky ? "px-5 py-2.5" : "px-8 py-4"
-            }`}
+          className={`flex w-full items-center justify-between text-white transition-all duration-300 ${
+            isSticky ? "px-5 py-2.5" : "px-8 py-4"
+          }`}
         >
           <div className="flex items-center gap-6">
             {/* Logo */}
-            <Link to="/" className="flex items-center transition-all duration-300">
+            <Link
+              to="/"
+              className="flex items-center transition-all duration-300"
+            >
               <img
                 src="/logo/dtma-logo-white.svg"
                 alt="DTMA Logo"
@@ -161,6 +171,13 @@ export function Header({
             {/* Primary navigation */}
             <nav className="hidden md:flex items-center gap-8">
               {FEATURES.COURSE_MARKETPLACE && <ExploreDropdown />}
+
+              <Link
+                to="/about"
+                className="text-white/80 hover:text-white font-medium text-sm transition-colors"
+              >
+                About Us
+              </Link>
 
               {/* Desktop Learning Link (Pre-login Access) - REMOVED per request */}
               {/* <button
@@ -195,9 +212,15 @@ export function Header({
                   aria-label="Open menu"
                 >
                   {user.picture ? (
-                    <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
+                    <img
+                      src={user.picture}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
-                    <span className="text-xs">{user.name ? user.name.charAt(0).toUpperCase() : '?'}</span>
+                    <span className="text-xs">
+                      {user.name ? user.name.charAt(0).toUpperCase() : "?"}
+                    </span>
                   )}
                 </button>
               </>
@@ -207,7 +230,10 @@ export function Header({
                   className="flex items-center gap-2 rounded-full px-4 py-2 h-10 bg-[color:var(--md-surface)] text-[color:var(--md-primary)] font-medium hover:bg-[color:var(--md-surface-variant)] transition-all shadow-sm"
                   onClick={handleSignIn}
                 >
-                  <UserIcon size={18} className="text-[color:var(--md-primary)]" />
+                  <UserIcon
+                    size={18}
+                    className="text-[color:var(--md-primary)]"
+                  />
                   {/* Hide text on extremely small screens if needed */}
                   <span>Sign In</span>
                 </button>
@@ -234,11 +260,20 @@ export function Header({
         {/* 1. Home */}
         <Link
           to="/"
-          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isHomeActive ? 'text-[#1839AD] bg-blue-50' : 'text-gray-500 hover:text-gray-900'}`}
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isHomeActive ? "text-[#1839AD] bg-blue-50" : "text-gray-500 hover:text-gray-900"}`}
           onClick={() => setMobileMenuOpen(false)}
         >
           {/* Simple Home Icon SVG since lucide imports might need check */}
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
@@ -248,10 +283,19 @@ export function Header({
         {/* 2. Explore (Catalog) */}
         <Link
           to="/courses"
-          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isExploreActive ? 'text-[#1839AD] bg-blue-50' : 'text-gray-500 hover:text-gray-900'}`}
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isExploreActive ? "text-[#1839AD] bg-blue-50" : "text-gray-500 hover:text-gray-900"}`}
           onClick={() => setMobileMenuOpen(false)}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
@@ -264,20 +308,28 @@ export function Header({
           onClick={() => {
             setMobileMenuOpen(false);
             if (user) {
-              navigate('/portal/my-courses/in-progress');
+              navigate("/portal/my-courses/in-progress");
             } else {
               handleSignIn();
             }
           }}
         >
           {/* Play Icon to match Portal */}
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <polygon points="5 3 19 12 5 21 5 3" />
           </svg>
           <span className="text-[10px] font-medium">Learning</span>
         </button>
       </div>
-
     </>
   );
 }

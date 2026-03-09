@@ -15,7 +15,10 @@ import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../../portal/components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
 import { Lesson, toUILesson } from "../../../types/course";
-import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
+import {
+  CourseResource,
+  fetchLearningModuleContent,
+} from "../../courses/services/courseService";
 import {
   getUserCourseProgress,
   updateLessonProgress,
@@ -24,7 +27,7 @@ import {
 } from "../../portal/services/progressService";
 import { isUserEnrolled, canAccessLesson } from "../../courses/services/enrollmentService";
 import { PreviewContentGate } from "../../portal/components/PreviewContentGate";
-import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
+import { Lesson as DBLesson, Course, Module } from "../../../types/dtma-lms";
 import { ExploreDropdown } from "../../../components/Header/components/ExploreDropdown";
 import { FEATURES } from "../../../config/features";
 
@@ -36,6 +39,7 @@ const LearningScreen: React.FC = () => {
   const courseId = searchParams.get('courseId') || DEFAULT_COURSE_SLUG;
 
   const [course, setCourse] = useState<Course | null>(null);
+  const [modules, setModules] = useState<Module[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [dbLessons, setDbLessons] = useState<DBLesson[]>([]);
   const [resources, setResources] = useState<CourseResource[]>([]);
@@ -66,13 +70,15 @@ const LearningScreen: React.FC = () => {
     const loadCourseData = async () => {
       try {
         setIsLoading(true);
-        const [fetchedCourse, fetchedLessons, fetchedResources] = await Promise.all([
-          fetchFullCourse(courseId),
-          fetchCourseLessons(courseId),
-          fetchCourseResources(courseId),
-        ]);
+        const {
+          course: fetchedCourse,
+          modules: fetchedModules,
+          lessons: fetchedLessons,
+          resources: fetchedResources,
+        } = await fetchLearningModuleContent(courseId);
 
         setCourse(fetchedCourse);
+        setModules(fetchedModules);
 
         if (fetchedLessons.length > 0) {
           setDbLessons(fetchedLessons);
@@ -104,78 +110,6 @@ const LearningScreen: React.FC = () => {
 
     loadCourseData();
   }, [courseId]); // Only re-run when course changes
-
-  // Preload video durations for ALL lessons to show accurate timestamps in course outline
-  // This runs after lessons are loaded and fetches actual durations from video metadata
-  useEffect(() => {
-    if (lessons.length === 0) return;
-
-    const fetchVideoDuration = (videoUrl: string): Promise<number> => {
-      return new Promise((resolve, reject) => {
-        const video = document.createElement('video');
-        video.preload = 'metadata';
-
-        const timeout = setTimeout(() => {
-          video.src = '';
-          reject(new Error('Timeout loading video metadata'));
-        }, 10000); // 10 second timeout
-
-        video.onloadedmetadata = () => {
-          clearTimeout(timeout);
-          resolve(video.duration);
-          video.src = ''; // Clean up
-        };
-
-        video.onerror = () => {
-          clearTimeout(timeout);
-          reject(new Error('Failed to load video'));
-        };
-
-        video.src = videoUrl;
-      });
-    };
-
-    const formatDuration = (seconds: number): string => {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    };
-
-    const preloadAllDurations = async () => {
-      const durationPromises = lessons.map(async (lesson, index) => {
-        // Skip if no video URL or duration already loaded (not --:--)
-        if (!lesson.videoUrl || (lesson.duration !== '--:--' && lesson.duration !== '')) {
-          return { index, duration: lesson.duration };
-        }
-
-        try {
-          const durationSeconds = await fetchVideoDuration(lesson.videoUrl);
-          return { index, duration: formatDuration(durationSeconds) };
-        } catch (error) {
-          console.warn(`Failed to load duration for lesson ${index + 1}:`, error);
-          return { index, duration: '--:--' }; // Keep empty state for failed videos
-        }
-      });
-
-      const results = await Promise.allSettled(durationPromises);
-
-      // Update lessons with fetched durations
-      setLessons(prevLessons => {
-        const updatedLessons = [...prevLessons];
-        results.forEach(result => {
-          if (result.status === 'fulfilled' && result.value) {
-            const { index, duration } = result.value;
-            if (updatedLessons[index]) {
-              updatedLessons[index] = { ...updatedLessons[index], duration };
-            }
-          }
-        });
-        return updatedLessons;
-      });
-    };
-
-    preloadAllDurations();
-  }, [lessons.length, courseId]); // Run when lessons are loaded
 
   // Check enrollment status when user or course changes
   useEffect(() => {
@@ -214,6 +148,14 @@ const LearningScreen: React.FC = () => {
     [lessons, currentLessonIndex]
   );
 
+  const activeModuleThumbnail = useMemo(() => {
+    if (!activeLesson?.moduleId) {
+      return course?.heroImageUrl;
+    }
+
+    return modules.find((module) => module.id === activeLesson.moduleId)?.thumbnailUrl || course?.heroImageUrl;
+  }, [activeLesson?.moduleId, course?.heroImageUrl, modules]);
+
   const completedCount = useMemo(
     () => lessons.filter((lesson) => lesson.completed).length,
     [lessons]
@@ -223,9 +165,10 @@ const LearningScreen: React.FC = () => {
     currentLesson && !currentLesson.completed && duration > 0
       ? Math.min(currentTime / duration, 1)
       : 0;
-  const progressPct = Math.round(
-    ((completedCount + currentLessonProgress) / lessons.length) * 100
-  );
+  const progressPct =
+    lessons.length > 0
+      ? Math.round(((completedCount + currentLessonProgress) / lessons.length) * 100)
+      : 0;
   const boundedProgress = Math.min(Math.max(progressPct, 0), 100);
   const allLessonsCompleted = useMemo(
     () => lessons.every((lesson) => lesson.completed),
@@ -545,7 +488,7 @@ const LearningScreen: React.FC = () => {
                     >
                       <VideoPlayer
                         src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
-                        poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
+                        poster={activeModuleThumbnail || "/images/placeholders/course-fallback.png"}
                         isPlaying={isPlaying}
                         volume={volume}
                         playbackRate={playbackRate}

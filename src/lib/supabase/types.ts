@@ -251,6 +251,7 @@ export interface Database {
                 Row: {
                     id: string
                     course_slug: string
+                    module_id: string | null
                     title: string
                     type: string
                     order_index: number
@@ -258,6 +259,7 @@ export interface Database {
                     video_url: string | null
                     resource_url: string | null
                     content: string | null
+                    duration_sec: number | null
                     is_preview: boolean | null
                     created_at: string | null
                     updated_at: string | null
@@ -265,6 +267,7 @@ export interface Database {
                 Insert: {
                     id?: string
                     course_slug: string
+                    module_id?: string | null
                     title: string
                     type: string
                     order_index: number
@@ -272,6 +275,7 @@ export interface Database {
                     video_url?: string | null
                     resource_url?: string | null
                     content?: string | null
+                    duration_sec?: number | null
                     is_preview?: boolean | null
                     created_at?: string | null
                     updated_at?: string | null
@@ -279,6 +283,7 @@ export interface Database {
                 Update: {
                     id?: string
                     course_slug?: string
+                    module_id?: string | null
                     title?: string
                     type?: string
                     order_index?: number
@@ -286,7 +291,50 @@ export interface Database {
                     video_url?: string | null
                     resource_url?: string | null
                     content?: string | null
+                    duration_sec?: number | null
                     is_preview?: boolean | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Relationships: []
+            },
+            modules: {
+                Row: {
+                    id: string
+                    course_id: string
+                    course_slug: string
+                    title: string
+                    description: string | null
+                    thumbnail_url: string | null
+                    order_index: number
+                    estimated_duration_minutes: number | null
+                    status: string | null
+                    created_at: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    course_id: string
+                    course_slug: string
+                    title: string
+                    description?: string | null
+                    thumbnail_url?: string | null
+                    order_index: number
+                    estimated_duration_minutes?: number | null
+                    status?: string | null
+                    created_at?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    course_id?: string
+                    course_slug?: string
+                    title?: string
+                    description?: string | null
+                    thumbnail_url?: string | null
+                    order_index?: number
+                    estimated_duration_minutes?: number | null
+                    status?: string | null
                     created_at?: string | null
                     updated_at?: string | null
                 }

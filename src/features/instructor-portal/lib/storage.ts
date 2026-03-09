@@ -53,6 +53,11 @@ function generateStoragePath(
 
     if (args.itemType === 'thumbnail') {
         const extension = args.filename.split('.').pop()?.toLowerCase() || 'jpg';
+        if (args.moduleTitle) {
+            const moduleKey = sanitizeSlug(args.moduleTitle) || 'module';
+            const uniqueKey = args.itemId || String(Date.now());
+            return `LMS_Uploads/${sanitizedCourseSlug}/module-thumbnails/${moduleKey}-${uniqueKey}.${extension}`;
+        }
         return `LMS_Uploads/${sanitizedCourseSlug}/thumbnail.${extension}`;
     }
 
@@ -114,6 +119,7 @@ export async function uploadLMSFile({
     // Create a proper public URL for the file to be uploaded
     // Note: bucket is 'course-content'
     const BUCKET_NAME = 'course-content';
+    const allowReplace = itemType === 'thumbnail';
 
     if (onProgress) {
         return new Promise((resolve, reject) => {
@@ -179,7 +185,7 @@ export async function uploadLMSFile({
                 xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
                 xhr.setRequestHeader('apikey', anonKey);
                 xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-                xhr.setRequestHeader('x-upsert', 'false');
+                xhr.setRequestHeader('x-upsert', allowReplace ? 'true' : 'false');
                 xhr.setRequestHeader('cache-control', '3600');
 
                 xhr.send(file);
@@ -190,7 +196,7 @@ export async function uploadLMSFile({
             .from(BUCKET_NAME)
             .upload(storagePath, file, {
                 cacheControl: '3600',
-                upsert: false,
+                upsert: allowReplace,
             });
 
         if (error) {

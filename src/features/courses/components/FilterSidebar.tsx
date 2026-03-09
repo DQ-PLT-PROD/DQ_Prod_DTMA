@@ -11,6 +11,9 @@ export interface FilterOption {
 export interface FilterConfig {
   id: string;
   title: string;
+  disabled?: boolean;
+  badgeLabel?: string;
+  helperText?: string;
   options: FilterOption[];
 }
 
@@ -261,18 +264,40 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   return (
     <>
       <div className="space-y-2">
-        {filteredFilterConfig.map(config => (
-          <AccordionSection
-            key={config.id}
-            title={config.title}
-            isOpen={singleOpen ? openSection === config.id : openSections[config.id] || false}
-            onToggle={() => toggleSection(config.id)}
-          >
-            <div className={spacingClass}>
-              {config.options.map((option) => renderOption(config.id, option))}
-            </div>
-          </AccordionSection>
-        ))}
+        {filteredFilterConfig.map(config => {
+          if (config.disabled) {
+            return (
+              <div
+                key={config.id}
+                className="rounded-xl border border-dashed border-gray-200 bg-gray-50/80 px-4 py-3"
+                aria-disabled="true"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-medium text-gray-900">{config.title}</h3>
+                  <span className="inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-[11px] font-semibold text-gray-600">
+                    {config.badgeLabel || "Coming Soon"}
+                  </span>
+                </div>
+                {config.helperText && (
+                  <p className="mt-2 text-xs text-gray-500">{config.helperText}</p>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <AccordionSection
+              key={config.id}
+              title={config.title}
+              isOpen={singleOpen ? openSection === config.id : openSections[config.id] || false}
+              onToggle={() => toggleSection(config.id)}
+            >
+              <div className={spacingClass}>
+                {config.options.map((option) => renderOption(config.id, option))}
+              </div>
+            </AccordionSection>
+          );
+        })}
       </div>
       {tooltip && typeof document !== 'undefined' && createPortal(
         <div

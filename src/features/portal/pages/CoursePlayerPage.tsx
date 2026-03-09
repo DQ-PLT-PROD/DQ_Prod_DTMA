@@ -13,7 +13,7 @@ import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
 import { Lesson, toUILesson } from "../../../types/course";
-import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
+import { fetchCourseLessons, fetchCourseModules, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
 import {
     getOrCreateEnrollment,
     updateLessonProgress,
@@ -25,7 +25,7 @@ import {
 } from "../services/progressService";
 import { isUserEnrolled } from "../../courses/services/enrollmentService";
 import { PreviewContentGate } from "../components/PreviewContentGate";
-import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
+import { Lesson as DBLesson, Course, Module } from "../../../types/dtma-lms";
 
 // Defined so we can pass context up to the layout if we needed to (e.g. theater mode)
 // But for now we manage theater mode locally and just hide sidebar via pure CSS or similar, 
@@ -54,6 +54,7 @@ const CoursePlayerPage: React.FC = () => {
     }
 
     const [course, setCourse] = useState<Course | null>(null);
+    const [modules, setModules] = useState<Module[]>([]);
     const [lessons, setLessons] = useState<Lesson[]>([]);
     const [dbLessons, setDbLessons] = useState<DBLesson[]>([]);
     const [resources, setResources] = useState<CourseResource[]>([]);
@@ -90,13 +91,15 @@ const CoursePlayerPage: React.FC = () => {
         const loadCourseData = async () => {
             try {
                 setIsLoading(true);
-                const [fetchedCourse, fetchedLessons, fetchedResources] = await Promise.all([
+                const [fetchedCourse, fetchedModules, fetchedLessons, fetchedResources] = await Promise.all([
                     fetchFullCourse(courseId),
+                    fetchCourseModules(courseId),
                     fetchCourseLessons(courseId),
                     fetchCourseResources(courseId),
                 ]);
 
                 setCourse(fetchedCourse);
+                setModules(fetchedModules);
 
                 const resumeIndex = resumeLessonId
                     ? fetchedLessons.findIndex((lesson) => String(lesson.id) === resumeLessonId)
@@ -293,10 +296,10 @@ const CoursePlayerPage: React.FC = () => {
                 const enrolled = await isUserEnrolled(databaseUser.id, courseId);
                 setIsEnrolled(enrolled);
 
-                // Redirect unenrolled users to the course details page
+                // Redirect unenrolled users to the module details page
                 if (!enrolled) {
-                    console.log('🚫 User not enrolled, redirecting to course details page');
-                    navigate(`/courses/${courseId}`, { replace: true });
+                    console.log('🚫 User not enrolled, redirecting to module details page');
+                    navigate(`/modules/${courseId}`, { replace: true });
                 }
             } catch (error) {
                 console.error('Error checking enrollment status:', error);
@@ -324,6 +327,14 @@ const CoursePlayerPage: React.FC = () => {
         () => lessons[currentLessonIndex],
         [lessons, currentLessonIndex]
     );
+
+    const activeModuleThumbnail = useMemo(() => {
+        if (!activeLesson?.moduleId) {
+            return course?.heroImageUrl;
+        }
+
+        return modules.find((module) => module.id === activeLesson.moduleId)?.thumbnailUrl || course?.heroImageUrl;
+    }, [activeLesson?.moduleId, course?.heroImageUrl, modules]);
 
     const completedCount = useMemo(
         () => lessons.filter((lesson) => lesson.completed).length,
@@ -543,7 +554,7 @@ const CoursePlayerPage: React.FC = () => {
 
                             <VideoPlayer
                                 src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
-                                poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
+                                poster={activeModuleThumbnail || "/images/placeholders/course-fallback.png"}
                                 isPlaying={isPlaying}
                                 volume={volume}
                                 playbackRate={playbackRate}

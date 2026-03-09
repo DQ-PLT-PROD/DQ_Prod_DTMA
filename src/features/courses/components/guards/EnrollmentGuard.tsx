@@ -6,13 +6,14 @@
  * Spec requirement: "Access checks are enforced at route level (not UI hints)"
  * 
  * This guard checks enrollment status before rendering protected routes.
- * Non-enrolled users are redirected to course details page.
+ * Non-enrolled users are redirected to the module details page.
  */
 import React, { useEffect, useState } from 'react';
 import { Navigate, useSearchParams, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
-import { lessonAccessApiClient } from '@/lib/api/lessonAccessApiClient';
+import { getAccessContract } from '@/lib/enrollment';
+import { fetchCourseLessons } from '@/services/courseService';
 
 interface EnrollmentGuardProps {
     children: React.ReactNode;
@@ -47,14 +48,25 @@ export const EnrollmentGuard: React.FC<EnrollmentGuardProps> = ({
             }
 
             try {
-                // Get course access summary from server
-                const summary = await lessonAccessApiClient.getCourseAccessSummary(courseSlug);
-                
-                if (!summary) {
-                    setError('Failed to verify access');
-                    setIsLoading(false);
-                    return;
-                }
+                const [accessContract, lessons] = await Promise.all([
+                    getAccessContract(databaseUser?.id ?? null, courseSlug),
+                    fetchCourseLessons(courseSlug),
+                ]);
+
+                const previewLessons = lessons.filter((lesson) => lesson.isPreview).length;
+                const totalLessons = lessons.length;
+                const accessibleLessons = accessContract.isEnrolled ? totalLessons : previewLessons;
+
+                const summary = {
+                    isEnrolled: accessContract.isEnrolled,
+                    enrollmentStatus: accessContract.enrollmentStatus,
+                    summary: {
+                        totalLessons,
+                        previewLessons,
+                        accessibleLessons,
+                        blockedLessons: Math.max(totalLessons - accessibleLessons, 0),
+                    },
+                };
 
                 setAccessSummary(summary);
 
@@ -102,8 +114,7 @@ export const EnrollmentGuard: React.FC<EnrollmentGuardProps> = ({
         return <>{children}</>;
     }
 
-    // Access denied - redirect to course details for enrollment
-    const redirectPath = redirectTo || `/courses/${encodeURIComponent(courseSlug)}`;
+    const redirectPath = redirectTo || `/modules/${encodeURIComponent(courseSlug)}`;
     console.log('🚫 Access denied - redirecting to:', redirectPath);
 
     return <Navigate to={redirectPath} replace />;
@@ -130,10 +141,23 @@ export const useEnrollmentAccess = (courseSlug: string | null) => {
             }
 
             try {
-                const summary = await lessonAccessApiClient.getCourseAccessSummary(courseSlug);
-                setAccessSummary(summary || {
-                    isEnrolled: false,
-                    summary: { accessibleLessons: 0 }
+                const [accessContract, lessons] = await Promise.all([
+                    getAccessContract(databaseUser?.id ?? null, courseSlug),
+                    fetchCourseLessons(courseSlug),
+                ]);
+
+                const previewLessons = lessons.filter((lesson) => lesson.isPreview).length;
+                const totalLessons = lessons.length;
+                const accessibleLessons = accessContract.isEnrolled ? totalLessons : previewLessons;
+
+                setAccessSummary({
+                    isEnrolled: accessContract.isEnrolled,
+                    enrollmentStatus: accessContract.enrollmentStatus,
+                    summary: {
+                        accessibleLessons,
+                        totalLessons,
+                        previewLessons,
+                    }
                 });
             } catch (err) {
                 console.error('Error checking enrollment access:', err);

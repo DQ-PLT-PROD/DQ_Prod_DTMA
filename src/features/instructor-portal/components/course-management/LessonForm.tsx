@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeftIcon, SaveIcon, LinkIcon } from 'lucide-react';
-import { getSupabaseClient } from '../../lib/dbClient';
-import { useAdminAuth } from '@/lib/admin-auth';
+import { ArrowLeftIcon, FilmIcon, LinkIcon, SaveIcon, Trash2Icon, UploadIcon } from 'lucide-react';
 import { Toast } from '@/components/ui/Toast';
+import { useAdminAuth } from '@/lib/admin-auth';
+import { MediaPickerModal } from '../../components/media/MediaPickerModal';
+import { getSupabaseClient } from '../../lib/dbClient';
+import { uploadLMSFile } from '../../lib/storage';
 
 interface CourseOption {
-    id: string;
     slug: string;
     title: string;
 }
@@ -15,109 +16,110 @@ interface ModuleOption {
     id: string;
     title: string;
     course_slug: string;
+    order_index: number;
+    course_title: string;
+}
+
+interface LessonFormData {
+    title: string;
+    module_id: string;
+    course_slug: string;
+    order_index: number;
+    duration: number;
+    video_url: string;
+    type: string;
+    content: string | null;
 }
 
 export function LessonForm() {
     const navigate = useNavigate();
-    const { id } = useParams();
-    const isEditing = Boolean(id);
+    const { id } = useParams<{ id: string }>();
+    const isEditing = Boolean(id && id !== 'new');
     const { ability } = useAdminAuth();
-
     const [loading, setLoading] = useState(false);
-    const [courses, setCourses] = useState<CourseOption[]>([]);
+    const [uploadingVideo, setUploadingVideo] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [showMediaPicker, setShowMediaPicker] = useState(false);
     const [modules, setModules] = useState<ModuleOption[]>([]);
-
-    // Form Data (aligned with public.lessons: course_slug, module_id, title, type, order_index, estimated_duration_minutes, video_url, content, is_preview)
-    const [formData, setFormData] = useState({
+    const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+    const [formData, setFormData] = useState<LessonFormData>({
         title: '',
-        description: '',
+        module_id: '',
         course_slug: '',
-        module_id: '' as string,
-        order_index: 0,
+        order_index: 1,
         duration: 0,
         video_url: '',
-        content: '',
-        is_preview: false,
+        type: 'standard',
+        content: null,
     });
-
-    const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
     const canCreateLesson = ability.can('create', 'Lesson');
     const canUpdateLesson = ability.can('update', 'Lesson');
+    const canUploadMedia = ability.can('upload', 'Media');
     const canSubmit = isEditing ? canUpdateLesson : canCreateLesson;
+    const hasVideoUrl = formData.video_url.trim().length > 0;
 
     useEffect(() => {
-        loadDependencyData();
+        void loadDependencyData();
         if (isEditing && id) {
-            loadLesson(id);
+            void loadLesson(id);
         }
     }, [id, isEditing]);
 
     const loadDependencyData = async () => {
-        const supabase = getSupabaseClient();
-        if (!supabase) return;
+        try {
+            const supabase = getSupabaseClient();
+            if (!supabase) throw new Error('Database connection unavailable');
 
-        const { data: coursesData, error: coursesError } = await supabase
-            .from('courses')
-            .select('id, slug, title')
-            .order('title');
+            const [{ data: modulesData, error: modulesError }, { data: coursesData, error: coursesError }] = await Promise.all([
+                supabase.from('modules').select('id, title, course_slug, order_index').order('title'),
+                supabase.from('courses').select('slug, title'),
+            ]);
 
-        if (coursesError) console.error('Error loading courses:', coursesError);
-        else setCourses(coursesData || []);
+            if (modulesError) throw modulesError;
+            if (coursesError) throw coursesError;
+
+            const courseMap = new Map<string, string>();
+            ((coursesData as CourseOption[] | null) ?? []).forEach((course) => {
+                courseMap.set(course.slug, course.title);
+            });
+
+            const nextModules = ((modulesData as Array<Omit<ModuleOption, 'course_title'>> | null) ?? []).map((module) => ({
+                ...module,
+                course_title: courseMap.get(module.course_slug) ?? module.course_slug,
+            }));
+
+            setModules(nextModules);
+        } catch (error) {
+            console.error('Error loading module options:', error);
+            setToast({ type: 'error', message: 'Failed to load modules' });
+        }
     };
 
-    // Load modules when course is selected
-    useEffect(() => {
-        const loadModules = async () => {
-            if (!formData.course_slug) {
-                setModules([]);
-                return;
-            }
-            const supabase = getSupabaseClient();
-            if (!supabase) return;
-
-            const { data, error } = await supabase
-                .from('modules')
-                .select('id, title, course_slug')
-                .eq('course_slug', formData.course_slug)
-                .order('order_index', { ascending: true });
-
-            if (error) {
-                console.error('Error loading modules:', error);
-                setModules([]);
-            } else {
-                setModules(data || []);
-            }
-        };
-        loadModules();
-    }, [formData.course_slug]);
-
     const loadLesson = async (lessonId: string) => {
-        setLoading(true);
-        const supabase = getSupabaseClient();
-        if (!supabase) return;
-
         try {
+            setLoading(true);
+            const supabase = getSupabaseClient();
+            if (!supabase) throw new Error('Database connection unavailable');
+
             const { data, error } = await supabase
                 .from('lessons')
-                .select('*')
+                .select('title, module_id, course_slug, order_index, estimated_duration_minutes, video_url, type, content')
                 .eq('id', lessonId)
                 .single();
 
             if (error) throw error;
-            if (data) {
-                const row = data as Record<string, unknown>;
-                setFormData({
-                    title: (row.title as string) ?? '',
-                    description: (row.content as string) ?? '',
-                    course_slug: (row.course_slug as string) ?? '',
-                    module_id: (row.module_id as string) ?? '',
-                    order_index: Number(row.order_index) ?? 0,
-                    duration: Number(row.estimated_duration_minutes) ?? 0,
-                    video_url: (row.video_url as string) ?? '',
-                    content: (row.content as string) ?? '',
-                    is_preview: Boolean(row.is_preview),
-                });
-            }
+            if (!data) return;
+
+            setFormData({
+                title: data.title ?? '',
+                module_id: data.module_id ?? '',
+                course_slug: data.course_slug ?? '',
+                order_index: Number(data.order_index) || 1,
+                duration: Number(data.estimated_duration_minutes) || 0,
+                video_url: data.video_url ?? '',
+                type: data.type ?? 'standard',
+                content: data.content ?? null,
+            });
         } catch (error) {
             console.error('Error loading lesson:', error);
             setToast({ type: 'error', message: 'Failed to load lesson details' });
@@ -126,50 +128,106 @@ export function LessonForm() {
         }
     };
 
-    const handleSubmit = async (e?: React.FormEvent) => {
-        e?.preventDefault();
+    const selectedModule = modules.find((module) => module.id === formData.module_id) ?? null;
+
+    const handleModuleChange = (moduleId: string) => {
+        const module = modules.find((item) => item.id === moduleId);
+        setFormData((current) => ({
+            ...current,
+            module_id: moduleId,
+            course_slug: module?.course_slug ?? '',
+        }));
+    };
+
+    const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!canUploadMedia) {
+            setToast({ type: 'error', message: 'You do not have permission to upload media.' });
+            event.target.value = '';
+            return;
+        }
+
+        const file = event.target.files?.[0];
+        if (!file) return;
+        if (!selectedModule) {
+            setToast({ type: 'error', message: 'Select a module before uploading a lesson video.' });
+            event.target.value = '';
+            return;
+        }
+        if (!formData.title.trim()) {
+            setToast({ type: 'error', message: 'Enter a lesson title before uploading a video.' });
+            event.target.value = '';
+            return;
+        }
+
+        try {
+            setUploadingVideo(true);
+            setUploadProgress(0);
+
+            const result = await uploadLMSFile({
+                file,
+                courseSlug: selectedModule.course_slug,
+                moduleOrder: selectedModule.order_index,
+                moduleTitle: selectedModule.title,
+                lessonOrder: formData.order_index,
+                lessonTitle: formData.title,
+                itemType: 'video',
+                itemId: isEditing ? id : undefined,
+                onProgress: (progress) => setUploadProgress(progress),
+            });
+
+            setFormData((current) => ({ ...current, video_url: result.publicUrl }));
+            setUploadProgress(100);
+            setToast({ type: 'success', message: 'Lesson video uploaded successfully' });
+        } catch (error) {
+            console.error('Error uploading lesson video:', error);
+            const message = error instanceof Error ? error.message : 'Failed to upload lesson video';
+            setToast({ type: 'error', message });
+            setUploadProgress(0);
+        } finally {
+            setUploadingVideo(false);
+            event.target.value = '';
+        }
+    };
+
+    const handleSubmit = async (event?: React.FormEvent) => {
+        event?.preventDefault();
         if (!canSubmit) {
             setToast({ type: 'error', message: `You do not have permission to ${isEditing ? 'update' : 'create'} lessons.` });
             return;
         }
-        if (!formData.title || !formData.course_slug) {
-            setToast({ type: 'error', message: 'Title and Course are required' });
+        if (!formData.title.trim() || !formData.module_id || !formData.course_slug) {
+            setToast({ type: 'error', message: 'Lesson title and module are required.' });
             return;
         }
 
-        setLoading(true);
-        const supabase = getSupabaseClient();
-        if (!supabase) return;
-
-        const payload = {
-            course_slug: formData.course_slug,
-            module_id: formData.module_id || null,
-            title: formData.title,
-            type: 'standard' as const,
-            order_index: formData.order_index,
-            estimated_duration_minutes: formData.duration || null,
-            video_url: formData.video_url || null,
-            content: formData.content || formData.description || null,
-            is_preview: formData.is_preview,
-            updated_at: new Date().toISOString(),
-        };
-
         try {
+            setLoading(true);
+            const supabase = getSupabaseClient();
+            if (!supabase) throw new Error('Database connection unavailable');
+
+            const payload = {
+                course_slug: formData.course_slug,
+                module_id: formData.module_id,
+                title: formData.title.trim(),
+                type: formData.type || 'standard',
+                order_index: formData.order_index,
+                estimated_duration_minutes: formData.duration || 0,
+                video_url: formData.video_url.trim() || null,
+                content: formData.content,
+                updated_at: new Date().toISOString(),
+            };
+
             if (isEditing && id) {
-                const { error } = await supabase
-                    .from('lessons')
-                    .update(payload)
-                    .eq('id', id);
+                const { error } = await supabase.from('lessons').update(payload).eq('id', id);
                 if (error) throw error;
                 setToast({ type: 'success', message: 'Lesson updated successfully' });
             } else {
-                const { error } = await supabase
-                    .from('lessons')
-                    .insert([payload]);
+                const { error } = await supabase.from('lessons').insert([payload]);
                 if (error) throw error;
                 setToast({ type: 'success', message: 'Lesson created successfully' });
-                navigate('/instructor/course-management?tab=lessons');
             }
+
+            window.setTimeout(() => navigate('/instructor/course-management?tab=lessons'), 700);
         } catch (error) {
             console.error('Error saving lesson:', error);
             setToast({ type: 'error', message: 'Failed to save lesson' });
@@ -191,25 +249,24 @@ export function LessonForm() {
                     </button>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">
-                            {isEditing ? 'Edit Lesson' : 'Create New Lesson'}
+                            {isEditing ? 'Edit Lesson' : 'Create Lesson'}
                         </h1>
                         <p className="text-sm text-gray-500">
-                            Create engaging content for your students
+                            Lessons now live under modules. Pick the parent module first and the course is derived automatically.
                         </p>
                     </div>
                 </div>
                 <button
                     onClick={handleSubmit}
                     disabled={loading || !canSubmit}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center shadow-sm disabled:opacity-50"
+                    className="px-4 py-2 bg-[var(--md-primary)] hover:bg-[var(--md-primary-hover)] text-white rounded-lg flex items-center shadow-sm disabled:opacity-50"
                 >
                     <SaveIcon className="h-4 w-4 mr-2" />
                     {loading ? 'Saving...' : 'Save Lesson'}
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Content */}
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Lesson Details</h3>
@@ -222,136 +279,159 @@ export function LessonForm() {
                                 type="text"
                                 required
                                 value={formData.title}
-                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="e.g., Understanding Components"
+                                onChange={(event) => setFormData((current) => ({ ...current, title: event.target.value }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
+                                placeholder="e.g. Introduction to Platforms"
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Description
+                                Video Link or Upload
                             </label>
-                            <textarea
-                                rows={3}
-                                value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Brief overview of the lesson..."
-                            />
-                        </div>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex flex-1">
+                                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                            <LinkIcon className="h-4 w-4" />
+                                        </span>
+                                        <input
+                                            type="text"
+                                            value={formData.video_url}
+                                            onChange={(event) => setFormData((current) => ({ ...current, video_url: event.target.value }))}
+                                            className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-gray-300 focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
+                                            placeholder="https://vimeo.com/..."
+                                        />
+                                    </div>
+                                    <label
+                                        className={`px-4 py-2 rounded-lg cursor-pointer flex items-center transition-colors ${
+                                            uploadingVideo || !canUploadMedia
+                                                ? 'bg-[var(--md-surface-variant)] text-[var(--md-on-surface-variant)]'
+                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                        }`}
+                                    >
+                                        <UploadIcon className="h-4 w-4 mr-2" />
+                                        {uploadingVideo ? `${uploadProgress}%` : 'Upload'}
+                                        <input
+                                            type="file"
+                                            accept="video/*"
+                                            className="hidden"
+                                            onChange={handleVideoUpload}
+                                            disabled={uploadingVideo || !canUploadMedia}
+                                        />
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (!canUploadMedia) {
+                                                setToast({ type: 'error', message: 'You do not have permission to upload media.' });
+                                                return;
+                                            }
+                                            setShowMediaPicker(true);
+                                        }}
+                                        disabled={!canUploadMedia}
+                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <FilmIcon className="h-4 w-4 mr-2" />
+                                        Library
+                                    </button>
+                                    {hasVideoUrl && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData((current) => ({ ...current, video_url: '' }))}
+                                            disabled={!canSubmit}
+                                            className="flex items-center rounded-lg bg-red-50 px-4 py-2 text-red-700 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            <Trash2Icon className="mr-2 h-4 w-4" />
+                                            Remove
+                                        </button>
+                                    )}
+                                </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Video URL (Vimeo/YouTube/Self-hosted)
-                            </label>
-                            <div className="flex">
-                                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                                    <LinkIcon className="h-4 w-4" />
-                                </span>
-                                <input
-                                    type="text"
-                                    value={formData.video_url}
-                                    onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="https://vimeo.com/..."
-                                />
+                                {uploadingVideo && uploadProgress > 0 && (
+                                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                        <div
+                                            className="bg-[var(--md-primary)] h-1.5 rounded-full transition-all duration-300"
+                                            style={{ width: `${uploadProgress}%` }}
+                                        />
+                                    </div>
+                                )}
+
+                                {hasVideoUrl && (
+                                    <p className="text-xs text-gray-500 break-all">{formData.video_url}</p>
+                                )}
                             </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Content / Notes (Markdown supported)
-                            </label>
-                            <textarea
-                                rows={10}
-                                value={formData.content}
-                                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-                                placeholder="# Lesson Notes..."
-                            />
                         </div>
                     </div>
                 </div>
 
-                {/* Sidebar Settings */}
                 <div className="space-y-6">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
                         <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">Organization</h3>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Course <span className="text-red-500">*</span>
+                                Module <span className="text-red-500">*</span>
                             </label>
                             <select
                                 required
-                                value={formData.course_slug}
-                                onChange={(e) => setFormData({ ...formData, course_slug: e.target.value, module_id: '' })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option value="">Select Course</option>
-                                {courses.map((course) => (
-                                    <option key={course.id} value={course.slug}>
-                                        {course.title}
-                                    </option>
-                                ))}
-                            </select>
-                            <p className="mt-1 text-xs text-gray-500">
-                                Assign the lesson directly to a course, or optionally to a module below.
-                            </p>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Module (optional)
-                            </label>
-                            <select
                                 value={formData.module_id}
-                                onChange={(e) => setFormData({ ...formData, module_id: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                disabled={!formData.course_slug}
+                                onChange={(event) => handleModuleChange(event.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
                             >
-                                <option value="">None (assign to course directly)</option>
-                                {modules.map((mod) => (
-                                    <option key={mod.id} value={mod.id}>
-                                        {mod.title}
+                                <option value="">Select module</option>
+                                {modules.map((module) => (
+                                    <option key={module.id} value={module.id}>
+                                        {module.course_title} | {module.title}
                                     </option>
                                 ))}
                             </select>
                             <p className="mt-1 text-xs text-gray-500">
-                                Optionally assign to a module within the selected course.
+                                Lessons are attached to modules. The course is derived from the selected module.
                             </p>
+                            {isEditing && !formData.module_id && (
+                                <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                                    This is a legacy lesson without a module. Assign one before saving.
+                                </p>
+                            )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Order Index
-                            </label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Order</label>
                             <input
                                 type="number"
-                                min="0"
+                                min="1"
                                 value={formData.order_index}
-                                onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                onChange={(event) => setFormData((current) => ({
+                                    ...current,
+                                    order_index: Math.max(1, Number(event.target.value) || 1),
+                                }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Duration (minutes)
-                            </label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
                             <input
                                 type="number"
                                 min="0"
                                 value={formData.duration}
-                                onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) || 0 })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                onChange={(event) => setFormData((current) => ({
+                                    ...current,
+                                    duration: Number(event.target.value) || 0,
+                                }))}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-[var(--md-primary)] focus:border-[var(--md-primary)]"
                             />
                         </div>
 
+                        {selectedModule && (
+                            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
+                                Parent course: <span className="font-medium text-gray-900">{selectedModule.course_title}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </div>
+            </form>
 
             {toast && (
                 <Toast
@@ -361,6 +441,18 @@ export function LessonForm() {
                     isVisible={!!toast}
                 />
             )}
+
+            <MediaPickerModal
+                isOpen={showMediaPicker}
+                onClose={() => setShowMediaPicker(false)}
+                onSelect={(url) => {
+                    setFormData((current) => ({ ...current, video_url: url }));
+                    setShowMediaPicker(false);
+                }}
+                allowedTypes={['video/']}
+                currentUrl={formData.video_url}
+                onDeleteUrl={() => setFormData((current) => ({ ...current, video_url: '' }))}
+            />
         </div>
     );
 }

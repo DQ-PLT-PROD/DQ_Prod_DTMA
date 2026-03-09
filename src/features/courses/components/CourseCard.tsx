@@ -122,7 +122,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   // Handle card click
   const handleCardClick = () => {
     if (course.isComingSoon) return;
-    navigate(`/courses/${course.slug}`);
+    navigate(`/modules/${course.slug}`);
   };
 
   // Handle CTA click
@@ -137,7 +137,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
         break;
       case "navigate-to-enroll":
       case "show-certificate":
-        navigate(`/courses/${course.slug}`);
+        navigate(`/modules/${course.slug}`);
         break;
       default:
         break;

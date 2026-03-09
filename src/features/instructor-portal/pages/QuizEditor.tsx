@@ -288,7 +288,7 @@ export function QuizEditor() {
             }
 
             // 1. Upsert Quiz
-            const quizPayload = {
+            const quizPayload: Record<string, unknown> = {
                 course_slug: quiz.courseSlug,
                 module_id: quiz.moduleId || null,
                 lesson_id: quiz.lessonId || null,
@@ -303,6 +303,12 @@ export function QuizEditor() {
                 order_index: quiz.orderIndex ?? 0,
                 updated_at: new Date().toISOString(),
             };
+
+            // Provide defaults for legacy columns that older rows may still use
+            if (!isEditing) {
+                quizPayload.question = '';
+                quizPayload.options = [];
+            }
 
             let quizId = id;
 

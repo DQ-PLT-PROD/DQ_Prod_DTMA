@@ -1,511 +1,950 @@
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { countCountableLessons } from "@/lib/courses/lessonCount";
-import { Course, CourseCatalogFilters, Lesson, Category, Quiz } from "@/types/dtma-lms";
-
-// Types for quiz and resource data
+import { Category, Course, CourseCatalogFilters, Lesson, Module, Quiz, QuizQuestion } from "@/types/dtma-lms";
 
 export interface CourseResource {
-    id: string;
-    courseSlug: string;
-    title: string;
-    type: 'whitepaper' | 'pdf' | 'template' | 'tool' | 'worksheet' | 'other';
-    description?: string;
-    resourceUrl: string;
-    fileSizeBytes?: number;
-    orderIndex: number;
+  id: string;
+  courseSlug: string;
+  title: string;
+  type: "whitepaper" | "pdf" | "template" | "tool" | "worksheet" | "other";
+  description?: string;
+  resourceUrl: string;
+  fileSizeBytes?: number;
+  orderIndex: number;
 }
 
-// Helper to map Supabase row to Course type
-const mapRowToCourse = (row: any): Course & { isComingSoon?: boolean; categoryName?: string } => {
-    // Calculate stats from lessons if available
-    let calculatedDuration = row.estimated_duration_minutes || 0;
-    let calculatedLessonCount = Number(row.lesson_count) || 0;
+export interface CourseNavItem {
+  slug: string;
+  title: string;
+  shortDescription: string;
+  heroImageUrl?: string;
+  thumbnailUrl?: string;
+}
 
-    if (Array.isArray(row.lessons) && row.lessons.length > 0) {
-        // Check if we have detailed lesson data (not just count object)
-        const hasDetails = 'type' in row.lessons[0] || 'estimated_duration_minutes' in row.lessons[0];
+export interface LearnerQuizQuestion {
+  id: string;
+  quizId: string;
+  question: string;
+  type: QuizQuestion["type"];
+  options: { id: string; text: string }[];
+}
 
-        if (hasDetails) {
-            // Duration: Sum of all lessons
-            calculatedDuration = row.lessons.reduce((acc: number, lesson: any) =>
-                acc + (Number(lesson.estimated_duration_minutes) || 0), 0);
+export interface LearnerQuizSession {
+  quizId: string;
+  title: string;
+  description?: string;
+  passingScore: number;
+  timeLimitMinutes?: number;
+  maxAttempts?: number;
+  shuffleQuestions: boolean;
+  hideAnswers: boolean;
+  questions: LearnerQuizQuestion[];
+}
 
-            // Count: All lessons except intro/outro
-            calculatedLessonCount = countCountableLessons(row.lessons);
-        } else if (row.lessons[0].count) {
-            // Handle simple count query
-            calculatedLessonCount = Number(row.lessons[0].count) || 0;
-        }
+export interface LearnerQuizAnswerEvaluation {
+  questionId: string;
+  isCorrect: boolean;
+  hideAnswers: boolean;
+  explanation?: string;
+}
+
+type CourseRow = {
+  id: string;
+  slug: string;
+  title: string;
+  short_description?: string | null;
+  long_description?: string | null;
+  category_id?: string | null;
+  audience_level?: string | null;
+  topic_tags?: string[] | null;
+  level_tag?: string | null;
+  is_featured?: boolean | null;
+  is_coming_soon?: boolean | null;
+  status?: string | null;
+  rating?: number | null;
+  review_count?: number | null;
+  enrollment_url?: string | null;
+  learning_outcomes?: string[] | null;
+  skills_gained?: string[] | null;
+  upon_completion?: string | null;
+  start_date?: string | null;
+  industry?: string | null;
+  created_at?: string | null;
+  course_categories?: { name?: string | null } | null;
+};
+
+type ModuleRow = {
+  id: string;
+  slug: string;
+  course_slug: string;
+  title: string;
+  description?: string | null;
+  thumbnail_url?: string | null;
+  order_index?: number | null;
+  estimated_duration_minutes?: number | null;
+  status?: string | null;
+};
+
+type LessonRow = {
+  id: string;
+  course_slug: string;
+  module_id?: string | null;
+  title: string;
+  type: "intro" | "standard" | "outro" | "quiz";
+  order_index: number;
+  estimated_duration_minutes?: number | null;
+  video_url?: string | null;
+  resource_url?: string | null;
+  content?: string | null;
+  is_preview?: boolean | null;
+};
+
+type QuizRow = {
+  id: string;
+  course_slug: string;
+  module_id?: string | null;
+  lesson_id?: string | null;
+  title: string;
+  description?: string | null;
+  order_index?: number | null;
+  passing_score?: number | null;
+  time_limit_minutes?: number | null;
+  max_attempts?: number | null;
+  is_published?: boolean | null;
+  shuffle_questions?: boolean | null;
+  hide_answers?: boolean | null;
+  question?: string | null;
+  options?: any;
+  correct_answer?: any;
+  explanation?: string | null;
+};
+
+type ResourceRow = {
+  id: string;
+  course_slug: string;
+  title: string;
+  type: "whitepaper" | "pdf" | "template" | "tool" | "worksheet" | "other";
+  description?: string | null;
+  resource_url: string;
+  file_size_bytes?: number | null;
+  order_index?: number | null;
+};
+
+const coursesCache: {
+  data: any[];
+  timestamp: number;
+  filters: string;
+} = {
+  data: [],
+  timestamp: 0,
+  filters: "",
+};
+
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
+const formatDuration = (minutes: number): string => {
+  if (!minutes) return "";
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins} min`;
+  if (mins === 0) return `${hours} hr`;
+  return `${hours} hr ${mins} min`;
+};
+
+const toAudienceLevel = (value?: string | null) =>
+  (value as Course["audienceLevel"]) || "Digital Workers";
+
+const mapLessonRow = (row: LessonRow): Lesson => ({
+  id: row.id,
+  courseId: row.course_slug,
+  moduleId: row.module_id || undefined,
+  title: row.title,
+  type: row.type,
+  orderIndex: Number(row.order_index || 0),
+  estimatedDurationMinutes: Number(row.estimated_duration_minutes || 0),
+  videoUrl: row.video_url || undefined,
+  resourceUrl: row.resource_url || undefined,
+  content: row.content || undefined,
+  isPreview: Boolean(row.is_preview),
+});
+
+const mapQuizRow = (row: QuizRow): Quiz => ({
+  id: row.id,
+  courseSlug: row.course_slug,
+  title: row.title,
+  description: row.description || undefined,
+  orderIndex: Number(row.order_index || 0),
+  moduleId: row.module_id || undefined,
+  lessonId: row.lesson_id || undefined,
+  passingScore: row.passing_score || undefined,
+  timeLimitMinutes: row.time_limit_minutes || undefined,
+  maxAttempts: row.max_attempts || undefined,
+  isPublished: row.is_published || undefined,
+  shuffleQuestions: row.shuffle_questions || undefined,
+  hideAnswers: row.hide_answers || undefined,
+  question: row.question || undefined,
+  options: row.options || [],
+  correctAnswer: row.correct_answer,
+  explanation: row.explanation || undefined,
+});
+
+const normalizeQuizQuestionType = (value?: string | null): QuizQuestion["type"] => {
+  if (
+    value === "single_select" ||
+    value === "multi_select" ||
+    value === "true_false" ||
+    value === "text"
+  ) {
+    return value;
+  }
+
+  return "single_select";
+};
+
+const normalizeQuizOptions = (value: any): { id: string; text: string }[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((option, index) => {
+    if (typeof option === "string") {
+      return { id: String(index), text: option };
     }
 
     return {
-        id: row.id,
-        slug: row.slug,
-        title: row.title,
-        shortDescription: row.short_description || "",
-        longDescription: row.long_description || "",
-        categoryId: row.category_id || "",
-        categoryName: row.course_categories?.name || row.category_id || "",
-        audienceLevel: row.audience_level as any,
-        topicTags: row.topic_tags || [],
-        levelTag: row.level_tag || "",
-        estimatedDurationMinutes: calculatedDuration,
-        lessonCount: calculatedLessonCount,
-        heroImageUrl: row.hero_image_url || undefined,
-        thumbnailUrl: row.thumbnail_url || undefined,
-        introVideoUrl: row.intro_video_url || undefined,
-        introVideoPosterUrl: row.intro_video_poster_url || undefined,
-        isFeatured: row.is_featured || false,
-        isComingSoon: row.is_coming_soon || false,
-        status: row.status as any,
-        rating: row.rating || undefined,
-        reviewCount: row.review_count || undefined,
-        enrollmentUrl: row.enrollment_url || undefined,
-        learningOutcomes: row.learning_outcomes || [],
-        skillsGained: row.skills_gained || [],
-        uponCompletion: row.upon_completion || undefined,
-        startDate: row.start_date || undefined,
-        industry: row.industry || undefined,
+      id: String(option?.id ?? option?.value ?? index),
+      text: String(option?.text ?? option?.label ?? `Option ${index + 1}`),
     };
+  });
 };
 
-// Helper to format duration
-const formatDuration = (minutes: number): string => {
-    if (!minutes) return "";
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hours === 0) return `${mins} min`;
-    if (mins === 0) return `${hours} hr`;
-    return `${hours} hr ${mins} min`;
+const mapResourceRow = (row: ResourceRow): CourseResource => ({
+  id: row.id,
+  courseSlug: row.course_slug,
+  title: row.title,
+  type: row.type,
+  description: row.description || undefined,
+  resourceUrl: row.resource_url,
+  fileSizeBytes: row.file_size_bytes || undefined,
+  orderIndex: Number(row.order_index || 0),
+});
+
+const mapModuleRow = (row: ModuleRow): Module => ({
+  id: row.id,
+  slug: row.slug,
+  courseSlug: row.course_slug,
+  title: row.title,
+  description: row.description || undefined,
+  thumbnailUrl: row.thumbnail_url || undefined,
+  orderIndex: Number(row.order_index || 0),
+  estimatedDurationMinutes: Number(row.estimated_duration_minutes || 0),
+  status: (row.status as Module["status"]) || undefined,
+});
+
+const getCourseFieldSelect = (excludeHeavyFields?: boolean) =>
+  excludeHeavyFields
+    ? [
+        "id",
+        "slug",
+        "title",
+        "short_description",
+        "long_description",
+        "category_id",
+        "audience_level",
+        "topic_tags",
+        "level_tag",
+        "is_featured",
+        "is_coming_soon",
+        "status",
+        "rating",
+        "review_count",
+        "enrollment_url",
+        "learning_outcomes",
+        "skills_gained",
+        "upon_completion",
+        "start_date",
+        "industry",
+        "created_at",
+        "course_categories(name)",
+      ].join(",")
+    : "*, course_categories(name)";
+
+const resolvePublishedCourseRows = async (
+  filters?: CourseCatalogFilters
+): Promise<CourseRow[]> => {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+
+  const supabase = getSupabase();
+  let query: any = supabase
+    .from("courses")
+    .select(getCourseFieldSelect(filters?.excludeHeavyFields))
+    .eq("status", "published");
+
+  if (filters?.featured) {
+    query = query.eq("is_featured", true);
+  }
+
+  if (filters?.categories?.length) {
+    query = query.in("category_id", filters.categories);
+  }
+
+  if (filters?.audienceLevels?.length) {
+    query = query.in("audience_level", filters.audienceLevels);
+  }
+
+  if (filters?.levelTags?.length) {
+    query = query.in("level_tag", filters.levelTags);
+  }
+
+  if (filters?.industries?.length) {
+    query = query.in("industry", filters.industries);
+  }
+
+  if (filters?.topics?.length) {
+    query = query.overlaps("topic_tags", filters.topics);
+  }
+
+  if (filters?.courseSlugs?.length) {
+    query = query.in("slug", filters.courseSlugs);
+  }
+
+  if (filters?.search?.trim()) {
+    const searchTerm = filters.search.trim();
+    query = query.or(`title.ilike.%${searchTerm}%,short_description.ilike.%${searchTerm}%`);
+  }
+
+  query = query
+    .order("is_coming_soon", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Failed to fetch course containers:", error.message);
+    return [];
+  }
+
+  return ((data || []) as CourseRow[]).filter(Boolean);
 };
 
-// Helper to convert Course to marketplace item format
-const toMarketplaceItem = (course: Course): any => {
-    return {
-        id: course.slug,
-        slug: course.slug,
-        title: course.title,
-        description: course.shortDescription,
-        category: (course as any).categoryName || course.categoryId,
-        categoryName: (course as any).categoryName || course.categoryId, // Added for component compatibility
-        categorySlug: course.categoryId,
-        industry: course.industry,
-        duration: formatDuration(course.estimatedDurationMinutes),
-        durationMinutes: course.estimatedDurationMinutes,
-        lessonCount: course.lessonCount,
-        levelTag: course.levelTag,
-        audienceLevel: course.audienceLevel,
-        topicTags: course.topicTags,
-        tags: [course.levelTag, course.audienceLevel, ...course.topicTags.slice(0, 2)].filter(Boolean),
-        // provider removed
-        heroImageUrl: course.heroImageUrl,
-        introVideoUrl: course.introVideoUrl,
-        introVideoPosterUrl: course.introVideoPosterUrl,
-        rating: course.rating ?? 4.6,
-        reviewCount: course.reviewCount ?? 24,
-        formUrl: course.enrollmentUrl,
-        learningOutcomes: course.learningOutcomes,
-        startDate: course.startDate,
-    };
+const resolvePublishedModuleRows = async (courseSlugs: string[]): Promise<ModuleRow[]> => {
+  if (!isSupabaseConfigured() || courseSlugs.length === 0) {
+    return [];
+  }
+
+  const supabase = getSupabase();
+  const { data, error } = await (supabase.from("modules" as any) as any)
+    .select("id, slug, course_slug, title, description, thumbnail_url, order_index, estimated_duration_minutes, status")
+    .eq("status", "published")
+    .in("course_slug", courseSlugs)
+    .order("order_index", { ascending: true });
+
+  if (error) {
+    console.error("Failed to fetch modules:", error.message);
+    return [];
+  }
+
+  return ((data || []) as unknown) as ModuleRow[];
 };
 
-// Simple in-memory cache to prevent redundant fetches
-const coursesCache: {
-    data: any[];
-    timestamp: number;
-    filters: string;
-} = {
-    data: [],
-    timestamp: 0,
-    filters: ""
+const resolveLessonsForModules = async (moduleIds: string[]): Promise<Map<string, Lesson[]>> => {
+  if (!isSupabaseConfigured() || moduleIds.length === 0) {
+    return new Map<string, Lesson[]>();
+  }
+
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("lessons")
+    .select("id, course_slug, module_id, title, type, order_index, estimated_duration_minutes, video_url, resource_url, content, is_preview")
+    .in("module_id", moduleIds)
+    .order("order_index", { ascending: true });
+
+  if (error) {
+    console.warn("Failed to fetch module lessons:", error.message);
+    return new Map<string, Lesson[]>();
+  }
+
+  const lessonsByModule = new Map<string, Lesson[]>();
+  ((data || []) as LessonRow[]).forEach((row) => {
+    const moduleId = row.module_id;
+    if (!moduleId) return;
+    const lesson = mapLessonRow(row);
+    const existing = lessonsByModule.get(moduleId) || [];
+    existing.push(lesson);
+    lessonsByModule.set(moduleId, existing);
+  });
+
+  return lessonsByModule;
 };
 
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const getFirstPlayableLesson = (lessons: Lesson[]) =>
+  [...lessons]
+    .sort((left, right) => Number(left.orderIndex || 0) - Number(right.orderIndex || 0))
+    .find((lesson) => Boolean(lesson.videoUrl));
+
+const toMarketplaceItem = (
+  moduleRow: ModuleRow,
+  courseRow: CourseRow,
+  lessons: Lesson[]
+) => {
+  const countedLessons = lessons.filter((lesson) => lesson.type !== "intro" && lesson.type !== "outro");
+  const estimatedDurationMinutes =
+    Number(moduleRow.estimated_duration_minutes || 0) ||
+    lessons.reduce((sum, lesson) => sum + Number(lesson.estimatedDurationMinutes || 0), 0);
+  const firstPlayableLesson = getFirstPlayableLesson(lessons);
+
+  return {
+    id: moduleRow.slug,
+    slug: moduleRow.slug,
+    title: moduleRow.title,
+    description: moduleRow.description || courseRow.short_description || "",
+    shortDescription: moduleRow.description || courseRow.short_description || "",
+    category: courseRow.title,
+    categoryName: courseRow.title,
+    categorySlug: courseRow.category_id || "",
+    courseSlug: moduleRow.course_slug,
+    containerCourseSlug: moduleRow.course_slug,
+    containerCourseTitle: courseRow.title,
+    industry: courseRow.industry || undefined,
+    duration: formatDuration(estimatedDurationMinutes),
+    durationMinutes: estimatedDurationMinutes,
+    lessonCount: countCountableLessons(countedLessons.length > 0 ? countedLessons : lessons),
+    levelTag: courseRow.level_tag || "",
+    audienceLevel: toAudienceLevel(courseRow.audience_level),
+    topicTags: courseRow.topic_tags || [],
+    tags: [courseRow.level_tag, courseRow.audience_level, ...(courseRow.topic_tags || []).slice(0, 2)].filter(Boolean),
+    heroImageUrl: moduleRow.thumbnail_url || undefined,
+    thumbnailUrl: moduleRow.thumbnail_url || undefined,
+    introVideoUrl: firstPlayableLesson?.videoUrl,
+    introVideoPosterUrl: moduleRow.thumbnail_url || undefined,
+    rating: courseRow.rating ?? 4.6,
+    reviewCount: courseRow.review_count ?? 24,
+    formUrl: courseRow.enrollment_url || undefined,
+    learningOutcomes: courseRow.learning_outcomes || [],
+    startDate: courseRow.start_date || undefined,
+    isFeatured: Boolean(courseRow.is_featured),
+    isComingSoon: Boolean(courseRow.is_coming_soon),
+  };
+};
+
+const resolveModuleContext = async (moduleSlug: string): Promise<{
+  moduleRow: ModuleRow | null;
+  courseRow: CourseRow | null;
+}> => {
+  if (!isSupabaseConfigured()) {
+    return { moduleRow: null, courseRow: null };
+  }
+
+  const supabase = getSupabase();
+  const { data: moduleData, error: moduleError } = await (supabase.from("modules" as any) as any)
+    .select("id, slug, course_slug, title, description, thumbnail_url, order_index, estimated_duration_minutes, status")
+    .eq("slug", moduleSlug)
+    .single();
+
+  if (moduleError || !moduleData) {
+    console.error("Failed to resolve module:", moduleError?.message || moduleSlug);
+    return { moduleRow: null, courseRow: null };
+  }
+
+  const moduleRow = (moduleData as unknown) as ModuleRow;
+  const { data: courseData, error: courseError } = await getSupabase()
+    .from("courses")
+    .select("*, course_categories(name)")
+    .eq("slug", moduleRow.course_slug)
+    .single();
+
+  if (courseError || !courseData) {
+    console.error("Failed to resolve parent course:", courseError?.message || moduleRow.course_slug);
+    return { moduleRow, courseRow: null };
+  }
+
+  return { moduleRow, courseRow: courseData as CourseRow };
+};
+
+const toCourseLikeDetail = (
+  moduleRow: ModuleRow,
+  courseRow: CourseRow,
+  lessons: Lesson[]
+): Course & {
+  containerCourseSlug: string;
+  containerCourseTitle: string;
+  moduleId: string;
+} => {
+  const countedLessons = lessons.filter((lesson) => lesson.type !== "intro" && lesson.type !== "outro");
+  const estimatedDurationMinutes =
+    Number(moduleRow.estimated_duration_minutes || 0) ||
+    lessons.reduce((sum, lesson) => sum + Number(lesson.estimatedDurationMinutes || 0), 0);
+  const firstIntroLesson =
+    [...lessons]
+      .sort((left, right) => Number(left.orderIndex || 0) - Number(right.orderIndex || 0))
+      .find((lesson) => lesson.type === "intro") || getFirstPlayableLesson(lessons);
+
+  return {
+    id: moduleRow.id,
+    slug: moduleRow.slug,
+    title: moduleRow.title,
+    shortDescription: moduleRow.description || courseRow.short_description || "",
+    longDescription: moduleRow.description || courseRow.long_description || courseRow.short_description || "",
+    categoryId: courseRow.category_id || "",
+    audienceLevel: toAudienceLevel(courseRow.audience_level),
+    topicTags: courseRow.topic_tags || [],
+    levelTag: courseRow.level_tag || "",
+    estimatedDurationMinutes,
+    lessonCount: countCountableLessons(countedLessons.length > 0 ? countedLessons : lessons),
+    heroImageUrl: moduleRow.thumbnail_url || undefined,
+    thumbnailUrl: moduleRow.thumbnail_url || undefined,
+    introLessonId: firstIntroLesson?.id,
+    introVideoUrl: firstIntroLesson?.videoUrl,
+    introVideoPosterUrl: moduleRow.thumbnail_url || undefined,
+    isFeatured: Boolean(courseRow.is_featured),
+    isComingSoon: Boolean(courseRow.is_coming_soon),
+    status: (moduleRow.status as Course["status"]) || (courseRow.status as Course["status"]) || "draft",
+    rating: courseRow.rating || undefined,
+    reviewCount: courseRow.review_count || undefined,
+    enrollmentUrl: courseRow.enrollment_url || undefined,
+    learningOutcomes: courseRow.learning_outcomes || [],
+    skillsGained: courseRow.skills_gained || [],
+    uponCompletion: courseRow.upon_completion || undefined,
+    startDate: courseRow.start_date || undefined,
+    industry: courseRow.industry || undefined,
+    containerCourseSlug: moduleRow.course_slug,
+    containerCourseTitle: courseRow.title,
+    moduleId: moduleRow.id,
+  };
+};
 
 export const fetchCourses = async (filters?: CourseCatalogFilters): Promise<any[]> => {
-    // 1. Check Cache
-    const filtersKey = JSON.stringify(filters || {});
-    const now = Date.now();
-    const isCacheValid = (now - coursesCache.timestamp < CACHE_TTL_MS) && coursesCache.filters === filtersKey;
+  const filtersKey = JSON.stringify(filters || {});
+  const now = Date.now();
+  const isCacheValid =
+    now - coursesCache.timestamp < CACHE_TTL_MS && coursesCache.filters === filtersKey;
 
-    if (isCacheValid && coursesCache.data.length > 0) {
-        return coursesCache.data;
-    }
+  if (isCacheValid && coursesCache.data.length > 0) {
+    return coursesCache.data;
+  }
 
-    // If Supabase is not configured, return empty
-    if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, returning empty courses list");
-        return [];
-    }
+  if (!isSupabaseConfigured()) {
+    console.warn("Supabase not configured, returning empty module catalog");
+    return [];
+  }
 
-    try {
-        const supabase = getSupabase();
-        let query: any = supabase
-            .from("courses")
-            .select("*, course_categories(name), lessons(type, estimated_duration_minutes)")
-            .eq("status", "published");
+  try {
+    const courseRows = await resolvePublishedCourseRows(filters);
+    const courseRowMap = new Map(courseRows.map((row) => [row.slug, row]));
+    const courseOrder = new Map(courseRows.map((row, index) => [row.slug, index]));
+    const moduleRows = await resolvePublishedModuleRows(courseRows.map((row) => row.slug));
+    const lessonsByModule = await resolveLessonsForModules(moduleRows.map((row) => row.id));
 
-        if (filters) {
-            // Select specific columns if heavy fields should be excluded
-            if (filters.excludeHeavyFields) {
-                const lightweightFields = [
-                    "id", "slug", "title", "short_description", "category_id",
-                    "audience_level", "topic_tags", "level_tag", "estimated_duration_minutes",
-                    "lesson_count", "hero_image_url", "intro_video_url",
-                    "intro_video_poster_url", "is_featured", "is_coming_soon", "status",
-                    "rating", "review_count", "start_date", "industry", "created_at"
-                ].join(",");
+    const items = moduleRows
+      .map((moduleRow) => {
+        const courseRow = courseRowMap.get(moduleRow.course_slug);
+        if (!courseRow) return null;
+        return toMarketplaceItem(moduleRow, courseRow, lessonsByModule.get(moduleRow.id) || []);
+      })
+      .filter(Boolean)
+      .sort((left: any, right: any) => {
+        const leftCourseOrder = courseOrder.get(left.courseSlug) ?? Number.MAX_SAFE_INTEGER;
+        const rightCourseOrder = courseOrder.get(right.courseSlug) ?? Number.MAX_SAFE_INTEGER;
+        return leftCourseOrder - rightCourseOrder || left.title.localeCompare(right.title);
+      });
 
-                query = supabase
-                    .from("courses")
-                    // @ts-ignore
-                    .select(`${lightweightFields}, course_categories(name), lessons(type, estimated_duration_minutes)`)
-                    .eq("status", "published");
-            }
+    coursesCache.data = items;
+    coursesCache.timestamp = Date.now();
+    coursesCache.filters = filtersKey;
 
-            // Featured filter
-            if (filters.featured) {
-                query = query.eq("is_featured", true);
-            }
-
-            // Category filter (multi-select)
-            if (filters.categories && filters.categories.length > 0) {
-                query = query.in("category_id", filters.categories);
-            }
-
-            // Audience level filter (multi-select)
-            if (filters.audienceLevels && filters.audienceLevels.length > 0) {
-                query = query.in("audience_level", filters.audienceLevels);
-            }
-
-            // Level tag filter (multi-select)
-            if (filters.levelTags && filters.levelTags.length > 0) {
-                query = query.in("level_tag", filters.levelTags);
-            }
-
-            // Industry filter (multi-select)
-            if (filters.industries && filters.industries.length > 0) {
-                query = query.in("industry", filters.industries);
-            }
-
-            // Topic filter - uses array contains for topic_tags array field
-            if (filters.topics && filters.topics.length > 0) {
-                // For topics, we use overlaps to check if any of the selected topics match
-                query = query.overlaps("topic_tags", filters.topics);
-            }
-
-            // Search filter (text search across title and description)
-            if (filters.search && filters.search.trim()) {
-                const searchTerm = filters.search.trim();
-                query = query.or(`title.ilike.%${searchTerm}%,short_description.ilike.%${searchTerm}%`);
-            }
-        }
-
-        // Order: available courses first (is_coming_soon = false), then by most recent
-        query = query
-            .order('is_coming_soon', { ascending: true })
-            .order('created_at', { ascending: false });
-
-        const { data, error } = await query;
-
-        if (error) {
-            console.error("Supabase fetch failed:", error.message);
-            return [];
-        }
-
-        const result = (data || []).map((row) => {
-            const course = mapRowToCourse(row);
-            const item = toMarketplaceItem(course);
-            return { ...item, isComingSoon: course.isComingSoon };
-        });
-
-        // Update Cache
-        coursesCache.data = result;
-        coursesCache.timestamp = Date.now();
-        coursesCache.filters = filtersKey;
-
-        return result;
-    } catch (err) {
-        console.error("Unexpected error fetching courses:", err);
-        return [];
-    }
+    return items;
+  } catch (error) {
+    console.error("Unexpected error fetching learner modules:", error);
+    return [];
+  }
 };
 
 export const fetchFullCourse = async (slug: string): Promise<Course | null> => {
-    if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, returning null");
-        return null;
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  try {
+    const { moduleRow, courseRow } = await resolveModuleContext(slug);
+    if (!moduleRow || !courseRow) {
+      return null;
     }
 
-    try {
-        const supabase = getSupabase();
-        const { data, error } = await supabase
-            .from("courses")
-            .select("*, lessons(type, estimated_duration_minutes)")
-            .eq("slug", slug)
-            .single();
-
-        if (error) {
-            console.error("Error fetching full course:", error.message);
-            return null;
-        }
-
-        return data ? mapRowToCourse(data) : null;
-    } catch (err) {
-        console.error("Unexpected error fetching full course:", err);
-        return null;
-    }
+    const lessons = await fetchCourseLessons(slug);
+    return toCourseLikeDetail(moduleRow, courseRow, lessons);
+  } catch (error) {
+    console.error("Unexpected error fetching module details:", error);
+    return null;
+  }
 };
 
-// Helper to map Supabase lesson row to Lesson type
-const mapRowToLesson = (row: any): Lesson => {
-    return {
-        id: row.id,
-        courseId: row.course_slug,
-        title: row.title,
-        type: row.type as 'intro' | 'standard' | 'outro' | 'quiz',
-        orderIndex: row.order_index,
-        estimatedDurationMinutes: row.estimated_duration_minutes || 0,
-        videoUrl: row.video_url || undefined,
-        resourceUrl: row.resource_url || undefined,
-        content: row.content || undefined,
-    };
+export const fetchCourseModules = async (moduleSlug: string): Promise<Module[]> => {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+
+  const { moduleRow } = await resolveModuleContext(moduleSlug);
+  return moduleRow ? [mapModuleRow(moduleRow)] : [];
 };
 
-// Helper to map Supabase quiz row to Quiz type
-const mapRowToQuiz = (row: any): Quiz => {
-    return {
-        id: row.id,
-        courseSlug: row.course_slug,
-        title: row.title,
-        description: row.description || undefined,
-        orderIndex: row.order_index,
-        passingScore: row.passing_score,
-        timeLimitMinutes: row.time_limit_minutes,
-        maxAttempts: row.max_attempts,
-        isPublished: row.is_published,
-        shuffleQuestions: row.shuffle_questions,
-        // Legacy fields
-        question: row.question,
-        options: row.options || [],
-        correctAnswer: row.correct_answer,
-        explanation: row.explanation || undefined,
-    };
+export const fetchCourseLessons = async (moduleSlug: string): Promise<Lesson[]> => {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+
+  try {
+    const { moduleRow } = await resolveModuleContext(moduleSlug);
+    if (!moduleRow) {
+      return [];
+    }
+
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from("lessons")
+      .select("id, course_slug, module_id, title, type, order_index, estimated_duration_minutes, video_url, resource_url, content, is_preview")
+      .eq("module_id", moduleRow.id)
+      .order("order_index", { ascending: true });
+
+    if (error) {
+      console.warn("Error fetching module lessons:", error.message);
+      return [];
+    }
+
+    return ((data || []) as LessonRow[]).map(mapLessonRow);
+  } catch (error) {
+    console.warn("Unexpected error fetching module lessons:", error);
+    return [];
+  }
 };
 
-// Helper to map Supabase resource row to CourseResource type
-const mapRowToResource = (row: any): CourseResource => {
-    return {
-        id: row.id,
-        courseSlug: row.course_slug,
-        title: row.title,
-        type: row.type,
-        description: row.description || undefined,
-        resourceUrl: row.resource_url,
-        fileSizeBytes: row.file_size_bytes || undefined,
-        orderIndex: row.order_index || 0,
-    };
+export const fetchCourseQuizzes = async (moduleSlug: string): Promise<Quiz[]> => {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+
+  try {
+    const { moduleRow } = await resolveModuleContext(moduleSlug);
+    if (!moduleRow) {
+      return [];
+    }
+
+    const { data, error } = await getSupabase()
+      .from("quizzes")
+      .select("*")
+      .eq("module_id", moduleRow.id)
+      .order("order_index", { ascending: true });
+
+    if (error) {
+      console.warn("Error fetching module quizzes:", error.message);
+      return [];
+    }
+
+    return ((data || []) as QuizRow[]).map(mapQuizRow);
+  } catch (error) {
+    console.warn("Unexpected error fetching module quizzes:", error);
+    return [];
+  }
 };
 
-/**
- * Fetch all lessons for a course by slug
- */
-export const fetchCourseLessons = async (courseSlug: string): Promise<Lesson[]> => {
-    if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, returning empty lessons array");
-        return [];
+export const fetchCourseResources = async (moduleSlug: string): Promise<CourseResource[]> => {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+
+  try {
+    const { moduleRow } = await resolveModuleContext(moduleSlug);
+    if (!moduleRow) {
+      return [];
     }
 
-    try {
-        const supabase = getSupabase();
-        const { data, error } = await supabase
-            .from("lessons")
-            .select("*")
-            .eq("course_slug", courseSlug)
-            .order("order_index", { ascending: true });
+    const { data, error } = await getSupabase()
+      .from("course_resources")
+      .select("*")
+      .eq("course_slug", moduleRow.course_slug)
+      .order("order_index", { ascending: true });
 
-        if (error) {
-            console.warn("Error fetching lessons:", error.message);
-            return [];
-        }
-
-        return (data || []).map(mapRowToLesson);
-    } catch (err) {
-        console.warn("Unexpected error fetching lessons:", err);
-        return [];
+    if (error) {
+      console.warn("Error fetching module resources:", error.message);
+      return [];
     }
+
+    return ((data || []) as ResourceRow[]).map(mapResourceRow);
+  } catch (error) {
+    console.warn("Unexpected error fetching module resources:", error);
+    return [];
+  }
 };
 
-/**
- * Fetch all quizzes for a course by slug
- */
-export const fetchCourseQuizzes = async (courseSlug: string): Promise<Quiz[]> => {
-    if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, returning empty quizzes array");
-        return [];
-    }
-
-    try {
-        const supabase = getSupabase();
-        const { data, error } = await supabase
-            .from("quizzes")
-            .select("*")
-            .eq("course_slug", courseSlug)
-            .order("order_index", { ascending: true });
-
-        if (error) {
-            console.warn("Error fetching quizzes:", error.message);
-            return [];
-        }
-
-        return (data || []).map(mapRowToQuiz);
-    } catch (err) {
-        console.warn("Unexpected error fetching quizzes:", err);
-        return [];
-    }
-};
-
-/**
- * Fetch all resources for a course by slug
- */
-export const fetchCourseResources = async (courseSlug: string): Promise<CourseResource[]> => {
-    if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, returning empty resources array");
-        return [];
-    }
-
-    try {
-        const supabase = getSupabase();
-        const { data, error } = await supabase
-            .from("course_resources")
-            .select("*")
-            .eq("course_slug", courseSlug)
-            .order("order_index", { ascending: true });
-
-        if (error) {
-            console.warn("Error fetching resources:", error.message);
-            return [];
-        }
-
-        return (data || []).map(mapRowToResource);
-    } catch (err) {
-        console.warn("Unexpected error fetching resources:", err);
-        return [];
-    }
-};
-
-/**
- * Fetch complete course data with lessons, quizzes, and resources
- */
-export const fetchCourseWithContent = async (slug: string): Promise<{
-    course: Course | null;
-    lessons: Lesson[];
-    quizzes: Quiz[];
-    resources: CourseResource[];
+export const fetchLearningModuleContent = async (moduleSlug: string): Promise<{
+  course: Course | null;
+  modules: Module[];
+  lessons: Lesson[];
+  resources: CourseResource[];
 }> => {
-    const [course, lessons, quizzes, resources] = await Promise.all([
-        fetchFullCourse(slug),
-        fetchCourseLessons(slug),
-        fetchCourseQuizzes(slug),
-        fetchCourseResources(slug),
+  if (!isSupabaseConfigured()) {
+    return {
+      course: null,
+      modules: [],
+      lessons: [],
+      resources: [],
+    };
+  }
+
+  try {
+    const { moduleRow, courseRow } = await resolveModuleContext(moduleSlug);
+    if (!moduleRow || !courseRow) {
+      return {
+        course: null,
+        modules: [],
+        lessons: [],
+        resources: [],
+      };
+    }
+
+    const supabase = getSupabase();
+    const [lessonsResponse, resourcesResponse] = await Promise.all([
+      supabase
+        .from("lessons")
+        .select("id, course_slug, module_id, title, type, order_index, estimated_duration_minutes, video_url, resource_url, content, is_preview")
+        .eq("module_id", moduleRow.id)
+        .order("order_index", { ascending: true }),
+      supabase
+        .from("course_resources")
+        .select("*")
+        .eq("course_slug", moduleRow.course_slug)
+        .order("order_index", { ascending: true }),
     ]);
 
-    return { course, lessons, quizzes, resources };
-};
-
-/**
- * Fetch related courses from the related_courses table
- * Returns between 1-4 related courses based on explicit database relationships
- */
-export const fetchRelatedCourses = async (slug: string, limit: number = 4): Promise<Course[]> => {
-    if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, returning empty related courses");
-        return [];
+    if (lessonsResponse.error) {
+      console.warn("Error fetching learning lessons:", lessonsResponse.error.message);
     }
 
-    // Enforce limit between 1 and 4
-    const safeLimit = Math.max(1, Math.min(4, limit));
-
-    try {
-        const supabase = getSupabase();
-
-        // Query the related_courses table to get explicit relationships
-        const { data: relatedData, error: relatedError } = await supabase
-            .from("related_courses")
-            .select("related_course_slug")
-            .eq("course_slug", slug)
-            .order("display_order", { ascending: true })
-            .limit(safeLimit);
-
-        if (relatedError) {
-            console.error("Error fetching related course relationships:", relatedError.message);
-            return [];
-        }
-
-        if (!relatedData || relatedData.length === 0) {
-            // Fallback: return empty array if no explicit relationships exist
-            console.log("No explicit related courses found for:", slug);
-            return [];
-        }
-
-        // Extract the related course slugs
-        const relatedSlugs = relatedData.map(r => r.related_course_slug);
-
-        // Fetch the full course data for the related courses with category names
-        const { data: coursesData, error: coursesError } = await supabase
-            .from("courses")
-            .select("*, course_categories(name), lessons(type, estimated_duration_minutes)")
-            .in("slug", relatedSlugs)
-            .eq("status", "published");
-
-        if (coursesError) {
-            console.error("Error fetching related courses data:", coursesError.message);
-            return [];
-        }
-
-        // Maintain the display order from related_courses table
-        const coursesMap = new Map((coursesData || []).map(c => [c.slug, c]));
-        const orderedCourses = relatedSlugs
-            .map(slug => coursesMap.get(slug))
-            .filter(Boolean)
-            .map(mapRowToCourse);
-
-        return orderedCourses;
-    } catch (err) {
-        console.error("Unexpected error fetching related courses:", err);
-        return [];
+    if (resourcesResponse.error) {
+      console.warn("Error fetching learning resources:", resourcesResponse.error.message);
     }
+
+    const lessons = ((lessonsResponse.data || []) as LessonRow[]).map(mapLessonRow);
+    const resources = ((resourcesResponse.data || []) as ResourceRow[]).map(mapResourceRow);
+
+    return {
+      course: toCourseLikeDetail(moduleRow, courseRow, lessons),
+      modules: [mapModuleRow(moduleRow)],
+      lessons,
+      resources,
+    };
+  } catch (error) {
+    console.error("Unexpected error fetching learning module content:", error);
+    return {
+      course: null,
+      modules: [],
+      lessons: [],
+      resources: [],
+    };
+  }
 };
 
-/**
- * Fetch all categories from database
- */
+export const fetchLearnerQuizSession = async (
+  moduleSlug: string
+): Promise<LearnerQuizSession | null> => {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await (getSupabase() as any).rpc("get_published_module_quiz", {
+      p_module_slug: moduleSlug,
+    });
+
+    if (error) {
+      console.warn("Error fetching learner quiz session:", error.message);
+      return null;
+    }
+
+    if (!data || !Array.isArray(data.questions)) {
+      return null;
+    }
+
+    return {
+      quizId: String(data.quizId ?? ""),
+      title: String(data.title ?? "Module Assessment"),
+      description: data.description || undefined,
+      passingScore: Number(data.passingScore ?? 80),
+      timeLimitMinutes: data.timeLimitMinutes ? Number(data.timeLimitMinutes) : undefined,
+      maxAttempts: data.maxAttempts ? Number(data.maxAttempts) : undefined,
+      shuffleQuestions: Boolean(data.shuffleQuestions),
+      hideAnswers: Boolean(data.hideAnswers),
+      questions: data.questions.map((question: any) => ({
+        id: String(question.id),
+        quizId: String(question.quizId ?? data.quizId ?? ""),
+        question: String(question.question ?? ""),
+        type: normalizeQuizQuestionType(question.type),
+        options: normalizeQuizOptions(question.options),
+      })),
+    };
+  } catch (error) {
+    console.warn("Unexpected error fetching learner quiz session:", error);
+    return null;
+  }
+};
+
+export const evaluateLearnerQuizAnswer = async (
+  questionId: string,
+  selectedAnswerIds: string[]
+): Promise<LearnerQuizAnswerEvaluation | null> => {
+  if (!isSupabaseConfigured()) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await (getSupabase() as any).rpc("evaluate_published_quiz_answer", {
+      p_question_id: questionId,
+      p_selected_answer_ids: selectedAnswerIds,
+    });
+
+    if (error) {
+      console.warn("Error evaluating learner quiz answer:", error.message);
+      return null;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return {
+      questionId: String(data.questionId ?? questionId),
+      isCorrect: Boolean(data.isCorrect),
+      hideAnswers: Boolean(data.hideAnswers),
+      explanation: data.explanation || undefined,
+    };
+  } catch (error) {
+    console.warn("Unexpected error evaluating learner quiz answer:", error);
+    return null;
+  }
+};
+
+export const fetchCourseWithContent = async (slug: string): Promise<{
+  course: Course | null;
+  modules: Module[];
+  lessons: Lesson[];
+  quizzes: Quiz[];
+  resources: CourseResource[];
+}> => {
+  const [course, modules, lessons, resources] = await Promise.all([
+    fetchFullCourse(slug),
+    fetchCourseModules(slug),
+    fetchCourseLessons(slug),
+    fetchCourseResources(slug),
+  ]);
+
+  return {
+    course,
+    modules,
+    lessons,
+    quizzes: [],
+    resources,
+  };
+};
+
+export const fetchRelatedCourses = async (
+  slug: string,
+  limit: number = 4
+): Promise<Course[]> => {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+
+  try {
+    const { moduleRow, courseRow } = await resolveModuleContext(slug);
+    if (!moduleRow || !courseRow) {
+      return [];
+    }
+
+    const { data, error } = await (getSupabase().from("modules" as any) as any)
+      .select("id, slug, course_slug, title, description, thumbnail_url, order_index, estimated_duration_minutes, status")
+      .eq("course_slug", moduleRow.course_slug)
+      .eq("status", "published")
+      .neq("slug", slug)
+      .order("order_index", { ascending: true })
+      .limit(Math.max(1, Math.min(8, limit)));
+
+    if (error) {
+      console.error("Error fetching related modules:", error.message);
+      return [];
+    }
+
+    const moduleRows = ((data || []) as unknown) as ModuleRow[];
+    const lessonsByModule = await resolveLessonsForModules(moduleRows.map((row) => row.id));
+
+    return moduleRows.map((row) => toCourseLikeDetail(row, courseRow, lessonsByModule.get(row.id) || []));
+  } catch (error) {
+    console.error("Unexpected error fetching related modules:", error);
+    return [];
+  }
+};
+
 export const fetchCategories = async (): Promise<Category[]> => {
-    if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, returning empty categories");
-        return [];
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+
+  try {
+    const { data, error } = await getSupabase()
+      .from("course_categories")
+      .select("*")
+      .order("display_order", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching categories:", error.message);
+      return [];
     }
 
-    try {
-        const supabase = getSupabase();
-        const { data, error } = await supabase
-            .from("course_categories")
-            .select("*")
-            .order('display_order', { ascending: true });
+    return ((data || []) as any[]).map((row) => ({
+      id: row.id || row.slug,
+      slug: row.slug,
+      name: row.name,
+      description: row.description || "",
+    }));
+  } catch (error) {
+    console.error("Unexpected error fetching categories:", error);
+    return [];
+  }
+};
 
-        if (error) {
-            console.error("Error fetching categories:", error.message);
-            return [];
+export const fetchPublishedCoursesForNav = async (): Promise<CourseNavItem[]> => {
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+
+  try {
+    const courseRows = await resolvePublishedCourseRows({ excludeHeavyFields: true });
+    const moduleRows = await resolvePublishedModuleRows(courseRows.map((row) => row.slug));
+    const representativeThumbnailMap = new Map<string, string>();
+
+    [...moduleRows]
+      .sort(
+        (left, right) =>
+          left.course_slug.localeCompare(right.course_slug) ||
+          Number(left.order_index || 0) - Number(right.order_index || 0)
+      )
+      .forEach((row) => {
+        if (!row.thumbnail_url || representativeThumbnailMap.has(row.course_slug)) {
+          return;
         }
 
-        return (data || []).map((row: any) => ({
-            id: row.id || row.slug,
-            slug: row.slug,
-            name: row.name,
-            description: row.description || "",
-        }));
-    } catch (err) {
-        console.error("Unexpected error fetching categories:", err);
-        return [];
-    }
+        representativeThumbnailMap.set(row.course_slug, row.thumbnail_url);
+      });
+
+    return courseRows.map((row) => ({
+      slug: row.slug,
+      title: row.title,
+      shortDescription: row.short_description || "",
+      heroImageUrl: representativeThumbnailMap.get(row.slug),
+      thumbnailUrl: representativeThumbnailMap.get(row.slug),
+    }));
+  } catch (error) {
+    console.error("Unexpected error fetching course containers for nav:", error);
+    return [];
+  }
 };
