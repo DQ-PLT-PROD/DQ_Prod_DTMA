@@ -13,8 +13,8 @@ import { PageContainer } from "../../../components/layouts/PageContainer";
 import { CourseListSkeleton } from "../../../components/loading/CourseListSkeleton";
 import { useAuth } from "@/lib/auth";
 import { getUserEnrollments, getActualProgressStats, Enrollment } from "../services/progressService";
-import { fetchCourseLessons, fetchFullCourse } from "@/services/courseService";
-import { Course } from "../../../types/dtma-lms";
+import { fetchCourseLessons, fetchFullCourse, fetchCourseWithContent } from "@/services/courseService";
+import { Course, Lesson, Module } from "../../../types/dtma-lms";
 import { getLearningSnapshot } from "../../learning/services/learningSnapshotService";
 import { RecommendationRail } from "@/features/recommendations/components/RecommendationRail";
 
@@ -22,6 +22,7 @@ interface CourseWithProgress extends Enrollment {
     course?: Course | null;
     actualProgress?: { completedCount: number; totalCount: number; progressPct: number };
     durationMinutes?: number;
+    resumeThumbnailUrl?: string;
 }
 
 const formatDurationLabel = (minutes?: number): string => {
@@ -36,13 +37,37 @@ const formatDurationLabel = (minutes?: number): string => {
     return `${hours} hr ${mins} min`;
 };
 
-const resolveDurationMinutes = async (courseSlug: string, course: Course | null): Promise<number> => {
+const resolveDurationMinutes = async (courseSlug: string, course: Course | null, lessons?: Lesson[]): Promise<number> => {
     if (course?.estimatedDurationMinutes && course.estimatedDurationMinutes > 0) {
         return course.estimatedDurationMinutes;
     }
 
-    const lessons = await fetchCourseLessons(courseSlug);
-    return lessons.reduce((total, lesson) => total + (lesson.estimatedDurationMinutes || 0), 0);
+    if (lessons && lessons.length > 0) {
+        return lessons.reduce((total, lesson) => total + (lesson.estimatedDurationMinutes || 0), 0);
+    }
+
+    const fetchedLessons = await fetchCourseLessons(courseSlug);
+    return fetchedLessons.reduce((total, lesson) => total + (lesson.estimatedDurationMinutes || 0), 0);
+};
+
+const getResumeModuleThumbnail = (
+    resumeLessonId: string | undefined,
+    lessons: Lesson[],
+    modules: Module[]
+): string | undefined => {
+    if (!resumeLessonId) {
+        return [...modules]
+            .filter((module) => typeof module.thumbnailUrl === "string" && module.thumbnailUrl.length > 0)
+            .sort((left, right) => Number(left.orderIndex ?? 0) - Number(right.orderIndex ?? 0))[0]
+            ?.thumbnailUrl;
+    }
+
+    const resumeLesson = lessons.find((lesson) => String(lesson.id) === resumeLessonId);
+    if (!resumeLesson?.moduleId) {
+        return undefined;
+    }
+
+    return modules.find((module) => module.id === resumeLesson.moduleId)?.thumbnailUrl;
 };
 
 const InProgressPage: React.FC = () => {
@@ -73,12 +98,19 @@ const InProgressPage: React.FC = () => {
 
                 const enrollmentsWithCourses = await Promise.all(
                     userEnrollments.map(async (enrollment) => {
-                        const [course, actualProgress] = await Promise.all([
-                            fetchFullCourse(enrollment.courseSlug),
+                        const [{ course, modules, lessons }, actualProgress, snapshot] = await Promise.all([
+                            fetchCourseWithContent(enrollment.courseSlug),
                             getActualProgressStats(databaseUser.id, enrollment.courseSlug),
+                            getLearningSnapshot(enrollment.courseSlug, databaseUser.id),
                         ]);
-                        const durationMinutes = await resolveDurationMinutes(enrollment.courseSlug, course);
-                        return { ...enrollment, course, actualProgress, durationMinutes };
+                        const durationMinutes = await resolveDurationMinutes(enrollment.courseSlug, course, lessons);
+                        return {
+                            ...enrollment,
+                            course,
+                            actualProgress,
+                            durationMinutes,
+                            resumeThumbnailUrl: getResumeModuleThumbnail(snapshot.resumeLessonId, lessons, modules) || course?.heroImageUrl,
+                        };
                     })
                 );
 
@@ -138,14 +170,14 @@ const InProgressPage: React.FC = () => {
                 </div>
 
                 <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">My Courses</h2>
-                    <p className="text-gray-500 text-sm mt-1">In progress and ready to resume</p>
+                    <h2 className="text-2xl font-bold text-gray-900">My Modules</h2>
+                    <p className="text-gray-500 text-sm mt-1">Standalone modules in progress and ready to resume</p>
                 </div>
 
                 <div className="mb-8">
                     <div className="flex items-center gap-2 mb-4">
                         <Play size={18} className="text-[#1839AD]" />
-                        <h2 className="text-lg font-semibold text-gray-900">In Progress</h2>
+                        <h2 className="text-lg font-semibold text-gray-900">In Progress Modules</h2>
                         <span className="text-xs font-bold bg-[#1839AD] text-white px-2 py-0.5 rounded-full">
                             {enrollments.length}
                         </span>
@@ -158,7 +190,7 @@ const InProgressPage: React.FC = () => {
                     ) : !user ? (
                         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
                             <BookOpen className="mx-auto mb-4 text-gray-400" size={48} />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">Sign in to see your courses</h3>
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">Sign in to see your modules</h3>
                             <p className="text-gray-500 mb-4">Track your progress and continue learning</p>
                             <button
                                 onClick={() => navigate("/courses")}
@@ -170,8 +202,8 @@ const InProgressPage: React.FC = () => {
                     ) : enrollments.length === 0 ? (
                         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
                             <BookOpen className="mx-auto mb-4 text-gray-400" size={48} />
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No courses in progress</h3>
-                            <p className="text-gray-500 mb-4">Start learning by enrolling in a course</p>
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">No modules in progress</h3>
+                            <p className="text-gray-500 mb-4">Start learning by enrolling in a module</p>
                             <button
                                 onClick={() => navigate("/courses")}
                                 className="px-4 py-2 bg-[#1839AD] text-white rounded-lg hover:bg-[#132b7c] transition"
@@ -195,10 +227,10 @@ const InProgressPage: React.FC = () => {
                                     >
                                         <div className="flex items-start gap-4">
                                             <div className="w-24 h-16 rounded-lg bg-gray-200 overflow-hidden shrink-0">
-                                                {enrollment.course?.heroImageUrl ? (
+                                                {enrollment.resumeThumbnailUrl ? (
                                                     <img
-                                                        src={enrollment.course.heroImageUrl}
-                                                        alt={enrollment.course.title}
+                                                        src={enrollment.resumeThumbnailUrl}
+                                                        alt={enrollment.course?.title || enrollment.courseSlug}
                                                         className="w-full h-full object-cover"
                                                     />
                                                 ) : (

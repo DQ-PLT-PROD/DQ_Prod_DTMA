@@ -46,7 +46,7 @@ export const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
         try {
             const currentUrl = window.location.origin;
             const successUrl = `${currentUrl}/payment/success?courseId=${encodeURIComponent(course.slug || course.id)}`;
-            const cancelUrl = `${currentUrl}/courses/${encodeURIComponent(course.id)}?payment=cancelled`;
+            const cancelUrl = `${currentUrl}/modules/${encodeURIComponent(course.slug || course.id)}?payment=cancelled`;
 
             const result = await initiatePayment({
                 planId: selectedPlan,

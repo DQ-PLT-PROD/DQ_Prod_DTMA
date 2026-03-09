@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AIWidget } from "./AIWidget";
 import { useAIWidget } from "../hooks/useAIWidget";
 import { getIntentById, getFallbackResponse, IntentResponse } from "../utils/intentRegistry";

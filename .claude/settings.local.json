@@ -12,7 +12,11 @@
       "Bash(claude mcp:*)",
       "Bash(head:*)",
       "Bash(cd /c/Users/mstwi/Documents/Projects/DQ_Prod_DTMA && npm run lint 2>&1)",
-      "Bash(cd /c/Users/mstwi/Documents/Projects/DQ_Prod_DTMA && npm run build 2>&1)"
+      "Bash(cd /c/Users/mstwi/Documents/Projects/DQ_Prod_DTMA && npm run build 2>&1)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(node:*)",
+      "Bash(git add:*)"
     ]
   }
 }

@@ -124,29 +124,53 @@ const mockCourses: Course[] = [
 // Mock learner profiles
 const leaderProfile: LearnerProfile = {
   azureUserId: "leader-123",
+  displayName: null,
+  preferredEmail: null,
+  phoneNumber: null,
+  country: null,
+  timezone: null,
   roleTrack: "leader",
   goals: ["leadership", "strategy", "team-management"],
   preferences: [],
   onboardingCompleted: true,
   onboardingCompletedAt: "2024-01-01T00:00:00Z",
+  seniorityLevel: null,
+  weeklyLearningCapacity: null,
+  transformationExperience: null,
 };
 
 const workerProfile: LearnerProfile = {
   azureUserId: "worker-456",
+  displayName: null,
+  preferredEmail: null,
+  phoneNumber: null,
+  country: null,
+  timezone: null,
   roleTrack: "digital_worker",
   goals: ["security", "technology", "skills-development"],
   preferences: [],
   onboardingCompleted: true,
   onboardingCompletedAt: "2024-01-01T00:00:00Z",
+  seniorityLevel: null,
+  weeklyLearningCapacity: null,
+  transformationExperience: null,
 };
 
 const noGoalsProfile: LearnerProfile = {
   azureUserId: "no-goals-789",
+  displayName: null,
+  preferredEmail: null,
+  phoneNumber: null,
+  country: null,
+  timezone: null,
   roleTrack: "leader",
   goals: [],
   preferences: [],
   onboardingCompleted: false,
   onboardingCompletedAt: null,
+  seniorityLevel: null,
+  weeklyLearningCapacity: null,
+  transformationExperience: null,
 };
 
 describe("recommendationEngine", () => {

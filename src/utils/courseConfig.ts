@@ -20,6 +20,9 @@ interface TabConfig {
 interface FilterCategoryConfig {
     id: string;
     title: string;
+    disabled?: boolean;
+    badgeLabel?: string;
+    helperText?: string;
     options: {
         id: string;
         name: string;
@@ -100,20 +103,16 @@ const courseConfig: CourseConfig = {
     summarySticky: true,
     filterCategories: [
         {
-            id: 'category',
-            title: 'Category',
-            options: [
-                { id: 'economy-4-0', name: 'Mastering Economy 4.0' },
-                { id: 'digital-cognitive-organization', name: "Building Tomorrow's Organisations" },
-                { id: 'digital-business-platform', name: 'Mastering Digital Transformation' },
-                { id: 'digital-transformation-2-0', name: 'Designing for the Future' },
-                { id: 'digital-worker-workspace', name: 'Architecting Change' },
-                { id: 'digital-accelerators-tools', name: 'Empowering Change' },
-            ]
+            id: 'course',
+            title: 'Courses',
+            options: []
         },
         {
             id: 'industry',
             title: 'Industry',
+            disabled: true,
+            badgeLabel: 'Coming Soon',
+            helperText: 'Industry filters are not active yet.',
             options: [
                 { id: 'farming-4-0', name: 'Farming 4.0' },
                 { id: 'government-4-0', name: 'Government 4.0' },
@@ -129,6 +128,9 @@ const courseConfig: CourseConfig = {
         {
             id: 'audienceLevel',
             title: 'Role',
+            disabled: true,
+            badgeLabel: 'Coming Soon',
+            helperText: 'Role filters are not active yet.',
             options: [
                 { id: 'Digital Leaders', name: 'Digital Leaders' },
                 { id: 'Digital Workers', name: 'Digital Workers' }
@@ -137,6 +139,9 @@ const courseConfig: CourseConfig = {
         {
             id: 'levelTag',
             title: 'Level',
+            disabled: true,
+            badgeLabel: 'Coming Soon',
+            helperText: 'Level filters are not active yet.',
             options: [
                 { id: 'Beginner', name: 'Beginner' },
                 { id: 'Intermediate', name: 'Intermediate' },

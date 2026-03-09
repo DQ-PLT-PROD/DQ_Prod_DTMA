@@ -33,6 +33,8 @@ export function buildAdminAbility(
         can('create', 'Module');
         can('update', 'Module');
         can('delete', 'Module');
+        can('publish', 'Module');
+        can('unpublish', 'Module');
 
         can('create', 'Lesson');
         can('update', 'Lesson');
@@ -54,6 +56,8 @@ export function buildAdminAbility(
 
         can('create', 'Module');
         can('update', 'Module');
+        can('publish', 'Module');
+        can('unpublish', 'Module');
 
         can('create', 'Lesson');
         can('update', 'Lesson');

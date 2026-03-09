@@ -54,25 +54,25 @@ vi.mock("@/services/courseService", () => ({
       },
     ])
   ),
-  fetchCategories: vi.fn(() =>
+  fetchPublishedCoursesForNav: vi.fn(() =>
     Promise.resolve([
-      { slug: "leadership", name: "Leadership" },
-      { slug: "technology", name: "Technology" },
+      { slug: "test-course-1", title: "Test Course 1", shortDescription: "Short desc 1" },
+      { slug: "test-course-2", title: "Test Course 2", shortDescription: "Short desc 2" },
     ])
   ),
 }));
 
-vi.mock("../../services/filterService", () => ({
-  fetchIndustryTree: vi.fn(() => Promise.resolve([])),
-}));
-
-vi.mock("../../../../components/Header", () => ({
-  Header: () => <div>Header</div>,
+vi.mock("@/lib/auth", () => ({
   useAuth: () => ({
     user: null,
     databaseUser: null,
     login: vi.fn(),
   }),
+  AuthProvider: ({ children }: { children: any }) => children,
+}));
+
+vi.mock("../../../../components/Header", () => ({
+  Header: () => <div>Header</div>,
 }));
 
 vi.mock("../../../../components/Footer", () => ({
@@ -99,13 +99,28 @@ describe("CourseCatalogPage Integration (D2)", () => {
       { timeout: 3000 }
     );
 
-    expect(screen.getByText("Test Course 2")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText("Refine by course. More filters are coming soon.")
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByText("Test Course 2").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((_, element) => {
+        if (element?.tagName.toLowerCase() !== "h2") return false;
+        const text = element.textContent?.trim();
+        return text === "Showing 2 Modules" || text === "2 Modules";
+      }).length
+    ).toBeGreaterThan(0);
   });
 
   it("should parse filters from URL on mount", async () => {
+    const { fetchCourses } = await import("@/services/courseService");
+
     render(
       <MemoryRouter
-        initialEntries={["/courses?category=leadership&level=beginner"]}
+        initialEntries={["/courses?course=test-course-1"]}
       >
         <CourseCatalogPage />
       </MemoryRouter>
@@ -114,18 +129,49 @@ describe("CourseCatalogPage Integration (D2)", () => {
     // Wait for page to load
     await waitFor(
       () => {
-        expect(screen.getByText(/Showing/)).toBeInTheDocument();
+        expect(screen.getByText("Test Course 1")).toBeInTheDocument();
       },
       { timeout: 3000 }
     );
 
-    // Filters should be applied (check for active chips or filtered results)
-    expect(screen.getByText(/Courses/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(vi.mocked(fetchCourses)).toHaveBeenCalledWith(
+        expect.objectContaining({
+          courseSlugs: ["test-course-1"],
+        })
+      );
+    });
+  });
+
+  it("should show a no-modules message when the selected course has no published modules", async () => {
+    const { fetchCourses } = await import("@/services/courseService");
+    vi.mocked(fetchCourses).mockResolvedValue([]);
+
+    render(
+      <MemoryRouter initialEntries={["/courses?course=test-course-1"]}>
+        <CourseCatalogPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(
+      () => {
+        expect(
+          screen.getByText("This course does not have any published modules yet.")
+        ).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
+
+    expect(vi.mocked(fetchCourses)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        courseSlugs: ["test-course-1"],
+      })
+    );
   });
 
   it("should show empty state when no courses match filters", async () => {
     const { fetchCourses } = await import("@/services/courseService");
-    vi.mocked(fetchCourses).mockResolvedValueOnce([]);
+    vi.mocked(fetchCourses).mockResolvedValue([]);
 
     render(
       <BrowserRouter>
@@ -136,7 +182,7 @@ describe("CourseCatalogPage Integration (D2)", () => {
     await waitFor(
       () => {
         expect(
-          screen.getByText(/No courses match these filters/)
+          screen.getByText(/No modules match these filters/)
         ).toBeInTheDocument();
       },
       { timeout: 3000 }

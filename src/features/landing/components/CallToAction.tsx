@@ -98,21 +98,24 @@ const Toast = ({ message, type = "success", onClose }) => {
   return (
     <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
       <div
-        className={`rounded-lg shadow-lg p-4 flex items-start ${type === "success"
-          ? "bg-green-50 border-l-4 border-green-500"
-          : "bg-red-50 border-l-4 border-red-500"
-          }`}
+        className={`rounded-lg shadow-lg p-4 flex items-start ${
+          type === "success"
+            ? "bg-green-50 border-l-4 border-green-500"
+            : "bg-red-50 border-l-4 border-red-500"
+        }`}
       >
         <div
-          className={`flex-shrink-0 mr-3 ${type === "success" ? "text-green-500" : "text-red-500"
-            }`}
+          className={`flex-shrink-0 mr-3 ${
+            type === "success" ? "text-green-500" : "text-red-500"
+          }`}
         >
           {type === "success" ? <CheckCircle size={20} /> : <X size={20} />}
         </div>
         <div className="flex-1">
           <p
-            className={`text-sm font-medium ${type === "success" ? "text-green-800" : "text-red-800"
-              }`}
+            className={`text-sm font-medium ${
+              type === "success" ? "text-green-800" : "text-red-800"
+            }`}
           >
             {message}
           </p>
@@ -149,7 +152,7 @@ const CTACard: React.FC<CTACardProps> = ({
   description,
   buttonText,
   buttonColor,
-  onClick = () => { },
+  onClick = () => {},
   isExpanded = false,
   onExpand = undefined,
   children = null,
@@ -165,19 +168,14 @@ const CTACard: React.FC<CTACardProps> = ({
             <p className="text-gray-600 mb-6">{description}</p>
             <div className="flex justify-center w-full">
               <button
-                onClick={() => {
-                  if (onExpand) {
-                    onExpand();
-                  } else {
-                    onClick();
-                  }
-                }}
-                className={`font-medium transition-colors duration-200 flex items-center gap-2 ${buttonColor === "blue"
-                  ? "px-5 py-2.5 h-11 rounded-full bg-[#1839AD] text-white hover:bg-[#0d2b8a] focus:outline-none focus:ring-2 focus:ring-[#1839AD]/30"
-                  : buttonColor === "green"
-                    ? "px-6 py-3 rounded-lg shadow-md bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700"
-                    : "px-6 py-3 rounded-lg shadow-md bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
-                  }`}
+                onClick={onExpand ?? onClick}
+                className={`font-medium transition-colors duration-200 flex items-center gap-2 ${
+                  buttonColor === "blue"
+                    ? "px-5 py-2.5 h-11 rounded-full bg-[#1839AD] text-white hover:bg-[#0d2b8a] focus:outline-none focus:ring-2 focus:ring-[#1839AD]/30"
+                    : buttonColor === "green"
+                      ? "px-6 py-3 rounded-lg shadow-md bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700"
+                      : "px-6 py-3 rounded-lg shadow-md bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
+                }`}
               >
                 {buttonColor === "blue" ? "Get Started" : buttonText}
                 <ArrowRight size={16} />
@@ -251,11 +249,11 @@ const CallToAction: React.FC = () => {
   // Form submission states
   const [isSubmittingPartner, setIsSubmittingPartner] = useState(false);
   const [partnerSubmitError, setPartnerSubmitError] = useState<string | null>(
-    null
+    null,
   );
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
   const [contactSubmitError, setContactSubmitError] = useState<string | null>(
-    null
+    null,
   );
 
   // Service categories
@@ -327,7 +325,7 @@ const CallToAction: React.FC = () => {
             ServiceCategory: partnerFormData.serviceCategory,
             Message: partnerFormData.message,
           }),
-        }
+        },
       );
 
       if (response.ok) {
@@ -350,14 +348,14 @@ const CallToAction: React.FC = () => {
       } else {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Submission failed (${response.status})`
+          errorData.message || `Submission failed (${response.status})`,
         );
       }
     } catch (error) {
       setPartnerSubmitError(
         error instanceof Error
           ? error.message
-          : "Network error. Please try again."
+          : "Network error. Please try again.",
       );
       setToast({
         message: "Failed to submit. Please try again.",
@@ -387,7 +385,7 @@ const CallToAction: React.FC = () => {
             email: contactFormData.email,
             message: contactFormData.message,
           }),
-        }
+        },
       );
 
       if (response.ok) {
@@ -409,14 +407,14 @@ const CallToAction: React.FC = () => {
       } else {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Submission failed (${response.status})`
+          errorData.message || `Submission failed (${response.status})`,
         );
       }
     } catch (error) {
       setContactSubmitError(
         error instanceof Error
           ? error.message
-          : "Network error. Please try again."
+          : "Network error. Please try again.",
       );
       setToast({
         message: "Failed to send message. Please try again.",
@@ -462,25 +460,26 @@ const CallToAction: React.FC = () => {
       className="w-full h-full flex flex-col justify-center py-16 relative overflow-hidden"
     >
       <PageContainer className="relative">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold leading-tight text-[#030C2B]">
-            Ready to Grow in the AI Working Era?
+        <div className="text-center mb-12 max-w-4xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold leading-tight text-[#030C2B] mb-4">
+            Ready to Master Digital Transformation with DTMA?
           </h2>
+          <p className="text-lg text-gray-600 leading-relaxed">
+            Join the academy designed to equip you with the skills and knowledge
+            needed to succeed in today's rapidly evolving digital world. Start
+            your learning journey and become a leader in the digital
+            transformation era.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-8 items-start">
-          {/* Card 1: Register Now */}
-          <div id="cta-register">
-            <CTACard
-              icon={<Users size={28} className="text-blue-600" />}
-              title="Register Now"
-              description="Create your account and start your learning journey."
-              buttonText="Sign Up"
-              buttonColor="blue"
-              onClick={handleSignIn}
-              delay={0.1}
-            />
-          </div>
+        <div className="flex justify-center">
+          <button
+            onClick={handleSignIn}
+            className="inline-flex items-center gap-2 px-8 py-3 bg-[#1839AD] text-white rounded-full hover:bg-[#0d2b8a] transition-colors font-semibold shadow-sm text-lg"
+          >
+            Get Started
+            <ArrowRight className="w-5 h-5" />
+          </button>
         </div>
       </PageContainer>
     </div>

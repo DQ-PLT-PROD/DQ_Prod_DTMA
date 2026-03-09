@@ -1,9 +1,4 @@
-/**
- * Saved Courses Service
- * Frontend API client for saved/bookmarked courses
- */
-
-import { msalInstance } from '@/lib/auth/msal'
+import { msalInstance } from "@/lib/auth/msal";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504])

@@ -105,41 +105,36 @@ List and manage courses (Published, Draft, Archived).
 
 **FR1: List View**
 - Show all courses from `lms_courses`.
-- Columns: Title, Category, Status, Last Updated.
-- Action buttons: Edit, Delete.
+- Columns: Title, Status, Actions.
+- Courses are the top-level classification. The table must not show Category or Duration.
 
 **FR2: Course Editor Form**
 - Route: `/instructor/course-management/course/:id`
-- **Fields to REMOVE from current form:**
+- **Fields to RETAIN:**
+  - Title (required)
+  - Description
+  - Status
+- **Fields to REMOVE:**
+  - Thumbnail / Hero Image
+  - Category
+  - Duration
   - Provider
   - Delivery Mode
   - Course Type
   - Department
   - Audience
   - SFI / Level Code
-- **Fields to RETAIN:**
-  - Title (required)
-  - Slug (auto-generated from title)
-  - Description
-  - Category (from Classifications)
-  - Status (Draft / Published)
-  - Hero Image (via Media Picker)
-  - Intro Video (via Media Picker)
-  - Highlights (list)
-  - Outcomes (list)
+  - Intro Video
+  - Highlights
+  - Outcomes
 
-**FR3: Auto-Duration**
-- Duration field must be **read-only / auto-calculated**.
-- Calculation: Sum of `estimated_duration_minutes` from all associated lessons.
-- If no lessons, display "0 min".
-
-**FR4: CTA Placement**
+**FR3: CTA Placement**
 - "Add Course" button inside the Courses tab content area, not page header.
 
 #### 2.4.3 Acceptance Criteria
 - [ ] Courses list pulls from `lms_courses`.
-- [ ] Form does NOT show Provider, Delivery Mode, Course Type, Department, Audience, Level Code.
-- [ ] Duration is calculated, not editable.
+- [ ] Courses table only shows Title, Status, and Actions.
+- [ ] Course forms do not reference categories.
 
 ---
 
@@ -154,22 +149,25 @@ Manage reusable modules that group lessons.
 
 **FR1: List View**
 - Data Source: `lms_modules` or equivalent.
-- Show: Title, Associated Course count.
+- Show: Module Title with thumbnail, Course, Length, Status, Actions.
 
 **FR2: Module Editor**
 - Route: `/instructor/course-management/module/:id`
-- Fields: Title, Description.
+- Fields: Module Title, Course Selector, Length, Status, Thumbnail.
+- Thumbnail management must support direct URL entry, Media Library selection, and local upload.
 
 **FR3: Relationships**
-- A Module can belong to zero or more Courses.
-- A Lesson can belong to a Module OR directly to a Course.
+- A Module belongs to exactly one Course.
+- Database relationship: `modules.course_id -> courses.id`.
+- Legacy `course_slug` linkage may remain for compatibility, but `course_id` is the authoritative hierarchy field for modules.
 
 **FR4: CTA Placement**
 - "Add Module" inside the Modules tab content area.
 
 #### 2.5.3 Acceptance Criteria
 - [ ] Modules list pulls from database.
-- [ ] Can create/edit a module.
+- [ ] Modules table shows Course, Length, and Status.
+- [ ] Can create/edit a module with a required parent course.
 
 ---
 
@@ -184,23 +182,27 @@ Manage individual lessons.
 
 **FR1: List View**
 - Data Source: `lessons` table.
-- Show: Title, Type (Video/Quiz/Text), Duration.
-- Filter by Type.
+- Show: Lesson Title, Video, Order, Duration, Actions.
+- Replace the old Type display with a simplified `Video` label.
+- Do not show Preview in the lessons table.
 
 **FR2: Lesson Editor**
 - Route: `/instructor/course-management/lesson/:id`
-- Fields: Title, Type, Content/Video URL, Duration, Is Preview, Associated Module OR Course.
+- Fields: Lesson Title, Module Selector, Video Upload/Link, Order, Duration.
+- Remove Preview controls from the lesson form.
 
 **FR3: Relationships**
-- Lessons can map to a Module.
-- OR map directly to a Course (no Module).
+- Lessons belong to Modules.
+- Database relationship: `lessons.module_id -> modules.id`.
+- The UI must derive the course from the selected module.
 
 **FR4: CTA Placement**
 - "Add Lesson" inside the Lessons tab content area.
 
 #### 2.6.3 Acceptance Criteria
 - [ ] Lessons list pulls from `lessons` table.
-- [ ] Can create/edit a lesson with duration.
+- [ ] Lessons table shows only Lesson Title, Video, Order, Duration, and Actions.
+- [ ] Lesson create/edit flows require a module selection.
 
 ---
 
@@ -290,8 +292,10 @@ Manage media assets stored in Supabase Storage.
 | Global "Add New" button | `CourseManagementPage.tsx` header | Remove (move to tabs) |
 | Tab Order | `CourseManagementPage.tsx` tabs array | Reorder to: Courses, Modules, Lessons, Classifications, Media Library |
 | Learning Paths tab | `CourseManagementPage.tsx` | Remove or keep as stub (Coming Soon) |
-| Course Form fields | `CourseForm.tsx` | Remove: Provider, Delivery Mode, Course Type, Department, Audience, Level Code |
-| Duration field | `CourseForm.tsx` | Make read-only, calculate from lessons |
+| Course Form fields | `CourseForm.tsx` | Keep only title, description, and status inputs |
+| Course category references | `CourseForm.tsx`, `CoursesSection.tsx` | Remove category from top-level course management |
+| Module hierarchy | `ModuleForm.tsx`, `ModulesSection.tsx`, database | Store module parent with `course_id`, expose module status/length, and manage module thumbnails |
+| Lesson hierarchy | `LessonForm.tsx`, `LessonsSection.tsx` | Require module selection and remove preview UI |
 | Media Library tab | `CourseManagementPage.tsx` | Add new component |
 | Instructor route guard | `AppRouter.tsx` | Use Supabase-based `AdminProtectedRoute` |
 

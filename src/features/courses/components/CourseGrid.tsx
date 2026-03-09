@@ -37,6 +37,9 @@ interface CourseGridProps {
   promoCards?: PromoCardData[];
   onTagClick?: (type: string, value: string) => void;
   showSaveButton?: boolean;
+  resultsLabelSingular?: string;
+  resultsLabelPlural?: string;
+  helperText?: string;
 }
 export const CourseGrid: React.FC<CourseGridProps> = ({
   items,
@@ -45,6 +48,9 @@ export const CourseGrid: React.FC<CourseGridProps> = ({
   promoCards = [],
   onTagClick,
   showSaveButton = true,
+  resultsLabelSingular = "Course",
+  resultsLabelPlural = "Courses",
+  helperText = "Refine by course. More filters are coming soon.",
 }) => {
   const [isPointerFine, setIsPointerFine] = useState<boolean>(true);
 
@@ -60,6 +66,7 @@ export const CourseGrid: React.FC<CourseGridProps> = ({
   // Use items passed in directly - no fallback data
   const displayItems = items || [];
   const totalItems = displayItems.length;
+  const resultsLabel = totalItems === 1 ? resultsLabelSingular : resultsLabelPlural;
 
   if (totalItems === 0) {
     return (
@@ -108,10 +115,10 @@ export const CourseGrid: React.FC<CourseGridProps> = ({
             className="text-2xl font-bold text-gray-900 hidden sm:block mb-1"
             aria-live="polite"
           >
-            Showing {totalItems} Courses
+            Showing {totalItems} {resultsLabel}
           </h2>
           <div className="text-sm text-gray-500 hidden sm:block">
-            Refine by category, industry, role, or level
+            {helperText}
           </div>
         </div>
         {/* Mobile-friendly header */}
@@ -119,7 +126,7 @@ export const CourseGrid: React.FC<CourseGridProps> = ({
           className="text-lg font-medium text-gray-800 sm:hidden"
           aria-live="polite"
         >
-          {totalItems} Courses
+          {totalItems} {resultsLabel}
         </h2>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">

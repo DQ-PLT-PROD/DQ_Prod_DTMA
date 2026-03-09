@@ -1,8 +1,7 @@
-import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
 import { isSupabaseConfigured } from "../../../lib/supabase/client";
-import { Course, Lesson as DbLesson, LessonType } from "../../../types/dtma-lms";
-import { CourseResource } from "../../courses/services/courseService";
-import type { Enrollment, LessonProgress } from "../../portal/services/progressService";
+import { Course, Lesson as DbLesson } from "../../../types/dtma-lms";
+import { fetchCourseWithContent, CourseResource } from "../../courses/services/courseService";
+import { getUserCourseProgress, type Enrollment, type LessonProgress } from "../../portal/services/progressService";
 
 export interface LearningSnapshot {
     course: Course | null;
@@ -24,77 +23,6 @@ const snapshotCache = new Map<string, SnapshotCacheEntry>();
 const buildCacheKey = (courseSlug: string, userId?: string | null) =>
     `${courseSlug}::${userId || "anon"}`;
 
-const mapRowToCourse = (row: any): Course => ({
-    id: row.id,
-    slug: row.slug,
-    title: row.title,
-    shortDescription: row.short_description || "",
-    longDescription: row.long_description || "",
-    categoryId: row.category_id || "",
-    audienceLevel: row.audience_level as any,
-    topicTags: row.topic_tags || [],
-    levelTag: row.level_tag || "",
-    estimatedDurationMinutes: row.estimated_duration_minutes || 0,
-    lessonCount: row.lesson_count || 0,
-    heroImageUrl: row.hero_image_url || undefined,
-    thumbnailUrl: row.thumbnail_url || undefined,
-    introVideoUrl: row.intro_video_url || undefined,
-    introVideoPosterUrl: row.intro_video_poster_url || undefined,
-    isFeatured: row.is_featured || false,
-    isComingSoon: row.is_coming_soon || false,
-    status: row.status as any,
-    rating: row.rating || undefined,
-    reviewCount: row.review_count || undefined,
-    enrollmentUrl: row.enrollment_url || undefined,
-    learningOutcomes: row.learning_outcomes || [],
-    skillsGained: row.skills_gained || [],
-    uponCompletion: row.upon_completion || undefined,
-    startDate: row.start_date || undefined,
-    industry: row.industry || undefined,
-});
-
-const mapRowToLesson = (row: any): DbLesson => ({
-    id: row.id,
-    courseId: row.course_slug,
-    title: row.title,
-    type: row.type as LessonType,
-    orderIndex: row.order_index,
-    estimatedDurationMinutes: row.estimated_duration_minutes || 0,
-    videoUrl: row.video_url || undefined,
-    resourceUrl: row.resource_url || undefined,
-    content: row.content || undefined,
-});
-
-const mapRowToResource = (row: any): CourseResource => ({
-    id: row.id,
-    courseSlug: row.course_slug,
-    title: row.title,
-    type: row.type,
-    description: row.description || undefined,
-    resourceUrl: row.resource_url,
-    fileSizeBytes: row.file_size_bytes || undefined,
-    orderIndex: row.order_index || 0,
-});
-
-const mapRowToEnrollment = (row: any): Enrollment => ({
-    id: row.id,
-    userId: row.user_id,
-    courseSlug: row.course_slug,
-    startedAt: row.started_at,
-    completedAt: row.completed_at || undefined,
-    lastAccessedAt: row.last_accessed_at,
-    progressPct: parseFloat(row.progress_pct) || 0,
-});
-
-const mapRowToLessonProgress = (row: any): LessonProgress => ({
-    id: row.id,
-    enrollmentId: row.enrollment_id,
-    lessonId: row.lesson_id,
-    completed: row.completed,
-    watchTimeSeconds: row.watch_time_seconds || 0,
-    completedAt: row.completed_at || undefined,
-});
-
 const emptySnapshot = (): LearningSnapshot => ({
     course: null,
     lessons: [],
@@ -103,6 +31,28 @@ const emptySnapshot = (): LearningSnapshot => ({
     lessonProgress: [],
     resumeLessonId: undefined,
 });
+
+const getResumeLessonId = (
+    lessons: DbLesson[],
+    lessonProgress: LessonProgress[]
+): string | undefined => {
+    if (lessons.length === 0) {
+        return undefined;
+    }
+
+    const completedLessonIds = new Set(
+        lessonProgress.filter((item) => item.completed).map((item) => item.lessonId)
+    );
+
+    const orderedLessons = [...lessons].sort(
+        (left, right) => Number(left.orderIndex || 0) - Number(right.orderIndex || 0)
+    );
+
+    return (
+        orderedLessons.find((lesson) => !completedLessonIds.has(String(lesson.id)))?.id ||
+        orderedLessons[orderedLessons.length - 1]?.id
+    )?.toString();
+};
 
 export const invalidateLearningSnapshot = (courseSlug: string, userId?: string | null) => {
     snapshotCache.delete(buildCacheKey(courseSlug, userId));
@@ -128,56 +78,19 @@ export const getLearningSnapshot = async (
         }
     }
 
-    const fetchSnapshot = async (lookupUserId: string | null) => {
-        const supabase = getSupabaseForEnrollment();
-        return (supabase.rpc as any)("get_learning_snapshot", {
-            p_course_slug: courseSlug,
-            p_user_id: lookupUserId,
-        });
-    };
-
     try {
-        const { data, error } = await fetchSnapshot(userId || null);
+        const [{ course, lessons, resources }, progress] = await Promise.all([
+            fetchCourseWithContent(courseSlug),
+            userId ? getUserCourseProgress(userId, courseSlug) : Promise.resolve({ enrollment: null, lessonProgress: [] }),
+        ]);
 
-        if (error) {
-            console.warn("Failed to fetch learning snapshot:", error.message);
-            if (userId) {
-                const { data: fallbackData, error: fallbackError } = await fetchSnapshot(null);
-                if (!fallbackError) {
-                    const rawFallback = fallbackData as any;
-                    const fallbackSnapshot: LearningSnapshot = {
-                        course: rawFallback?.course ? mapRowToCourse(rawFallback.course) : null,
-                        lessons: Array.isArray(rawFallback?.lessons)
-                            ? rawFallback.lessons.map(mapRowToLesson)
-                            : [],
-                        resources: Array.isArray(rawFallback?.resources)
-                            ? rawFallback.resources.map(mapRowToResource)
-                            : [],
-                        enrollment: null,
-                        lessonProgress: [],
-                        resumeLessonId: undefined,
-                    };
-
-                    snapshotCache.set(cacheKey, { data: fallbackSnapshot, fetchedAt: Date.now() });
-                    return fallbackSnapshot;
-                }
-            }
-            return emptySnapshot();
-        }
-
-        const raw = data as any;
         const snapshot: LearningSnapshot = {
-            course: raw?.course ? mapRowToCourse(raw.course) : null,
-            lessons: Array.isArray(raw?.lessons) ? raw.lessons.map(mapRowToLesson) : [],
-            resources: Array.isArray(raw?.resources)
-                ? raw.resources.map(mapRowToResource)
-                : [],
-            enrollment: raw?.enrollment ? mapRowToEnrollment(raw.enrollment) : null,
-            lessonProgress: Array.isArray(raw?.progress)
-                ? raw.progress.map(mapRowToLessonProgress)
-                : [],
-            resumeLessonId:
-                typeof raw?.resumeLessonId === "string" ? raw.resumeLessonId : undefined,
+            course,
+            lessons,
+            resources,
+            enrollment: progress.enrollment,
+            lessonProgress: progress.lessonProgress,
+            resumeLessonId: getResumeLessonId(lessons, progress.lessonProgress),
         };
 
         snapshotCache.set(cacheKey, { data: snapshot, fetchedAt: Date.now() });

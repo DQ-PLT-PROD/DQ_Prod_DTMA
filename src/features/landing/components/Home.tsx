@@ -120,7 +120,7 @@ const FeaturedCoursesSection: React.FC = () => {
 
   const handleViewDetails = (id: string, action?: boolean) => {
     const search = action ? "?action=true" : "";
-    navigate(`/courses/${id}${search}`);
+    navigate(`/modules/${id}${search}`);
   };
 
   const handleContinueLearning = () => {

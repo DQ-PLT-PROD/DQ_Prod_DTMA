@@ -434,7 +434,7 @@ const lessonAccessHandlers = {
 
     try {
       console.log(`🎬 Getting module intro for user ${userId} - course: ${courseSlug}, module: ${moduleId}`)
-      
+
       // Check module access (module intros are always accessible)
       const accessResult = await checkModuleAccess(
         supabaseClient,
@@ -906,7 +906,7 @@ const enrollmentHandlers = {
     const authenticatedUser = getCurrentUser(req);
 
     // If userId is null (from 'me' endpoint), use authenticated user
-    const azureUserId = !userId || userId === 'me' 
+    const azureUserId = !userId || userId === 'me'
       ? (authenticatedUser ? authenticatedUser.azureUserId : null)
       : userId;
 
@@ -1252,12 +1252,12 @@ export const requestHandler = async (req, res) => {
       if (pathParts[3] === 'progress' && pathParts[4] && pathParts[5] && req.method === 'POST') {
         return await lessonAccessHandlers.updateLessonProgress(req, res, pathParts[4], pathParts[5])
       }
-      
+
       // GET /api/lessons/module-intro/:courseSlug/:moduleId
       if (pathParts[3] === 'module-intro' && pathParts[4] && pathParts[5] && req.method === 'GET') {
         return await lessonAccessHandlers.getModuleIntro(req, res, pathParts[4], pathParts[5])
       }
-      
+
       return sendError(res, 404, 'Lesson endpoint not found')
     }
 
@@ -1273,17 +1273,17 @@ export const requestHandler = async (req, res) => {
 
       const pathParts = pathname.split('/')
 
-      // GET /api/saved-courses — list saved courses
+      // GET /api/saved-courses - list saved courses
       if (req.method === 'GET' && !pathParts[3]) {
         return await savedCoursesHandlers.listSavedCourses(req, res)
       }
 
-      // POST /api/saved-courses — save a course
+      // POST /api/saved-courses - save a course
       if (req.method === 'POST' && !pathParts[3]) {
         return await savedCoursesHandlers.saveCourse(req, res)
       }
 
-      // DELETE /api/saved-courses/:courseId — unsave a course
+      // DELETE /api/saved-courses/:courseId - unsave a course
       if (req.method === 'DELETE' && pathParts[3]) {
         return await savedCoursesHandlers.unsaveCourse(req, res, pathParts[3])
       }
