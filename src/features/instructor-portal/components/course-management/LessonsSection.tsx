@@ -4,6 +4,7 @@ import { EditIcon, PlusIcon, SearchIcon, TrashIcon } from 'lucide-react';
 import { Toast } from '@/components/ui/Toast';
 import { useAdminAuth } from '@/lib/admin-auth';
 import { getSupabaseClient } from '../../lib/dbClient';
+import { instructorApi } from '@/lib/api/instructorApiClient';
 
 interface ModuleOption {
     id: string;
@@ -95,11 +96,8 @@ export function LessonsSection() {
         if (!confirm('Are you sure you want to delete this lesson?')) return;
 
         try {
-            const supabase = getSupabaseClient();
-            if (!supabase) throw new Error('Database connection unavailable');
-
-            const { error } = await supabase.from('lessons').delete().eq('id', id);
-            if (error) throw error;
+            const result = await instructorApi.deleteLesson(id);
+            if (!result.ok) throw new Error(result.message);
 
             setToast({ type: 'success', message: 'Lesson deleted successfully' });
             await loadLessons();

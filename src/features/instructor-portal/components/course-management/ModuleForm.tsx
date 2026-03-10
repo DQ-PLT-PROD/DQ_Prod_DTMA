@@ -14,6 +14,7 @@ import { useAdminAuth } from '@/lib/admin-auth';
 import { MediaPickerModal } from '../../components/media/MediaPickerModal';
 import { getSupabaseClient } from '../../lib/dbClient';
 import { uploadLMSFile } from '../../lib/storage';
+import { instructorApi } from '@/lib/api/instructorApiClient';
 
 type ResourceType = 'whitepaper' | 'pdf' | 'template' | 'tool' | 'worksheet' | 'other';
 
@@ -439,23 +440,23 @@ export function ModuleForm() {
 
             let moduleId = id ?? null;
             if (isEditing && id) {
-                const { error } = await supabase.from('modules').update(payload).eq('id', id);
-                if (error) throw error;
+                const result = await instructorApi.updateModule(id, payload);
+                if (!result.ok) throw new Error(result.message);
             } else {
-                const { data, error } = await supabase.from('modules').insert([payload]).select('id').single();
-                if (error) throw error;
-                moduleId = data?.id ?? null;
+                const result = await instructorApi.createModule(payload);
+                if (!result.ok) throw new Error(result.message);
+                moduleId = result.data?.id ?? null;
             }
 
             if (!moduleId) throw new Error('Module identifier missing after save');
 
             if (removedResourceIds.length > 0) {
-                const { error } = await supabase.from('course_resources').delete().in('id', removedResourceIds);
-                if (error) throw error;
+                const delResult = await instructorApi.deleteCourseResources(removedResourceIds);
+                if (!delResult.ok) throw new Error(delResult.message);
             }
 
             if (resourcesToPersist.length > 0) {
-                const operations = resourcesToPersist.map((resource) => {
+                for (const resource of resourcesToPersist) {
                     const resourcePayload = {
                         course_slug: formData.course_slug,
                         module_id: moduleId,
@@ -467,14 +468,14 @@ export function ModuleForm() {
                         order_index: resource.order_index,
                     };
 
-                    return resource.id
-                        ? supabase.from('course_resources').update(resourcePayload).eq('id', resource.id)
-                        : supabase.from('course_resources').insert([resourcePayload]);
-                });
-
-                const results = await Promise.all(operations);
-                const failed = results.find((result) => result.error);
-                if (failed?.error) throw failed.error;
+                    if (resource.id) {
+                        const result = await instructorApi.updateCourseResource(resource.id, resourcePayload);
+                        if (!result.ok) throw new Error(result.message);
+                    } else {
+                        const result = await instructorApi.createCourseResource(resourcePayload);
+                        if (!result.ok) throw new Error(result.message);
+                    }
+                }
             }
 
             setToast({ type: 'success', message: `Module ${isEditing ? 'updated' : 'created'} successfully` });

@@ -4,6 +4,7 @@ import { ArrowLeftIcon, SaveIcon, SettingsIcon, EyeIcon, ListIcon, FileTextIcon,
 import { Toast } from '@/components/ui/Toast';
 import { getSupabaseClient } from '../lib/dbClient';
 import { Quiz, QuizQuestion } from '@/types/dtma-lms';
+import { instructorApi } from '@/lib/api/instructorApiClient';
 
 // Sub-components
 import { QuestionList } from '../components/course-management/quiz-editor/QuestionList';
@@ -209,9 +210,7 @@ export function QuizEditor() {
     };
 
     const deleteQuestionFromDb = async (questionId: string) => {
-        const supabase = getSupabaseClient();
-        if (!supabase) return;
-        await supabase.from('quiz_questions').delete().eq('id', questionId);
+        await instructorApi.deleteQuizQuestion(questionId);
     };
 
     const handleSaveQuestion = (questionData: QuizQuestion) => {
@@ -271,9 +270,6 @@ export function QuizEditor() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            const supabase = getSupabaseClient();
-            if (!supabase) throw new Error('Database connection unavailable');
-
             if (!quiz.title) {
                 setToast({ type: 'error', message: 'Quiz title is required' });
                 setActiveTab('details');
@@ -304,7 +300,6 @@ export function QuizEditor() {
                 updated_at: new Date().toISOString(),
             };
 
-            // Provide defaults for legacy columns that older rows may still use
             if (!isEditing) {
                 quizPayload.question = '';
                 quizPayload.options = [];
@@ -313,31 +308,18 @@ export function QuizEditor() {
             let quizId = id;
 
             if (isEditing) {
-                const { error } = await supabase
-                    .from('quizzes')
-                    .update(quizPayload)
-                    .eq('id', id);
-                if (error) throw error;
+                const result = await instructorApi.updateQuiz(id!, quizPayload);
+                if (!result.ok) throw new Error(result.message);
             } else {
-                const { data, error } = await supabase
-                    .from('quizzes')
-                    .insert([quizPayload])
-                    .select()
-                    .single();
-                if (error) throw error;
-                quizId = data.id;
+                const result = await instructorApi.createQuiz(quizPayload);
+                if (!result.ok) throw new Error(result.message);
+                quizId = result.data?.id ?? undefined;
             }
 
             // 2. Upsert Questions
-            // We need to save questions that are in state.
-            // Should also remove questions that are not in state (if we rely on state as source of truth).
-            // Simplest robust strategy:
-            // a. Process each question in state.
-            // b. If it has a real UUID, update it.
-            // c. If it has a temp ID, insert it (and replace temp ID with real ID in state? - ideally reload).
-
             if (quiz.questions && quiz.questions.length > 0) {
-                const upsertPromises = quiz.questions.map((q, index) => {
+                for (let index = 0; index < quiz.questions.length; index++) {
+                    const q = quiz.questions[index];
                     const qPayload = {
                         quiz_id: quizId,
                         question: q.question,
@@ -345,17 +327,17 @@ export function QuizEditor() {
                         options: q.options,
                         correct_answer: q.correctAnswer,
                         explanation: q.explanation,
-                        order_index: index // Update order based on current list position
+                        order_index: index,
                     };
 
                     if (q.id && !q.id.startsWith('temp-')) {
-                        return supabase.from('quiz_questions').update(qPayload).eq('id', q.id);
+                        const result = await instructorApi.updateQuizQuestion(q.id, qPayload);
+                        if (!result.ok) throw new Error(result.message);
                     } else {
-                        return supabase.from('quiz_questions').insert([qPayload]);
+                        const result = await instructorApi.createQuizQuestion(qPayload);
+                        if (!result.ok) throw new Error(result.message);
                     }
-                });
-
-                await Promise.all(upsertPromises);
+                }
             }
 
             // Reload to get fresh IDs

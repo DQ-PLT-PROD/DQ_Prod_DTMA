@@ -4,6 +4,7 @@ import { ArchiveIcon, EditIcon, PlusIcon, SearchIcon, SendIcon, TrashIcon } from
 import { Toast } from '@/components/ui/Toast';
 import { useAdminAuth } from '@/lib/admin-auth';
 import { getSupabaseClient } from '../../lib/dbClient';
+import { instructorApi } from '@/lib/api/instructorApiClient';
 
 interface CourseOption {
     id: string;
@@ -106,11 +107,8 @@ export function ModulesSection() {
         if (!confirm('Are you sure you want to delete this module?')) return;
 
         try {
-            const supabase = getSupabaseClient();
-            if (!supabase) throw new Error('Database connection unavailable');
-
-            const { error } = await supabase.from('modules').delete().eq('id', id);
-            if (error) throw error;
+            const result = await instructorApi.deleteModule(id);
+            if (!result.ok) throw new Error(result.message);
 
             setToast({ type: 'success', message: 'Module deleted successfully' });
             await loadModules();
@@ -131,20 +129,13 @@ export function ModulesSection() {
             return;
         }
 
-        const supabase = getSupabaseClient();
-        if (!supabase) {
-            setToast({ type: 'error', message: 'Database connection unavailable' });
-            return;
-        }
-
         setPostingId(module.id);
         try {
-            const { error } = await supabase
-                .from('modules')
-                .update({ status, updated_at: new Date().toISOString() })
-                .eq('id', module.id);
-
-            if (error) throw error;
+            const result = await instructorApi.updateModule(module.id, {
+                status,
+                updated_at: new Date().toISOString(),
+            });
+            if (!result.ok) throw new Error(result.message);
 
             setToast({
                 type: 'success',

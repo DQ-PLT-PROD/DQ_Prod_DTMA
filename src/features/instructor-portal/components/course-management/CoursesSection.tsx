@@ -4,9 +4,11 @@ import { ArchiveIcon, EditIcon, PlusIcon, SearchIcon, SendIcon, TrashIcon } from
 import { Toast } from '@/components/ui/Toast';
 import { useAdminAuth } from '@/lib/admin-auth';
 import { getSupabaseClient } from '../../lib/dbClient';
+import { instructorApi } from '@/lib/api/instructorApiClient';
 
 interface CourseRow {
     id: string;
+    slug: string;
     title: string;
     short_description: string | null;
     status: string | null;
@@ -45,7 +47,7 @@ export function CoursesSection() {
 
             const { data, error } = await supabase
                 .from('courses')
-                .select('id, title, short_description, status')
+                .select('id, slug, title, short_description, status')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -67,13 +69,8 @@ export function CoursesSection() {
         if (!confirm('Are you sure you want to delete this course?')) return;
 
         try {
-            const supabase = getSupabaseClient();
-            if (!supabase) {
-                throw new Error('Database connection unavailable');
-            }
-
-            const { error } = await supabase.from('courses').delete().eq('id', id);
-            if (error) throw error;
+            const result = await instructorApi.deleteCourse(id);
+            if (!result.ok) throw new Error(result.message);
 
             setToast({ type: 'success', message: 'Course deleted successfully' });
             await loadCourses();
@@ -94,20 +91,13 @@ export function CoursesSection() {
             return;
         }
 
-        const supabase = getSupabaseClient();
-        if (!supabase) {
-            setToast({ type: 'error', message: 'Database connection unavailable' });
-            return;
-        }
-
         setPostingId(course.id);
         try {
-            const { error } = await supabase
-                .from('courses')
-                .update({ status, updated_at: new Date().toISOString() })
-                .eq('id', course.id);
-
-            if (error) throw error;
+            const result =
+                status === 'published'
+                    ? await instructorApi.publishCourse(course.slug)
+                    : await instructorApi.unpublishCourse(course.slug);
+            if (!result.ok) throw new Error(result.message);
 
             setToast({
                 type: 'success',

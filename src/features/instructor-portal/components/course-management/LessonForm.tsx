@@ -5,6 +5,7 @@ import { Toast } from '@/components/ui/Toast';
 import { useAdminAuth } from '@/lib/admin-auth';
 import { MediaPickerModal } from '../../components/media/MediaPickerModal';
 import { getSupabaseClient } from '../../lib/dbClient';
+import { instructorApi } from '@/lib/api/instructorApiClient';
 import { uploadLMSFile } from '../../lib/storage';
 
 interface CourseOption {
@@ -202,8 +203,6 @@ export function LessonForm() {
 
         try {
             setLoading(true);
-            const supabase = getSupabaseClient();
-            if (!supabase) throw new Error('Database connection unavailable');
 
             const payload = {
                 course_slug: formData.course_slug,
@@ -218,12 +217,12 @@ export function LessonForm() {
             };
 
             if (isEditing && id) {
-                const { error } = await supabase.from('lessons').update(payload).eq('id', id);
-                if (error) throw error;
+                const result = await instructorApi.updateLesson(id, payload);
+                if (!result.ok) throw new Error(result.message);
                 setToast({ type: 'success', message: 'Lesson updated successfully' });
             } else {
-                const { error } = await supabase.from('lessons').insert([payload]);
-                if (error) throw error;
+                const result = await instructorApi.createLesson(payload);
+                if (!result.ok) throw new Error(result.message);
                 setToast({ type: 'success', message: 'Lesson created successfully' });
             }
 

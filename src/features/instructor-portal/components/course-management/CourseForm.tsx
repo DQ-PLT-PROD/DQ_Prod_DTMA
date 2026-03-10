@@ -4,6 +4,7 @@ import { ArrowLeftIcon, SaveIcon } from 'lucide-react';
 import { Toast } from '@/components/ui/Toast';
 import { useAdminAuth } from '@/lib/admin-auth';
 import { getSupabaseClient } from '../../lib/dbClient';
+import { instructorApi } from '@/lib/api/instructorApiClient';
 
 interface CourseFormData {
     slug: string;
@@ -113,10 +114,6 @@ export function CourseForm() {
 
         try {
             setSaving(true);
-            const supabase = getSupabaseClient();
-            if (!supabase) {
-                throw new Error('Database connection unavailable');
-            }
 
             const slug = formData.slug || slugify(formData.title);
             const description = formData.description.trim();
@@ -130,11 +127,11 @@ export function CourseForm() {
             };
 
             if (isEditing && id) {
-                const { error } = await supabase.from('courses').update(payload).eq('id', id);
-                if (error) throw error;
+                const result = await instructorApi.updateCourse(id, payload);
+                if (!result.ok) throw new Error(result.message);
             } else {
-                const { error } = await supabase.from('courses').insert([payload]);
-                if (error) throw error;
+                const result = await instructorApi.createCourse(payload);
+                if (!result.ok) throw new Error(result.message);
             }
 
             setToast({ type: 'success', message: `Course ${isEditing ? 'updated' : 'created'} successfully` });

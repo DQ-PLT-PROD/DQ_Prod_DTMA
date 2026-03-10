@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
       host: "localhost",
       proxy: {
         "/api": {
-          target: "http://localhost:3001",
+          target: env.VITE_API_PROXY_TARGET || "http://localhost:4000",
           changeOrigin: true,
           secure: false,
         },

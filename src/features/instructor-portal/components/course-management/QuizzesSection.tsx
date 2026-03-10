@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { getSupabaseClient } from '../../lib/dbClient';
 import { Toast } from '@/components/ui/Toast';
+import { instructorApi } from '@/lib/api/instructorApiClient';
 
 /* ─── Types ──────────────────────────────────────────────── */
 
@@ -109,11 +110,8 @@ export function QuizzesSection() {
         if (!confirm('Are you sure you want to delete this quiz?')) return;
 
         try {
-            const supabase = getSupabaseClient();
-            if (!supabase) throw new Error('Database connection unavailable');
-
-            const { error } = await supabase.from('quizzes').delete().eq('id', id);
-            if (error) throw error;
+            const result = await instructorApi.deleteQuiz(id);
+            if (!result.ok) throw new Error(result.message);
 
             setToast({ type: 'success', message: 'Quiz deleted successfully' });
             loadAllData();

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { COURSE_CATEGORIES } from '../../../../constants/navigation';
 import { getSupabaseClient } from '../../lib/dbClient';
 import { useAdminAuth } from '@/lib/admin-auth';
+import { instructorApi } from '@/lib/api/instructorApiClient';
 import { TagIcon, AlertCircleIcon, CheckCircleIcon, BarChart2Icon, PlusIcon, Edit2Icon, TrashIcon, X, SaveIcon } from 'lucide-react';
 import { Toast } from '@/components/ui/Toast';
 
@@ -121,11 +122,9 @@ function CategoriesSubsection() {
                 ? `Delete "${category.title}"? ${category.count} course(s) will have their category cleared.`
                 : `Delete "${category.title}"?`;
         if (!window.confirm(message)) return;
-        const supabase = getSupabaseClient();
-        if (!supabase) return;
         try {
-            const { error } = await supabase.from('course_categories').delete().eq('slug', category.slug);
-            if (error) throw error;
+            const result = await instructorApi.deleteCourseCategory(category.slug);
+            if (!result.ok) throw new Error(result.message);
             setToast({ type: 'success', message: `Category "${category.title}" deleted.` });
             loadCategories();
         } catch (err) {
@@ -168,18 +167,7 @@ function CategoriesSubsection() {
 
         try {
             if (editingCategory) {
-                if (newSlug === editingCategory.slug) {
-                    // Update name and description
-                    const { error } = await supabase
-                        .from('course_categories')
-                        .update({
-                            name: categoryName.trim(),
-                            description: categoryDescription.trim() || null,
-                        })
-                        .eq('slug', editingCategory.slug);
-                    if (error) throw error;
-                } else {
-                    // Check new slug doesn't already exist in course_categories
+                if (newSlug !== editingCategory.slug) {
                     const { data: existing } = await supabase
                         .from('course_categories')
                         .select('slug')
@@ -187,25 +175,21 @@ function CategoriesSubsection() {
                         .maybeSingle();
                     if (existing) {
                         setToast({ type: 'error', message: 'A category with this slug already exists' });
+                        setSubmitting(false);
                         return;
                     }
-                    // Update slug, name, description in course_categories; ON UPDATE CASCADE propagates to courses
-                    const { error } = await supabase
-                        .from('course_categories')
-                        .update({
-                            slug: newSlug,
-                            name: categoryName.trim(),
-                            description: categoryDescription.trim() || null,
-                        })
-                        .eq('slug', editingCategory.slug);
-                    if (error) throw error;
                 }
+                const result = await instructorApi.updateCourseCategory(editingCategory.slug, {
+                    ...(newSlug !== editingCategory.slug && { slug: newSlug }),
+                    name: categoryName.trim(),
+                    description: categoryDescription.trim() || null,
+                });
+                if (!result.ok) throw new Error(result.message);
 
                 setToast({ type: 'success', message: `Category updated to "${categoryName}"` });
                 setIsDialogOpen(false);
                 loadCategories();
             } else {
-                // Add new category directly to course_categories
                 const { data: existing } = await supabase
                     .from('course_categories')
                     .select('slug')
@@ -213,14 +197,15 @@ function CategoriesSubsection() {
                     .maybeSingle();
                 if (existing) {
                     setToast({ type: 'error', message: 'A category with this name already exists' });
+                    setSubmitting(false);
                     return;
                 }
-                const { error } = await supabase.from('course_categories').insert({
+                const result = await instructorApi.createCourseCategory({
                     slug: newSlug,
                     name: categoryName.trim(),
                     description: categoryDescription.trim() || null,
                 });
-                if (error) throw error;
+                if (!result.ok) throw new Error(result.message);
                 setToast({ type: 'success', message: `Category "${categoryName}" added.` });
                 setIsDialogOpen(false);
                 loadCategories();

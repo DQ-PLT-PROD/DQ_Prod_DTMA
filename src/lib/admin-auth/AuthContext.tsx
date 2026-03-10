@@ -15,23 +15,25 @@ import type { AdminAuthContextType, AdminMembership } from './types';
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
 
 async function getActiveMembership(userId: string): Promise<AdminMembership | null> {
-    const supabase = getSupabase() as any;
-    const { data, error } = await supabase
-        .from('admin_memberships')
-        .select('id, user_id, role, status, created_at, updated_at')
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .maybeSingle();
+    try {
+        const supabase = getSupabase() as any;
+        const { data, error } = await supabase
+            .from('admin_memberships')
+            .select('id, user_id, role, status, created_at, updated_at')
+            .eq('user_id', userId)
+            .eq('status', 'active')
+            .maybeSingle();
 
-    if (error) {
-        // PGRST116 => no rows, not an operational error
-        if ((error as { code?: string }).code !== 'PGRST116') {
-            console.error('Failed to load admin membership:', error);
+        if (error) {
+            console.warn('[admin-auth] getActiveMembership error:', error.code, error.message);
+            return null;
         }
+
+        return (data as AdminMembership | null) ?? null;
+    } catch (err) {
+        console.error('[admin-auth] getActiveMembership exception:', err);
         return null;
     }
-
-    return (data as AdminMembership | null) ?? null;
 }
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
@@ -133,9 +135,27 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     const signIn = useCallback(async (email: string, password: string) => {
         try {
             const supabase = getSupabase();
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) {
                 return { error: error.message };
+            }
+
+            // Gate on admin_memberships: only allow sign-in if user has active membership
+            const userId = authData.user?.id;
+            if (!userId) {
+                await supabase.auth.signOut();
+                return { error: 'Sign in failed' };
+            }
+
+            const activeMembership = await getActiveMembership(userId);
+            if (!activeMembership) {
+                await supabase.auth.signOut();
+                return {
+                    error:
+                        'No admin membership found. Run in Supabase SQL Editor: INSERT INTO public.admin_memberships (user_id, role, status) SELECT id, \'instructor\', \'active\' FROM auth.users WHERE email = \'' +
+                        email.trim() +
+                        '\';',
+                };
             }
 
             await refresh();

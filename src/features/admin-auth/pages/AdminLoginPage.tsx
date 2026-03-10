@@ -9,7 +9,7 @@ type LoginState = {
 export default function AdminLoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { signIn, session, user, hasActiveMembership, isLoading } = useAdminAuth();
+    const { signIn, session, hasActiveMembership, isLoading } = useAdminAuth();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -19,10 +19,10 @@ export default function AdminLoginPage() {
     const redirectTo = ((location.state as LoginState | null)?.from) || '/instructor/dashboard';
 
     useEffect(() => {
-        if (!isLoading && session && user && hasActiveMembership) {
+        if (!isLoading && session && hasActiveMembership) {
             navigate(redirectTo, { replace: true });
         }
-    }, [hasActiveMembership, isLoading, navigate, redirectTo, session, user]);
+    }, [hasActiveMembership, isLoading, navigate, redirectTo, session]);
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
             <div className="w-full max-w-md bg-white border border-gray-200 shadow-sm rounded-xl p-6">
                 <h1 className="text-xl font-semibold text-gray-900">Admin Sign In</h1>
                 <p className="text-sm text-gray-600 mt-2">
-                    Sign in with your Supabase admin account to access instructor tools.
+                    Sign in with an account that has admin membership to access instructor tools.
                 </p>
 
                 <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
@@ -82,15 +82,10 @@ export default function AdminLoginPage() {
 
                     {error && (
                         <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
-                            {error}
+                            <p className="whitespace-pre-wrap break-all">{error}</p>
                         </div>
                     )}
 
-                    {!isLoading && session && user && !hasActiveMembership && (
-                        <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
-                            Your account is authenticated but does not have an active admin membership.
-                        </div>
-                    )}
 
                     <button
                         type="submit"
