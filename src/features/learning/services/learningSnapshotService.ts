@@ -1,5 +1,4 @@
-import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
-import { isSupabaseConfigured } from "../../../lib/supabase/client";
+import { learningApiClient } from "../../../lib/api/learningApiClient";
 import { Course, Lesson as DbLesson, LessonType } from "../../../types/dtma-lms";
 import { CourseResource } from "../../courses/services/courseService";
 import type { Enrollment, LessonProgress } from "../../portal/services/progressService";
@@ -63,6 +62,7 @@ const mapRowToLesson = (row: any): DbLesson => ({
     videoUrl: row.video_url || undefined,
     resourceUrl: row.resource_url || undefined,
     content: row.content || undefined,
+    isPreview: Boolean(row.is_preview),
 });
 
 const mapRowToResource = (row: any): CourseResource => ({
@@ -113,10 +113,6 @@ export const getLearningSnapshot = async (
     userId?: string | null,
     options?: { useCache?: boolean; maxAgeMs?: number }
 ): Promise<LearningSnapshot> => {
-    if (!isSupabaseConfigured()) {
-        return emptySnapshot();
-    }
-
     const cacheKey = buildCacheKey(courseSlug, userId);
     const maxAgeMs = options?.maxAgeMs ?? CACHE_TTL_MS;
     const useCache = options?.useCache !== false;
@@ -128,40 +124,11 @@ export const getLearningSnapshot = async (
         }
     }
 
-    const fetchSnapshot = async (lookupUserId: string | null) => {
-        const supabase = getSupabaseForEnrollment();
-        return (supabase.rpc as any)("get_learning_snapshot", {
-            p_course_slug: courseSlug,
-            p_user_id: lookupUserId,
-        });
-    };
-
     try {
-        const { data, error } = await fetchSnapshot(userId || null);
+        const data = await learningApiClient.getSnapshot(courseSlug);
 
-        if (error) {
-            console.warn("Failed to fetch learning snapshot:", error.message);
-            if (userId) {
-                const { data: fallbackData, error: fallbackError } = await fetchSnapshot(null);
-                if (!fallbackError) {
-                    const rawFallback = fallbackData as any;
-                    const fallbackSnapshot: LearningSnapshot = {
-                        course: rawFallback?.course ? mapRowToCourse(rawFallback.course) : null,
-                        lessons: Array.isArray(rawFallback?.lessons)
-                            ? rawFallback.lessons.map(mapRowToLesson)
-                            : [],
-                        resources: Array.isArray(rawFallback?.resources)
-                            ? rawFallback.resources.map(mapRowToResource)
-                            : [],
-                        enrollment: null,
-                        lessonProgress: [],
-                        resumeLessonId: undefined,
-                    };
-
-                    snapshotCache.set(cacheKey, { data: fallbackSnapshot, fetchedAt: Date.now() });
-                    return fallbackSnapshot;
-                }
-            }
+        if (!data) {
+            console.warn("Failed to fetch learning snapshot.");
             return emptySnapshot();
         }
 

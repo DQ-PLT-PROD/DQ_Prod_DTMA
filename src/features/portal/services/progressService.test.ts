@@ -1,384 +1,253 @@
 /**
- * Unit Tests for progressService
- * Tests learner progress persistence functionality (Feature 01)
+ * Unit tests for progressService.
+ * Verifies that Stage02A progress flows through backend API clients.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock modules before imports
-vi.mock('../../../lib/supabase/serviceClient', () => ({
-    getSupabaseForEnrollment: vi.fn(),
+vi.mock("../../../lib/api/enrollmentApiClient", () => ({
+    enrollmentApiClient: {
+        getEnrollment: vi.fn(),
+        enrollInCourse: vi.fn(),
+        getUserEnrollments: vi.fn(),
+    },
 }));
 
-vi.mock('../../../lib/supabase/client', () => ({
-    isSupabaseConfigured: vi.fn(),
+vi.mock("../../../lib/api/lessonAccessApiClient", () => ({
+    lessonAccessApiClient: {
+        updateLessonProgress: vi.fn(),
+        getCourseAccessSummary: vi.fn(),
+    },
 }));
 
-vi.mock('./achievementService', () => ({
-    recordCourseCompletion: vi.fn(),
+vi.mock("../../../lib/api/learningApiClient", () => ({
+    learningApiClient: {
+        getSnapshot: vi.fn(),
+        recordCourseCompletion: vi.fn(),
+    },
 }));
 
-// Now import after mocks are set up
-import { getSupabaseForEnrollment } from '../../../lib/supabase/serviceClient';
-import { isSupabaseConfigured } from '../../../lib/supabase/client';
+import { enrollmentApiClient } from "../../../lib/api/enrollmentApiClient";
+import { lessonAccessApiClient } from "../../../lib/api/lessonAccessApiClient";
+import { learningApiClient } from "../../../lib/api/learningApiClient";
 import {
+    flushProgressQueue,
+    getActualProgressStats,
     getOrCreateEnrollment,
     getUserCourseProgress,
-    updateLessonProgress,
-    updateEnrollmentProgress,
-    syncLocalProgressToServer,
     getUserEnrollments,
-    getActualProgressStats,
-} from './progressService';
+    syncLocalProgressToServer,
+    updateEnrollmentProgress,
+    updateLessonProgress,
+} from "./progressService";
 
-// Type for our mocked Supabase client
-type MockSupabaseClient = {
-    from: ReturnType<typeof vi.fn>;
-};
-
-describe('progressService', () => {
-    let mockSupabase: MockSupabaseClient;
-    let mockChain: Record<string, ReturnType<typeof vi.fn>>;
-
+describe("progressService", () => {
     beforeEach(() => {
-        // Reset all mocks
         vi.clearAllMocks();
-
-        // Create chainable mock methods
-        mockChain = {
-            select: vi.fn(),
-            insert: vi.fn(),
-            update: vi.fn(),
-            upsert: vi.fn(),
-            eq: vi.fn(),
-            single: vi.fn(),
-            order: vi.fn(),
-        };
-
-        // Make methods chainable
-        Object.values(mockChain).forEach(fn => {
-            fn.mockReturnValue(mockChain);
-        });
-
-        // Setup mock Supabase client
-        mockSupabase = {
-            from: vi.fn().mockReturnValue(mockChain),
-        };
-
-        // Configure mocks
-        vi.mocked(isSupabaseConfigured).mockReturnValue(true);
-        vi.mocked(getSupabaseForEnrollment).mockReturnValue(mockSupabase as any);
+        window.localStorage.clear();
     });
 
-    afterEach(() => {
-        vi.restoreAllMocks();
+    it("returns existing enrollment from the backend client", async () => {
+        vi.mocked(enrollmentApiClient.getEnrollment).mockResolvedValueOnce({
+            id: "enroll-1",
+            userId: "db-user",
+            courseSlug: "intro-to-testing",
+            startedAt: "2024-01-01T00:00:00Z",
+            lastAccessedAt: "2024-01-10T00:00:00Z",
+            progressPct: 25,
+        } as any);
+
+        const result = await getOrCreateEnrollment("ignored-user", "intro-to-testing");
+
+        expect(result?.id).toBe("enroll-1");
+        expect(enrollmentApiClient.getEnrollment).toHaveBeenCalledWith("intro-to-testing");
+        expect(enrollmentApiClient.enrollInCourse).not.toHaveBeenCalled();
     });
 
-    describe('getOrCreateEnrollment', () => {
-        const userId = 'user-123';
-        const courseSlug = 'intro-to-testing';
+    it("creates an enrollment when none exists", async () => {
+        vi.mocked(enrollmentApiClient.getEnrollment).mockResolvedValueOnce(null);
+        vi.mocked(enrollmentApiClient.enrollInCourse).mockResolvedValueOnce({
+            success: true,
+            enrollment: {
+                id: "enroll-new",
+                userId: "db-user",
+                courseSlug: "intro-to-testing",
+                startedAt: "2024-01-01T00:00:00Z",
+                lastAccessedAt: "2024-01-10T00:00:00Z",
+                progressPct: 0,
+            },
+        } as any);
 
-        it('should return null when Supabase is not configured', async () => {
-            vi.mocked(isSupabaseConfigured).mockReturnValue(false);
+        const result = await getOrCreateEnrollment("ignored-user", "intro-to-testing");
 
-            const result = await getOrCreateEnrollment(userId, courseSlug);
+        expect(result?.id).toBe("enroll-new");
+        expect(enrollmentApiClient.enrollInCourse).toHaveBeenCalledWith("intro-to-testing", "auto");
+    });
 
-            expect(result).toBeNull();
-            expect(mockSupabase.from).not.toHaveBeenCalled();
-        });
-
-        it('should return existing enrollment if found', async () => {
-            const existingEnrollment = {
-                id: 'enroll-1',
-                user_id: userId,
-                course_slug: courseSlug,
-                started_at: '2024-01-01T00:00:00Z',
-                last_accessed_at: '2024-01-15T00:00:00Z',
+    it("maps enrollment and lesson progress from the learning snapshot", async () => {
+        vi.mocked(learningApiClient.getSnapshot).mockResolvedValueOnce({
+            enrollment: {
+                id: "enroll-1",
+                user_id: "db-user",
+                course_slug: "intro-to-testing",
+                started_at: "2024-01-01T00:00:00Z",
+                last_accessed_at: "2024-01-10T00:00:00Z",
                 progress_pct: 50,
-            };
-
-            mockChain.single.mockResolvedValueOnce({
-                data: existingEnrollment,
-                error: null,
-            });
-
-            const result = await getOrCreateEnrollment(userId, courseSlug);
-
-            expect(result).not.toBeNull();
-            expect(result?.id).toBe('enroll-1');
-            expect(result?.userId).toBe(userId);
-            expect(result?.courseSlug).toBe(courseSlug);
-            expect(result?.progressPct).toBe(50);
-        });
-
-        it('should create new enrollment when none exists', async () => {
-            // First call returns no existing enrollment
-            mockChain.single.mockResolvedValueOnce({
-                data: null,
-                error: { code: 'PGRST116', message: 'No rows found' },
-            });
-
-            // Second call returns the created enrollment
-            const newEnrollment = {
-                id: 'enroll-new',
-                user_id: userId,
-                course_slug: courseSlug,
-                started_at: '2024-01-20T00:00:00Z',
-                last_accessed_at: '2024-01-20T00:00:00Z',
-                progress_pct: 0,
-            };
-
-            mockChain.single.mockResolvedValueOnce({
-                data: newEnrollment,
-                error: null,
-            });
-
-            const result = await getOrCreateEnrollment(userId, courseSlug);
-
-            expect(result).not.toBeNull();
-            expect(result?.id).toBe('enroll-new');
-            expect(result?.progressPct).toBe(0);
-            expect(mockSupabase.from).toHaveBeenCalledWith('user_enrollments');
-        });
-    });
-
-    describe('getUserCourseProgress', () => {
-        const userId = 'user-123';
-        const courseSlug = 'intro-to-testing';
-
-        it('should return empty progress when Supabase is not configured', async () => {
-            vi.mocked(isSupabaseConfigured).mockReturnValue(false);
-
-            const result = await getUserCourseProgress(userId, courseSlug);
-
-            expect(result.enrollment).toBeNull();
-            expect(result.lessonProgress).toEqual([]);
-        });
-
-        it('should return enrollment with lesson progress', async () => {
-            const enrollmentData = {
-                id: 'enroll-1',
-                user_id: userId,
-                course_slug: courseSlug,
-                started_at: '2024-01-01T00:00:00Z',
-                last_accessed_at: '2024-01-15T00:00:00Z',
-                progress_pct: 33,
-            };
-
-            const lessonProgressData = [
-                { id: 'lp-1', enrollment_id: 'enroll-1', lesson_id: 'lesson-1', completed: true, watch_time_seconds: 300 },
-                { id: 'lp-2', enrollment_id: 'enroll-1', lesson_id: 'lesson-2', completed: false, watch_time_seconds: 120 },
-            ];
-
-            // First call for enrollment
-            mockChain.single.mockResolvedValueOnce({
-                data: enrollmentData,
-                error: null,
-            });
-
-            // Second call for lesson progress (no single() call)
-            mockChain.eq.mockResolvedValueOnce({
-                data: lessonProgressData,
-                error: null,
-            });
-
-            const result = await getUserCourseProgress(userId, courseSlug);
-
-            expect(result.enrollment).not.toBeNull();
-            expect(result.enrollment?.progressPct).toBe(33);
-            expect(result.lessonProgress).toHaveLength(2);
-            expect(result.lessonProgress[0].lessonId).toBe('lesson-1');
-            expect(result.lessonProgress[0].completed).toBe(true);
-        });
-    });
-
-    describe('updateLessonProgress', () => {
-        const userId = 'user-123';
-        const courseSlug = 'intro-to-testing';
-        const lessonId = 'lesson-1';
-
-        it('should return false when Supabase is not configured', async () => {
-            vi.mocked(isSupabaseConfigured).mockReturnValue(false);
-
-            const result = await updateLessonProgress(userId, courseSlug, lessonId, true);
-
-            expect(result).toBe(false);
-        });
-
-        it('should return false when no enrollment found', async () => {
-            mockChain.single.mockResolvedValueOnce({
-                data: null,
-                error: { message: 'No enrollment' },
-            });
-
-            const result = await updateLessonProgress(userId, courseSlug, lessonId, true);
-
-            expect(result).toBe(false);
-        });
-
-        it('should upsert lesson progress correctly', async () => {
-            mockChain.single.mockResolvedValueOnce({
-                data: { id: 'enroll-1' },
-                error: null,
-            });
-
-            mockChain.upsert.mockImplementation((data, options) => {
-                expect(data.enrollment_id).toBe('enroll-1');
-                expect(data.lesson_id).toBe(lessonId);
-                expect(data.completed).toBe(true);
-                expect(options.onConflict).toBe('enrollment_id,lesson_id');
-                return Promise.resolve({ error: null });
-            });
-
-            const result = await updateLessonProgress(userId, courseSlug, lessonId, true, 300);
-
-            expect(result).toBe(true);
-            expect(mockSupabase.from).toHaveBeenCalledWith('lesson_progress');
-        });
-    });
-
-    describe('updateEnrollmentProgress', () => {
-        const userId = 'user-123';
-        const courseSlug = 'intro-to-testing';
-
-        it('should clamp progress between 0 and 100', async () => {
-            mockChain.eq.mockResolvedValue({ error: null });
-
-            // Test over 100
-            await updateEnrollmentProgress(userId, courseSlug, 150);
-
-            // The update call should have clamped the value
-            expect(mockChain.update).toHaveBeenCalled();
-        });
-
-        it('should return false when Supabase is not configured', async () => {
-            vi.mocked(isSupabaseConfigured).mockReturnValue(false);
-
-            const result = await updateEnrollmentProgress(userId, courseSlug, 50);
-
-            expect(result).toBe(false);
-        });
-    });
-
-    describe('syncLocalProgressToServer', () => {
-        const userId = 'user-123';
-        const courseSlug = 'intro-to-testing';
-
-        it('should return false when Supabase is not configured', async () => {
-            vi.mocked(isSupabaseConfigured).mockReturnValue(false);
-
-            const result = await syncLocalProgressToServer(userId, courseSlug, []);
-
-            expect(result).toBe(false);
-        });
-
-        it('should return false for empty lessons array', async () => {
-            const result = await syncLocalProgressToServer(userId, courseSlug, []);
-
-            expect(result).toBe(false);
-        });
-
-        it('should sync only completed lessons', async () => {
-            const localLessons = [
-                { id: 'lesson-1', completed: true },
-                { id: 'lesson-2', completed: false },
-                { id: 'lesson-3', completed: true },
-            ];
-
-            // Mock enrollment lookup for each updateLessonProgress call
-            mockChain.single.mockResolvedValue({
-                data: { id: 'enroll-1' },
-                error: null,
-            });
-
-            mockChain.upsert.mockResolvedValue({ error: null });
-            mockChain.eq.mockResolvedValue({ error: null });
-
-            const result = await syncLocalProgressToServer(userId, courseSlug, localLessons);
-
-            expect(result).toBe(true);
-        });
-    });
-
-    describe('getUserEnrollments', () => {
-        const userId = 'user-123';
-
-        it('should return empty array when Supabase is not configured', async () => {
-            vi.mocked(isSupabaseConfigured).mockReturnValue(false);
-
-            const result = await getUserEnrollments(userId);
-
-            expect(result).toEqual([]);
-        });
-
-        it('should return mapped enrollments ordered by last access', async () => {
-            const enrollmentsData = [
+            },
+            progress: [
                 {
-                    id: 'enroll-2',
-                    user_id: userId,
-                    course_slug: 'course-b',
-                    started_at: '2024-01-05T00:00:00Z',
-                    last_accessed_at: '2024-01-20T00:00:00Z',
-                    progress_pct: 75,
+                    id: "progress-1",
+                    enrollment_id: "enroll-1",
+                    lesson_id: "lesson-1",
+                    completed: true,
+                    watch_time_seconds: 120,
+                },
+            ],
+        } as any);
+
+        const result = await getUserCourseProgress("ignored-user", "intro-to-testing");
+
+        expect(result.enrollment?.progressPct).toBe(50);
+        expect(result.lessonProgress).toHaveLength(1);
+        expect(result.lessonProgress[0].lessonId).toBe("lesson-1");
+    });
+
+    it("updates lesson progress through the lesson access API", async () => {
+        vi.mocked(lessonAccessApiClient.updateLessonProgress).mockResolvedValueOnce({
+            success: true,
+        } as any);
+
+        const result = await updateLessonProgress(
+            "ignored-user",
+            "intro-to-testing",
+            "lesson-1",
+            true,
+            180
+        );
+
+        expect(result).toBe(true);
+        expect(lessonAccessApiClient.updateLessonProgress).toHaveBeenCalledWith(
+            "intro-to-testing",
+            "lesson-1",
+            true,
+            180
+        );
+    });
+
+    it("queues lesson progress when the backend update fails", async () => {
+        vi.mocked(lessonAccessApiClient.updateLessonProgress).mockResolvedValueOnce({
+            success: false,
+            error: "nope",
+        } as any);
+
+        const result = await updateLessonProgress(
+            "db-user",
+            "intro-to-testing",
+            "lesson-1",
+            true
+        );
+
+        expect(result).toBe(false);
+        const rawQueue = window.localStorage.getItem("dtma_progress_queue_v1");
+        expect(rawQueue).toContain("lesson_progress");
+    });
+
+    it("only records course completion when progress reaches 100%", async () => {
+        vi.mocked(learningApiClient.recordCourseCompletion).mockResolvedValue({
+            success: true,
+        } as any);
+
+        const partial = await updateEnrollmentProgress("db-user", "intro-to-testing", 75);
+        const complete = await updateEnrollmentProgress("db-user", "intro-to-testing", 100);
+
+        expect(partial).toBe(true);
+        expect(complete).toBe(true);
+        expect(learningApiClient.recordCourseCompletion).toHaveBeenCalledTimes(1);
+        expect(learningApiClient.recordCourseCompletion).toHaveBeenCalledWith("intro-to-testing");
+    });
+
+    it("syncs only completed lessons from local storage", async () => {
+        vi.mocked(lessonAccessApiClient.updateLessonProgress).mockResolvedValue({
+            success: true,
+        } as any);
+
+        const result = await syncLocalProgressToServer("db-user", "intro-to-testing", [
+            { id: "lesson-1", completed: true },
+            { id: "lesson-2", completed: false },
+            { id: "lesson-3", completed: true },
+        ]);
+
+        expect(result).toBe(true);
+        expect(lessonAccessApiClient.updateLessonProgress).toHaveBeenCalledTimes(2);
+    });
+
+    it("returns enrollments from the enrollment API client", async () => {
+        vi.mocked(enrollmentApiClient.getUserEnrollments).mockResolvedValueOnce([
+            { id: "enroll-1", courseSlug: "course-a" },
+            { id: "enroll-2", courseSlug: "course-b" },
+        ] as any);
+
+        const result = await getUserEnrollments("ignored-user");
+
+        expect(result).toHaveLength(2);
+        expect(enrollmentApiClient.getUserEnrollments).toHaveBeenCalledTimes(1);
+    });
+
+    it("calculates actual progress stats from the learning snapshot", async () => {
+        vi.mocked(learningApiClient.getSnapshot).mockResolvedValueOnce({
+            lessons: [{ id: "l1" }, { id: "l2" }, { id: "l3" }, { id: "l4" }],
+            progress: [
+                { lesson_id: "l1", completed: true },
+                { lesson_id: "l2", completed: true },
+            ],
+            enrollment: {
+                progress_pct: 50,
+            },
+        } as any);
+
+        const result = await getActualProgressStats("ignored-user", "intro-to-testing");
+
+        expect(result).toEqual({
+            completedCount: 2,
+            totalCount: 4,
+            progressPct: 50,
+        });
+    });
+
+    it("flushes queued progress through backend clients", async () => {
+        window.localStorage.setItem(
+            "dtma_progress_queue_v1",
+            JSON.stringify([
+                {
+                    type: "lesson_progress",
+                    payload: {
+                        userId: "db-user",
+                        courseSlug: "intro-to-testing",
+                        lessonId: "lesson-1",
+                        completed: true,
+                    },
                 },
                 {
-                    id: 'enroll-1',
-                    user_id: userId,
-                    course_slug: 'course-a',
-                    started_at: '2024-01-01T00:00:00Z',
-                    last_accessed_at: '2024-01-10T00:00:00Z',
-                    progress_pct: 50,
+                    type: "enrollment_progress",
+                    payload: {
+                        userId: "db-user",
+                        courseSlug: "intro-to-testing",
+                        progressPct: 100,
+                    },
                 },
-            ];
+            ])
+        );
 
-            mockChain.order.mockResolvedValueOnce({
-                data: enrollmentsData,
-                error: null,
-            });
+        vi.mocked(lessonAccessApiClient.updateLessonProgress).mockResolvedValue({
+            success: true,
+        } as any);
+        vi.mocked(learningApiClient.recordCourseCompletion).mockResolvedValue({
+            success: true,
+        } as any);
 
-            const result = await getUserEnrollments(userId);
+        await flushProgressQueue();
 
-            expect(result).toHaveLength(2);
-            expect(result[0].courseSlug).toBe('course-b'); // Most recent first
-            expect(result[1].courseSlug).toBe('course-a');
-        });
-    });
-
-    describe('getActualProgressStats', () => {
-        const userId = 'user-123';
-        const courseSlug = 'intro-to-testing';
-
-        it('should return default stats when Supabase is not configured', async () => {
-            vi.mocked(isSupabaseConfigured).mockReturnValue(false);
-
-            const result = await getActualProgressStats(userId, courseSlug);
-
-            expect(result).toEqual({ completedCount: 0, totalCount: 0, progressPct: 0 });
-        });
-
-        it('should calculate progress percentage correctly', async () => {
-            // Mock enrollment lookup
-            mockChain.single.mockResolvedValueOnce({
-                data: { id: 'enroll-1' },
-                error: null,
-            });
-
-            // Mock completed lessons count (3 completed)
-            mockChain.eq.mockResolvedValueOnce({
-                count: 3,
-                error: null,
-            });
-
-            // Mock total lessons count (10 total)
-            mockChain.eq.mockResolvedValueOnce({
-                count: 10,
-                error: null,
-            });
-
-            const result = await getActualProgressStats(userId, courseSlug);
-
-            expect(result.completedCount).toBe(3);
-            expect(result.totalCount).toBe(10);
-            expect(result.progressPct).toBe(30); // 3/10 = 30%
-        });
+        expect(window.localStorage.getItem("dtma_progress_queue_v1")).toBe("[]");
+        expect(lessonAccessApiClient.updateLessonProgress).toHaveBeenCalledTimes(1);
+        expect(learningApiClient.recordCourseCompletion).toHaveBeenCalledTimes(1);
     });
 });

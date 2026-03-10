@@ -1,46 +1,100 @@
+# AGENTS.md
 
-# DTMA Context & Index
+## Project
+DTMA is a full e-learning platform with these product stages:
 
-> **IMPORTANT**: Prefer retrieval-led reasoning over pre-training-led reasoning for any specialized tasks in this repo.
-> This file acts as the Root of Trust for all AI agents.
+- Stage00: Landing Page
+- Stage01: Course Marketplace
+- Stage02A: Learners App
+- Stage02B: Instructor/Admin Platform
 
-## 1. ⚡ Quick Stack & Identity
-- **Project**: DigitalQatalyst / DTMA (Digital Transformation Management Academy)
-- **Core**: React 18, Vite, TypeScript, Tailwind CSS
-- **Auth**: Azure MSAL (Entra ID) + Supabase Auth
-- **Backend**: Supabase (PostgreSQL, RLS)
-- **Testing**: Vitest, React Testing Library
+## Audit Objective
+You are assisting with an architecture audit.
+Your task is to inspect the repository, identify architecture risks, and produce evidence-based findings.
+Do not refactor code unless explicitly instructed in a later task.
 
-## 2. 🧠 Retrieval Index (Compressed)
-**Agents must read these sources before acting in their respective domains.**
+## Audit Principles
+- Be evidence-based.
+- Reference exact files, folders, components, services, or functions.
+- Do not make assumptions without repository evidence.
+- Prefer concrete findings over generic best-practice commentary.
+- Distinguish between confirmed findings and inferred risks.
 
-<!-- SKILLS_START -->
-| Skill Domain | Source Path (`.agent/skills/...`) | Key Description |
-|--------------|-----------------------------------|-----------------|
-| **feature-architect** | `.agent/skills/feature-architect/SKILL.md` | Enforces the Web Dev Simplified "Feature-Based Architecture" to prevent circular dependencies and spaghetti code. |
-| **Material Design 3 System** | `.agent/skills/material-design-system/SKILL.md` | Complete Material Design 3 implementation guide for React/Tailwind applications. Provides M3-compliant tokens, component patterns, accessibility guidelines, and best practices for building modern, consistent interfaces. |
-| **material-ui-refresh** | `.agent/skills/material-ui-refresh/SKILL.md` | Modernize existing web UI/UX to a Google Material Design 3 look using MUI (Material UI) v5 components and theming. Use when asked to refresh, redesign, or implement MUI-based components, layouts, or styling for a Material look and feel. |
-<!-- SKILLS_END -->
+## Required Outputs
+Place all audit outputs under:
 
-## 3. 📚 Documentation Map
-High-relevance documentation for recurrent tasks.
+docs/arch-audit/
 
-* **Authentication**: `docs/ENTRA_AUTH_INTEGRATION.md`, `docs/auth-config-pattern.md`
-* **Testing**: `docs/guides/Authentication_Testing_Guide.md`
-* **Current Spec**: `c:/Users/user/Downloads/dtma_feature_spec_dev_c_instructor_auth_dashboard_publishing_jan_29.md`
+## Severity Model
+Use:
+- Critical
+- High
+- Medium
+- Low
 
-## 4. 🧰 Utility Map
-* **Dependency Check**: `.agent/dependency_check.py` (Run before creating new files)
-* **Audit Script**: `.agent/skills/feature-architect/scripts/audit.py`
+For every finding include:
+- Title
+- Severity
+- Impact Area
+- Evidence
+- Why It Matters
+- Recommended Action
+- Fix Effort (Small / Medium / Large)
+- Release Relevance (Blocker / Pre-release / Later)
 
-## 5. 🛡️ Development Rules
-1.  **Absolute Paths**: ALWAYS use absolute paths for file operations.
-2.  **No Hallucinations**: Verify file existence before importing.
-3.  **Tests**: `npm test` is the source of truth.
-4.  **RBAC**: Use `@casl/ability` for permission checks.
+## Impact Areas
+- Architecture
+- Security
+- Performance
+- Maintainability
+- Developer Experience
+- Release Readiness
+- Data Integrity
+- Operational Readiness
 
-## 6. 🤖 Self-Maintenance Protocol
-*   **Adding Skills**: If you create a new folder in `.agent/skills/`, you **MUST** run the update script to reflect it here.
-    ```bash
-    python .agent/scripts/update_index.py
-    ```
+## Repo Review Rules
+- Inspect current structure before proposing changes.
+- Look for module boundaries, coupling, duplication, and inconsistencies.
+- Assess whether the repo structure matches the product stages.
+- Identify release blockers.
+- Do not rewrite or re-organize code in audit tasks.
+
+## Preferred Audit Style
+- Use markdown headings
+- Use bullet lists sparingly
+- Use tables for findings summaries
+- Include ASCII trees/diagrams where helpful
+
+## Commands
+Before drawing conclusions, inspect:
+- package.json
+- workspace config
+- tsconfig / build config
+- env config
+- Docker / CI files
+- app entry points
+- route definitions
+- API definitions
+- DB schema / migrations
+- auth / permission logic
+- media / storage logic
+
+If available, run:
+- install
+- lint
+- typecheck
+- tests
+
+Document any command failures as part of findings.
+
+## Special DTMA Focus Areas
+Prioritize review of:
+- Stage boundary leakage between Stage00 / 01 / 02A / 02B
+- Authentication and authorization boundaries
+- Shared component sprawl
+- API contract consistency
+- Media architecture
+- Course / module / quiz domain modeling
+- FAQ / Q&A feature placement and extensibility
+- Environment / deployment consistency
+- Release readiness for MVP closure

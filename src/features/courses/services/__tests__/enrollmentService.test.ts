@@ -93,6 +93,8 @@ describe("EnrollmentService", () => {
       vi.mocked(enrollmentApiClient.enrollInCourse).mockResolvedValueOnce({
         success: true,
         enrollment: mockEnrollment,
+        error: undefined,
+        message: "Enrollment created successfully",
       });
 
       const result = await enrollInCourse(userId, courseSlug, "explicit");
@@ -140,6 +142,8 @@ describe("EnrollmentService", () => {
           status: "active",
           enrollmentMethod: "explicit",
         },
+        error: undefined,
+        message: "Enrollment created successfully",
       });
       vi.mocked(lessonAccessApiClient.canAccessLesson).mockResolvedValueOnce(
         true

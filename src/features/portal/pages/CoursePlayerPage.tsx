@@ -1,8 +1,8 @@
 /**
- * CoursePlayerPage - The active learning interface with video player and course outline
+ * CoursePlayerPage - The active learning interface with video player and course outline.
  */
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams, useOutletContext } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import {
     ChevronRight,
     ChevronLeft,
@@ -13,51 +13,28 @@ import CourseAssessment from "../../courses/pages/CourseAssessment";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { CourseOutline } from "../../courses/components/CourseOutline";
 import { Lesson, toUILesson } from "../../../types/course";
-import { fetchCourseLessons, fetchCourseResources, fetchFullCourse, CourseResource } from "../../courses/services/courseService";
 import {
-    getOrCreateEnrollment,
     updateLessonProgress,
     updateEnrollmentProgress,
     syncLocalProgressToServer,
-    getUserCourseProgress,
-    flushProgressQueue,
-    Enrollment,
 } from "../services/progressService";
-import { isUserEnrolled } from "../../courses/services/enrollmentService";
-import { PreviewContentGate } from "../components/PreviewContentGate";
-import { Lesson as DBLesson, Course } from "../../../types/dtma-lms";
-
-// Defined so we can pass context up to the layout if we needed to (e.g. theater mode)
-// But for now we manage theater mode locally and just hide sidebar via pure CSS or similar, 
-// OR we lift state. Since PortalLayout handles sidebar, we need to communicate.
-// We'll trust the user check that said "Layout Consistency" includes theater mode.
-// We can use a simple prop or context.
-// For simplicity in this refactor, we will rely on a new Outlet context or simple full screen.
+import { lessonAccessApiClient } from "../../../lib/api/lessonAccessApiClient";
+import {
+    getLearningSnapshot,
+    invalidateLearningSnapshot,
+} from "../../learning/services/learningSnapshotService";
+import { Course } from "../../../types/dtma-lms";
 
 const CoursePlayerPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
     const location = useLocation();
-
-    // We expect the Layout to provide a way to toggle theater mode via context or we assume Layout handles it
-    // For now, let's just implement functionality and assume Layout is always present.
-    // To support theater mode properly (hiding layout sidebar/header), we might need to modify this structure 
-    // to control the parent layout. 
-    // A common pattern is `useOutletContext`.
-
-    // Let's assume the Layout provides: { setIsTheaterMode: (v: boolean) => void }
-    // If not, we'll gracefully degrade (theater mode only expands inside content area).
-    const safeSetIsTheaterMode = (val: boolean) => {
-        // Placeholder for context connection
-        // const { setTheaterMode } = useOutletContext<{setTheaterMode: (v: boolean) => void}>();
-        // setTheaterMode(val);
-        setIsTheater(val); // Local state for now
-    }
+    const { databaseUser } = useAuth();
 
     const [course, setCourse] = useState<Course | null>(null);
     const [lessons, setLessons] = useState<Lesson[]>([]);
-    const [dbLessons, setDbLessons] = useState<DBLesson[]>([]);
-    const [resources, setResources] = useState<CourseResource[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLessonLoading, setIsLessonLoading] = useState(false);
+    const [lessonLoadError, setLessonLoadError] = useState<string | null>(null);
 
     const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -70,12 +47,7 @@ const CoursePlayerPage: React.FC = () => {
     const [isNextLessonUnlocked, setIsNextLessonUnlocked] = useState(false);
     const [showQuiz, setShowQuiz] = useState(false);
     const [isTheater, setIsTheater] = useState(false);
-    const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
     const [isEnrolled, setIsEnrolled] = useState(false);
-    const [enrollmentLoading, setEnrollmentLoading] = useState(true);
-
-    const navigate = useNavigate();
-    const { user, databaseUser } = useAuth();
 
     const resumeLessonId = useMemo(() => {
         const searchParams = new URLSearchParams(location.search);
@@ -83,189 +55,221 @@ const CoursePlayerPage: React.FC = () => {
         return value ? value : null;
     }, [location.search]);
 
-    // Fetch course, lessons, resources, and user progress
     useEffect(() => {
         if (!courseId) return;
+
+        let isMounted = true;
 
         const loadCourseData = async () => {
             try {
                 setIsLoading(true);
-                const [fetchedCourse, fetchedLessons, fetchedResources] = await Promise.all([
-                    fetchFullCourse(courseId),
-                    fetchCourseLessons(courseId),
-                    fetchCourseResources(courseId),
-                ]);
+                setLessonLoadError(null);
 
-                setCourse(fetchedCourse);
+                const snapshot = await getLearningSnapshot(courseId, databaseUser?.id ?? null, {
+                    useCache: false,
+                });
 
-                const resumeIndex = resumeLessonId
-                    ? fetchedLessons.findIndex((lesson) => String(lesson.id) === resumeLessonId)
-                    : -1;
-
-                let completedLessonIds = new Set<string>();
-
-                // If user is logged in, fetch server-side progress
-                if (databaseUser?.id) {
-                    try {
-                        const { lessonProgress } = await getUserCourseProgress(databaseUser.id, courseId);
-                        lessonProgress.forEach(p => {
-                            if (p.completed) completedLessonIds.add(p.lessonId);
-                        });
-                    } catch (err) {
-                        console.warn("Failed to load server progress:", err);
-                    }
+                if (!isMounted) {
+                    return;
                 }
 
-                // Load local storage progress as a fallback/supplement
+                setCourse(snapshot.course);
+                setIsEnrolled(Boolean(snapshot.enrollment));
+
+                const resumeIndex = resumeLessonId
+                    ? snapshot.lessons.findIndex((lesson) => String(lesson.id) === resumeLessonId)
+                    : -1;
+
+                const completedLessonIds = new Set<string>();
+                snapshot.lessonProgress.forEach((progress) => {
+                    if (progress.completed) {
+                        completedLessonIds.add(progress.lessonId);
+                    }
+                });
+
                 const storageKey = `courseProgress_${courseId}`;
                 const saved = localStorage.getItem(storageKey);
 
-                if (fetchedLessons.length > 0) {
-                    setDbLessons(fetchedLessons);
-
-                    if (saved) {
-                        try {
-                            const savedLessons: Lesson[] = JSON.parse(saved);
-                            savedLessons.forEach(l => {
-                                if (l.completed) completedLessonIds.add(String(l.id));
-                            });
-                        } catch (e) {
-                            console.warn("Failed to parse local progress", e);
-                        }
-                    }
-
-                    const uiLessons = fetchedLessons.map((lesson, idx) =>
-                        toUILesson(lesson, idx, completedLessonIds)
-                    );
-
-                    // Merge saved durations if available
-                    if (saved) {
-                        try {
-                            const localLessons: Lesson[] = JSON.parse(saved);
-                            if (localLessons.length > 0) {
-                                uiLessons.forEach(uiLesson => {
-                                    const savedMatch = localLessons.find(sl => String(sl.id) === String(uiLesson.id));
-                                    if (savedMatch && savedMatch.duration && savedMatch.duration !== '--:--') {
-                                        uiLesson.duration = savedMatch.duration;
-                                    }
-                                });
+                if (saved) {
+                    try {
+                        const savedLessons: Lesson[] = JSON.parse(saved);
+                        savedLessons.forEach((lesson) => {
+                            if (lesson.completed) {
+                                completedLessonIds.add(String(lesson.id));
                             }
-                        } catch (e) { /* ignore */ }
+                        });
+                    } catch (error) {
+                        console.warn("Failed to parse local progress", error);
                     }
-
-                    setLessons(uiLessons);
-
-                    if (resumeIndex >= 0) {
-                        setCurrentLessonIndex(resumeIndex);
-                    } else {
-                        // Restore from local storage if no direct link
-                        const savedIndex = localStorage.getItem(`activeLessonIndex_${courseId}`);
-                        if (savedIndex !== null) {
-                            const idx = parseInt(savedIndex, 10);
-                            if (!isNaN(idx) && idx >= 0 && idx < uiLessons.length) {
-                                setCurrentLessonIndex(idx);
-                            }
-                        }
-                    }
-
-                    // If we have local completed lessons that weren't in DB, we should sync up
-                    if (databaseUser?.id && saved) {
-                        const localLessons: Lesson[] = JSON.parse(saved);
-                        const localCompleted = localLessons.filter(l => l.completed).map(l => ({ id: String(l.id), completed: true }));
-
-                        if (localCompleted.length > 0) {
-                            // This is 'fire and forget' to ensure server is caught up
-                            syncLocalProgressToServer(databaseUser.id, courseId, localCompleted);
-                        }
-                    }
-
-                } else {
-                    setLessons([]);
                 }
 
-                setResources(fetchedResources);
+                const uiLessons = snapshot.lessons.map((lesson, idx) =>
+                    toUILesson(lesson, idx, completedLessonIds)
+                );
+
+                if (saved) {
+                    try {
+                        const localLessons: Lesson[] = JSON.parse(saved);
+                        uiLessons.forEach((uiLesson) => {
+                            const savedMatch = localLessons.find(
+                                (lesson) => String(lesson.id) === String(uiLesson.id)
+                            );
+                            if (savedMatch?.duration && savedMatch.duration !== "--:--") {
+                                uiLesson.duration = savedMatch.duration;
+                            }
+                        });
+                    } catch {
+                        // Ignore malformed local progress cache.
+                    }
+                }
+
+                setLessons(uiLessons);
+
+                if (resumeIndex >= 0) {
+                    setCurrentLessonIndex(resumeIndex);
+                } else {
+                    const savedIndex = localStorage.getItem(`activeLessonIndex_${courseId}`);
+                    if (savedIndex !== null) {
+                        const idx = parseInt(savedIndex, 10);
+                        if (!Number.isNaN(idx) && idx >= 0 && idx < uiLessons.length) {
+                            setCurrentLessonIndex(idx);
+                        }
+                    }
+                }
+
+                if (databaseUser?.id && snapshot.enrollment && saved) {
+                    try {
+                        const localLessons: Lesson[] = JSON.parse(saved);
+                        const localCompleted = localLessons
+                            .filter((lesson) => lesson.completed)
+                            .map((lesson) => ({ id: String(lesson.id), completed: true }));
+
+                        if (localCompleted.length > 0) {
+                            syncLocalProgressToServer(databaseUser.id, courseId, localCompleted);
+                        }
+                    } catch {
+                        // Ignore malformed local progress cache.
+                    }
+                }
             } catch (error) {
-                console.warn('Failed to load course data:', error);
+                console.warn("Failed to load course data:", error);
             } finally {
-                setIsLoading(false);
+                if (isMounted) {
+                    setIsLoading(false);
+                }
             }
         };
 
         loadCourseData();
-    }, [courseId, databaseUser?.id]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [courseId, databaseUser?.id, resumeLessonId]);
 
     useEffect(() => {
-        if (!databaseUser?.id) return;
-        flushProgressQueue();
-    }, [databaseUser?.id]);
+        if (!courseId || lessons.length === 0 || !lessons[currentLessonIndex]) {
+            return;
+        }
 
-    // Create a stable reference to lesson video URLs for the preload effect
+        let isMounted = true;
+
+        const loadLessonContent = async () => {
+            setIsLessonLoading(true);
+            setLessonLoadError(null);
+
+            const lessonId = String(lessons[currentLessonIndex].id);
+            const result = await lessonAccessApiClient.getLessonContent(courseId, lessonId);
+
+            if (!isMounted) {
+                return;
+            }
+
+            if (!result.success || !result.lesson) {
+                setLessonLoadError(result.error || "Unable to load lesson content.");
+                setIsLessonLoading(false);
+                return;
+            }
+
+            setLessons((previousLessons) =>
+                previousLessons.map((lesson, idx) =>
+                    idx === currentLessonIndex
+                        ? {
+                            ...lesson,
+                            description: result.lesson?.content || lesson.description,
+                            videoUrl: result.lesson?.videoUrl,
+                            resourceUrl: result.lesson?.resourceUrl,
+                            isPreview: result.lesson?.isPreview ?? lesson.isPreview,
+                        }
+                        : lesson
+                )
+            );
+            setIsLessonLoading(false);
+        };
+
+        loadLessonContent();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [courseId, currentLessonIndex, lessons.length]);
+
     const lessonVideoUrls = useMemo(
-        () => lessons.map(l => l.videoUrl).filter(Boolean).join(','),
+        () => lessons.map((lesson) => lesson.videoUrl).filter(Boolean).join(","),
         [lessons]
     );
 
-    // Preload video durations
     useEffect(() => {
         if (lessons.length === 0 || !courseId || !lessonVideoUrls) return;
 
-        const fetchVideoDuration = (videoUrl: string): Promise<number> => {
-            return new Promise((resolve, reject) => {
-                const video = document.createElement('video');
-                video.preload = 'metadata';
+        const fetchVideoDuration = (videoUrl: string): Promise<number> =>
+            new Promise((resolve, reject) => {
+                const video = document.createElement("video");
+                video.preload = "metadata";
                 const timeout = setTimeout(() => {
-                    video.src = '';
-                    reject(new Error('Timeout loading video metadata'));
+                    video.src = "";
+                    reject(new Error("Timeout loading video metadata"));
                 }, 10000);
 
                 video.onloadedmetadata = () => {
                     clearTimeout(timeout);
                     resolve(video.duration);
-                    video.src = '';
+                    video.src = "";
                 };
                 video.onerror = () => {
                     clearTimeout(timeout);
-                    reject(new Error('Failed to load video'));
+                    reject(new Error("Failed to load video"));
                 };
                 video.src = videoUrl;
             });
-        };
 
         const formatDuration = (seconds: number): string => {
             const mins = Math.floor(seconds / 60);
             const secs = Math.floor(seconds % 60);
-            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
         };
 
         const preloadAllDurations = async () => {
-            console.log('📊 Preloading durations for', lessons.length, 'lessons');
             const durationPromises = lessons.map(async (lesson, index) => {
-                // Skip lessons that already have a valid duration or no video URL
                 if (!lesson.videoUrl) {
-                    console.log(`⏭️ Lesson ${index}: No video URL, skipping`);
                     return { index, duration: lesson.duration };
                 }
-                if (lesson.duration !== '--:--' && lesson.duration !== '') {
-                    console.log(`✅ Lesson ${index}: Already has duration: ${lesson.duration}`);
+                if (lesson.duration !== "--:--" && lesson.duration !== "") {
                     return { index, duration: lesson.duration };
                 }
                 try {
-                    console.log(`🎬 Lesson ${index}: Fetching duration for ${lesson.videoUrl}`);
                     const durationSeconds = await fetchVideoDuration(lesson.videoUrl);
-                    const formatted = formatDuration(durationSeconds);
-                    console.log(`✅ Lesson ${index}: Duration fetched: ${formatted}`);
-                    return { index, duration: formatted };
-                } catch (error) {
-                    console.warn(`❌ Lesson ${index}: Failed to fetch duration`, error);
-                    return { index, duration: '--:--' };
+                    return { index, duration: formatDuration(durationSeconds) };
+                } catch {
+                    return { index, duration: "--:--" };
                 }
             });
 
             const results = await Promise.allSettled(durationPromises);
-            setLessons(prevLessons => {
-                const updatedLessons = [...prevLessons];
-                results.forEach(result => {
-                    if (result.status === 'fulfilled' && result.value) {
+            setLessons((previousLessons) => {
+                const updatedLessons = [...previousLessons];
+                results.forEach((result) => {
+                    if (result.status === "fulfilled" && result.value) {
                         const { index, duration } = result.value;
                         if (updatedLessons[index]) {
                             updatedLessons[index] = { ...updatedLessons[index], duration };
@@ -277,48 +281,14 @@ const CoursePlayerPage: React.FC = () => {
         };
 
         preloadAllDurations();
-    }, [lessons.length, courseId, lessonVideoUrls]);
+    }, [courseId, lessonVideoUrls, lessons]);
 
-    // Check enrollment status and redirect if not enrolled
     useEffect(() => {
-        const checkEnrollmentStatus = async () => {
-            if (!databaseUser?.id || !courseId) {
-                setIsEnrolled(false);
-                setEnrollmentLoading(false);
-                return;
-            }
-
-            try {
-                setEnrollmentLoading(true);
-                const enrolled = await isUserEnrolled(databaseUser.id, courseId);
-                setIsEnrolled(enrolled);
-
-                // Redirect unenrolled users to the course details page
-                if (!enrolled) {
-                    console.log('🚫 User not enrolled, redirecting to course details page');
-                    navigate(`/courses/${courseId}`, { replace: true });
-                }
-            } catch (error) {
-                console.error('Error checking enrollment status:', error);
-                setIsEnrolled(false);
-            } finally {
-                setEnrollmentLoading(false);
-            }
-        };
-
-        checkEnrollmentStatus();
-    }, [databaseUser?.id, courseId, navigate]);
-
-    // Note: Auto-enrollment removed. Users must enroll via the course details page before accessing the portal.
-
-    // Persist progress and active lesson
-    useEffect(() => {
-        if (typeof window !== 'undefined' && lessons.length > 0 && courseId) {
-            const storageKey = `courseProgress_${courseId}`;
-            localStorage.setItem(storageKey, JSON.stringify(lessons));
+        if (typeof window !== "undefined" && lessons.length > 0 && courseId) {
+            localStorage.setItem(`courseProgress_${courseId}`, JSON.stringify(lessons));
             localStorage.setItem(`activeLessonIndex_${courseId}`, String(currentLessonIndex));
         }
-    }, [lessons, courseId, currentLessonIndex]);
+    }, [courseId, currentLessonIndex, lessons]);
 
     const activeLesson = useMemo(
         () => lessons[currentLessonIndex],
@@ -335,37 +305,38 @@ const CoursePlayerPage: React.FC = () => {
         currentLesson && !currentLesson.completed && duration > 0
             ? Math.min(currentTime / duration, 1)
             : 0;
-    const progressPct = Math.round(
-        ((completedCount + currentLessonProgress) / lessons.length) * 100
-    );
+    const progressPct = lessons.length
+        ? Math.round(((completedCount + currentLessonProgress) / lessons.length) * 100)
+        : 0;
     const boundedProgress = Math.min(Math.max(progressPct, 0), 100);
     const allLessonsCompleted = useMemo(
-        () => lessons.every((lesson) => lesson.completed),
+        () => lessons.length > 0 && lessons.every((lesson) => lesson.completed),
         [lessons]
     );
 
     const markLessonComplete = useCallback(async (lessonIndex: number) => {
         const lesson = lessons[lessonIndex];
-        if (!lesson || lesson.completed) return;
+        if (!lesson || lesson.completed || !courseId) return;
 
-        setLessons(prevLessons =>
-            prevLessons.map((l, index) =>
-                index === lessonIndex ? { ...l, completed: true } : l
+        setLessons((previousLessons) =>
+            previousLessons.map((item, idx) =>
+                idx === lessonIndex ? { ...item, completed: true } : item
             )
         );
 
-        // Use isEnrolled instead of enrollment to ensure sync works for all enrolled users
-        if (isEnrolled && databaseUser?.id && courseId) {
+        if (isEnrolled && databaseUser?.id) {
             try {
                 await updateLessonProgress(databaseUser.id, courseId, String(lesson.id), true);
-                const newCompletedCount = lessons.filter(l => l.completed).length + 1;
+                invalidateLearningSnapshot(courseId, databaseUser.id);
+
+                const newCompletedCount = lessons.filter((item) => item.completed).length + 1;
                 const newProgressPct = (newCompletedCount / lessons.length) * 100;
                 await updateEnrollmentProgress(databaseUser.id, courseId, newProgressPct);
             } catch (err) {
-                console.warn('Failed to sync lesson completion to server:', err);
+                console.warn("Failed to sync lesson completion to server:", err);
             }
         }
-    }, [lessons, isEnrolled, databaseUser?.id, courseId]);
+    }, [courseId, databaseUser?.id, isEnrolled, lessons]);
 
     const handleTimeUpdate = (time: number, totalDuration: number) => {
         setCurrentTime(time);
@@ -376,7 +347,7 @@ const CoursePlayerPage: React.FC = () => {
 
         setIsNextLessonUnlocked(isNearEnd);
 
-        if (isNearEnd && !lessons[currentLessonIndex].completed) {
+        if (isNearEnd && lessons[currentLessonIndex] && !lessons[currentLessonIndex].completed) {
             markLessonComplete(currentLessonIndex);
         }
     };
@@ -388,11 +359,11 @@ const CoursePlayerPage: React.FC = () => {
         if (dur > 0) {
             const minutes = Math.floor(dur / 60);
             const seconds = Math.floor(dur % 60);
-            const formattedDuration = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            const formattedDuration = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
-            setLessons(prevLessons =>
-                prevLessons.map((lesson, index) =>
-                    index === currentLessonIndex
+            setLessons((previousLessons) =>
+                previousLessons.map((lesson, idx) =>
+                    idx === currentLessonIndex
                         ? { ...lesson, duration: formattedDuration }
                         : lesson
                 )
@@ -401,14 +372,11 @@ const CoursePlayerPage: React.FC = () => {
     };
 
     const handlePlayPause = () => setIsPlaying(!isPlaying);
-    const handleVolume = (val: number) => setVolume(val);
-    const handleSpeedChange = (val: number) => setPlaybackRate(val);
-    const handleSeek = (val: number) => setCurrentTime(val);
+    const handleVolume = (value: number) => setVolume(value);
+    const handleSpeedChange = (value: number) => setPlaybackRate(value);
+    const handleSeek = (value: number) => setCurrentTime(value);
     const handleToggleCaptions = () => setCaptionsEnabled(!captionsEnabled);
-
-    const handleFullscreen = () => {
-        safeSetIsTheaterMode(!isTheater);
-    };
+    const handleFullscreen = () => setIsTheater((value) => !value);
 
     const handlePrev = () => {
         setShowQuiz(false);
@@ -417,14 +385,12 @@ const CoursePlayerPage: React.FC = () => {
     };
 
     const handleNext = () => {
-        if (!lessons[currentLessonIndex].completed) {
+        if (lessons[currentLessonIndex] && !lessons[currentLessonIndex].completed) {
             markLessonComplete(currentLessonIndex);
         }
 
         setShowQuiz(false);
-        setCurrentLessonIndex((prev) =>
-            Math.min(lessons.length - 1, prev + 1)
-        );
+        setCurrentLessonIndex((prev) => Math.min(lessons.length - 1, prev + 1));
         setCurrentTime(0);
         setIsNextLessonUnlocked(false);
     };
@@ -442,25 +408,23 @@ const CoursePlayerPage: React.FC = () => {
 
     const handleShowQuiz = () => {
         setShowQuiz(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handleBackFromQuiz = () => {
         setShowQuiz(false);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const courseTitle = course?.title || "Loading...";
     const atFirstLesson = currentLessonIndex === 0;
     const atLastLesson = currentLessonIndex === lessons.length - 1;
 
-    // Render content
     if (!courseId) return <div>No course ID provided</div>;
 
     return (
         <div className="flex h-full w-full">
-            {/* Course Outline Sidebar (Desktop) */}
-            <div className={`${moduleOpen ? 'w-80' : isTheater ? 'w-0' : 'w-12'} shrink-0 bg-white border-r border-gray-200 transition-all duration-300 hidden lg:flex flex-col ${showQuiz ? 'opacity-50 pointer-events-none' : ''} rounded-none`}>
+            <div className={`${moduleOpen ? "w-80" : isTheater ? "w-0" : "w-12"} shrink-0 bg-white border-r border-gray-200 transition-all duration-300 hidden lg:flex flex-col ${showQuiz ? "opacity-50 pointer-events-none" : ""} rounded-none`}>
                 {moduleOpen ? (
                     <div className="flex flex-col h-full">
                         <div className="flex-1 overflow-y-auto">
@@ -496,7 +460,6 @@ const CoursePlayerPage: React.FC = () => {
                 )}
             </div>
 
-            {/* Main Content */}
             <main className={`flex-1 min-w-0 ${isTheater ? "p-0 h-full" : "p-3 md:p-4"} overflow-y-auto flex flex-col`}>
                 {isLoading ? (
                     <div className="flex h-full items-center justify-center">
@@ -520,11 +483,10 @@ const CoursePlayerPage: React.FC = () => {
                     </div>
                 ) : (
                     <div className={`${isTheater ? "w-full h-full space-y-4" : "max-w-6xl mx-auto space-y-3"}`}>
-                        {/* Video Player */}
                         <div className={`relative overflow-hidden ${isTheater ? "h-full w-full rounded-none" : "rounded-xl shadow-lg"} group`}>
                             {isTheater && (
                                 <button
-                                    onClick={() => handleFullscreen()}
+                                    onClick={handleFullscreen}
                                     className="absolute top-3 right-3 z-20 bg-white/80 text-[#1839AD] px-3 py-1 rounded-full text-xs font-semibold shadow hover:bg-white transition"
                                 >
                                     Exit Fullscreen
@@ -537,33 +499,47 @@ const CoursePlayerPage: React.FC = () => {
                                     {courseTitle}
                                 </p>
                                 <h1 className="text-white text-sm md:text-base font-normal mt-0.5">
-                                    {activeLesson?.title}
+                                    {activeLesson.title}
                                 </h1>
                             </div>
 
-                            <VideoPlayer
-                                src={activeLesson?.videoUrl || "/videos/C2-INTRO.mp4"}
-                                poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
-                                isPlaying={isPlaying}
-                                volume={volume}
-                                playbackRate={playbackRate}
-                                currentTime={currentTime}
-                                duration={duration}
-                                captionsEnabled={captionsEnabled}
-                                onPlayPause={handlePlayPause}
-                                onVolumeChange={handleVolume}
-                                onSpeedChange={handleSpeedChange}
-                                onSeek={handleSeek}
-                                onToggleCaptions={handleToggleCaptions}
-                                onFullscreen={handleFullscreen}
-                                onTimeUpdate={handleTimeUpdate}
-                                onLoadedMetadata={handleLoadedMetadata}
-                                onEnded={() => setIsPlaying(false)}
-                                className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
-                            />
+                            {isLessonLoading ? (
+                                <div className="flex min-h-[360px] items-center justify-center bg-black text-white">
+                                    <PageLoader size="lg" label="Loading lesson..." />
+                                </div>
+                            ) : lessonLoadError || !activeLesson.videoUrl ? (
+                                <div className="flex min-h-[360px] items-center justify-center bg-black px-6 text-center text-white">
+                                    <div>
+                                        <h2 className="text-lg font-semibold">Lesson unavailable</h2>
+                                        <p className="mt-2 text-sm text-white/80">
+                                            {lessonLoadError || "Lesson content is not available for this learner."}
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <VideoPlayer
+                                    src={activeLesson.videoUrl}
+                                    poster={course?.introVideoPosterUrl || course?.heroImageUrl || "/images/placeholders/course-fallback.png"}
+                                    isPlaying={isPlaying}
+                                    volume={volume}
+                                    playbackRate={playbackRate}
+                                    currentTime={currentTime}
+                                    duration={duration}
+                                    captionsEnabled={captionsEnabled}
+                                    onPlayPause={handlePlayPause}
+                                    onVolumeChange={handleVolume}
+                                    onSpeedChange={handleSpeedChange}
+                                    onSeek={handleSeek}
+                                    onToggleCaptions={handleToggleCaptions}
+                                    onFullscreen={handleFullscreen}
+                                    onTimeUpdate={handleTimeUpdate}
+                                    onLoadedMetadata={handleLoadedMetadata}
+                                    onEnded={() => setIsPlaying(false)}
+                                    className={isTheater ? "h-full rounded-none border-0 shadow-none" : ""}
+                                />
+                            )}
                         </div>
 
-                        {/* Navigation Buttons */}
                         <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm space-y-4">
                             <div className="flex items-center justify-between gap-4">
                                 <button
@@ -595,7 +571,6 @@ const CoursePlayerPage: React.FC = () => {
                                 </button>
                             </div>
 
-                            {/* Course Progress Bar */}
                             <div>
                                 <div className="flex items-center justify-between text-sm mb-2">
                                     <span className="text-gray-600 font-medium">Course Progress</span>
@@ -613,7 +588,6 @@ const CoursePlayerPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Mobile Course Outline (Vertical Stack) */}
                         <div className="lg:hidden mt-6 pb-20">
                             <div className="mb-3 px-1">
                                 <h3 className="font-semibold text-gray-900">Course Content</h3>

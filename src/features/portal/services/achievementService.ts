@@ -1,10 +1,8 @@
+import { learningApiClient } from "../../../lib/api/learningApiClient";
 import { getSupabaseForEnrollment } from "../../../lib/supabase/serviceClient";
 import { isSupabaseConfigured } from "../../../lib/supabase/client";
 
 export type BadgeKey = "first_quiz_completed" | "first_course_completed";
-
-const QUIZ_XP_AWARD = 100;
-const COURSE_XP_AWARD = 200;
 
 export interface BadgeDefinition {
     id: string;
@@ -61,38 +59,6 @@ const mapXpRow = (row: any): UserXp => ({
     totalXp: row.total_xp ?? 0,
 });
 
-const upsertUserXp = async (userId: string, delta: number): Promise<UserXp | null> => {
-    if (!isSupabaseConfigured()) {
-        return null;
-    }
-
-    const supabase = getAchievementSupabase();
-    const { data: existing } = await supabase
-        .from("user_xp")
-        .select("user_id, total_xp")
-        .eq("user_id", userId)
-        .single();
-
-    const nextTotal = Math.max(0, (existing?.total_xp ?? 0) + delta);
-
-    const { data, error } = await supabase
-        .from("user_xp")
-        .upsert({
-            user_id: userId,
-            total_xp: nextTotal,
-            updated_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-    if (error) {
-        console.error("Error updating XP:", error);
-        return null;
-    }
-
-    return data ? mapXpRow(data) : null;
-};
-
 export const earnBadge = async (userId: string, badgeSlug: string, context?: { type: string; id: string }): Promise<boolean> => {
     if (!isSupabaseConfigured()) {
         return false;
@@ -129,92 +95,29 @@ export const earnBadge = async (userId: string, badgeSlug: string, context?: { t
 };
 
 export const recordQuizAttempt = async (
-    userId: string,
     courseSlug: string,
     scorePct: number,
     passed: boolean
 ): Promise<UserBadge | null> => {
-    if (!isSupabaseConfigured()) {
+    const result = await learningApiClient.recordQuizAttempt(courseSlug, scorePct, passed);
+    if (!result.success) {
+        console.error("Error recording quiz attempt:", result.error);
         return null;
     }
 
-    const supabase = getAchievementSupabase();
-    const { data: existing } = await supabase
-        .from("quiz_attempts")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("course_slug", courseSlug)
-        .single();
-
-    const payload = {
-        user_id: userId,
-        course_slug: courseSlug,
-        score_pct: scorePct,
-        passed,
-        completed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-    };
-
-    const { error } = await supabase
-        .from("quiz_attempts")
-        .upsert(payload, { onConflict: "user_id,course_slug" });
-
-    if (error) {
-        console.error("Error recording quiz attempt:", error);
-        return null;
-    }
-
-    if (!existing?.id) {
-        const success = await earnBadge(userId, "first_quiz_completed", { type: "course", id: courseSlug });
-        if (success) {
-            const badges = await getUserBadges(userId);
-            return badges.find(b => b.badge.slug === "first_quiz_completed") || null;
-        }
-    }
-    return null;
+    return result.badge;
 };
 
 export const recordCourseCompletion = async (
-    userId: string,
     courseSlug: string
 ): Promise<UserBadge | null> => {
-    if (!isSupabaseConfigured()) {
+    const result = await learningApiClient.recordCourseCompletion(courseSlug);
+    if (!result.success) {
+        console.error("Error recording course completion:", result.error);
         return null;
     }
 
-    const supabase = getAchievementSupabase();
-    
-    // Find the badge ID first
-    const { data: badgeDef } = await (supabase.from("badges" as any) as any)
-        .select("id")
-        .eq("slug", "first_course_completed")
-        .single();
-    
-    if (!badgeDef) return null;
-
-    const { data: existing } = await (supabase.from("earned_badges" as any) as any)
-        .select("id")
-        .eq("user_id", userId)
-        .eq("badge_id", (badgeDef as any).id)
-        .maybeSingle();
-
-    let earnedBadge: UserBadge | null = null;
-    if (!existing?.id) {
-        const success = await earnBadge(userId, "first_course_completed", { type: "course", id: courseSlug });
-        if (success) {
-            const badges = await getUserBadges(userId);
-            earnedBadge = badges.find(b => b.badge.slug === "first_course_completed") || null;
-        }
-        await upsertUserXp(userId, COURSE_XP_AWARD);
-    }
-
-    await supabase
-        .from("user_enrollments")
-        .update({ updated_at: new Date().toISOString() })
-        .eq("user_id", userId)
-        .eq("course_slug", courseSlug);
-        
-    return earnedBadge;
+    return result.badge;
 };
 
 export const getUserBadges = async (userId: string): Promise<UserBadge[]> => {

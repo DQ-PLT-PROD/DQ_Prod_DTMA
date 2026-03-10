@@ -1,4 +1,4 @@
-import { getSupabase, isSupabaseConfigured } from "../supabase/client";
+import { learnerProfileApiClient } from "../api/learnerProfileApiClient";
 
 export type RoleTrack = "digital_worker" | "leader";
 
@@ -24,38 +24,31 @@ export interface UpsertProfileInput {
     onboardingCompletedAt?: string | null;
 }
 
-const mapRowToProfile = (row: any): LearnerProfile => ({
-    azureUserId: row.azure_user_id,
-    roleTrack: row.role_track ?? null,
-    goals: Array.isArray(row.goals) ? row.goals : [],
-    preferences: Array.isArray(row.preferences) ? row.preferences : [],
-    onboardingCompleted: Boolean(row.onboarding_completed),
-    onboardingCompletedAt: row.onboarding_completed_at ?? null,
+const mapProfile = (profile: any): LearnerProfile => ({
+    azureUserId: profile.azureUserId,
+    roleTrack: profile.roleTrack ?? null,
+    goals: Array.isArray(profile.goals) ? profile.goals : [],
+    preferences: Array.isArray(profile.preferences) ? profile.preferences : [],
+    onboardingCompleted: Boolean(profile.onboardingCompleted),
+    onboardingCompletedAt: profile.onboardingCompletedAt ?? null,
 });
 
-const PROFILE_SELECT = "azure_user_id, role_track, goals, preferences, onboarding_completed, onboarding_completed_at";
-
-export async function getLearnerProfile(azureUserId: string): Promise<LearnerProfileResult> {
-    if (!isSupabaseConfigured()) {
-        return { profile: null, error: new Error("Supabase not configured") };
-    }
-
+export async function getLearnerProfile(_azureUserId: string): Promise<LearnerProfileResult> {
     try {
-        const supabase = getSupabase();
-        const { data, error } = await supabase
-            .from("users")
-            .select(PROFILE_SELECT)
-            .eq("azure_user_id", azureUserId)
-            .single();
-
-        if (error) {
-            if (error.code === "PGRST116") {
-                return { profile: null, error: null };
-            }
-            return { profile: null, error: new Error(error.message || "Failed to fetch learner profile") };
+        const result = await learnerProfileApiClient.getProfile();
+        if (!result.success) {
+            return {
+                profile: null,
+                error: result.error
+                    ? new Error(result.error)
+                    : new Error("Failed to fetch learner profile"),
+            };
         }
 
-        return { profile: data ? mapRowToProfile(data) : null, error: null };
+        return {
+            profile: result.profile ? mapProfile(result.profile) : null,
+            error: null,
+        };
     } catch (err) {
         const message = err instanceof Error ? err.message : "Unexpected error fetching learner profile";
         return { profile: null, error: new Error(message) };
@@ -74,59 +67,18 @@ export async function upsertProfile(
     azureUserId: string,
     input: UpsertProfileInput
 ): Promise<LearnerProfile | null> {
-    if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured; cannot update learner profile.");
-        return null;
-    }
-
-    const updateData: Record<string, any> = {
-        updated_at: new Date().toISOString(),
-    };
-
-    if (input.roleTrack !== undefined) {
-        updateData.role_track = input.roleTrack;
-    }
-
-    if (input.goals !== undefined) {
-        updateData.goals = input.goals;
-    }
-
-    if (input.preferences !== undefined) {
-        updateData.preferences = input.preferences;
-    }
-
-    if (input.onboardingCompleted !== undefined) {
-        updateData.onboarding_completed = input.onboardingCompleted;
-        if (input.onboardingCompleted) {
-            updateData.onboarding_completed_at = input.onboardingCompletedAt || new Date().toISOString();
-        } else if (input.onboardingCompletedAt === undefined) {
-            updateData.onboarding_completed_at = null;
-        }
-    }
-
-    if (input.onboardingCompletedAt !== undefined) {
-        updateData.onboarding_completed_at = input.onboardingCompletedAt;
-    }
-
-    if (Object.keys(updateData).length === 1) {
+    if (!Object.keys(input).length) {
         return getProfile(azureUserId);
     }
 
     try {
-        const supabase = getSupabase();
-        const { data, error } = await supabase
-            .from("users")
-            .update(updateData)
-            .eq("azure_user_id", azureUserId)
-            .select(PROFILE_SELECT)
-            .single();
-
-        if (error) {
-            console.error("Error updating learner profile:", error);
+        const result = await learnerProfileApiClient.updateProfile(input);
+        if (!result.success || !result.profile) {
+            console.error("Error updating learner profile:", result.error);
             return null;
         }
 
-        return data ? mapRowToProfile(data) : null;
+        return mapProfile(result.profile);
     } catch (err) {
         console.error("Unexpected error updating learner profile:", err);
         return null;

@@ -13,8 +13,16 @@ vi.mock('../../../lib/supabase/client', () => ({
     isSupabaseConfigured: vi.fn(),
 }));
 
+vi.mock('../../../lib/api/learningApiClient', () => ({
+    learningApiClient: {
+        recordQuizAttempt: vi.fn(),
+        recordCourseCompletion: vi.fn(),
+    },
+}));
+
 // Now import after mocks are set up
 import { getSupabaseForEnrollment } from '../../../lib/supabase/serviceClient';
+import { learningApiClient } from '../../../lib/api/learningApiClient';
 import { isSupabaseConfigured } from '../../../lib/supabase/client';
 import {
     earnBadge,
@@ -182,6 +190,32 @@ describe('achievementService', () => {
             expect(result).not.toBeNull();
             expect(result?.badge.title).toBe('First Quiz');
             expect((result as any).userName).toBe('John Doe');
+        });
+    });
+
+    describe('backend-owned writes', () => {
+        it('records quiz attempts through the learning API', async () => {
+            vi.mocked(learningApiClient.recordQuizAttempt).mockResolvedValueOnce({
+                success: true,
+                badge: { badge: { slug: 'first_quiz_completed' } },
+            } as any);
+
+            const result = await recordQuizAttempt('intro-to-testing', 80, true);
+
+            expect(result).not.toBeNull();
+            expect(learningApiClient.recordQuizAttempt).toHaveBeenCalledWith('intro-to-testing', 80, true);
+        });
+
+        it('records course completion through the learning API', async () => {
+            vi.mocked(learningApiClient.recordCourseCompletion).mockResolvedValueOnce({
+                success: true,
+                badge: { badge: { slug: 'first_course_completed' } },
+            } as any);
+
+            const result = await recordCourseCompletion('intro-to-testing');
+
+            expect(result).not.toBeNull();
+            expect(learningApiClient.recordCourseCompletion).toHaveBeenCalledWith('intro-to-testing');
         });
     });
 });

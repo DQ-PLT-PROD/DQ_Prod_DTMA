@@ -243,9 +243,12 @@ export const fetchFullCourse = async (slug: string): Promise<Course | null> => {
             .from("courses")
             .select("*, lessons(type, estimated_duration_minutes)")
             .eq("slug", slug)
-            .single();
+            .maybeSingle();
 
         if (error) {
+            if (error.code === "PGRST116") {
+                return null;
+            }
             console.error("Error fetching full course:", error.message);
             return null;
         }

@@ -110,7 +110,7 @@ const InProgressPage: React.FC = () => {
 
         setResumeCourseId(courseSlug);
         try {
-            const snapshot = await getLearningSnapshot(courseSlug, databaseUser.id);
+            const snapshot = await getLearningSnapshot(courseSlug);
             const resumeLessonId = snapshot.resumeLessonId;
             if (resumeLessonId) {
                 navigate(`/portal/learning/${courseSlug}?resumeLessonId=${encodeURIComponent(resumeLessonId)}`);

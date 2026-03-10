@@ -128,6 +128,11 @@ const mapRowToEnrollment = (row) => ({
 const generateCustomerId = () =>
   `CUST_${Date.now()}_${Math.random().toString(36).slice(2, 11).toUpperCase()}`
 
+const QUIZ_XP_AWARD = 100
+const COURSE_XP_AWARD = 200
+const LEARNER_PROFILE_SELECT =
+  'id, azure_user_id, display_name, preferred_email, phone_number, country, timezone, role_track, goals, preferences, onboarding_completed, onboarding_completed_at, seniority_level, weekly_learning_capacity, transformation_experience'
+
 const ensureUserRecord = async (azureUserId, authenticatedUser = null) => {
   const { data: existingUser, error: lookupError } = await supabaseClient
     .from('users')
@@ -175,6 +180,237 @@ const ensureUserRecord = async (azureUserId, authenticatedUser = null) => {
   }
 
   return { userData: null, error: createError || lookupError }
+}
+
+const mapRowToLearnerProfile = (row) => ({
+  azureUserId: row.azure_user_id,
+  displayName: row.display_name ?? null,
+  preferredEmail: row.preferred_email ?? null,
+  phoneNumber: row.phone_number ?? null,
+  country: row.country ?? null,
+  timezone: row.timezone ?? null,
+  roleTrack: row.role_track ?? null,
+  goals: Array.isArray(row.goals) ? row.goals : [],
+  preferences: Array.isArray(row.preferences) ? row.preferences : [],
+  onboardingCompleted: Boolean(row.onboarding_completed),
+  onboardingCompletedAt: row.onboarding_completed_at ?? null,
+  seniorityLevel: row.seniority_level ?? null,
+  weeklyLearningCapacity: row.weekly_learning_capacity ?? null,
+  transformationExperience: row.transformation_experience ?? null,
+})
+
+const resolveAuthenticatedDbUser = async (req, options = {}) => {
+  const { createIfMissing = false } = options
+  const authenticatedUser = getCurrentUser(req)
+
+  if (!authenticatedUser) {
+    return {
+      authenticatedUser: null,
+      userData: null,
+      error: new Error('Authentication required')
+    }
+  }
+
+  if (!supabaseClient) {
+    return {
+      authenticatedUser,
+      userData: null,
+      error: new Error('Database not configured')
+    }
+  }
+
+  if (createIfMissing) {
+    const { userData, error } = await ensureUserRecord(
+      authenticatedUser.azureUserId,
+      authenticatedUser
+    )
+
+    return {
+      authenticatedUser,
+      userData,
+      error: error || null
+    }
+  }
+
+  const { data: userData, error } = await supabaseClient
+    .from('users')
+    .select('id, azure_user_id, email, name')
+    .eq('azure_user_id', authenticatedUser.azureUserId)
+    .single()
+
+  return {
+    authenticatedUser,
+    userData: error ? null : userData,
+    error: error || null
+  }
+}
+
+const buildProfileUpdatePayload = (input = {}) => {
+  const updateData = {
+    updated_at: new Date().toISOString()
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'displayName')) {
+    updateData.display_name = input.displayName
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'preferredEmail')) {
+    updateData.preferred_email = input.preferredEmail
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'phoneNumber')) {
+    updateData.phone_number = input.phoneNumber
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'country')) {
+    updateData.country = input.country
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'timezone')) {
+    updateData.timezone = input.timezone
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'roleTrack')) {
+    updateData.role_track = input.roleTrack
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'goals')) {
+    updateData.goals = input.goals
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'preferences')) {
+    updateData.preferences = input.preferences
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'onboardingCompleted')) {
+    updateData.onboarding_completed = input.onboardingCompleted
+    if (input.onboardingCompleted) {
+      updateData.onboarding_completed_at =
+        input.onboardingCompletedAt || new Date().toISOString()
+    } else if (!Object.prototype.hasOwnProperty.call(input, 'onboardingCompletedAt')) {
+      updateData.onboarding_completed_at = null
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'onboardingCompletedAt')) {
+    updateData.onboarding_completed_at = input.onboardingCompletedAt
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'seniorityLevel')) {
+    updateData.seniority_level = input.seniorityLevel
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'weeklyLearningCapacity')) {
+    updateData.weekly_learning_capacity = input.weeklyLearningCapacity
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'transformationExperience')) {
+    updateData.transformation_experience = input.transformationExperience
+  }
+
+  return updateData
+}
+
+const getBadgeDefinition = async (badgeSlug) => {
+  const { data, error } = await supabaseClient
+    .from('badges')
+    .select('id, slug, title, description, icon_url, category, criteria_text')
+    .eq('slug', badgeSlug)
+    .single()
+
+  if (error || !data) {
+    return null
+  }
+
+  return data
+}
+
+const mapEarnedBadge = (badgeDefinition, earnedBadgeRow, dbUserId) => ({
+  id: earnedBadgeRow.id,
+  userId: dbUserId,
+  badgeId: badgeDefinition.id,
+  earnedAt: earnedBadgeRow.earned_at,
+  shareToken: earnedBadgeRow.share_token,
+  badge: {
+    id: badgeDefinition.id,
+    slug: badgeDefinition.slug,
+    title: badgeDefinition.title,
+    description: badgeDefinition.description,
+    iconUrl: badgeDefinition.icon_url,
+    category: badgeDefinition.category,
+    criteriaText: badgeDefinition.criteria_text,
+  }
+})
+
+const awardBadgeIfMissing = async (dbUserId, badgeSlug, context = null) => {
+  const badgeDefinition = await getBadgeDefinition(badgeSlug)
+
+  if (!badgeDefinition) {
+    return null
+  }
+
+  const { data: existingRow } = await supabaseClient
+    .from('earned_badges')
+    .select('id, earned_at, share_token')
+    .eq('user_id', dbUserId)
+    .eq('badge_id', badgeDefinition.id)
+    .maybeSingle()
+
+  if (existingRow?.id) {
+    return null
+  }
+
+  const earnedAt = new Date().toISOString()
+  const { data: earnedBadgeRow, error } = await supabaseClient
+    .from('earned_badges')
+    .upsert({
+      user_id: dbUserId,
+      badge_id: badgeDefinition.id,
+      earned_at: earnedAt,
+      context_type: context?.type,
+      context_id: context?.id,
+    }, {
+      onConflict: 'user_id,badge_id'
+    })
+    .select('id, earned_at, share_token')
+    .single()
+
+  if (error || !earnedBadgeRow) {
+    console.error(`Error awarding badge ${badgeSlug}:`, error)
+    return null
+  }
+
+  return mapEarnedBadge(badgeDefinition, earnedBadgeRow, dbUserId)
+}
+
+const upsertUserXp = async (dbUserId, delta) => {
+  const { data: existingXp } = await supabaseClient
+    .from('user_xp')
+    .select('user_id, total_xp')
+    .eq('user_id', dbUserId)
+    .maybeSingle()
+
+  const totalXp = Math.max(0, Number(existingXp?.total_xp || 0) + Number(delta || 0))
+
+  const { data, error } = await supabaseClient
+    .from('user_xp')
+    .upsert({
+      user_id: dbUserId,
+      total_xp: totalXp,
+      updated_at: new Date().toISOString(),
+    })
+    .select('user_id, total_xp')
+    .single()
+
+  if (error || !data) {
+    console.error('Error updating user XP:', error)
+    return null
+  }
+
+  return {
+    userId: data.user_id,
+    totalXp: data.total_xp ?? 0
+  }
 }
 
 // Lesson Access API handlers
@@ -405,6 +641,40 @@ const lessonAccessHandlers = {
         return sendError(res, 500, 'Failed to update lesson progress')
       }
 
+      const [{ count: totalLessonCount }, { count: completedLessonCount }] = await Promise.all([
+        supabaseClient
+          .from('lessons')
+          .select('id', { count: 'exact', head: true })
+          .eq('course_slug', courseSlug),
+        supabaseClient
+          .from('lesson_progress')
+          .select('id', { count: 'exact', head: true })
+          .eq('enrollment_id', enrollment.id)
+          .eq('completed', true)
+      ])
+
+      const totalLessons = Number(totalLessonCount || 0)
+      const completedLessons = Number(completedLessonCount || 0)
+      const progressPct = totalLessons > 0
+        ? Math.min(100, Number(((completedLessons / totalLessons) * 100).toFixed(2)))
+        : 0
+      const now = new Date().toISOString()
+
+      const { error: enrollmentUpdateError } = await supabaseClient
+        .from('user_enrollments')
+        .update({
+          progress_pct: progressPct,
+          last_accessed_at: now,
+          updated_at: now,
+          completed_at: progressPct >= 100 ? now : null
+        })
+        .eq('id', enrollment.id)
+
+      if (enrollmentUpdateError) {
+        console.error('Error updating enrollment progress after lesson update:', enrollmentUpdateError)
+        return sendError(res, 500, 'Failed to update enrollment progress')
+      }
+
       console.log('✅ Lesson progress updated successfully')
       return sendJSON(res, 200, {
         success: true,
@@ -414,6 +684,12 @@ const lessonAccessHandlers = {
           watchTimeSeconds: progress.watch_time_seconds,
           completedAt: progress.completed_at,
           updatedAt: progress.updated_at
+        },
+        enrollment: {
+          progressPct,
+          completedLessons,
+          totalLessons,
+          completedAt: progressPct >= 100 ? now : null
         },
         message: 'Lesson progress updated successfully'
       })
@@ -610,24 +886,12 @@ const savedCoursesHandlers = {
 }
 // Enrollment API handlers
 const enrollmentHandlers = {
-  // GET /api/enrollment/status/:courseSlug?userId=xxx
+  // GET /api/enrollment/status/:courseSlug
   async getEnrollmentStatus(req, res, courseSlug) {
-    const { query } = parse(req.url, true)
-    const userId = query.userId
+    const authenticatedUser = getCurrentUser(req)
 
-    // Get authenticated user
-    const authenticatedUser = getCurrentUser(req);
-
-    // If user is authenticated, use their Azure user ID instead of query param
-    const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : userId;
-
-    if (!targetUserId) {
-      return sendError(res, 400, 'User identification required')
-    }
-
-    // Security check: non-authenticated requests must provide userId, authenticated users can only check their own status
-    if (authenticatedUser && userId && userId !== authenticatedUser.azureUserId) {
-      return sendError(res, 403, 'Cannot check enrollment status for other users')
+    if (!authenticatedUser) {
+      return sendError(res, 401, 'Authentication required')
     }
 
     if (!supabaseClient) {
@@ -635,13 +899,13 @@ const enrollmentHandlers = {
     }
 
     try {
-      console.log(`🔍 Checking enrollment status for user ${targetUserId} in course ${courseSlug}`)
+      console.log(`🔍 Checking enrollment status for user ${authenticatedUser.azureUserId} in course ${courseSlug}`)
 
       // Resolve Azure OID to Supabase DB user UUID
       const { data: userData, error: userLookupError } = await supabaseClient
         .from('users')
         .select('id')
-        .eq('azure_user_id', targetUserId)
+        .eq('azure_user_id', authenticatedUser.azureUserId)
         .single()
 
       if (userLookupError || !userData) {
@@ -678,24 +942,12 @@ const enrollmentHandlers = {
     }
   },
 
-  // GET /api/enrollment/details/:courseSlug?userId=xxx
+  // GET /api/enrollment/details/:courseSlug
   async getEnrollmentDetails(req, res, courseSlug) {
-    const { query } = parse(req.url, true)
-    const userId = query.userId
+    const authenticatedUser = getCurrentUser(req)
 
-    // Get authenticated user
-    const authenticatedUser = getCurrentUser(req);
-
-    // If user is authenticated, use their Azure user ID instead of query param
-    const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : userId;
-
-    if (!targetUserId) {
-      return sendError(res, 400, 'User identification required')
-    }
-
-    // Security check: authenticated users can only check their own details
-    if (authenticatedUser && userId && userId !== authenticatedUser.azureUserId) {
-      return sendError(res, 403, 'Cannot access enrollment details for other users')
+    if (!authenticatedUser) {
+      return sendError(res, 401, 'Authentication required')
     }
 
     if (!supabaseClient) {
@@ -703,13 +955,13 @@ const enrollmentHandlers = {
     }
 
     try {
-      console.log(`📋 Getting enrollment details for user ${targetUserId} in course ${courseSlug}`)
+      console.log(`📋 Getting enrollment details for user ${authenticatedUser.azureUserId} in course ${courseSlug}`)
 
       // Resolve Azure OID to Supabase DB user UUID
       const { data: userData, error: userLookupError } = await supabaseClient
         .from('users')
         .select('id')
-        .eq('azure_user_id', targetUserId)
+        .eq('azure_user_id', authenticatedUser.azureUserId)
         .single()
 
       if (userLookupError || !userData) {
@@ -750,23 +1002,10 @@ const enrollmentHandlers = {
     try {
       const body = await parseBody(req)
 
-      // Get authenticated user
-      const authenticatedUser = getCurrentUser(req);
+      const authenticatedUser = getCurrentUser(req)
 
-      // If user is authenticated, use their Azure user ID, otherwise require userId in body
-      const azureUserId = authenticatedUser ? authenticatedUser.azureUserId : body.userId;
-
-      if (!azureUserId) {
-        return sendError(res, 400, 'User identification required')
-      }
-
-      // Security check: authenticated users can only enroll themselves
-      if (authenticatedUser && body.userId && body.userId !== authenticatedUser.azureUserId) {
-        logAccessEvent('enrollment_attempt', `course:${body.courseSlug}`, authenticatedUser.azureUserId, 'denied', {
-          reason: 'attempted_to_enroll_other_user',
-          targetUserId: body.userId
-        });
-        return sendError(res, 403, 'Cannot enroll other users')
+      if (!authenticatedUser) {
+        return sendError(res, 401, 'Authentication required')
       }
 
       const validationError = validateRequired(body, ['courseSlug'])
@@ -776,6 +1015,7 @@ const enrollmentHandlers = {
 
       const { courseSlug, method = 'explicit' } = body
       enrollmentCourseSlug = courseSlug
+      const azureUserId = authenticatedUser.azureUserId
 
       if (!supabaseClient) {
         return sendError(res, 503, 'Database not configured')
@@ -900,23 +1140,12 @@ const enrollmentHandlers = {
     }
   },
 
-  // GET /api/enrollment/user/:userId or /api/enrollment/user/me
-  async getUserEnrollments(req, res, userId) {
-    // Get authenticated user
-    const authenticatedUser = getCurrentUser(req);
+  // GET /api/enrollment/user/me
+  async getUserEnrollments(req, res) {
+    const authenticatedUser = getCurrentUser(req)
 
-    // If userId is null (from 'me' endpoint), use authenticated user
-    const azureUserId = !userId || userId === 'me' 
-      ? (authenticatedUser ? authenticatedUser.azureUserId : null)
-      : userId;
-
-    if (!azureUserId) {
+    if (!authenticatedUser?.azureUserId) {
       return sendError(res, 401, 'Authentication required')
-    }
-
-    // Security check: authenticated users can only get their own enrollments
-    if (authenticatedUser && userId && userId !== 'me' && userId !== authenticatedUser.azureUserId) {
-      return sendError(res, 403, 'Cannot access enrollments for other users')
     }
 
     if (!supabaseClient) {
@@ -924,6 +1153,7 @@ const enrollmentHandlers = {
     }
 
     try {
+      const azureUserId = authenticatedUser.azureUserId
       console.log(`📚 Getting all enrollments for Azure user ${azureUserId}`)
 
       // Look up the database user ID from Azure user ID
@@ -969,24 +1199,12 @@ const enrollmentHandlers = {
     }
   },
 
-  // GET /api/enrollment/access/:courseSlug?userId=xxx
+  // GET /api/enrollment/access/:courseSlug
   async getAccessContract(req, res, courseSlug) {
-    const { query } = parse(req.url, true)
-    const userId = query.userId
+    const authenticatedUser = getCurrentUser(req)
 
-    // Get authenticated user
-    const authenticatedUser = getCurrentUser(req);
-
-    // If user is authenticated, use their Azure user ID instead of query param
-    const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : userId;
-
-    if (!targetUserId) {
-      return sendError(res, 400, 'User identification required')
-    }
-
-    // Security check: authenticated users can only get their own access contract
-    if (authenticatedUser && userId && userId !== authenticatedUser.azureUserId) {
-      return sendError(res, 403, 'Cannot access contract for other users')
+    if (!authenticatedUser) {
+      return sendError(res, 401, 'Authentication required')
     }
 
     if (!supabaseClient) {
@@ -994,13 +1212,13 @@ const enrollmentHandlers = {
     }
 
     try {
-      console.log(`🔐 Getting access contract for user ${targetUserId} in course ${courseSlug}`)
+      console.log(`🔐 Getting access contract for user ${authenticatedUser.azureUserId} in course ${courseSlug}`)
 
       // Resolve Azure OID to Supabase DB user UUID
       const { data: userData, error: userLookupError } = await supabaseClient
         .from('users')
         .select('id')
-        .eq('azure_user_id', targetUserId)
+        .eq('azure_user_id', authenticatedUser.azureUserId)
         .single()
 
       if (userLookupError || !userData) {
@@ -1009,7 +1227,7 @@ const enrollmentHandlers = {
           enrollmentStatus: null,
           subscriptionStatus: null,
           courseSlug,
-          userId: targetUserId
+          userId: authenticatedUser.azureUserId
         })
       }
 
@@ -1041,7 +1259,7 @@ const enrollmentHandlers = {
         enrollmentStatus: enrollment?.status || null,
         subscriptionStatus: subscription?.status || null,
         courseSlug,
-        userId: targetUserId
+        userId: authenticatedUser.azureUserId
       }
 
       return sendJSON(res, 200, accessContract)
@@ -1056,19 +1274,10 @@ const enrollmentHandlers = {
     try {
       const body = await parseBody(req)
 
-      // Get authenticated user
-      const authenticatedUser = getCurrentUser(req);
+      const authenticatedUser = getCurrentUser(req)
 
-      // If user is authenticated, use their Azure user ID, otherwise require userId in body
-      const targetUserId = authenticatedUser ? authenticatedUser.azureUserId : body.userId;
-
-      if (!targetUserId) {
-        return sendError(res, 400, 'User identification required')
-      }
-
-      // Security check: authenticated users can only cancel their own enrollments
-      if (authenticatedUser && body.userId && body.userId !== authenticatedUser.azureUserId) {
-        return sendError(res, 403, 'Cannot cancel enrollment for other users')
+      if (!authenticatedUser) {
+        return sendError(res, 401, 'Authentication required')
       }
 
       const validationError = validateRequired(body, ['courseSlug'])
@@ -1077,6 +1286,7 @@ const enrollmentHandlers = {
       }
 
       const { courseSlug } = body
+      const targetUserId = authenticatedUser.azureUserId
 
       if (!supabaseClient) {
         return sendError(res, 503, 'Database not configured')
@@ -1185,6 +1395,284 @@ const enrollmentHandlers = {
   }
 }
 
+const learningHandlers = {
+  async getSnapshot(req, res, courseSlug) {
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      const { authenticatedUser, userData, error } = await resolveAuthenticatedDbUser(req, {
+        createIfMissing: true
+      })
+
+      if (!authenticatedUser) {
+        return sendError(res, 401, 'Authentication required')
+      }
+
+      if (error || !userData?.id) {
+        console.error('Error resolving user for learning snapshot:', error)
+        return sendError(res, 500, 'Failed to resolve learner account')
+      }
+
+      const { data, error: snapshotError } = await supabaseClient.rpc('get_learning_snapshot', {
+        p_course_slug: courseSlug,
+        p_user_id: userData.id,
+      })
+
+      if (snapshotError) {
+        console.error('Error fetching learning snapshot:', snapshotError)
+        return sendError(res, 500, 'Failed to fetch learning snapshot', snapshotError.message)
+      }
+
+      const snapshotData = data || {}
+      const sanitizedSnapshot = {
+        ...snapshotData,
+        lessons: Array.isArray(snapshotData.lessons)
+          ? snapshotData.lessons.map((lesson) => ({
+            id: lesson.id,
+            course_slug: lesson.course_slug,
+            module_id: lesson.module_id,
+            title: lesson.title,
+            type: lesson.type,
+            order_index: lesson.order_index,
+            estimated_duration_minutes: lesson.estimated_duration_minutes,
+            is_preview: lesson.is_preview,
+          }))
+          : []
+      }
+
+      return sendJSON(res, 200, {
+        success: true,
+        snapshot: sanitizedSnapshot
+      })
+    } catch (err) {
+      console.error('Error getting learning snapshot:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  },
+
+  async recordQuizAttempt(req, res, courseSlug) {
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      const body = await parseBody(req)
+      const scorePct = Number(body.scorePct)
+      const passed = Boolean(body.passed)
+
+      if (Number.isNaN(scorePct)) {
+        return sendError(res, 400, 'Missing or invalid scorePct')
+      }
+
+      const { authenticatedUser, userData, error } = await resolveAuthenticatedDbUser(req, {
+        createIfMissing: true
+      })
+
+      if (!authenticatedUser) {
+        return sendError(res, 401, 'Authentication required')
+      }
+
+      if (error || !userData?.id) {
+        console.error('Error resolving user for quiz attempt:', error)
+        return sendError(res, 500, 'Failed to resolve learner account')
+      }
+
+      const { data: existingAttempt } = await supabaseClient
+        .from('quiz_attempts')
+        .select('id')
+        .eq('user_id', userData.id)
+        .eq('course_slug', courseSlug)
+        .maybeSingle()
+
+      const now = new Date().toISOString()
+      const { error: quizAttemptError } = await supabaseClient
+        .from('quiz_attempts')
+        .upsert({
+          user_id: userData.id,
+          course_slug: courseSlug,
+          score_pct: scorePct,
+          passed,
+          completed_at: now,
+          updated_at: now,
+        }, {
+          onConflict: 'user_id,course_slug'
+        })
+
+      if (quizAttemptError) {
+        console.error('Error recording quiz attempt:', quizAttemptError)
+        return sendError(res, 500, 'Failed to record quiz attempt', quizAttemptError.message)
+      }
+
+      let badge = null
+      let xp = null
+      if (!existingAttempt?.id) {
+        badge = await awardBadgeIfMissing(userData.id, 'first_quiz_completed', {
+          type: 'course',
+          id: courseSlug
+        })
+        xp = await upsertUserXp(userData.id, QUIZ_XP_AWARD)
+      }
+
+      return sendJSON(res, 200, {
+        success: true,
+        badge,
+        xp,
+        message: 'Quiz attempt recorded successfully'
+      })
+    } catch (err) {
+      console.error('Error recording quiz attempt:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  },
+
+  async recordCourseCompletion(req, res, courseSlug) {
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      const { authenticatedUser, userData, error } = await resolveAuthenticatedDbUser(req, {
+        createIfMissing: true
+      })
+
+      if (!authenticatedUser) {
+        return sendError(res, 401, 'Authentication required')
+      }
+
+      if (error || !userData?.id) {
+        console.error('Error resolving user for course completion:', error)
+        return sendError(res, 500, 'Failed to resolve learner account')
+      }
+
+      const now = new Date().toISOString()
+      const { error: enrollmentUpdateError } = await supabaseClient
+        .from('user_enrollments')
+        .update({
+          progress_pct: 100,
+          completed_at: now,
+          last_accessed_at: now,
+          updated_at: now
+        })
+        .eq('user_id', userData.id)
+        .eq('course_slug', courseSlug)
+        .eq('status', 'active')
+
+      if (enrollmentUpdateError) {
+        console.error('Error updating course completion:', enrollmentUpdateError)
+        return sendError(res, 500, 'Failed to record course completion', enrollmentUpdateError.message)
+      }
+
+      const badge = await awardBadgeIfMissing(userData.id, 'first_course_completed', {
+        type: 'course',
+        id: courseSlug
+      })
+      const xp = badge ? await upsertUserXp(userData.id, COURSE_XP_AWARD) : null
+
+      return sendJSON(res, 200, {
+        success: true,
+        badge,
+        xp,
+        message: 'Course completion recorded successfully'
+      })
+    } catch (err) {
+      console.error('Error recording course completion:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  }
+}
+
+const learnerProfileHandlers = {
+  async getProfile(req, res) {
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      const { authenticatedUser, userData, error } = await resolveAuthenticatedDbUser(req, {
+        createIfMissing: true
+      })
+
+      if (!authenticatedUser) {
+        return sendError(res, 401, 'Authentication required')
+      }
+
+      if (error || !userData?.id) {
+        console.error('Error resolving user for learner profile:', error)
+        return sendError(res, 500, 'Failed to resolve learner account')
+      }
+
+      const { data, error: profileError } = await supabaseClient
+        .from('users')
+        .select(LEARNER_PROFILE_SELECT)
+        .eq('id', userData.id)
+        .single()
+
+      if (profileError || !data) {
+        console.error('Error fetching learner profile:', profileError)
+        return sendError(res, 500, 'Failed to fetch learner profile', profileError?.message)
+      }
+
+      return sendJSON(res, 200, {
+        success: true,
+        profile: mapRowToLearnerProfile(data)
+      })
+    } catch (err) {
+      console.error('Error getting learner profile:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  },
+
+  async updateProfile(req, res) {
+    if (!supabaseClient) {
+      return sendError(res, 503, 'Database not configured')
+    }
+
+    try {
+      const body = await parseBody(req)
+      const updateData = buildProfileUpdatePayload(body)
+
+      const { authenticatedUser, userData, error } = await resolveAuthenticatedDbUser(req, {
+        createIfMissing: true
+      })
+
+      if (!authenticatedUser) {
+        return sendError(res, 401, 'Authentication required')
+      }
+
+      if (error || !userData?.id) {
+        console.error('Error resolving user for learner profile update:', error)
+        return sendError(res, 500, 'Failed to resolve learner account')
+      }
+
+      if (Object.keys(updateData).length === 1) {
+        return await learnerProfileHandlers.getProfile(req, res)
+      }
+
+      const { data, error: updateError } = await supabaseClient
+        .from('users')
+        .update(updateData)
+        .eq('id', userData.id)
+        .select(LEARNER_PROFILE_SELECT)
+        .single()
+
+      if (updateError || !data) {
+        console.error('Error updating learner profile:', updateError)
+        return sendError(res, 500, 'Failed to update learner profile', updateError?.message)
+      }
+
+      return sendJSON(res, 200, {
+        success: true,
+        profile: mapRowToLearnerProfile(data)
+      })
+    } catch (err) {
+      console.error('Error updating learner profile:', err)
+      return sendError(res, 500, 'Internal server error')
+    }
+  }
+}
+
 export const requestHandler = async (req, res) => {
   try {
     // Apply request logging middleware
@@ -1194,7 +1682,7 @@ export const requestHandler = async (req, res) => {
     // Apply rate limiting middleware
     await applyMiddleware(applyRateLimit, req, res);
 
-    const { pathname, query } = parse(req.url || '', true)
+    const { pathname } = parse(req.url || '', true)
 
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -1222,7 +1710,7 @@ export const requestHandler = async (req, res) => {
     if (pathname.startsWith('/api/lessons/')) {
       // Apply authentication middleware
       try {
-        await applyMiddleware(authenticateUser({ required: false }), req, res); // Allow unauthenticated for preview content
+        await applyMiddleware(authenticateUser({ required: true }), req, res);
       } catch (authError) {
         console.error('❌ Authentication failed:', authError);
         return; // Response already sent by middleware
@@ -1319,11 +1807,9 @@ export const requestHandler = async (req, res) => {
         return await enrollmentHandlers.enrollInCourse(req, res)
       }
 
-      // GET /api/enrollment/user/:userId or /api/enrollment/user/me
-      if (pathParts[3] === 'user' && pathParts[4] && req.method === 'GET') {
-        // If 'me', use authenticated user, otherwise use provided userId
-        const userId = pathParts[4] === 'me' ? null : pathParts[4];
-        return await enrollmentHandlers.getUserEnrollments(req, res, userId)
+      // GET /api/enrollment/user/me
+      if (pathParts[3] === 'user' && pathParts[4] === 'me' && req.method === 'GET') {
+        return await enrollmentHandlers.getUserEnrollments(req, res)
       }
 
       // GET /api/enrollment/access/:courseSlug
@@ -1338,6 +1824,52 @@ export const requestHandler = async (req, res) => {
       }
 
       return sendError(res, 404, 'Enrollment endpoint not found')
+    }
+
+    // Learning API routes (authentication required)
+    if (pathname.startsWith('/api/learning/')) {
+      try {
+        await applyMiddleware(authenticateUser({ required: true }), req, res);
+      } catch (authError) {
+        console.error('❌ Authentication failed:', authError);
+        return;
+      }
+
+      const pathParts = pathname.split('/')
+
+      if (pathParts[3] === 'snapshot' && pathParts[4] && req.method === 'GET') {
+        return await learningHandlers.getSnapshot(req, res, pathParts[4])
+      }
+
+      if (pathParts[3] === 'quiz-attempt' && pathParts[4] && req.method === 'POST') {
+        return await learningHandlers.recordQuizAttempt(req, res, pathParts[4])
+      }
+
+      if (pathParts[3] === 'course-completion' && pathParts[4] && req.method === 'POST') {
+        return await learningHandlers.recordCourseCompletion(req, res, pathParts[4])
+      }
+
+      return sendError(res, 404, 'Learning endpoint not found')
+    }
+
+    // Learner profile routes (authentication required)
+    if (pathname === '/api/learner/profile') {
+      try {
+        await applyMiddleware(authenticateUser({ required: true }), req, res);
+      } catch (authError) {
+        console.error('❌ Authentication failed:', authError);
+        return;
+      }
+
+      if (req.method === 'GET') {
+        return await learnerProfileHandlers.getProfile(req, res)
+      }
+
+      if (req.method === 'PUT') {
+        return await learnerProfileHandlers.updateProfile(req, res)
+      }
+
+      return sendError(res, 405, 'Method not allowed')
     }
 
     // Test API routes (for development/testing only) - no auth required in dev
@@ -1411,12 +1943,21 @@ if (isDirectExecution) {
     console.log(`   DELETE /api/saved-courses/:courseId - Unsave a course`)
     console.log(``)
     console.log(`   🎓 Enrollment Endpoints:`)
-    console.log(`   GET  /api/enrollment/status/:courseSlug?userId=xxx - Check enrollment status`)
-    console.log(`   GET  /api/enrollment/details/:courseSlug?userId=xxx - Get enrollment details`)
+    console.log(`   GET  /api/enrollment/status/:courseSlug - Check enrollment status`)
+    console.log(`   GET  /api/enrollment/details/:courseSlug - Get enrollment details`)
     console.log(`   POST /api/enrollment/enroll - Enroll in course`)
-    console.log(`   GET  /api/enrollment/user/:userId - Get user enrollments`)
-    console.log(`   GET  /api/enrollment/access/:courseSlug?userId=xxx - Get access contract`)
+    console.log(`   GET  /api/enrollment/user/me - Get current user enrollments`)
+    console.log(`   GET  /api/enrollment/access/:courseSlug - Get access contract`)
     console.log(`   POST /api/enrollment/cancel - Cancel enrollment`)
+    console.log(``)
+    console.log(`   🧠 Learning Endpoints:`)
+    console.log(`   GET  /api/learning/snapshot/:courseSlug - Get learning snapshot`)
+    console.log(`   POST /api/learning/quiz-attempt/:courseSlug - Record quiz attempt`)
+    console.log(`   POST /api/learning/course-completion/:courseSlug - Record course completion`)
+    console.log(``)
+    console.log(`   👤 Learner Profile Endpoints:`)
+    console.log(`   GET  /api/learner/profile - Get learner profile`)
+    console.log(`   PUT  /api/learner/profile - Update learner profile`)
     console.log(``)
     console.log(`   🧪 Development Endpoints:`)
     console.log(`   POST /api/test/create-user - Create test user (dev only)`)

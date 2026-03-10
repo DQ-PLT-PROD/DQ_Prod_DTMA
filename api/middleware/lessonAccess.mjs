@@ -159,7 +159,7 @@ const checkSequentialAccess = async (supabaseClient, enrollmentId, courseSlug, c
     if (lessonsError) {
       console.error('Error fetching previous lessons:', lessonsError)
       return {
-        canAccess: true, // Default to allow access if we can't check
+        canAccess: false,
         reason: 'Could not verify sequential access'
       }
     }
@@ -184,7 +184,7 @@ const checkSequentialAccess = async (supabaseClient, enrollmentId, courseSlug, c
     if (progressError) {
       console.error('Error fetching lesson progress:', progressError)
       return {
-        canAccess: true, // Default to allow access if we can't check
+        canAccess: false,
         reason: 'Could not verify lesson progress'
       }
     }
@@ -212,7 +212,7 @@ const checkSequentialAccess = async (supabaseClient, enrollmentId, courseSlug, c
   } catch (error) {
     console.error('Error checking sequential access:', error)
     return {
-      canAccess: true, // Default to allow access on error
+      canAccess: false,
       reason: 'Sequential access check failed'
     }
   }

@@ -242,7 +242,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
       const passed = incorrectCount <= 5;
 
       if (databaseUser?.id) {
-        const quizBadge = await recordQuizAttempt(databaseUser.id, courseSlug, finalScore, passed);
+        const quizBadge = await recordQuizAttempt(courseSlug, finalScore, passed);
         if (quizBadge) {
           setEarnedBadge({
             definition: quizBadge.badge,
@@ -251,7 +251,7 @@ const CourseAssessment: React.FC<CourseAssessmentProps> = ({
         }
         
         if (passed && allLessonsCompleted) {
-          const courseBadge = await recordCourseCompletion(databaseUser.id, courseSlug);
+          const courseBadge = await recordCourseCompletion(courseSlug);
           if (courseBadge) {
             setEarnedBadge({
               definition: courseBadge.badge,

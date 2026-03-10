@@ -104,7 +104,6 @@ class LessonAccessApiClient {
     try {
       const activeAccount = msalInstance.getActiveAccount()
       if (!activeAccount) {
-        console.warn('No active account found for lesson access API authentication')
         return null
       }
 
@@ -127,23 +126,22 @@ class LessonAccessApiClient {
     body?: any
   ): Promise<ApiResponse<T>> {
     try {
-      // Get authentication token (optional for lesson access - allows preview content)
       const token = await this.getAccessToken()
-      
+
+      if (!token) {
+        return {
+          success: false,
+          error: 'Authentication required. Please sign in and try again.'
+        }
+      }
+
       const options: RequestInit = {
         method,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-        },
-      }
-
-      // Add authentication header if token is available
-      if (token) {
-        options.headers = {
-          ...options.headers,
           'Authorization': `Bearer ${token}`
-        }
+        },
       }
 
       if (body) {

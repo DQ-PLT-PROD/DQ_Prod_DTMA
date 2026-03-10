@@ -53,6 +53,7 @@ export interface Lesson {
   videoUrl?: string;
   resourceUrl?: string;
   content?: string;
+  isPreview?: boolean;
 }
 
 export interface QuizQuestion {

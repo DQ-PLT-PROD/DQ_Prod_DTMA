@@ -91,7 +91,14 @@ export function AppRouter() {
               />
 
               {/* Portal / Learning */}
-              <Route path="/portal" element={<PortalLayout />}>
+              <Route
+                path="/portal"
+                element={
+                  <ProtectedRoute>
+                    <PortalLayout />
+                  </ProtectedRoute>
+                }
+              >
                 <Route index element={<Navigate to="my-courses/in-progress" replace />} />
                 <Route path="onboarding" element={<LearnerOnboarding layout="portal" />} />
                 <Route path="profile" element={<ProfilePage />} />
