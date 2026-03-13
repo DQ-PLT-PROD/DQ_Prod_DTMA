@@ -12,7 +12,13 @@ RUN npm run build
 ##############################
 # 2. RUNTIME STAGE (NGINX + NON-ROOT USER)
 ##############################
-FROM nginx:stable-alpine
+FROM nginx:alpine
+
+# Fix for CVE-2026-22184 (zlib vulnerability)
+RUN apk update && \
+    apk upgrade --no-cache \
+    --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
+    --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community
 
 # Install envsubst (part of gettext)
 RUN apk add --no-cache gettext

@@ -10,6 +10,6 @@ data:
   VITE_IDENTITY_HOST: "dqproj.ciamlogin.com"
   VITE_MSAL_ENABLE_GRAPH_FALLBACK: "true"
   VITE_KNOWLEDGEHUB_GRAPHQL_URL: "http://localhost:4000/graphql"
-  VITE_SUPABASE_URL: "https://faqystypjlxqvgkhnbyq.supabase.co"
+  VITE_SUPABASE_URL: "https://api.dtma.qatalyst.tech"
   AZURE_STORAGE_ACCOUNT: "kfmediaitems"
   AZURE_STORAGE_CONTAINER: "mediaitems"
